@@ -1,0 +1,420 @@
+<html>
+
+<head>
+
+
+
+    <link rel="stylesheet" type="text/css" href="https://unpkg.com/bootstrap-table@1.20.2/dist/bootstrap-table.min.css"
+        rel="stylesheet">
+    <link rel="stylesheet" type="text/css"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
+    <link rel="stylesheet" type="text/css"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.css">
+    <link rel="stylesheet" type="text/css"
+        href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.1.3/css/bootstrap.min.css">
+    <!--link rel="stylesheet" type="text/css"
+        href="https://cdnjs.cloudflare.com/ajax/libs/mdbootstrap/4.4.1/css/mdb.min.css"-->
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/fomantic-ui@2.8.8/dist/semantic.min.css">
+    <link rel="stylesheet" type="text/css"
+        href="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui-calendar/0.0.8/calendar.min.css">
+    <link rel="stylesheet" href=" styles.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.3/font/bootstrap-icons.css">
+</head>
+
+<body class="hm-gradient">
+    <meta name="viewport"
+        content="width=device-width, height=device-height,  initial-scale=1.0, user-scalable=no,user-scalable=0" />
+
+
+    <!--MDB Forms-->
+    <div class="container mt-4">
+
+        <div class="text-center darken-grey-text mb-4">
+            <h1 class="font-bold mt-4 mb-3 h5"></h1>
+
+        </div>
+
+        <!-- Grid row -->
+
+        <!-- Grid column -->
+
+        <div class="container mt-4">
+            <div class="card">
+                <div class="card-body">
+                    <h3 class="text-center default-text py-3"><i class="fa fa-lock"></i> Cálculo de Custas</h3>
+                    <!--Body-->
+
+                    <div class="container">
+                        <form class="first">
+
+                            <div class="row g-2">
+                                <div class="col-md">
+                                    <div class="input-group mb-3">
+                                        <span class="input-group-text" id="basic-addon1">R$</span>
+                                        <div class="form-floating form-floating-group flex-grow-1">
+                                            <input type="tel" class="form-control selectonfocus" id="caseValue"
+                                                name="name" autocomplete="off" onchange="initialDateFunc()" value=""
+                                                placeholder="Valor da causa">
+                                            <label for="caseValue">Valor da causa</label>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md">
+                                    <div class="input-group mb-3">
+                                        <span class="input-group-text" id="basic-addon1">
+                                            <div class="ui calendar" id="button_calendar">
+                                                <div class="ui button">
+                                                    <i class="fa fa-solid prefix fa-calendar grey-text"
+                                                        id="calendar"></i>
+
+                                                </div>
+                                            </div>
+
+                                        </span>
+                                        <div class="form-floating form-floating-group flex-grow-1">
+
+                                            <input type="tel" class="form-control selectonfocus" id="initialDate"
+                                                name="name" autocomplete="off" onchange="initialDateFunc()" value=""
+                                                placeholder="01/01/2022">
+                                            <label for="initialDate">Data da Distribuição:</label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+
+                            <div class="row g-2">
+                                <div class="col-md">
+                                    <div class="input-group mb-3">
+                                        <span class="input-group-text" id="basic-addon1">R$</span>
+                                        <div class="form-floating form-floating-group flex-grow-1">
+                                            <input type="tel" id="sentenceValue" class="form-control"
+                                                placeholder="Valor da Condenação">
+                                            <label for="sentenceValue">Valor da Condenação</label>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md finalDate">
+                                    <div class="input-group mb-3 finalDate">
+                                        <span class="input-group-text" id="basic-addon1">
+                                            <div class="ui calendar" id="button_calendar2">
+                                                <div class="ui button">
+                                                    <i class="fa fa-solid prefix fa-calendar grey-text"
+                                                        id="calendar"></i>
+                                                </div>
+                                            </div>
+
+                                        </span>
+                                        <div class="form-floating form-floating-group flex-grow-1 finalDate">
+
+                                            <input type="tel" class="form-control selectonfocus" id="finalDate"
+                                                name="name" autocomplete="off" onchange="finalDateFunc()" readonly>
+                                            <label for="finalDate">Data da Sentença:</label>
+                                        </div>
+                                        <div class="input-group-text check">
+                                            <input class="form-check-input mt-0" id="checkFinalDate" type="checkbox"
+                                                onclick="toggleFinalDate()">
+                                        </div>
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+
+
+                            <div class="text-center">
+                                <p></p>
+                                <div class="collapse" id="collapseAdvanced">
+                                    <div class="card card-body">
+                                        Em breve...
+                                    </div>
+                                </div>
+                                <p></p>
+                                <button id="calcCust" class="btn btn-info btn-lg waves-effect waves-light"
+                                    type="button">Calcular</button>
+                                <button class="btn btn-info btn-lg waves-effect waves-light" type="button"
+                                    data-bs-toggle="collapse" data-bs-target="#collapseExample" aria-expanded="false"
+                                    aria-controls="collapseExample">
+                                    Mais Opções
+                                </button>
+
+                            </div>
+                        </form>
+                    </div>
+
+
+                </div>
+
+            </div>
+
+
+            <!-- Grid column -->
+
+        </div>
+        <!-- Modal -->
+        <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-fullscreen">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="exampleModalLabel">Modal title</h5>
+                        <button type="button" onclick="refreshPage()" class="btn-close" data-bs-dismiss="modal"
+                            aria-label="Fechar"></button>
+                    </div>
+                    <div class="modal-body">
+
+
+                        <figure class="text-center">
+
+                            <blockquote class="blockquote">
+
+                                <p>Valor das Custas do Preparo:</p>
+                                <h1 id="txtCopy" class="resultTotalCosts"></h1>
+
+                            </blockquote>
+
+                            <button class="btn btn-primary" type="button" data-bs-toggle="collapse"
+                                data-bs-target="#collapseCalc" aria-expanded="false" aria-controls="collapseCalc">
+                                Detalhar Cálculo
+                            </button>
+
+
+                        </figure>
+
+
+
+                        <div class="position-fixed top-0 end-0 p-3" style="z-index: 11">
+                            <div id="basicToast" class="toast hide" role="alert" aria-live="assertive"
+                                aria-atomic="true">
+                                <div class="toast-header">
+
+                                    <span class="me-auto">Valor das custas do preparo copiado para sua área de
+                                        transferência. Use CTRL+V ou colar para usar o texto copiado.</span>
+
+                                    <button type="button" onclick="refreshPage()" class="btn-close"
+                                        data-bs-dismiss="toast" id="clo1se" aria-label="Fechar"></button>
+                                </div>
+
+                            </div>
+                        </div>
+
+
+
+
+
+
+
+
+                        <div class="collapse" id="collapseCalc">
+                            <div class="card card-body">
+                                <div class="row">
+
+
+                                    <div class="col-sm-8">
+                                        <h2 class="sub-header">Atualização:</h2>
+                                        <div class="table-responsive-md">
+                                            <table data-show-columns="true" data-mobile-responsive="true"
+                                                data-check-on-init="true"
+                                                class="rwd-table table table-striped table-condensed table-hover">
+                                                <thead>
+
+                                                    <tr>
+                                                        <th scope="col">Valor da Causa:</th>
+                                                        <th scope="col">Data Inicial:</th>
+                                                        <th class="index1"></th>
+                                                        <th scope="col">Data Final:</th>
+                                                        <th scope="col">Valor Atualizado:</th>
+
+
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <tr class="values">
+                                                        <td data-th="Valor da Causa:" id="resultCaseValue"></td>
+                                                        <td data-th="Data Inicial:" id="resultInitialDate"></td>
+                                                        <td data-th="Índice Inicial:" class="index1 resultInitialIndex">
+                                                        </td>
+                                                        <td data-th="Data Final:" id="resultFinalDate"></td>
+                                                        <td data-th="Índice Final:" class="index1 resultFinalIndex">
+                                                        </td>
+                                                        <td data-th="Valor Atualizado:" class="resultCaseValueUpdated">
+                                                        </td>
+
+                                                    </tr>
+                                                    <tr class="indexFull">
+                                                        <td></td>
+                                                        <td data-th="Índice Inicial:" id="resultInitialIndex"
+                                                            class="index resultInitialIndex">
+                                                        </td>
+                                                        <td data-th="Índice Final:" class="index resultFinalIndex">
+                                                        </td>
+
+                                                        <td></td>
+                                                    </tr>
+
+                                                </tbody>
+
+                                            </table>
+
+
+
+
+                                        </div>
+                                    </div>
+                                    <div class="col-sm-4">
+                                        <h2 class="sub-header">Outros Dados</h2>
+                                        <div class="table-responsive">
+                                            <table class="table table-striped">
+                                                <tbody>
+                                                    <tr>
+                                                        <th colspan="">Valor da UFESP:</th>
+
+
+                                                    </tr>
+                                                    <tr>
+                                                        <td colspan="" id="UFESPValue"></td>
+
+
+                                                    </tr>
+                                                    <tr>
+
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                    <div class="col-8">
+                                        <div class="table-responsive-md">
+                                            <table class="table table-striped table-condensed table-hover">
+                                                <tbody>
+
+                                                    <tr>
+
+                                                </tbody>
+                                            </table>
+                                        </div>
+
+                                    </div>
+
+                                </div>
+                                <div class="col-sm-8">
+                                    <div class="table-responsive">
+                                        <table class="table table-striped table-condensed table-hover">
+                                            <h2 class="sub-header">Cálculo das Custas do Preparo:</h2>
+                                            <tbody>
+
+                                                <tr>
+                                                    <th scope="col">Valor da Causa Atualizado:</th>
+
+                                                    <th scope="col">1% Sobre o Valor da Causa Atualizado<sup>1</sup>:
+                                                    </th>
+
+                                                </tr>
+                                                <tr>
+                                                    <td class="resultCaseValueUpdated"></td>
+                                                    <td id="resultCaseCosts"></td>
+
+                                                </tr>
+
+                                                <tr>
+                                                    <th scope=" col">Valor da Condenação:</th>
+                                                    <th scope="col">4% Sobre o Valor da <span
+                                                            class="appealToUse"></span>
+                                                    </th>
+                                                </tr>
+                                                <tr>
+                                                    <td class="resultSentenceValue"></td>
+                                                    <td id="resultAppealCosts"></td>
+
+                                                </tr>
+                                                <tr>
+                                                    <th scope="col">Total:</th>
+                                                    <th class="resultTotalCosts" scope="col"></th>
+
+                                                </tr>
+
+
+                                            </tbody>
+                                        </table>
+                                        <div id="sup1"><sup>1</sup> Valor mínimo: 5 UFESP</div>
+                                        <div id="obs"></div>
+                                        <div id="obs2"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="modal-footer">
+                        <button type="button" onclick="refreshPage()" class="btn btn-secondary close"
+                            data-bs-dismiss="modal" id="close">Novo Cálculo</button>
+                        <button id="" type="button" class="btn btn-primary copy"
+                            data-clipboard-target="#txtCopy">Copiar</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Grid row -->
+
+        <hr class="my-4">
+
+        <div class="text-center darken-grey-text mb-4">
+            <h3 class="font-bold mb-3"></h3>
+
+        </div>
+
+
+    </div>
+
+
+    <!-- Button trigger modal -->
+    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#exampleModal">
+        Launch demo modal
+    </button>
+
+
+
+
+
+
+
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/2.11.5/umd/popper.min.js"></script>
+    <!--<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta/js/bootstrap.min.js"></script>-->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.1.3/js/bootstrap.min.js"></script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-maskmoney/3.0.2/jquery.maskMoney.min.js"></script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.3/moment.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.3/locale/pt-br.min.js"
+        integrity="sha512-1IpxmBdyZx3okPiZ14mzw6+pOGa690uDmcdjqvT310Kwv3NRcjvL/aOtoSprEyvkDdAb7ZtM2um6KrLqLOY97w=="
+        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.4.1/semantic.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.mask/1.14.16/jquery.mask.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fomantic-ui/2.8.8/semantic.min.js"></script>
+
+    <link rel="stylesheet" href="https://code.jquery.com/ui/1.11.0/themes/smoothness/jquery-ui.css">
+    <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/jquery-timepicker/1.10.0/jquery.timepicker.min.css">
+    <script src="https://kit.fontawesome.com/bf3647d748.js" crossorigin="anonymous"></script>
+    <script src="initialDateFunc.js"></script>
+    <script src="code.js"></script>
+
+
+
+    <script src="finalDateFunc.js"></script>
+    <script src="calcCust.js"></script>
+    <script src="newFile.js"></script>
+    <script src="https://unpkg.com/bootstrap-table@1.20.2/dist/bootstrap-table.min.js"></script>
+    <script
+        src="https://unpkg.com/bootstrap-table@1.20.2/dist/extensions/mobile/bootstrap-table-mobile.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/modernizr/2.8.3/modernizr.min.js"
+        type="text/javascript"></script>
+    <script src="https://cdn.jsdelivr.net/npm/clipboard@2.0.10/dist/clipboard.min.js"></script>
+
+</body>
+
+</html>
