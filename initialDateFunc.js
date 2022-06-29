@@ -124,6 +124,14 @@ function initialDateFunc() {
                 date1 = date.value;
                 //button2()
                 //myTeste()
+
+                /////////
+                //todo::  changing R$ to the past currency utilized in Brazil
+                /////////
+
+
+
+
                 function updateDataformat() {
                     dataformat = dataformat
                 }

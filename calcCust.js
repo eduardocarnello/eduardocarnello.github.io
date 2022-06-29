@@ -1144,7 +1144,7 @@ $('#calcCust').click(() => {
 
 
     if (notCurrentMonthIndex == true) {
-        $(".resultFinalIndex").append('<small>*</small>')
+        $(".resultFinalIndex").append('*')
         $("#obs").html('*Utilizando índice de ' + '<b>' + finalMonthIndexA + '/' + finalYearIndexA + '</b>' + ' uma vez que o índice do mês atual ainda não foi divulgado')
         console.log('deu certo')
     }
@@ -1220,8 +1220,15 @@ $('#calcCust').click(() => {
 
     $("#resultCaseCosts").html(caseCosts)
     $("#resultAppealCosts").html(appealCosts)
-    $(".resultTotalCosts").html(totalCosts + ' (' + (totalCosts.extenso(true)) + ')')
+    $(".resultTotalCosts").html('<span id="txtCopy" data-clipboard-text="' + totalCosts + '">' + totalCosts + ' (' + (totalCosts.extenso(true)) + ')' + '</span>')
+    $(".resultTotalCosts").html()
     $(".appealToUse").html(appealToUse + '<sup>1</sup>: ')
+
+
+    $("#btnCopy").attr("data-clipboard-text", totalCosts + ' (' + (totalCosts.extenso(true)) + ')')
+
+
+
 
     console.log('Custas 1% :' + caseCosts);
     console.log('Custas 5%: ' + appealCosts);
@@ -1279,11 +1286,14 @@ $('#calcCust').click(() => {
 
 
 
-    var clipboard = new ClipboardJS('.copy', { container: document.getElementById('copy') })
+    var clipboard = new ClipboardJS('#btnCopy', { container: document.getElementById('txtCopy') })
     clipboard.on('success', function (e) {
         e.clearSelection();
         new bootstrap.Toast(document.querySelector('#basicToast')).show();
     });
+
+
+
     document.querySelector("#basicToastBtn").onclick = function () {
 
     }
