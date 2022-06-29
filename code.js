@@ -474,6 +474,7 @@ $('#calcCust').click(function () {
 });*/
 
 
+//oninput id initialDate change, do some function
 
 
 

@@ -27,18 +27,15 @@
 
 
     <!--MDB Forms-->
-    <div class="container mt-4">
 
-        <div class="text-center darken-grey-text mb-4">
-            <h1 class="font-bold mt-4 mb-3 h5"></h1>
 
-        </div>
+    <!-- Grid row -->
 
-        <!-- Grid row -->
+    <!-- Grid column -->
 
-        <!-- Grid column -->
 
-        <div class="container mt-4">
+    <div class="container">
+        <div class="col-md-9 mx-auto">
             <div class="card">
                 <div class="card-body">
                     <h3 class="text-center default-text py-3"><i class="fa fa-lock"></i> Cálculo de Custas</h3>
@@ -52,8 +49,8 @@
                                     <div class="input-group mb-3">
                                         <span class="input-group-text" id="basic-addon1">R$</span>
                                         <div class="form-floating form-floating-group flex-grow-1">
-                                            <input type="tel" class="form-control selectonfocus" id="caseValue"
-                                                name="name" autocomplete="off" onchange="initialDateFunc()" value=""
+                                            <input type="tel" class="form-control" id="caseValue" maxlength="15"
+                                                autocomplete="off" onchange="initialDateFunc()"
                                                 placeholder="Valor da causa">
                                             <label for="caseValue">Valor da causa</label>
                                         </div>
@@ -86,7 +83,7 @@
                             <div class="row g-2">
                                 <div class="col-md">
                                     <div class="input-group mb-3">
-                                        <span class="input-group-text" id="basic-addon1">R$</span>
+                                        <span class="input-group-text" id="currency">R$</span>
                                         <div class="form-floating form-floating-group flex-grow-1">
                                             <input type="tel" id="sentenceValue" class="form-control"
                                                 placeholder="Valor da Condenação">
@@ -125,6 +122,8 @@
 
                             <div class="text-center">
                                 <p></p>
+
+
                                 <div class="collapse" id="collapseAdvanced">
                                     <div class="card card-body">
                                         Em breve...
@@ -133,7 +132,7 @@
                                 <p></p>
                                 <button id="calcCust" class="btn btn-primary btn-lg waves-effect waves-light"
                                     type="button">Calcular</button>
-                           
+
 
                             </div>
                         </form>
@@ -153,9 +152,8 @@
             <div class="modal-dialog modal-fullscreen">
                 <div class="modal-content">
                     <div class="modal-header">
-                        <h5 class="modal-title" id="exampleModalLabel">Modal title</h5>
-                        <button type="button" onclick="refreshPage()" class="btn-close" data-bs-dismiss="modal"
-                            aria-label="Fechar"></button>
+                        <h5 class="modal-title" id="exampleModalLabel">Cálculo</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
                     <div class="modal-body">
 
@@ -165,7 +163,7 @@
                             <blockquote class="blockquote">
 
                                 <p>Valor das Custas do Preparo:</p>
-                                <h1 id="txtCopy" class="resultTotalCosts"></h1>
+                                <h1 class="resultTotalCosts"></h1>
 
                             </blockquote>
 
@@ -187,8 +185,8 @@
                                     <span class="me-auto">Valor das custas do preparo copiado para sua área de
                                         transferência. Use CTRL+V ou colar para usar o texto copiado.</span>
 
-                                    <button type="button" onclick="refreshPage()" class="btn-close"
-                                        data-bs-dismiss="toast" id="clo1se" aria-label="Fechar"></button>
+                                    <button type="button" class="btn-close" data-bs-dismiss="toast" id="clo1se"
+                                        aria-label="Fechar"></button>
                                 </div>
 
                             </div>
@@ -344,8 +342,7 @@
                     <div class="modal-footer">
                         <button type="button" onclick="refreshPage()" class="btn btn-secondary close"
                             data-bs-dismiss="modal" id="close">Novo Cálculo</button>
-                        <button id="" type="button" class="btn btn-primary copy"
-                            data-clipboard-target="#txtCopy">Copiar</button>
+                        <button id="btnCopy" type="button" class="btn btn-primary">Copiar</button>
                     </div>
                 </div>
             </div>
@@ -364,7 +361,7 @@
 
 
     <!-- Button trigger modal -->
-  
+
 
 
 
