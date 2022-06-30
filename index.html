@@ -51,7 +51,8 @@
                                         <div class="form-floating form-floating-group flex-grow-1">
                                             <input type="tel" class="form-control" id="caseValue" maxlength="15"
                                                 autocomplete="off" onchange="initialDateFunc()"
-                                                placeholder="Valor da causa">
+                                                placeholder="Valor da causa" data-mask="00/00/0000"
+                                                data-mask-selectonfocus="true">
                                             <label for="caseValue">Valor da causa</label>
                                         </div>
                                     </div>
@@ -71,8 +72,7 @@
                                         <div class="form-floating form-floating-group flex-grow-1">
 
                                             <input type="tel" class="form-control selectonfocus" id="initialDate"
-                                                name="name" autocomplete="off" onchange="initialDateFunc()" value=""
-                                                placeholder="01/01/2022">
+                                                name="" autocomplete="off" onchange="initialDateFunc()">
                                             <label for="initialDate">Data da Distribuição:</label>
                                         </div>
                                     </div>
@@ -374,6 +374,9 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/2.11.5/umd/popper.min.js"></script>
     <!--<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta/js/bootstrap.min.js"></script>-->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.1.3/js/bootstrap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/imask/6.4.2/imask.min.js"
+        integrity="sha512-l0grYOI8XZga5TajPOiqLrQVCKrdh+k0QSEtS+cpJlNeI8Nu9GOhsVaFyFQuPQfYp02GnhsyHqkPR7P7BTKYAQ=="
+        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-maskmoney/3.0.2/jquery.maskMoney.min.js"></script>
 
@@ -384,7 +387,7 @@
 
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.4.1/semantic.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.mask/1.14.16/jquery.mask.min.js"></script>
+    <!--script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.mask/1.14.16/jquery.mask.min.js"></script-->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/fomantic-ui/2.8.8/semantic.min.js"></script>
 
     <link rel="stylesheet" href="https://code.jquery.com/ui/1.11.0/themes/smoothness/jquery-ui.css">

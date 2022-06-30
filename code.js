@@ -1,3 +1,43 @@
+
+
+
+$(document).ready(function () {
+  var momentFormat = 'DD/MM/YYYY';
+  var momentMask = IMask(document.getElementById('initialDate'), {
+    mask: Date,
+    pattern: momentFormat,
+    lazy: false,
+    min: new Date(1964, 0, 1),
+    max: new Date(moment().year(), moment().month(), moment().date()),
+    autofix: true,  // defaults to `false`, see details
+
+    format: function (date) {
+      return moment(date).format(momentFormat);
+    },
+    parse: function (str) {
+      return moment(str, momentFormat);
+    },
+
+    blocks: {
+      YYYY: {
+        mask: IMask.MaskedRange,
+        from: 1964,
+        to: 2030
+      },
+      MM: {
+        mask: IMask.MaskedRange,
+        from: 1,
+        to: 12
+      },
+      DD: {
+        mask: IMask.MaskedRange,
+        from: 1,
+        to: 31
+      },
+
+    }
+  });
+})
 document.querySelector("#close").addEventListener("click", (event) => {
   document.querySelector(".first").reset();
   event.preventDefault();
@@ -154,6 +194,7 @@ $("#button_calendar").calendar({
   endCalendar: $("#finalDate").val(),
   initialDate: mostra,
   minDate: new Date(1964, 9, 1),
+  maxDate: new Date(moment().year(), moment().month(), moment().date()),
   currentCentury: 2022,
   today: true,
   closabe: true,
@@ -447,7 +488,7 @@ $(document).ready(function () {
     }
   });
 
-  $(".selectonfocus").mask("00/00/0000", { selectOnFocus: false });
+
 });
 
 $("#name").prop("readonly", false);
