@@ -1,0 +1,338 @@
+<html>
+
+<head>
+    <meta name="viewport"
+        content="width=device-width, height=device-height,  initial-scale=1.0, user-scalable=no,user-scalable=0" />
+
+
+
+    <link rel="stylesheet" type="text/css" href="https://unpkg.com/bootstrap-table@1.20.2/dist/bootstrap-table.min.css"
+        rel="stylesheet">
+    <link rel="stylesheet" type="text/css"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
+    <link rel="stylesheet" type="text/css"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.css">
+    <link rel="stylesheet" type="text/css"
+        href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.1.3/css/bootstrap.min.css">
+    <!--link rel="stylesheet" type="text/css"
+        href="https://cdnjs.cloudflare.com/ajax/libs/mdbootstrap/4.4.1/css/mdb.min.css"-->
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/fomantic-ui@2.8.8/dist/semantic.min.css">
+    <link rel="stylesheet" type="text/css"
+        href="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui-calendar/0.0.8/calendar.min.css">
+    <link rel="stylesheet" href=" styles.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.3/font/bootstrap-icons.css">
+</head>
+
+<body class="hm-gradient">
+
+
+
+
+
+    <div class="container">
+        <div class="col-md-8 mx-auto">
+            <div class="card">
+                <div class="card-body">
+                    <h2 class=" heading display-5 pb-3 text-center default-text py-3"><i
+                            class="fa fa-calendar-check"></i> Contagem de Prazo
+                    </h2>
+                    <!--Body-->
+
+
+                    <form class="deadlineCalc">
+
+                        <div class="row">
+                            <div class="col-md">
+                                <div class="input-group mb-3">
+
+                                    <span class="input-group-text" id="basic-addon1"><i
+                                            class="fa-solid fa-list"></i></span>
+
+                                    <div class="flex-grow-1 col-3">
+
+                                        <select id="initialDate" class="form-select form-control"
+                                            aria-label="Default select example">
+                                            <option hidden disabled selected value>Forma da Intimação:
+                                            </option>
+                                            <option value="1">Publicação no DJE</option>
+                                            <option value="2">Intimação Pessoal</option>
+                                            <option value="3">Modo Rápido</option>
+                                        </select>
+                                        <!--label for="initialDate2" class="form-floating-label">Forma da
+                                                Intimação</label-->
+                                    </div>
+
+                                    <span class="input-group-text" id="basic-addon2">em dias</span>
+                                    <div class=" flex-grow-1">
+
+                                        </select> <select id="initialDate2" class="form-select form-control"
+                                            aria-label="Default select example">
+                                            <option hidden disabled selected value>Escolha uma opção*
+                                            </option>
+                                            <option value="1" selected>úteis</option>
+
+
+                                        </select>
+
+
+                                        <!--label for="initialDate2" class="form-floating-label">Forma da
+                                                Contagem*</label-->
+
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+
+
+
+
+
+                        <div class="row g-2">
+                            <div class="col-md">
+                                <div class="input-group mb-3">
+                                    <span class="input-group-text" id="basic-addon1">
+                                        <div class="ui calendar" id="button_calendar">
+                                            <div class="ui button">
+                                                <i class="fa fa-solid prefix fa-calendar grey-text" id="calendar"></i>
+
+                                            </div>
+                                        </div>
+
+                                    </span>
+                                    <div class="form-floating form-floating-group flex-grow-1">
+
+                                        <input type="tel" class="form-control selectonfocus" id="initialDate" name=""
+                                            autocomplete="off" onchange="initialDateFunc()"
+                                            placeholder="Data da Distribuição:">
+                                        <label for="countFormat">Data da </label>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md finalDate">
+                                <div class="input-group mb-3 finalDate">
+                                    <span class="input-group-text" id="basic-addon1">
+                                        <div class="ui calendar" id="button_calendar2">
+                                            <div class="ui button">
+                                                <i class="fa-solid fa-circle-plus"></i>
+                                            </div>
+                                        </div>
+
+                                    </span>
+                                    <div class="form-floating form-floating-group flex-grow-1">
+
+                                        <input type="tel" class="form-control " id="nDays" name="" autocomplete="off"
+                                            onchange="finalDateFunc()">
+                                        <label for="nDays">Dias:</label>
+                                    </div>
+                                    <!--div class="input-group-text col-2">
+                                        <div class="btn-group">
+                                            <button type="button" class="btn dropdown-toggle" data-bs-toggle="dropdown"
+                                                aria-expanded="false">
+                                                <span class="visually-hidden">Toggle Dropdown</span>
+                                            </button>
+                                            <ul class="dropdown-menu">
+                                                <li><a class="dropdown-item" href="#">Action</a></li>
+                                                <li><a class="dropdown-item" href="#">Another action</a></li>
+                                                <li><a class="dropdown-item" href="#">Something else here</a></li>
+                                                <li>
+                                                    <hr class="dropdown-divider">
+                                                </li>
+                                                <li><a class="dropdown-item" href="#">Separated link</a></li>
+                                            </ul>
+                                        </div>
+                                    </div-->
+                                </div>
+
+                            </div>
+
+                        </div>
+
+
+
+                        <div class="text-center">
+                            <p></p>
+
+
+                            <div class="collapse" id="collapseAdvanced">
+                                <div class="card card-body">
+                                    Em breve...
+                                </div>
+                            </div>
+                            <p></p>
+
+                            <div class="form-group">
+                                <input type="submit" name="" value="Calcular" class="btn btn-dark btn-block">
+                            </div>
+
+                        </div>
+
+                    </form>
+                    <div id="loading">
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/b/b1/Loading_icon.gif"
+                            alt="Loading Gif" style="height: 100px;" class="img-fluid">
+                    </div>
+                    <!-- Result  -->
+                    <div id="results" class="pt-4">
+                        <h5>Results:</h5>
+                        <div class="form-group">
+                            <div class="input-group">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text">Montly Payment</span>
+                                </div>
+                                <input type="number" id="monthly-payment" class="form-control" name="" value=""
+                                    disabled>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <div class="input-group">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text">Total Payment</span>
+                                </div>
+                                <input type="number" id="total-payment" class="form-control" name="" value="" disabled>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <div class="input-group">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text">Total Interest</span>
+                                </div>
+                                <input type="number" id="total-interest" class="form-control" name="" value="" disabled>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    </div>
+
+
+    </div>
+
+    </div>
+
+
+
+    </div>
+
+    <script>
+        document.getElementById('deadlineCalc').addEventListener('submit', function (e) {
+            e.preventDefault();
+            // Hide results
+            document.querySelector('#results').style.display = 'none';
+            // Show loader
+            document.querySelector('#loading').style.display = 'block';
+            // Set timer
+            setTimeout(calculateResults, 500);
+        });
+
+        function calculateResults(e) {
+            // UI Vars
+            const amount = document.getElementById('amount');
+            const interest = document.getElementById('interest');
+            const years = document.getElementById('years');
+            const monthlyPayment = document.getElementById('monthly-payment');
+            const totalPayment = document.getElementById('total-payment');
+            const totalInterest = document.getElementById('total-interest');
+
+            const principal = parseFloat(amount.value);
+            const calculatedInterest = parseFloat(interest.value) / 100 / 12;
+            const calculatedPayments = parseFloat(years.value) * 12;
+
+            // Compute monthly payments
+            const x = Math.pow(1 + calculatedInterest, calculatedPayments);
+            const monthly = (principal * x * calculatedInterest) / (x - 1);
+
+            if (isFinite(monthly)) {
+                monthlyPayment.value = monthly.toFixed(2);
+                totalPayment.value = (monthly * calculatedPayments).toFixed(2);
+                totalInterest.value = ((monthly * calculatedPayments) - principal).toFixed(2);
+                document.querySelector('#results').style.display = 'block';
+                document.querySelector('#loading').style.display = 'none';
+            } else {
+                showError('Please check your numbers.');
+            }
+        }
+
+        // Show Error
+        function showError(error) {
+            // Hide results
+            document.querySelector('#results').style.display = 'none';
+            // Hide loader
+            document.querySelector('#loading').style.display = 'none';
+            // Create a div
+            const errorDiv = document.createElement('div');
+            // Get elements
+            const card = document.querySelector('.card');
+            const heading = document.querySelector('.heading');
+            // Add class
+            errorDiv.className = 'alert alert-danger';
+            // Create text node and append to div
+            errorDiv.appendChild(document.createTextNode(error));
+            // Insert error above heading
+            card.insertBefore(errorDiv, heading);
+            // Clear error after 3 seconds
+            setTimeout(clearError, 3000);
+        }
+
+        // Clear error
+        function clearError() {
+            document.querySelector('.alert').remove();
+        }
+
+    </script>
+    <!-- Button trigger modal -->
+
+
+
+
+
+
+
+
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/2.11.5/umd/popper.min.js"></script>
+    <!--<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta/js/bootstrap.min.js"></script>-->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.1.3/js/bootstrap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/imask/6.4.2/imask.min.js"
+        integrity="sha512-l0grYOI8XZga5TajPOiqLrQVCKrdh+k0QSEtS+cpJlNeI8Nu9GOhsVaFyFQuPQfYp02GnhsyHqkPR7P7BTKYAQ=="
+        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-maskmoney/3.0.2/jquery.maskMoney.min.js"></script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.3/moment.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.3/locale/pt-br.min.js"
+        integrity="sha512-1IpxmBdyZx3okPiZ14mzw6+pOGa690uDmcdjqvT310Kwv3NRcjvL/aOtoSprEyvkDdAb7ZtM2um6KrLqLOY97w=="
+        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.4.1/semantic.min.js"></script>
+    <!--script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.mask/1.14.16/jquery.mask.min.js"></script-->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fomantic-ui/2.8.8/semantic.min.js"></script>
+
+    <link rel="stylesheet" href="https://code.jquery.com/ui/1.11.0/themes/smoothness/jquery-ui.css">
+    <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/jquery-timepicker/1.10.0/jquery.timepicker.min.css">
+    <script src="https://kit.fontawesome.com/bf3647d748.js" crossorigin="anonymous"></script>
+    <script src="initialDateFunc.js"></script>
+    <script src="code.js"></script>
+
+
+
+    <script src="finalDateFunc.js"></script>
+    <script src="calcCust.js"></script>
+    <script src="newFile.js"></script>
+    <script src="https://unpkg.com/bootstrap-table@1.20.2/dist/bootstrap-table.min.js"></script>
+    <script
+        src="https://unpkg.com/bootstrap-table@1.20.2/dist/extensions/mobile/bootstrap-table-mobile.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/modernizr/2.8.3/modernizr.min.js"
+        type="text/javascript"></script>
+    <script src="https://cdn.jsdelivr.net/npm/clipboard@2.0.10/dist/clipboard.min.js"></script>
+
+</body>
+
+</html>

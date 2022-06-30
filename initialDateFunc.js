@@ -5,6 +5,7 @@ function initialDateFunc() {
         monthFirst: false,
         on: "click",
         startCalendar: "",
+
         centuryBreak: 90,
         initialDate: moment(),
         currentCentury: 2022,
@@ -12,6 +13,7 @@ function initialDateFunc() {
         popupOptions: {
             position: "bottom left"
         },
+
 
         //onBeforeChange: function(){},
         //onSelect get the value
@@ -46,8 +48,57 @@ function initialDateFunc() {
                 if (month > 12) {
                     month = 12;
                 }
+                if (month == "__" || month.includes("0_") || month.includes("0_")) {
+                    month = moment().format("MM");
+                }
                 //var year should be the 5th and 6th characters of the pegames
                 var year = pegames.substring(6, 12);
+                if (year < 1964) {
+                    year = 1964;
+                }
+                if (year.includes("202_") && month < moment().month() - 1 || (year.includes("____") && month.includes("__"))) {
+                    console.log(year)
+                    year = moment().year()
+                    $("#initialDate").val(day + "/" + month + "/" + year);
+                    //make
+                    console.log('deu certo!!' + year)
+                }
+                if (year.includes("202_") && (year.includes("____") && month.includes("__"))) {
+                    console.log(year)
+                    year = moment().year()
+                    month = moment().format("MM");
+                    $("#initialDate").val(day + "/" + month + "/" + year);
+                    //make
+                    console.log('deu certo!!' + year + " " + month)
+                }
+                if (year.includes("202_") && month > moment().month() + 1) {
+                    console.log(year)
+                    month = moment().format("MM");
+                    $("#initialDate").val(day + "/" + month + "/" + year);
+                    //make
+                    console.log('deu certo3!!' + year)
+                }
+
+                if (year.includes("201_")) {
+                    year = 2019
+                }
+
+
+                if ((month > moment().month()) && (year >= moment().year() || year == "202_")) {
+                    month = moment().format("MM");
+                    console.log("istrue")
+                }
+                if ((month > moment().month()) && year >= moment().year() || year == "202_" || year == "____") {
+                    year = moment().format("YYYY");
+                    //month = moment().month() + 1;
+                    console.log("valid : " + month)
+                }
+                if ((month > moment().month() + 1) && (year >= moment().year() || year == "____" || year == "202_")) {
+                    year = moment().year();
+                    month = moment().month() + 1;
+                    console.log("istru3")
+                }
+
 
                 // var day = date.getDate();
                 //var month = date.getMonth() + 1;
@@ -60,7 +111,7 @@ function initialDateFunc() {
                 //if pegames is null, then use the if below
                 var numero = $("#initialDate").val();
                 var numerotam = numero.toString().length;
-                if (numero.toString().length < 7) {
+                if (numero.toString().length < 10) {
                     date.setYear(moment().year());
                     var year = moment().format("YYYY");
 
@@ -120,6 +171,8 @@ function initialDateFunc() {
                 console.log("dataformat: " + dataformat);
                 console.log("valor do date pre: " + date);
 
+
+
                 console.log("date final :" + date);
                 date1 = date.value;
                 //button2()
@@ -129,7 +182,14 @@ function initialDateFunc() {
                 //todo::  changing R$ to the past currency utilized in Brazil
                 /////////
 
+                if (year.includes("202_") || (year == "____" && month == "__")) {
 
+                    year = moment().year()
+                    console.log(year)
+                    //$("#initialDate").val(dataformat)
+                    //make
+                    console.log('deu certo!!')
+                }
 
 
                 function updateDataformat() {
@@ -171,7 +231,7 @@ function initialDateFunc() {
           var newValue = text;
           $(this).focus();
          //alert(newValue);
-       },*/
+        },*/
         eventClass: "inverted red",
         /*eventDates: [
           new Date('2019-4-20'), //no message tooltip
