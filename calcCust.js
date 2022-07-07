@@ -24,6 +24,10 @@ $('#calcCust').click(() => {
         sentenceValue = 'R$ 0,00';
     }
 
+    if (initialDate.includes('_')) {
+        console.log('entrou')
+    }
+
     //formating the values to be used in the calculation
     var caseValueNumber = caseValue.replace(/[^0-9]+/g, '');
     var caseValueNumberDecimal = caseValueNumber.slice(0, -2) + '.' + caseValueNumber.slice(-2);
@@ -33,11 +37,11 @@ $('#calcCust').click(() => {
 
     //check if any of the above variables are empty or undefined and alert the user with a message that shows the input that is empty
 
-    if ((initialDate == "" || initialDate == undefined) && (caseValueNumberDecimal == "" || caseValueNumberDecimal == undefined || caseValueNumberDecimal == "0.00" || isNaN(caseValueNumberDecimal))) {
+    if ((initialDate == "" || initialDate == undefined || initialDate.includes('_')) && (caseValueNumberDecimal == "" || caseValueNumberDecimal == undefined || caseValueNumberDecimal == "0.00" || isNaN(caseValueNumberDecimal))) {
         alert("Informe o valor inicial e a data da distribuição");
     } else if (caseValueNumberDecimal == "" || caseValueNumberDecimal == undefined || caseValueNumberDecimal == "0.00" || isNaN(caseValueNumberDecimal)) {
         alert("Informe o valor inicial");
-    } else if (initialDate == "" || initialDate == undefined) {
+    } else if (initialDate == "" || initialDate == undefined || initialDate.includes('_')) {
         alert("Informe a data da distribuição");
     }
     else {
@@ -1216,11 +1220,22 @@ $('#calcCust').click(() => {
 
 
 
+    var arrumatotalCosts = totalCosts.extenso(true)
+
+
+    const re = / e .* e .* e .* e /.test(arrumatotalCosts);
+
+
+    //re = new RegExp(/ e .* e /)
+    if (re == true && arrumatotalCosts.includes('mil') && (arrumatotalCosts.includes('real') || arrumatotalCosts.includes('reais'))) {
+        //    console.log()
+        arrumatotalCosts = arrumatotalCosts.replace(' e', ',');
+    }
 
 
     $("#resultCaseCosts").html(caseCosts)
     $("#resultAppealCosts").html(appealCosts)
-    $(".resultTotalCosts").html('<span id="txtCopy" data-clipboard-text="' + totalCosts + '">' + totalCosts + ' (' + (totalCosts.extenso(true)) + ')' + '</span>')
+    $(".resultTotalCosts").html('<span id="txtCopy" data-clipboard-text="' + totalCosts + '">' + totalCosts + ' (' + (arrumatotalCosts) + ')' + '</span>')
     $(".resultTotalCosts").html()
     $(".appealToUse").html(appealToUse + '<sup>1</sup>: ')
 
@@ -1298,6 +1313,15 @@ $('#calcCust').click(() => {
 
     }
     //clicK on button with id btn-close remove all inputs values
+
+
+    document.getElementById('close').addEventListener('click', function () {
+        document.getElementById('first').reset();
+        //initialDate value must be reset
+        document.getElementById('initialDate').value = '          ';
+        // If you are using jQuery then: $('#new_customer')[0].reset();
+
+    });
 
 
 

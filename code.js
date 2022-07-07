@@ -1,6 +1,7 @@
 
 
 
+
 $(document).ready(function () {
   var momentFormat = 'DD/MM/YYYY';
   var momentMask = IMask(document.getElementById('initialDate'), {
@@ -41,6 +42,12 @@ $(document).ready(function () {
 document.querySelector("#close").addEventListener("click", (event) => {
   document.querySelector(".first").reset();
   event.preventDefault();
+  //initialDate value must be reset
+  document.getElementById('initialDate').value = '            ';
+  // If you are using jQuery then: $('#new_customer')[0].reset();
+
+
+
 });
 
 moment.locale('pt-br');
