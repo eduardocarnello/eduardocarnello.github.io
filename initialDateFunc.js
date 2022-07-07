@@ -84,6 +84,9 @@ function initialDateFunc() {
                 }
 
 
+
+
+
                 if ((month > moment().month()) && (year >= moment().year() || year == "202_")) {
                     month = moment().format("MM");
                     console.log("istrue")
@@ -100,6 +103,9 @@ function initialDateFunc() {
                 }
 
 
+                if (month >= moment().month() && day > moment().date() && (year >= moment().year() || year.includes("202_"))) {
+                    month = month - 1;
+                }
                 // var day = date.getDate();
                 //var month = date.getMonth() + 1;
                 //var year = date.getFullYear();
