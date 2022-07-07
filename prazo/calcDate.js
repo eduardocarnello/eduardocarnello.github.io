@@ -153,6 +153,57 @@ function calculateResults(e) {
 
     dueDate = moment(dateForCalc).businessAdd(days) //subtrai 1 porque é já foi contado para fins de ver o primeiro dia da contagem
 
+    //make a list that display every day between the initial date and the due date and inform if it is weekend or a workday
+    var listaDias = []
+    var i = 0
+    var isWorkingDay
+    var currentDayList
+    console.log('DateFor Calc ' + dateForCalc + 'e dueDate ' + dueDate)
+    while (moment(dateForCalc).add(i, 'days') <= (dueDate)) {
+        listaDias.push(moment(dateForCalc).add(i, 'days').format('DD/MM/YYYY'))
+        currentDayList = moment(dateForCalc).add(i, 'days').format('DD/MM/YYYY')
+        console.log(currentDayList)
+        console.log('DateFor Calc ' + dateForCalc + 'e dueDate ' + dueDate + 'e currentDayList ' + currentDayList)
+        i++
+
+    }
+    console.log(listaDias)
+
+
+
+    // make a array of objects with the date and the type of day
+    var listaDiasComTipo = []
+    for (var i = 0; i < listaDias.length; i++) {
+        var currentDay = listaDias[i]
+        var currentDayType = moment(currentDay, 'DD/MM/YYYY').isBusinessDay()
+        listaDiasComTipo.push({
+            index: i,
+            date: currentDay,
+            type: currentDayType
+        })
+    }
+    console.log(listaDiasComTipo)
+
+
+
+    //// código para criar tabela. arrumar
+
+    var html = "<table border='1|1'>";
+    for (var i = 0; i < listaDiasComTipo.length; i++) {
+        html += "<tr>";
+        html += "<td>" + listaDiasComTipo[i].index + "</td>";
+        html += "<td>" + listaDiasComTipo[i].date + "</td>";
+        html += "<td>" + listaDiasComTipo[i].type + "</td>";
+
+        html += "</tr>";
+
+    }
+    html += "</table>";
+    document.getElementById("results-table").innerHTML = html;
+
+
+
+
     const principal = 1;
     const calculatedInterest = 1;
     const calculatedPayments = 1;
