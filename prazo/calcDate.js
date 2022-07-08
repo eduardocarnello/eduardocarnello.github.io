@@ -41,18 +41,23 @@ document.getElementById('deadlineCalc').addEventListener('submit', function (e) 
 function calculateResults(e) {
 
     // UI Vars
-    const initialDate = moment($('#initialDate').val()).format('DD/MM/YYYY');   //dia do ato
+    var initialDate = $('#initialDate').val();   //dia do ato
+    initialDate = moment(initialDate, 'DD/MM/YYYY');
     const days = $('#days').val();                                              //prazo
-    let dateForCalc;                                                            //data para cálculo
+    let dateForCalc = initialDate;                                                            //data para cálculo
     let isCaclWorkDay = false;                                                  //conta por dia útil ou corrido
     let startDay                                                                //dia de início do prazo
     let dueDate;                                                                //data final do prazo
     const finalDate = document.getElementById('finalDate');                     //input do dia final do prazo
 
     // Calculate date
-    if (moment(moment($('#initialDate').val()).format('DD/MM/YYYY')).isBusinessDay() == true) {
-        dateForCalc = initialDate
-    } else dateForCalc = moment(initialDate).businessAdd(1)
+    /*  if (initialDate.isBusinessDay() == true) {
+          dateForCalc = initialDate
+          console.log('deu true')
+      } else {
+          dateForCalc = moment(initialDate).businessAdd(1)
+          console.log('deu false')
+      }*/
 
 
 
@@ -83,7 +88,7 @@ function calculateResults(e) {
 
 
 
-    moment.updateLocale('', {
+    moment.updateLocale('pt-BR', {
         holidays: [
             '01/01/' + AnoEscolhido, //Ano Novo
             EmendaCarnaval,

@@ -4,118 +4,6 @@ moment.locale('pt-br');
 
 //onclick button with class "reset", hide the div results
 
-const form = document.querySelector('#contForm');
-const momentFormat = 'DD/MM/YYYY';
-const dateInput = document.querySelector('#initialDate');
-
-const updateOptions = {
-  mask: Date,
-  pattern: momentFormat,
-  lazy: true,
-
-  autofix: true,  // defaults to `false`, see details
-
-  format: function (date) {
-    return moment(date).format(momentFormat);
-  },
-  parse: function (str) {
-    return moment(str, momentFormat);
-  },
-
-  blocks: {
-    YYYY: {
-      mask: IMask.MaskedRange,
-      from: 0001,
-      to: 2050
-    },
-    MM: {
-      mask: IMask.MaskedRange,
-      from: 1,
-      to: 12
-    },
-    DD: {
-      mask: IMask.MaskedRange,
-      from: 1,
-      to: 31
-    },
-
-  }
-}
-
-
-const mask = IMask(dateInput, updateOptions);
-
-
-
-
-
-$(document).ready(function () {
-  document.getElementById('reset1').addEventListener('click', function (e) {
-    e.preventDefault();
-    // Hide results
-
-    var obj = document.getElementById("results");
-    obj.style.display = "none";
-
-    document.querySelector('#results').style.display = 'none !important';
-    // Show loader
-    document.getElementById('deadlineCalc').reset();
-    //document.querySelector('#loading').style.display = 'block';
-    // Set timer
-    document.getElementById('initialDate').value = '';
-    mask.updateOptions({
-      mask: '',
-      commit: (value, masked) => {
-        value = '';
-        masked._value = '';
-      },
-    });
-    dateInput.blur();
-
-  });
-
-
-})
-
-
-
-
-dateInput.addEventListener('focus', () => {
-  // Update options "mask" after focused
-  mask.updateOptions({
-    mask: Date,
-    pattern: momentFormat,
-    lazy: true,
-
-    autofix: true,  // defaults to `false`, see details
-
-    format: function (date) {
-      return moment(date).format(momentFormat);
-    },
-    parse: function (str) {
-      return moment(str, momentFormat);
-    },
-
-    blocks: {
-      YYYY: {
-        mask: IMask.MaskedRange,
-        from: 0001,
-        to: 2050
-      },
-      MM: {
-        mask: IMask.MaskedRange,
-        from: 1,
-        to: 12
-      },
-      DD: {
-        mask: IMask.MaskedRange,
-        from: 1,
-        to: 31
-      },
-
-    }
-  });
-});
 
 
 
@@ -235,7 +123,7 @@ $("#button_calendar").calendar({
 
   centuryBreak: 90,
 
-  initialDate: mostra,
+
 
 
   currentCentury: 2022,
@@ -248,7 +136,7 @@ $("#button_calendar").calendar({
     console.log("newValue = " + newValue);
     var div1 = newValue.split(",");
     //div1 = $("#initialDate").val();
-    $(div1).val = newValue;
+    //   $(div1).val = newValue;
     //change the value of #calendar to newValue
     $("#initialDate").val(div1);
 
@@ -256,11 +144,11 @@ $("#button_calendar").calendar({
     //  console.log("até aqui " + div1.val);
     pegames = div1;
     //console.log("pegames do select " + pegames);
-    $("#initialDate").select();
+    $("#initialDate").select().val(div1);
     //document element id initialValue is the id of the input
     initialDateFunc()
     //button2()
-    dateI = moment(div1).format('DD')
+    //dateI = moment(div1).format('DD')
 
 
 
@@ -543,3 +431,229 @@ $('#calcCust').click(function () {
 
 //clicking button with id reset, hide the result
 
+const form = document.querySelector('#contForm');
+const momentFormat = 'DD/MM/YYYY';
+const dateInput = document.querySelector('#initialDate');
+
+const updateOptions = {
+  mask: Date,
+  pattern: momentFormat,
+  lazy: true,
+
+  autofix: true,  // defaults to `false`, see details
+
+  format: function (date) {
+    return moment(date).format(momentFormat);
+  },
+  parse: function (str) {
+    return moment(str, momentFormat);
+  },
+
+  blocks: {
+    YYYY: {
+      mask: IMask.MaskedRange,
+      from: 0001,
+      to: 2050
+    },
+    MM: {
+      mask: IMask.MaskedRange,
+      from: 1,
+      to: 12
+    },
+    DD: {
+      mask: IMask.MaskedRange,
+      from: 1,
+      to: 31
+    },
+
+  }
+}
+
+
+const mask = IMask(dateInput, updateOptions);
+
+
+
+
+
+$(document).ready(function () {
+  document.getElementById('reset1').addEventListener('click', function (e) {
+    e.preventDefault();
+    // Hide results
+
+    var obj = document.getElementById("results");
+    obj.style.display = "none";
+
+    document.querySelector('#results').style.display = 'none !important';
+    // Show loader
+    document.getElementById('deadlineCalc').reset();
+    //document.querySelector('#loading').style.display = 'block';
+    // Set timer
+    document.getElementById('initialDate').value = '';
+    mask.updateOptions({
+      mask: '',
+      commit: (value, masked) => {
+        value = '';
+        masked._value = '';
+      },
+    });
+    dateInput.blur();
+
+  });
+
+
+})
+
+
+
+
+dateInput.addEventListener('focus', () => {
+  // Update options "mask" after focused
+  mask.updateOptions({
+    mask: Date,
+    pattern: momentFormat,
+    lazy: true,
+
+    autofix: true,  // defaults to `false`, see details
+
+    format: function (date) {
+      return moment(date).format(momentFormat);
+    },
+    parse: function (str) {
+      return moment(str, momentFormat);
+    },
+
+    blocks: {
+      YYYY: {
+        mask: IMask.MaskedRange,
+        from: 0001,
+        to: 2050
+      },
+      MM: {
+        mask: IMask.MaskedRange,
+        from: 1,
+        to: 12
+      },
+      DD: {
+        mask: IMask.MaskedRange,
+        from: 1,
+        to: 31
+      },
+
+    }
+  });
+});
+
+
+///botões
+$('.btn-number').click(function (e) {
+  e.preventDefault();
+
+  fieldName = $(this).attr('data-field');
+  type = $(this).attr('data-type');
+  var input = $("#days");
+  var currentVal = parseInt(input.val());
+  if (!isNaN(currentVal)) {
+    if (type == 'minus') {
+
+      if (parseInt(input.val()) == input.attr('min') || input.val() == '' || input.val() == '0' || input.val() == null) {
+        $(this).attr('disabled', true);
+        console.log('disabled');
+      } else if (currentVal >= input.attr('min') && currentVal <= 2) {
+        input.val(1);
+      } else if (currentVal <= 3) {
+        input.val(2);
+
+      }
+
+      else if (currentVal <= 5) {
+        input.val(3);
+
+      }
+      else if (currentVal <= 10) {
+        input.val(5);
+      }
+      else if (currentVal <= 15) {
+        input.val(10);
+      }
+      else if (currentVal <= 30) {
+        input.val(15);
+
+      }
+      else if (currentVal > 30) {
+        input.val(30);
+
+
+      }
+    } else if (type == 'plus') {
+
+
+      switch (currentVal) {
+        case null: { input.val(1).change(); break; }
+        case 0: { input.val(1).change(); break; }
+        case NaN: { input.val(1).change(); break; }
+        case 1: { input.val(2).change(); break; }
+        case 2: { input.val(3).change(); break; }
+        case 3: { input.val(5).change(); break; }
+        case 5: { input.val(10).change(); break; }
+        case 10: { input.val(15).change(); break; }
+        case 15: { input.val(30).change(); break; }
+        case 30: { input.val(60).change(); break; }
+        case 60: { input.val(90).change(); break; }
+        case 90: { input.val(180).change(); break; }
+        case 180: { input.val(365).change(); break; }
+
+        default: { input.val(currentVal + 1).change(); break; }
+      }
+
+
+
+      if (parseInt(input.val()) == input.attr('max')) {
+        $(this).attr('disabled', true);
+      }
+
+    }
+  } else {
+    input.val(0);
+  }
+});
+$('#days').focusin(function () {
+  $(this).data('oldValue', $(this).val());
+});
+$('#days').change(function () {
+
+  minValue = parseInt($(this).attr('min'));
+  maxValue = parseInt($(this).attr('max'));
+  valueCurrent = parseInt($(this).val());
+
+  name = $(this).attr('name');
+  if (valueCurrent >= minValue) {
+    $(".btn-number[data-type='minus']").removeAttr('disabled')
+  } else {
+
+    $(this).val($(this).data('oldValue'));
+  }
+  if (valueCurrent <= maxValue) {
+    $(".btn-number[data-type='plus'][data-field='" + name + "']").removeAttr('disabled')
+  } else {
+
+    $(this).val($(this).data('oldValue'));
+  }
+
+
+});
+$("#days").keydown(function (e) {
+  // Allow: backspace, delete, tab, escape, enter and .
+  if ($.inArray(e.keyCode, [46, 8, 9, 27, 13, 190]) !== -1 ||
+    // Allow: Ctrl+A
+    (e.keyCode == 65 && e.ctrlKey === true) ||
+    // Allow: home, end, left, right
+    (e.keyCode >= 35 && e.keyCode <= 39)) {
+    // let it happen, don't do anything
+    return;
+  }
+  // Ensure that it is a number and stop the keypress
+  if ((e.shiftKey || (e.keyCode < 48 || e.keyCode > 57)) && (e.keyCode < 96 || e.keyCode > 105)) {
+    e.preventDefault();
+  }
+});
