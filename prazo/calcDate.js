@@ -1,4 +1,4 @@
-
+moment.locale('pt-br');
 
 
 
@@ -162,6 +162,7 @@ function calculateResults(e) {
     var listaDias = []
     var i = 0
     var isWorkingDay
+    var w = 0;
     var currentDayList
     console.log('DateFor Calc ' + dateForCalc + 'e dueDate ' + dueDate)
     while (moment(dateForCalc).add(i, 'days') <= (dueDate)) {
@@ -179,12 +180,22 @@ function calculateResults(e) {
     // make a array of objects with the date and the type of day
     var listaDiasComTipo = []
     for (var i = 0; i < listaDias.length; i++) {
+
         var currentDay = listaDias[i]
         var currentDayType = moment(currentDay, 'DD/MM/YYYY').isBusinessDay()
+        if (currentDayType == true) {
+            w++
+            console.log(+ ' é um dia útil')
+        }
+        if (moment(currentDay[0], 'DD/MM/YYYY').format('DD/MM/YYYY') == moment(dateForCalc, 'DD/MM/YYYY').format('DD/MM/YYYY')) {
+            console.log(+ ' é o primeiro dia da contagem')
+        } else { console.log(moment(currentDay, 'DD/MM/YYYY').format('DD/MM/YYYY') + ' não é o primeiro dia da contagem') }
+        console.log(moment(dateForCalc, 'DD/MM/YYYY').format('DD/MM/YYYY') + ' é ' + currentDayType)
         listaDiasComTipo.push({
-            index: i,
+
+            index: currentDayType ? w : '-',
             date: currentDay,
-            type: currentDayType
+            type: currentDayType ? moment(currentDay, 'DD/MM/YYYY').locale('pt-br').format('dddd') : moment(currentDay, 'DD/MM/YYYY').locale('pt-br').format('dddd')
         })
     }
     console.log(listaDiasComTipo)
@@ -193,7 +204,7 @@ function calculateResults(e) {
 
     //// código para criar tabela. arrumar
 
-    var html = "<table border='1|1'>";
+    var html = "<table class='table table-striped' border='1|1'>";
     for (var i = 0; i < listaDiasComTipo.length; i++) {
         html += "<tr>";
         html += "<td>" + listaDiasComTipo[i].index + "</td>";

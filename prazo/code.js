@@ -1,5 +1,6 @@
 
 moment.locale('pt-br');
+moment().format("L");
 
 
 //onclick button with class "reset", hide the div results
