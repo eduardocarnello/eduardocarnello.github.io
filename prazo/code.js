@@ -1,6 +1,6 @@
 
 moment.locale('pt-br');
-moment().format("L");
+moment().format("DD/MM/YYYY");
 
 
 //onclick button with class "reset", hide the div results
@@ -11,9 +11,7 @@ moment().format("L");
 
 
 
-
-
-
+var currentVal = 1
 
 //var monthI, yearI, dayI;
 //var dayI;
@@ -406,7 +404,7 @@ $('#calcCust').click(function () {
     var finalDate = $('#finalDate').val();
     var caseValue = $('#caseValue').val();
     var sentenceValue = $('#sentenceValue').val();
-
+ 
     //get the numbers of caseValue with the last two digits being the decimal
     var caseValueNumber = caseValue.replace(/[^0-9]+/g, '');
     //make the two last digits the decimal
@@ -415,9 +413,9 @@ $('#calcCust').click(function () {
     var sentenceValueNumber = sentenceValue.replace(/[^0-9]+/g, '');
     //make the two last digits the decimal
     var sentenceValueNumberDecimal = sentenceValueNumber.slice(0, -2) + '.' + sentenceValueNumber.slice(-2);
-
-
-
+ 
+ 
+ 
     alert(` ${initialDate} - ${finalDate},  ${caseValueNumberDecimal} ${sentenceValueNumberDecimal}`);
 });*/
 
@@ -550,10 +548,21 @@ dateInput.addEventListener('focus', () => {
 $('.btn-number').click(function (e) {
   e.preventDefault();
 
+  $('.plus').focusin(function () {
+    $(this).data('oldValue', $(this).val());
+  });
+
+
   fieldName = $(this).attr('data-field');
   type = $(this).attr('data-type');
   var input = $("#days");
-  var currentVal = parseInt(input.val());
+  if (input.val() == '') {
+    currentVal = 0;
+  } else {
+    currentVal = parseInt(input.val());
+  }
+
+  console.log(currentVal)
   if (!isNaN(currentVal)) {
     if (type == 'minus') {
 
@@ -618,8 +627,8 @@ $('.btn-number').click(function (e) {
     input.val(0);
   }
 });
-$('#days').focusin(function () {
-  $(this).data('oldValue', $(this).val());
+$('.plus').focusin(function () {
+  $('#days').data('oldValue', $('#days').val());
 });
 $('#days').change(function () {
 

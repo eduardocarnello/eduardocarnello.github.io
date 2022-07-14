@@ -36,7 +36,6 @@ small {
 th.index1 {
     display: none;
   }
-
   .indexFull {
     display: none;
   }
@@ -71,7 +70,6 @@ th.index1 {
   .rwd-table td:before {
     display: none;
   }
-
   rwd tr.index1 {
     display: none;
   }
@@ -91,17 +89,14 @@ tr.indexFull {
     display: table-cell;
     padding: 0.25em 0.5em;
   }
-
   .rwd-table th:first-child,
 .rwd-table td:first-child {
     padding-left: 0;
   }
-
   .rwd-table th:last-child,
 .rwd-table td:last-child {
     padding-right: 0;
   }
-
   .index1 {
     display: none !important;
   }

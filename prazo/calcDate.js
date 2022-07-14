@@ -26,6 +26,11 @@ function calculateResults(e) {
     //data final do prazo
     const finalDate = document.getElementById('finalDate');                     //input do dia final do prazo
     var currentYear = moment(initialDate).year();
+    //excpected final year
+    const expectedFinalYear = moment(initialDate).businessAdd(days + 10).year();
+    console.log(expectedFinalYear);
+    //if the initialDate year is less than the dueyear
+
 
     function Easter(Y) {
         var C = Math.floor(Y / 100);
@@ -43,14 +48,38 @@ function calculateResults(e) {
         return moment([Y, (M - 1), D]);
     }
 
-    const
-        EmendaCarnaval = (Easter(currentYear)).subtract(48, "days").format('DD/MM'),
-        Carnaval = (Easter(currentYear)).subtract(47, "days").format('DD/MM'),
-        Endoencas = (Easter(currentYear)).subtract(3, "days").format('DD/MM'),
-        SextaSanta = (Easter(currentYear)).subtract(2, "days").format('DD/MM'),
-        Pascoa = (Easter(currentYear)).format('DD/MM'),
-        CorpusChirsti = (Easter(currentYear)).add(60, "days").format('DD/MM');
+    const nationalHolidays = [];
+    for (let i = currentYear; i <= currentYear + 3; i++) {
+        nationalHolidays.push(
+            //EASTER HOLIDAYS
+            { holidayDate: (Easter(i)).subtract(48, "days").format('DD/MM/YYYY'), description: "Emenda de Carnaval" },
+            { holidayDate: (Easter(i)).subtract(47, "days").format('DD/MM/YYYY'), description: "Carnaval" },
+            { holidayDate: (Easter(i)).subtract(3, "days").format('DD/MM/YYYY'), description: "Endoenças" },
+            { holidayDate: (Easter(i)).subtract(2, "days").format('DD/MM/YYYY'), description: "Paixão de Cristo" },
+            { holidayDate: (Easter(i)).format('DD/MM/YYYY'), description: "Páscoa" },
+            { holidayDate: (Easter(i)).add(60, "days").format('DD/MM/YYYY'), description: "Corpus Christi" },
 
+            //FIXED HOLIDAYS
+            { holidayDate: `01/01/${i}`, description: "Confraternização Universal" },
+            { holidayDate: `21/04/${i}`, description: "Tiradentes" },
+            { holidayDate: `01/05/${i}`, description: "Dia do Trabalhador" },
+            { holidayDate: `07/09/${i}`, description: "Independência do Brasil" },
+            { holidayDate: `12/10/${i}`, description: "Nossa Senhora Aparecida, Padroeira do Brasil" },
+            { holidayDate: `02/11/${i}`, description: "Finados" },
+            { holidayDate: `15/11/${i}`, description: "Proclamação da República" },
+            { holidayDate: `25/12/${i}`, description: "Natal" },
+
+        );
+    }
+
+    const amendment = [
+        { holidayDate: "17/06/2022", description: "Emenda de Corpus Christi 2022" },
+
+    ]
+
+    const mobileHolidays = [
+        { holidayDate: "08/12", description: "Dia da Justiça" },
+    ]
 
 
     const sistDown = [
@@ -59,40 +88,41 @@ function calculateResults(e) {
     ]
 
     const SP = [
-        { holidayDate: "09/07", description: "Revolução Constitucionalista de São Paulo" },
+        { holidayDate: estado == 'SP' ? "09/07" : '', description: "Revolução Constitucionalista de São Paulo" },
         //ver como tirar o feriado de 09/07 do ano de 2020, quando foi suspenso
-
     ]
 
-    const nationalHolidays = [
 
-        { holidayDate: "01/01", description: "Confraternização Universal" },
-        { holidayDate: "21/04", description: "Tiradentes" },
-        { holidayDate: "01/05", description: "Dia do Trabalhador" },
-        { holidayDate: "17/06/2022", description: "Emenda de Corpus Christi 2022" },
-        { holidayDate: EmendaCarnaval, description: "Emenda de Carnaval" },
-        { holidayDate: Carnaval, description: "Carnaval" },
-        { holidayDate: Endoencas, description: "Endoenças" },
-        { holidayDate: SextaSanta, description: "Sexta-feira Santa" },
-        { holidayDate: Pascoa, description: "Páscoa" },
-        { holidayDate: CorpusChirsti, description: "Corpus Christi" },
-        { holidayDate: "07/09", description: "Independência do Brasil" },
-        { holidayDate: "12/10", description: "Nossa Senhora Aparecida, Padroeira do Brasil" },
-        { holidayDate: "02/11", description: "Finados" },
-        { holidayDate: "15/11", description: "Proclamação da República" },
-        { holidayDate: "08/12", description: "Dia da Justiça" },
-        { holidayDate: "22/04", description: "Emenda - Tiradentes 2016" },
-        { holidayDate: "2020-06-21", description: "weekend sunday" },
-        { holidayDate: "2020-06-27", description: "weekend saturday" },
-        { holidayDate: "2020-06-28", description: "weekend sunday" },
-    ];
+    var estado = 'SP'
+    //if var estado == 'SP', then concatenate the SP array into the holidays. Else, concatenate the RJ array.
+
+
+
+
+
+
+
+
+
+    console.log(estado == SP)
+
     //create an array with municipalities and their respective holidays
 
-    const marilia = [
-        { holidayDate: '04/07', description: "Aniversário do Município de Marília" },
-        { holidayDate: '11/07', description: "São Bento, Padroeiro de Marília" },
+    const marilia = []
+    for (let i = currentYear; i <= currentYear + 3; i++) {
+        marilia.push(
+            { holidayDate: `04/07/${i}`, description: "Aniversário do Município de Marília" },
+            { holidayDate: `11/07/${i}`, description: "São Bento, Padroeiro de Marília" },
+        );
+    }
+    console.log(marilia);
+    //get all the dates of christmas for every year from the current year to the next year
+    const christmas = [];
+    for (let i = currentYear; i <= currentYear + 3; i++) {
+        christmas.push(moment(`25/12/${i}`, 'DD/MM/YYYY').format('DD/MM/YYYY'));
+    }
+    console.log(christmas);
 
-    ]
 
     //merge nationalHolidays, marilia and SPHolidays arrays
     const myHolidays = nationalHolidays.concat(nationalHolidays, marilia, SP);
@@ -137,7 +167,7 @@ function calculateResults(e) {
             '07/12/2020',           //Emenda de 2020
     */
         //TODO: INCLUIR INTERRUPÇÕES DE PRAZOS E RECESSOS
-        holidayFormat: 'DD/MM',
+        holidayFormat: 'DD/MM/YYYY',
 
 
     });
@@ -252,7 +282,6 @@ function calculateResults(e) {
     // make a array of objects with the date and the type of day
     var listaDiasComTipo = []
     for (var i = 0; i < listaDias.length; i++) {
-
         var currentDay = listaDias[i]
         var currentDayType = moment(currentDay, 'DD/MM/YYYY').isBusinessDay()
         if (currentDayType == true && currentDayType == true && currentDay != moment(dateForCalc, 'DD/MM/YYYY').format('DD/MM/YYYY')) {
@@ -269,7 +298,7 @@ function calculateResults(e) {
             index: (currentDayType == true && currentDay != moment(dateForCalc, 'DD/MM/YYYY').format('DD/MM/YYYY')) ? w : '-',
             cal: (currentDayType == true && currentDay != moment(dateForCalc, 'DD/MM/YYYY').format('DD/MM/YYYY')) ? '<i class="fa-regular fa-calendar-check"></i>' : '',
             date: currentDay,
-            _type: currentDay == moment(dateForCalc, 'DD/MM/YYYY').format('DD/MM/YYYY') ? 'Dia do ato (não conta)' : currentDayType ? moment(currentDay, 'DD/MM/YYYY').locale('pt-br').format('dddd') : holidayName(moment(currentDay, 'DD/MM/YYYY').format('DD/MM')) ? holidayName(moment(currentDay, 'DD/MM/YYYY').format('DD/MM')) : moment(currentDay, 'DD/MM/YYYY').locale('pt-br').format('dddd'),
+            _type: currentDay == moment(dateForCalc, 'DD/MM/YYYY').format('DD/MM/YYYY') ? 'Dia do ato (não conta)' : currentDayType ? moment(currentDay, 'DD/MM/YYYY').locale('pt-br').format('dddd') : holidayName(moment(currentDay, 'DD/MM/YYYY').format('DD/MM/YYYY')) ? holidayName(moment(currentDay, 'DD/MM/YYYY').format('DD/MM/YYYY')) : moment(currentDay, 'DD/MM/YYYY').locale('pt-br').format('dddd'),
             get type() {
                 return this._type;
             },
