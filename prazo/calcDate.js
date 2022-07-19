@@ -50,9 +50,8 @@ function calculateResults(e) {
 
     console.log(`Ano Atual: ${currentYear}
     Ano Esperado: ${expectedFinalYear}`);
-
-    const nationalHolidays = [];
     const marilia = [];
+    const nationalHolidays = [];
     if (currentYear != expectedFinalYear) {
         for (let i = currentYear; i <= expectedFinalYear; i++) {
             nationalHolidays.push(
@@ -66,7 +65,7 @@ function calculateResults(e) {
 
                 //FIXED HOLIDAYS
                 { holidayDate: `01/01/${i}`, description: "Confraternização Universal" },
-                { holidayDate: `21/04/${i}`, description: "Tiradentes" },
+                { holidayDate: i >= 1965 ? `21/04/${i}` : '', description: i >= 1965 ? "Tiradentes" : '' },
                 { holidayDate: `01/05/${i}`, description: "Dia do Trabalhador" },
                 { holidayDate: `07/09/${i}`, description: "Independência do Brasil" },
                 { holidayDate: `12/10/${i}`, description: "Nossa Senhora Aparecida, Padroeira do Brasil" },
@@ -96,7 +95,7 @@ function calculateResults(e) {
 
             //FIXED HOLIDAYS
             { holidayDate: `01/01/${currentYear}`, description: "Confraternização Universal" },
-            { holidayDate: `21/04/${currentYear}`, description: "Tiradentes" },
+            { holidayDate: currentYear >= 1965 ? `21/04/${currentYear}` : '', description: currentYear >= 1965 ? "Tiradentes" : '' },
             { holidayDate: `01/05/${currentYear}`, description: "Dia do Trabalhador" },
             { holidayDate: `07/09/${currentYear}`, description: "Independência do Brasil" },
             { holidayDate: `12/10/${currentYear}`, description: "Nossa Senhora Aparecida, Padroeira do Brasil" },
@@ -149,7 +148,7 @@ function calculateResults(e) {
 
 
     //merge nationalHolidays, marilia and SPHolidays arrays
-    const myHolidays = nationalHolidays.concat(marilia, SP);
+    var myHolidays = nationalHolidays.concat(marilia, SP);
 
     console.log(myHolidays);
 
@@ -347,43 +346,18 @@ function calculateResults(e) {
     for (var i = 0; i < listaDias.length; i++) {
         var currentDay = listaDias[i]
         var currentDayTypeSusp = false;
+        var type;
         var currentDayType = moment(currentDay, 'DD/MM/YYYY').isBusinessDay()
-        //create a var for the type of day. If it is the same day as the initial date, the value should be "Inicio", if it is a working day, it should be "Dia Útil", if it is a weekend, it should be "Fim de Semana", if it is a holiday, it should be "Feriado", if it is a downDate, it should be "Indisponibilidade", finally, if it is the due date, it should be "Prazo"
-        if (currentDay == moment(dateForCalc, 'DD/MM/YYYY').format('DD/MM/YYYY')) {
-            currentDayType = "Inicio"
-        }
-        else if (currentDayType = moment(currentDay, 'DD/MM/YYYY').isBusinessDay()) {
-            currentDayType = "Dia Útil"
-        }
-        else if (currentDayType == false) {
-            currentDayType = "Fim de Semana"
-        }
-        else if (downDateDescription(currentDay)) {
-            currentDayType = "Indisponibilidade"
-            currentDayTypeSusp = true;
-        }
-        else if (currentDay == moment(dueDate).format('DD/MM/YYYY')) {
-            currentDayType = "Prazo"
-        }
-        else {
-            currentDayType = "Feriado"
-        }
-        console.log(currentDayType == 'Inicio')
+        //create a var type of day and check if it is the initial date, the due date, a holiday, a downDate, a weekend or a workday
+        typeOfDay();
+
+
+        console.log(currentDay + ' ' + currentDayType)
 
 
 
         console.log(dueDate.format())
-        if (sistDown.find(function (down) {
-            return down.downDate === currentDay;
-        }
-        ) && currentDay >= originalDueDate.format()) {
-            //é uma suspensão
-            currentDayTypeSusp = true
-        }
-        else {
-            //não é uma suspensão
-            currentDayTypeSusp = false
-        }
+
 
 
 
@@ -407,15 +381,22 @@ function calculateResults(e) {
             index: (currentDayType == true && currentDayTypeSusp == false && currentDay != moment(dateForCalc, 'DD/MM/YYYY').format('DD/MM/YYYY')) ? '<b> ' + w + '</b> ' : ' - ',
             date: currentDay,
             isWeekDay: moment(currentDay, 'DD/MM/YYYY').isBusinessDay() && currentDay != moment(dateForCalc, 'DD/MM/YYYY').format('DD/MM/YYYY') && (currentDayTypeSusp == false),
-            _type: currentDayTypeSusp == true ? `Prorrogação de prazo: ${downDateDescription(moment(currentDay, 'DD/MM/YYYY').format('DD/MM/YYYY'))}` : currentDay == moment(dateForCalc, 'DD/MM/YYYY').format('DD/MM/YYYY') ? 'Dia do ato (não conta)' : currentDayType == "Dia Útil" ? moment(currentDay, 'DD/MM/YYYY').locale('pt-br').format('dddd') : holidayName(moment(currentDay, 'DD/MM/YYYY').format('DD/MM/YYYY')) ? holidayName(moment(currentDay, 'DD/MM/YYYY').format('DD/MM/YYYY')) : moment(currentDay, 'DD/MM/YYYY').locale('pt-br').format('dddd'),
+            typeofDay: type,
+            _type: currentDayTypeSusp == true ? `Prorrogação de prazo: ${downDateDescription(moment(currentDay, 'DD/MM/YYYY').format('DD/MM/YYYY'))}` : currentDay == moment(dateForCalc, 'DD/MM/YYYY').format('DD/MM/YYYY') ? 'Dia do ato (não conta)' : currentDayType == "Prazo" ? 'test' : currentDayType == "Dia Útil" ? moment(currentDay, 'DD/MM/YYYY').locale('pt-br').format('dddd') : holidayName(moment(currentDay, 'DD/MM/YYYY').format('DD/MM/YYYY')) ? holidayName(moment(currentDay, 'DD/MM/YYYY').format('DD/MM/YYYY')) : currentDay == dueDate.format() ? moment(currentDay, 'DD/MM/YYYY').locale('pt-br').format('dddd') + ' (Fim do Prazo)' : moment(currentDay, 'DD/MM/YYYY').locale('pt-br').format('dddd')
+            ,
             get type() {
                 return this._type;
             },
             set type(value) {
                 this._type = value;
             },
+
+
         })
-    }
+    } console.log(listaDiasComTipo[3].typeofDay)
+
+
+
 
 
     //check if listacomtipo item _type is a weekend or holiday
@@ -451,6 +432,13 @@ function calculateResults(e) {
         return moment(a.holidayDate, 'DD/MM/YYYY').diff(moment(b.holidayDate, 'DD/MM/YYYY'), 'days');
     }
     );
+    //remove blank items from myHolidays
+    myHolidays = myHolidays.filter(function (holiday) {
+        return holiday.holidayDate != '';
+    }
+    );
+
+
 
     //create a list of holidays
 
@@ -488,19 +476,23 @@ function calculateResults(e) {
             message: myHolidays[i].description,
         });
     }
-
+    console.log(listaDiasComTipo[2].typeofDay == 'Feriado')
+    console.log(listaDiasComTipo)
     //create an array with all the dates of the listaDiasComTipo with the type of day
-    var eventDates2 = [];
+    var daysList = [];
     for (var i = 0; i < listaDiasComTipo.length; i++) {
-        eventDates2.push({
+        daysList.push({
             date: moment(listaDiasComTipo[i].date, 'DD/MM/YYYY').toDate(),
-            message: listaDiasComTipo[i].isWeekDay == true || (listaDiasComTipo[i]._type == "sábado" || listaDiasComTipo[i]._type == "domingo") ? '' : listaDiasComTipo[i]._type,
-            class: listaDiasComTipo[i]._type == "Dia do ato (não conta)" ? "lightblue" : listaDiasComTipo[i]._type == "Feriado" ? "red" : "grey",
+            message: (listaDiasComTipo[i].isWeekDay == true && listaDiasComTipo[i]._type.includes('Fim do Prazo') == false) || (listaDiasComTipo[i]._type == "sábado" || listaDiasComTipo[i]._type == "domingo") ? '' : listaDiasComTipo[i]._type,
+            class: listaDiasComTipo[i]._type == 'Feriado' ? 'green' : listaDiasComTipo[i]._type == "Dia do ato (não conta)" ? "start" : listaDiasComTipo[i]._type.includes('Prorrogação de prazo') ? "susp" : listaDiasComTipo[i]._type.includes('Fim do Prazo') ? "end" : listaDiasComTipo[i].isWeekDay == true ? "blue" : 'red',
         });
     }
 
+
     //concatenate the two arrays
-    var eventDates = eventDates.concat(eventDates2);
+    var eventDates = eventDates.concat(daysList);
+    console.log(eventDates)
+
 
 
 
@@ -526,10 +518,10 @@ function calculateResults(e) {
     // into the 
 
 
-    $('#inlinecalendar').calendar({
-
+    $('#inlineCalendar').calendar({
+        refresh: true,
         type: 'date',
-        eventClass: 'inverted red',
+        eventClass: 'darkred',
         //eventsDates should return the array of holidays
         //eventDates should be a function that get the dates of the holidays
         eventDates: eventDates,
@@ -568,6 +560,39 @@ function calculateResults(e) {
     console.log('ok aqui.');
 
     console.log('Please check your numbers.');
+
+    function typeOfDay() {
+        if (currentDay == initialDate.format()) {
+            currentDayType = 'Início do Prazo';
+            type = 'Início do Prazo';
+        }
+        else if (currentDay == dueDate.format()) {
+            currentDayType = 'Fim do Prazo';
+            type = 'Fim do Prazo';
+        }
+        else if (moment(currentDay, 'DD/MM/YYYY').isHoliday()) {
+            currentDayType = 'Feriado';
+            type = 'Feriado';
+        }
+        else if (sistDown.find(function (down) {
+            return down.downDate === currentDay;
+        }
+        ) && currentDay >= originalDueDate.format()) {
+            //é uma suspensão
+            currentDayTypeSusp = true;
+            currentDayType = "Indisponibilidade";
+            type = "Indisponibilidade";
+        }
+
+        else if (moment(currentDay, 'DD/MM/YYYY').isBusinessDay() == false) {
+            currentDayType = 'Fim de Semana';
+            type = 'Fim de Semana';
+        }
+        else {
+            currentDayType = 'Dia Útil';
+            type = 'Dia Útil';
+        }
+    }
 }
 
 
