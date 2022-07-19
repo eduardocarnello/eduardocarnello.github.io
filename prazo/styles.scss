@@ -1,3 +1,14 @@
+.fa-stack.small {
+    font-size: 1.5em;
+    height: auto;
+    display: block;
+}
+
+
+i {
+    vertical-align: middle;
+}
+
 #loading,
 #results {
     display: none;
@@ -13,6 +24,10 @@
 
 small {
     font-size: 65%;
+}
+
+.fa-xl {
+    line-height: 0.6;
 }
 
 .outer {
