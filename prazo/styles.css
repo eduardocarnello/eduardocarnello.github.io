@@ -300,6 +300,10 @@ textarea {
   padding: 0 !important;
 }
 
+table.ui.celled.center.aligned.unstackable.table.day.seven.column {
+  table-layout: fixed;
+}
+
 .index sup {
   top: -0.1em !important;
 }
@@ -309,6 +313,27 @@ input#checkFinalDate {
   pointer-events: visible !important;
 }
 
+td.link.start {
+  border: 1px solid !important;
+  color: darkblue !important;
+  background-color: #fffded !important;
+}
+
+td.link.darkred {
+  background: #cd7245 !important;
+  color: #eee !important;
+}
+
+td.link.susp {
+  color: red !important;
+  background: #ecdfff !important;
+}
+
+td.link.end {
+  background: #45a1cd !important;
+  color: #eee !important;
+}
+
 html {
   display: flex;
   height: 100%;
@@ -316,11 +341,45 @@ html {
 
 body {
   width: 100vw;
-  height: 100vh;
+  height: 100%;
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
+}
+
+.container {
+  height: 50%;
+}
+
+i.fa-solid.fa-square.fa-xl.label1 {
+  color: #fffded;
+  text-shadow: 0 0 1px #000;
+}
+
+i.fa-solid.fa-square.fa-xl.label2 {
+  color: #ddf4ff;
+  text-shadow: 0 0 1px #000;
+}
+
+i.fa-solid.fa-square.fa-xl.label3 {
+  color: #45a1cd;
+  text-shadow: 0 0 1px #000;
+}
+
+i.fa-solid.fa-square.fa-xl.label4 {
+  color: #ffe1df;
+  text-shadow: 0 0 1px #000;
+}
+
+i.fa-solid.fa-square.fa-xl.label5 {
+  color: #cd7245;
+  text-shadow: 0 0 1px #000;
+}
+
+i.fa-solid.fa-square.fa-xl.label6 {
+  color: #ecdfff;
+  text-shadow: 0 0 1px #000;
 }
 
 .btn-open-modal {
