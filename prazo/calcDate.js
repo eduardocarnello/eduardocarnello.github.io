@@ -27,7 +27,7 @@ function calculateResults(e) {
     const finalDate = document.getElementById('finalDate');                     //input do dia final do prazo
     var currentYear = moment(initialDate).year();
     //excpected final year
-    const expectedFinalYear = moment(initialDate).businessAdd(days + 10).year();
+    const expectedFinalYear = moment(initialDate).businessAdd(days).year();
     console.log(expectedFinalYear);
     //if the initialDate year is less than the dueyear
 
@@ -48,29 +48,66 @@ function calculateResults(e) {
         return moment([Y, (M - 1), D]);
     }
 
+    console.log(`Ano Atual: ${currentYear}
+    Ano Esperado: ${expectedFinalYear}`);
+
     const nationalHolidays = [];
-    for (let i = currentYear; i <= currentYear + 3; i++) {
+    const marilia = [];
+    if (currentYear != expectedFinalYear) {
+        for (let i = currentYear; i <= expectedFinalYear; i++) {
+            nationalHolidays.push(
+                //EASTER HOLIDAYS
+                { holidayDate: (Easter(i)).subtract(48, "days").format('DD/MM/YYYY'), description: "Emenda de Carnaval" },
+                { holidayDate: (Easter(i)).subtract(47, "days").format('DD/MM/YYYY'), description: "Carnaval" },
+                { holidayDate: (Easter(i)).subtract(3, "days").format('DD/MM/YYYY'), description: "Endoenças" },
+                { holidayDate: (Easter(i)).subtract(2, "days").format('DD/MM/YYYY'), description: "Paixão de Cristo" },
+                { holidayDate: (Easter(i)).format('DD/MM/YYYY'), description: "Páscoa" },
+                { holidayDate: (Easter(i)).add(60, "days").format('DD/MM/YYYY'), description: "Corpus Christi" },
+
+                //FIXED HOLIDAYS
+                { holidayDate: `01/01/${i}`, description: "Confraternização Universal" },
+                { holidayDate: `21/04/${i}`, description: "Tiradentes" },
+                { holidayDate: `01/05/${i}`, description: "Dia do Trabalhador" },
+                { holidayDate: `07/09/${i}`, description: "Independência do Brasil" },
+                { holidayDate: `12/10/${i}`, description: "Nossa Senhora Aparecida, Padroeira do Brasil" },
+                { holidayDate: `02/11/${i}`, description: "Finados" },
+                { holidayDate: `15/11/${i}`, description: "Proclamação da República" },
+                { holidayDate: `25/12/${i}`, description: "Natal" },
+
+
+
+            );
+            marilia.push(
+                { holidayDate: `04/07/${i}`, description: "Aniversário do Município de Marília" },
+                { holidayDate: `11/07/${i}`, description: "São Bento, Padroeiro de Marília" },
+            );
+
+        }
+    }
+    else {
         nationalHolidays.push(
             //EASTER HOLIDAYS
-            { holidayDate: (Easter(i)).subtract(48, "days").format('DD/MM/YYYY'), description: "Emenda de Carnaval" },
-            { holidayDate: (Easter(i)).subtract(47, "days").format('DD/MM/YYYY'), description: "Carnaval" },
-            { holidayDate: (Easter(i)).subtract(3, "days").format('DD/MM/YYYY'), description: "Endoenças" },
-            { holidayDate: (Easter(i)).subtract(2, "days").format('DD/MM/YYYY'), description: "Paixão de Cristo" },
-            { holidayDate: (Easter(i)).format('DD/MM/YYYY'), description: "Páscoa" },
-            { holidayDate: (Easter(i)).add(60, "days").format('DD/MM/YYYY'), description: "Corpus Christi" },
+            { holidayDate: (Easter(currentYear)).subtract(48, "days").format('DD/MM/YYYY'), description: "Emenda de Carnaval" },
+            { holidayDate: (Easter(currentYear)).subtract(47, "days").format('DD/MM/YYYY'), description: "Carnaval" },
+            { holidayDate: (Easter(currentYear)).subtract(3, "days").format('DD/MM/YYYY'), description: "Endoenças" },
+            { holidayDate: (Easter(currentYear)).subtract(2, "days").format('DD/MM/YYYY'), description: "Paixão de Cristo" },
+            { holidayDate: (Easter(currentYear)).format('DD/MM/YYYY'), description: "Páscoa" },
+            { holidayDate: (Easter(currentYear)).add(60, "days").format('DD/MM/YYYY'), description: "Corpus Christi" },
 
             //FIXED HOLIDAYS
-            { holidayDate: `01/01/${i}`, description: "Confraternização Universal" },
-            { holidayDate: `21/04/${i}`, description: "Tiradentes" },
-            { holidayDate: `01/05/${i}`, description: "Dia do Trabalhador" },
-            { holidayDate: `07/09/${i}`, description: "Independência do Brasil" },
-            { holidayDate: `12/10/${i}`, description: "Nossa Senhora Aparecida, Padroeira do Brasil" },
-            { holidayDate: `02/11/${i}`, description: "Finados" },
-            { holidayDate: `15/11/${i}`, description: "Proclamação da República" },
-            { holidayDate: `25/12/${i}`, description: "Natal" },
-
-        );
+            { holidayDate: `01/01/${currentYear}`, description: "Confraternização Universal" },
+            { holidayDate: `21/04/${currentYear}`, description: "Tiradentes" },
+            { holidayDate: `01/05/${currentYear}`, description: "Dia do Trabalhador" },
+            { holidayDate: `07/09/${currentYear}`, description: "Independência do Brasil" },
+            { holidayDate: `12/10/${currentYear}`, description: "Nossa Senhora Aparecida, Padroeira do Brasil" },
+            { holidayDate: `02/11/${currentYear}`, description: "Finados" },
+            { holidayDate: `15/11/${currentYear}`, description: "Proclamação da República" },
+            { holidayDate: `25/12/${currentYear}`, description: "Natal" },
+        )
     }
+
+    //EASTER HOLIDAYS
+
 
     const amendment = [
         { holidayDate: "17/06/2022", description: "Emenda de Corpus Christi 2022" },
@@ -82,13 +119,9 @@ function calculateResults(e) {
     ]
 
 
-    const sistDown = [
-        { downDate: '04/07/2022', description: "Indisponibilidade no Saj" },
-
-    ]
 
     const SP = [
-        { holidayDate: estado == 'SP' ? "09/07" : '', description: "Revolução Constitucionalista de São Paulo" },
+        { holidayDate: "09/07/2022", description: "Revolução Constitucionalista de São Paulo" },
         //ver como tirar o feriado de 09/07 do ano de 2020, quando foi suspenso
     ]
 
@@ -108,24 +141,15 @@ function calculateResults(e) {
 
     //create an array with municipalities and their respective holidays
 
-    const marilia = []
-    for (let i = currentYear; i <= currentYear + 3; i++) {
-        marilia.push(
-            { holidayDate: `04/07/${i}`, description: "Aniversário do Município de Marília" },
-            { holidayDate: `11/07/${i}`, description: "São Bento, Padroeiro de Marília" },
-        );
-    }
+
     console.log(marilia);
     //get all the dates of christmas for every year from the current year to the next year
-    const christmas = [];
-    for (let i = currentYear; i <= currentYear + 3; i++) {
-        christmas.push(moment(`25/12/${i}`, 'DD/MM/YYYY').format('DD/MM/YYYY'));
-    }
-    console.log(christmas);
+
+
 
 
     //merge nationalHolidays, marilia and SPHolidays arrays
-    const myHolidays = nationalHolidays.concat(nationalHolidays, marilia, SP);
+    const myHolidays = nationalHolidays.concat(marilia, SP);
 
     console.log(myHolidays);
 
@@ -136,6 +160,8 @@ function calculateResults(e) {
         });
         return holiday ? holiday.description : false;
     }
+
+
 
     console.log('é feriado no padroeiro? ' + holidayName('11/07'));
 
@@ -181,7 +207,7 @@ function calculateResults(e) {
         if (holiday) {
             console.log(holiday.date + ' - ' + holiday.name);
             return holiday.date + ' - ' + holiday.name;
-    
+     
         } else {
             return false;
         }
@@ -267,7 +293,39 @@ function calculateResults(e) {
     moment
     moment.defaultFormat = "DD/MM/YYYY"
     dateForCalc = moment(dateForCalc, 'DD/MM/YYYY')
+
+    const sistDown = [
+        { downDate: '08/07/2022', description: "Indisponibilidade no Saj" },
+
+    ]
+
+    //check if a date is a downDate and return its description
+    function downDateDescription(date) {
+        var down = sistDown.find(function (down) {
+            return down.downDate === date;
+        });
+        return down ? down.description : false;
+    }
+
+
+
+
+
+
+
+    var originalDueDate = moment(dateForCalc).businessAdd(days)
     var dueDate = moment(dateForCalc).businessAdd(days)
+
+    //while the due date is a downDate, add 1 day to the due date
+    while (sistDown.find(function (down) {
+        return down.downDate === dueDate.format();
+    }
+    )) {
+        dueDate = moment(dueDate).businessAdd(1)
+    }
+
+
+
     console.log('DateFor Calc ' + dateForCalc + 'e dueDate ' + dueDate)
     while (moment(dateForCalc).add(i, 'days') <= (dueDate)) {
         listaDias.push(moment(dateForCalc).add(i, 'days').format())
@@ -277,17 +335,68 @@ function calculateResults(e) {
     }
     console.log(listaDias + '  ' + moment(dateForCalc).format('DD/MM/YYYY') + ' e dueDate ' + moment(dueDate).format('DD/MM/YYYY'))
 
+    //show the first downDate from sistDown
+
+
+
+
 
 
     // make a array of objects with the date and the type of day
     var listaDiasComTipo = []
     for (var i = 0; i < listaDias.length; i++) {
         var currentDay = listaDias[i]
+        var currentDayTypeSusp = false;
         var currentDayType = moment(currentDay, 'DD/MM/YYYY').isBusinessDay()
-        if (currentDayType == true && currentDayType == true && currentDay != moment(dateForCalc, 'DD/MM/YYYY').format('DD/MM/YYYY')) {
-            w++
-            console.log(+ ' é um dia útil')
+        //create a var for the type of day. If it is the same day as the initial date, the value should be "Inicio", if it is a working day, it should be "Dia Útil", if it is a weekend, it should be "Fim de Semana", if it is a holiday, it should be "Feriado", if it is a downDate, it should be "Indisponibilidade", finally, if it is the due date, it should be "Prazo"
+        if (currentDay == moment(dateForCalc, 'DD/MM/YYYY').format('DD/MM/YYYY')) {
+            currentDayType = "Inicio"
         }
+        else if (currentDayType = moment(currentDay, 'DD/MM/YYYY').isBusinessDay()) {
+            currentDayType = "Dia Útil"
+        }
+        else if (currentDayType == false) {
+            currentDayType = "Fim de Semana"
+        }
+        else if (downDateDescription(currentDay)) {
+            currentDayType = "Indisponibilidade"
+            currentDayTypeSusp = true;
+        }
+        else if (currentDay == moment(dueDate).format('DD/MM/YYYY')) {
+            currentDayType = "Prazo"
+        }
+        else {
+            currentDayType = "Feriado"
+        }
+        console.log(currentDayType == 'Inicio')
+
+
+
+        console.log(dueDate.format())
+        if (sistDown.find(function (down) {
+            return down.downDate === currentDay;
+        }
+        ) && currentDay >= originalDueDate.format()) {
+            //é uma suspensão
+            currentDayTypeSusp = true
+        }
+        else {
+            //não é uma suspensão
+            currentDayTypeSusp = false
+        }
+
+
+
+
+        if (currentDayType = moment(currentDay, 'DD/MM/YYYY').isBusinessDay() && currentDay != moment(dateForCalc, 'DD/MM/YYYY').format('DD/MM/YYYY') && (currentDayTypeSusp == false)) {
+
+
+
+
+
+            w++
+        }
+        console.log(currentDayTypeSusp)
 
         // listaDiasComTipo first must display the date with a string 'Primeiro dia da contagem'
 
@@ -295,10 +404,10 @@ function calculateResults(e) {
         console.log(moment(currentDay, 'DD/MM/YYYY').format('DD/MM/YYYY') + ' é ' + currentDayType)
         listaDiasComTipo.push({
             //if currentDayType is different from the first day of the list and is a workday, then index: w, else index: '-'
-            index: (currentDayType == true && currentDay != moment(dateForCalc, 'DD/MM/YYYY').format('DD/MM/YYYY')) ? w : '-',
-            cal: (currentDayType == true && currentDay != moment(dateForCalc, 'DD/MM/YYYY').format('DD/MM/YYYY')) ? '<i class="fa-regular fa-calendar-check"></i>' : '',
+            index: (currentDayType == true && currentDayTypeSusp == false && currentDay != moment(dateForCalc, 'DD/MM/YYYY').format('DD/MM/YYYY')) ? '<b> ' + w + '</b> ' : ' - ',
             date: currentDay,
-            _type: currentDay == moment(dateForCalc, 'DD/MM/YYYY').format('DD/MM/YYYY') ? 'Dia do ato (não conta)' : currentDayType ? moment(currentDay, 'DD/MM/YYYY').locale('pt-br').format('dddd') : holidayName(moment(currentDay, 'DD/MM/YYYY').format('DD/MM/YYYY')) ? holidayName(moment(currentDay, 'DD/MM/YYYY').format('DD/MM/YYYY')) : moment(currentDay, 'DD/MM/YYYY').locale('pt-br').format('dddd'),
+            isWeekDay: moment(currentDay, 'DD/MM/YYYY').isBusinessDay() && currentDay != moment(dateForCalc, 'DD/MM/YYYY').format('DD/MM/YYYY') && (currentDayTypeSusp == false),
+            _type: currentDayTypeSusp == true ? `Prorrogação de prazo: ${downDateDescription(moment(currentDay, 'DD/MM/YYYY').format('DD/MM/YYYY'))}` : currentDay == moment(dateForCalc, 'DD/MM/YYYY').format('DD/MM/YYYY') ? 'Dia do ato (não conta)' : currentDayType == "Dia Útil" ? moment(currentDay, 'DD/MM/YYYY').locale('pt-br').format('dddd') : holidayName(moment(currentDay, 'DD/MM/YYYY').format('DD/MM/YYYY')) ? holidayName(moment(currentDay, 'DD/MM/YYYY').format('DD/MM/YYYY')) : moment(currentDay, 'DD/MM/YYYY').locale('pt-br').format('dddd'),
             get type() {
                 return this._type;
             },
@@ -314,7 +423,7 @@ function calculateResults(e) {
 
     //// código para criar tabela. arrumar
 
-    var html = "<table class='table table-hover' border='1|1'><thead class='table-light'><tr><th scope='col'>#</th><th scope='col'></th><th scope='col'>Data</th><th scope='col'>Descrição</th></tr></thead>";
+    var html = "<table class='table table-hover' border='1|1'><thead class='table-light'><tr><th scope='col' class='text-center'>#</th><th scope='col'>Data</th><th scope='col'>Descrição</th></tr></thead>";
     for (var i = 0; i < listaDiasComTipo.length; i++) {
         if (i == listaDiasComTipo.length - 1) {
             html += "<b><tr class='table-active'>";
@@ -324,8 +433,8 @@ function calculateResults(e) {
         }
 
 
-        html += "<td><b>" + listaDiasComTipo[i].index + "</b></td>";
-        html += "<td>" + listaDiasComTipo[i].cal + "</td>";
+        html += "<td class='text-center'>" + listaDiasComTipo[i].index + "</td>";
+
         html += "<td>" + listaDiasComTipo[i].date + "</td>";
         html += "<td>" + listaDiasComTipo[i].type + "</td>";
 
@@ -333,11 +442,122 @@ function calculateResults(e) {
 
     }
     html += "</table>";
+
+
     document.getElementById("table-responsive").innerHTML = html;
 
+    //sort myHolidays holidayDate by ascending order
+    myHolidays.sort(function (a, b) {
+        return moment(a.holidayDate, 'DD/MM/YYYY').diff(moment(b.holidayDate, 'DD/MM/YYYY'), 'days');
+    }
+    );
+
+    //create a list of holidays
 
 
-    // Compute monthly payments
+    //create a array of objects with the date and the type of day
+
+
+
+
+    //create a table with the all the holidays dates and descriptions
+    var html = "<table class='table table-hover' border='1|1'><thead class='table-light'><tr><th scope='col' class='text-center'>#</th><th scope='col'>Data</th></tr></thead>";
+    for (var i = 0; i < myHolidays.length; i++) {
+        html += "<tr>";
+
+        html += "<td>" + myHolidays[i].holidayDate + "</td>";
+        html += "<td>" + myHolidays[i].description + "</td>";
+        html += "</tr>";
+    }
+    html += "</table>";
+    //sort the holidays by date
+
+    //display an inline calendar from semantic ui with the holidays
+
+    //make the eventDates use the myHolidays array
+
+
+    //change item name holidayDate from myHolidays to date
+
+
+    //create an array called eventDates with the holidays dates and their descriptions. Also convert the date to a Date object
+    var eventDates = [];
+    for (var i = 0; i < myHolidays.length; i++) {
+        eventDates.push({
+            date: moment(myHolidays[i].holidayDate, 'DD/MM/YYYY').toDate(),
+            message: myHolidays[i].description,
+        });
+    }
+
+    //create an array with all the dates of the listaDiasComTipo with the type of day
+    var eventDates2 = [];
+    for (var i = 0; i < listaDiasComTipo.length; i++) {
+        eventDates2.push({
+            date: moment(listaDiasComTipo[i].date, 'DD/MM/YYYY').toDate(),
+            message: listaDiasComTipo[i].isWeekDay == true || (listaDiasComTipo[i]._type == "sábado" || listaDiasComTipo[i]._type == "domingo") ? '' : listaDiasComTipo[i]._type,
+            class: listaDiasComTipo[i]._type == "Dia do ato (não conta)" ? "lightblue" : listaDiasComTipo[i]._type == "Feriado" ? "red" : "grey",
+        });
+    }
+
+    //concatenate the two arrays
+    var eventDates = eventDates.concat(eventDates2);
+
+
+
+
+
+    var holidaysDate = myHolidays.map(function (item) {
+        return new Date(moment(item.holidayDate, 'DD/MM/YYYY').format('YYYY-M-D'));
+    }
+    );
+    console.log(holidaysDate)
+
+
+
+    //use the myHolidays array to create a list of events
+    var events = [
+        { date: new Date(moment().format('YYYY-M-DD')), message: 'hi' }]
+
+
+
+
+
+
+    // into the 
+
+
+    $('#inlinecalendar').calendar({
+
+        type: 'date',
+        eventClass: 'inverted red',
+        //eventsDates should return the array of holidays
+        //eventDates should be a function that get the dates of the holidays
+        eventDates: eventDates,
+        initialDate: dueDate,
+
+
+        //use the myHolidays array to create a list of events
+
+
+
+
+        text: {
+            days: ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado'],
+            months: ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'],
+            monthsShort: ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'],
+            today: 'Hoje',
+            now: 'Agora',
+            am: 'AM',
+            pm: 'PM'
+        }
+
+    });
+
+
+
+
+    document.getElementById("table-holidays").innerHTML = html;
+
 
 
 
