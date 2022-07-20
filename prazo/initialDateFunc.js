@@ -1,11 +1,12 @@
 //$(" #calendar").calendar("refresh", null);
 function initialDateFunc() {
+    var newValue
     $("#initialDate").calendar({
         type: "date",
         monthFirst: false,
         on: "click",
         startCalendar: "",
-
+        onSelect: function () { $(this).next('#days').focus(); },
         centuryBreak: 90,
         initialDate: moment(),
         currentCentury: 2022,
@@ -85,8 +86,10 @@ function initialDateFunc() {
                 var dataformat = datacomp.format("DD/MM/YYYY");
                 console.log("month: " + month);
                 $("#initialDate").on("change", function () {
+
                     // 2nd (A)
                     $("#initialDate").val(dataformat);
+
 
                     // It will specifically called on change of your element
                 });
@@ -232,4 +235,5 @@ function initialDateFunc() {
 
     update();
 
+    newValue = $("#initialDate").val();
 }
