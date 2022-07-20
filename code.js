@@ -96,7 +96,6 @@ console.log('dataformat antes da função: ' + dataformat);
 $('#initialDate').on('change', function () {
   update => {
     dataformat = $('#initialDate').val();
-    return console.log('o da função: ' + dataformat);
   }
 });
 

@@ -1,5 +1,8 @@
 moment.locale('pt-br');
 
+
+
+
 document.getElementById('deadlineCalc').addEventListener('submit', function (e) {
     e.preventDefault();
     // Hide results
@@ -52,6 +55,10 @@ function calculateResults(e) {
     Ano Esperado: ${expectedFinalYear}`);
     const marilia = [];
     const nationalHolidays = [];
+    /*if (calendarMode == true) {
+        currentYear = 1900;
+        expectedFinalYear = 2100;
+    }*/
     if (currentYear != expectedFinalYear) {
         for (let i = currentYear; i <= expectedFinalYear; i++) {
             nationalHolidays.push(
@@ -425,7 +432,7 @@ function calculateResults(e) {
     html += "</table>";
 
 
-    document.getElementById("table-responsive").innerHTML = html;
+    document.getElementById("listReport").innerHTML = html;
 
     //sort myHolidays holidayDate by ascending order
     myHolidays.sort(function (a, b) {
@@ -516,39 +523,45 @@ function calculateResults(e) {
 
 
     // into the 
+    function displayInline() {
+        //clear the calendar before setting it up
+        $('#inlineCalendar').html('');
+        $('.link').click(function () { return false; });
+
+        $('#inlineCalendar').calendar({
+            refresh: true,
+            minDate: new Date(moment(dateForCalc, 'DD/MM/YYYY').format('MM/DD/YYYY')),
+            maxDate: new Date(moment(dueDate, 'DD/MM/YYYY').format('MM/DD/YYYY')),
+            type: 'date',
+            eventClass: 'darkred',
+            //eventsDates should return the array of holidays
+            //eventDates should be a function that get the dates of the holidays
+            eventDates: eventDates,
+            initialDate: dueDate,
 
 
-    $('#inlineCalendar').calendar({
-        refresh: true,
-        type: 'date',
-        eventClass: 'darkred',
-        //eventsDates should return the array of holidays
-        //eventDates should be a function that get the dates of the holidays
-        eventDates: eventDates,
-        initialDate: dueDate,
-
-
-        //use the myHolidays array to create a list of events
-
-
-
-
-        text: {
-            days: ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado'],
-            months: ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'],
-            monthsShort: ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'],
-            today: 'Hoje',
-            now: 'Agora',
-            am: 'AM',
-            pm: 'PM'
-        }
-
-    });
+            //use the myHolidays array to create a list of events
 
 
 
 
-    document.getElementById("table-holidays").innerHTML = html;
+            text: {
+                days: ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'],
+                months: ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'],
+                monthsShort: ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'],
+                today: 'Hoje',
+                now: 'Agora',
+                am: 'AM',
+                pm: 'PM'
+            },
+
+        });
+    }
+
+    displayInline()
+
+
+    //document.getElementById("table-holidays").innerHTML = html;
 
 
 

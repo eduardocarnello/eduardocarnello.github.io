@@ -30,11 +30,11 @@
 
 
     <div class="container">
+
         <div class="col-md-8 mx-auto">
             <div class="card">
                 <div class="card-body">
-                    <h2 class="heading display-5 pb-3 text-center default-text py-3"><i
-                            class="fa fa-calendar-check"></i> Contagem de Prazo
+                    <h2 class="heading display-5 pb-3 text-center default-text py-3 header"> Contagem de Prazo
                     </h2>
                     <!--Body-->
 
@@ -130,7 +130,8 @@
 
 
                                         <input type="tel" class="form-control " id="days" name="quant[1]" value=""
-                                            autocomplete="off" placeholder="Dias:" min="1" max="999" required>
+                                            class="days" autocomplete="off" placeholder="Dias:" min="1" max="999"
+                                            required>
                                         <label for="days">Dias:</label>
                                         </span>
 
@@ -182,11 +183,11 @@
                             <div class="row g-2">
                                 <div class="col-9 col-lg-10">
                                     <input type="submit" name="" value="Calcular"
-                                        class="btn btn-dark btn-block col-12 col-lg-12"">
+                                        class="btn btn-calc btn-dark btn-block col-12 col-lg-12"">
                                 </div>
                                 <div class=" col-3 col-lg-2">
-                                    <input class=" btn btn-primary col-12 col-lg-12" type="button" value="Resetar"
-                                        id="reset1">
+                                    <input class=" btn btn-reset btn-primary col-12 col-lg-12" type="button"
+                                        value="Resetar" id="reset1">
                                 </div>
 
                             </div>
@@ -196,56 +197,90 @@
                     </form>
 
                     <!-- Result  -->
-                    <div id="results" class="">
-
-                        <div class="col-md-8 mx-auto">
-                            <div class="card">
-                                <div class="card-body">
+                    <div id="collapseOptions">
+                        <div id="results" class="">
 
 
-                                    <span class="text">Data Final</span>
+                            <div class="col-md-8 mx-auto">
+                                <div class="card">
+                                    <div class="card-body">
 
 
-                                    <h2 class="heading display-3 pb-5 text-center py-3" id="finalDate">
-                                    </h2>
+
+                                        <span class="text">Data Final</span>
+
+
+                                        <h2 class="heading display-3 pb-5 text-center py-3" id="finalDate">
+                                        </h2>
+
+                                        <div class="buttons text-center">
+                                            <button class="btn btn-primary" type="button" data-bs-toggle="collapse"
+                                                data-bs-target="#collapseReport">
+                                                Exibir Relatório
+                                            </button>
+
+                                            <button class="btn btn-primary" type="button" data-bs-toggle="collapse"
+                                                data-bs-parent="#collapseOptions" data-bs-target="#collapseCalendar">
+                                                Ver no Calendário
+                                            </button>
+                                        </div>
+                                    </div>
 
                                 </div>
+
+                            </div>
+
+                            </p>
+
+                            <div class="collapse" id="collapseReport" data-bs-parent="#collapseOptions">
+                                <div class="card card-body">
+                                    <div id="listReport" class="table table-responsive"></div>
+                                </div>
+                            </div>
+                            <div class="collapse" id="collapseCalendar" data-bs-parent="#collapseOptions">
+                                <div class="card card-body">
+                                    <div id="inlineCalendar" class="ui calendar" readonly></div>
+                                    <h5>Legenda</span>
+                                        <div class="row align-items-start w-100">
+                                            <div class="col-6 col-sm-4">
+
+                                                <br><i class="fa-solid fa-square fa-xl label1"></i> Data do Ato</br>
+                                            </div>
+
+                                            <div class="col-6 col-sm-4">
+                                                <br><i class="fa-solid fa-square fa-xl label2"></i> Dia da
+                                                Contagem</br>
+                                            </div>
+
+                                            <div class="col-6 col-sm-4">
+                                                <br><i class="fa-solid fa-square fa-xl label3"></i> Prazo Final</br>
+                                            </div>
+
+                                            <div class="col-6 col-sm-4">
+                                                <br><i class="fa-solid fa-square fa-xl label4"></i> Final de
+                                                Semana</br>
+                                            </div>
+
+                                            <div class="col-6 col-sm-4">
+                                                <br><i class="fa-solid fa-square fa-xl label5"></i> Feriado</br>
+                                            </div>
+
+                                            <div class="col-6 col-sm-4">
+                                                <br><i class="fa-solid fa-square fa-xl label6"></i> Prorrogação</br>
+                                            </div>
+
+
+                                        </div>
+                                </div>
+
+
                             </div>
                         </div>
-                    </div>
-                    <div id="table-responsive" class=""></div>
-                    <div id="table-holidays" class=""></div>
-                    <div id="table-responsive" readonly>
-                        <div id="inlineCalendar" class="ui calendar" readonly disabled></div>
-                        <h5>Legenda</span>
-                            <div class="row align-items-start w-100">
-                                <div class="col-6 col-sm-4">
-
-                                    <br><i class="fa-solid fa-square fa-xl label1"></i> Texto 1</br>
-                                </div>
-
-                                <div class="col-6 col-sm-4">
-                                    <br><i class="fa-solid fa-square fa-xl label2"></i> Texto 1</br>
-                                </div>
-
-                                <div class="col-6 col-sm-4">
-                                    <br><i class="fa-solid fa-square fa-xl label3"></i> Texto 1</br>
-                                </div>
-
-                                <div class="col-6 col-sm-4">
-                                    <br><i class="fa-solid fa-square fa-xl label4"></i> Texto 1</br>
-                                </div>
-
-                                <div class="col-6 col-sm-4">
-                                    <br><i class="fa-solid fa-square fa-xl label5"></i> Texto 1</br>
-                                </div>
-
-                                <div class="col-6 col-sm-4">
-                                    <br><i class="fa-solid fa-square fa-xl label6"></i> Texto 1</br>
-                                </div>
 
 
-                            </div>
+                        <!--div id="table-holidays" class=""></div-->
+
+
 
 
 
