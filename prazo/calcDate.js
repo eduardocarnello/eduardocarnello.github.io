@@ -27,6 +27,7 @@ function calculateResults(e) {
     //  let isCaclWorkDay = false;                                                  //conta por dia útil ou 
     //    let startDay                                                                //dia de início do prazo
     //data final do prazo
+    const calcType = $('#calcType').val();
     const finalDate = document.getElementById('finalDate');                     //input do dia final do prazo
     var currentYear = moment(initialDate).year();
     //excpected final year
@@ -59,6 +60,7 @@ function calculateResults(e) {
         currentYear = 1900;
         expectedFinalYear = 2100;
     }*/
+
     if (currentYear != expectedFinalYear) {
         for (let i = currentYear; i <= expectedFinalYear; i++) {
             nationalHolidays.push(
@@ -318,17 +320,54 @@ function calculateResults(e) {
 
 
 
+    if (calcType == 'workingDays') {
 
-    var originalDueDate = moment(dateForCalc).businessAdd(days)
-    var dueDate = moment(dateForCalc).businessAdd(days)
 
-    //while the due date is a downDate, add 1 day to the due date
-    while (sistDown.find(function (down) {
-        return down.downDate === dueDate.format();
+        var originalDueDate = moment(dateForCalc).businessAdd(days)
+        var dueDate = moment(dateForCalc).businessAdd(days)
+
+        //while the due date is a downDate, add 1 day to the due date
+        while (sistDown.find(function (down) {
+            return down.downDate === dueDate.format();
+        }
+        )) {
+            dueDate = moment(dueDate).businessAdd(1)
+        }
+    } else {
+        var originalDueDate = moment(dateForCalc).add(days, 'days')
+        var dueDate = moment(dateForCalc).add(days, 'days')
+        //check if the dueDate is not a businessDay or is a downDate then create an array prorrogationList that contains the days that are not businessDays and theirs respective descriptions (eg: weekend, Easter, etc)
+        var prorrogationList = []
+        while (dueDate.isBusinessDay() == false) {
+            prorrogationList.push({
+                date: dueDate.format(),
+                description: holidayName(dueDate.format())
+            })
+            dueDate = moment(dueDate).add(1, 'days')
+        }
+
+
+
+
+        if (!dueDate.isBusinessDay()) {
+            dueDate = moment(dueDate).businessAdd(1)
+        }
+
+        //while the dueDate is not a working day, add 1 day to the dueDate
+        //check if the dueDate is a downDate and add 1 day to the dueDate
+
+
+
+
+        while (sistDown.find(function (down) {
+            return down.downDate === dueDate.format();
+        }
+        )) {
+            dueDate = moment(dueDate).businessAdd(1)
+        }
+
     }
-    )) {
-        dueDate = moment(dueDate).businessAdd(1)
-    }
+
 
 
 
@@ -354,7 +393,13 @@ function calculateResults(e) {
         var currentDay = listaDias[i]
         var currentDayTypeSusp = false;
         var type;
-        var currentDayType = moment(currentDay, 'DD/MM/YYYY').isBusinessDay()
+        if (calcType == 'workingDays') {
+            var currentDayType = moment(currentDay, 'DD/MM/YYYY').isBusinessDay()
+        }
+        else {
+            var currentDayType = true
+        }
+
         //create a var type of day and check if it is the initial date, the due date, a holiday, a downDate, a weekend or a workday
         typeOfDay();
 
@@ -368,15 +413,28 @@ function calculateResults(e) {
 
 
 
-
-        if (currentDayType = moment(currentDay, 'DD/MM/YYYY').isBusinessDay() && currentDay != moment(dateForCalc, 'DD/MM/YYYY').format('DD/MM/YYYY') && (currentDayTypeSusp == false)) {
-
-
+        if (calcType == 'workingDays') {
+            if (currentDayType = moment(currentDay, 'DD/MM/YYYY').isBusinessDay() && currentDay != moment(dateForCalc, 'DD/MM/YYYY').format('DD/MM/YYYY') && (currentDayTypeSusp == false)) {
 
 
 
-            w++
+
+
+                w++
+            }
         }
+        else {
+            if (currentDayType = true && currentDay != moment(dateForCalc, 'DD/MM/YYYY').format('DD/MM/YYYY')) {
+                if (w < days)
+                    w++
+            } else {
+                w
+            }
+        }
+
+
+
+
         console.log(currentDayTypeSusp)
 
         // listaDiasComTipo first must display the date with a string 'Primeiro dia da contagem'
@@ -385,7 +443,7 @@ function calculateResults(e) {
         console.log(moment(currentDay, 'DD/MM/YYYY').format('DD/MM/YYYY') + ' é ' + currentDayType)
         listaDiasComTipo.push({
             //if currentDayType is different from the first day of the list and is a workday, then index: w, else index: '-'
-            index: (currentDayType == true && currentDayTypeSusp == false && currentDay != moment(dateForCalc, 'DD/MM/YYYY').format('DD/MM/YYYY')) ? '<b> ' + w + '</b> ' : ' - ',
+            index: (calcType == 'workingDays') ? (currentDayType == true && currentDayTypeSusp == false && currentDay != moment(dateForCalc, 'DD/MM/YYYY').format('DD/MM/YYYY')) ? '<b> ' + w + '</b> ' : (currentDayType == true && currentDayTypeSusp == false && currentDay != moment(dateForCalc, 'DD/MM/YYYY').format('DD/MM/YYYY')) ? '<b> ' + w + '</b> ' : ' - ' : (w <= days && currentDayType == true && currentDayTypeSusp == false && currentDay != moment(dateForCalc, 'DD/MM/YYYY').format('DD/MM/YYYY')) ? (w == days && !moment(currentDay, 'DD/MM/YYYY').isBusinessDay()) ? ' - ' : w : ' - ',
             date: currentDay,
             isWeekDay: moment(currentDay, 'DD/MM/YYYY').isBusinessDay() && currentDay != moment(dateForCalc, 'DD/MM/YYYY').format('DD/MM/YYYY') && (currentDayTypeSusp == false),
             typeofDay: type,
@@ -400,14 +458,14 @@ function calculateResults(e) {
 
 
         })
-    } console.log(listaDiasComTipo[3].typeofDay)
+    }
 
 
 
 
 
     //check if listacomtipo item _type is a weekend or holiday
-    console.log(currentYear);
+
 
     //// código para criar tabela. arrumar
 
@@ -477,28 +535,40 @@ function calculateResults(e) {
 
     //create an array called eventDates with the holidays dates and their descriptions. Also convert the date to a Date object
     var eventDates = [];
-    for (var i = 0; i < myHolidays.length; i++) {
-        eventDates.push({
-            date: moment(myHolidays[i].holidayDate, 'DD/MM/YYYY').toDate(),
-            message: myHolidays[i].description,
-        });
+    if (calcType == 'workingDays') {
+        for (var i = 0; i < myHolidays.length; i++) {
+            eventDates.push({
+                date: moment(myHolidays[i].holidayDate, 'DD/MM/YYYY').toDate(),
+                message: myHolidays[i].description,
+            });
+        }
     }
-    console.log(listaDiasComTipo[2].typeofDay == 'Feriado')
+
     console.log(listaDiasComTipo)
     //create an array with all the dates of the listaDiasComTipo with the type of day
     var daysList = [];
-    for (var i = 0; i < listaDiasComTipo.length; i++) {
-        daysList.push({
-            date: moment(listaDiasComTipo[i].date, 'DD/MM/YYYY').toDate(),
-            message: (listaDiasComTipo[i].isWeekDay == true && listaDiasComTipo[i]._type.includes('Fim do Prazo') == false) || (listaDiasComTipo[i]._type == "sábado" || listaDiasComTipo[i]._type == "domingo") ? '' : listaDiasComTipo[i]._type,
-            class: listaDiasComTipo[i]._type == 'Feriado' ? 'green' : listaDiasComTipo[i]._type == "Dia do ato (não conta)" ? "start" : listaDiasComTipo[i]._type.includes('Prorrogação de prazo') ? "susp" : listaDiasComTipo[i]._type.includes('Fim do Prazo') ? "end" : listaDiasComTipo[i].isWeekDay == true ? "blue" : 'red',
-        });
+    if (calcType == 'workingDays') {
+        for (var i = 0; i < listaDiasComTipo.length; i++) {
+            daysList.push({
+                date: moment(listaDiasComTipo[i].date, 'DD/MM/YYYY').toDate(),
+                message: (listaDiasComTipo[i].isWeekDay == true && listaDiasComTipo[i]._type.includes('Fim do Prazo') == false) || (listaDiasComTipo[i]._type == "sábado" || listaDiasComTipo[i]._type == "domingo") ? '' : listaDiasComTipo[i]._type,
+                class: listaDiasComTipo[i]._type == 'Feriado' ? 'green' : listaDiasComTipo[i]._type == "Dia do ato (não conta)" ? "start" : listaDiasComTipo[i]._type.includes('Prorrogação de prazo') ? "susp" : listaDiasComTipo[i]._type.includes('Fim do Prazo') ? "end" : listaDiasComTipo[i].isWeekDay == true ? "blue" : 'blue',
+            });
+        }
+    } else {
+        for (var i = 0; i < listaDiasComTipo.length; i++) {
+            daysList.push({
+                date: moment(listaDiasComTipo[i].date, 'DD/MM/YYYY').toDate(),
+                message: (listaDiasComTipo[i].isWeekDay == true && listaDiasComTipo[i]._type.includes('Fim do Prazo') == false) || (listaDiasComTipo[i]._type == "sábado" || listaDiasComTipo[i]._type == "domingo") ? '' : listaDiasComTipo[i]._type,
+                class: listaDiasComTipo[i]._type == "Dia do ato (não conta)" ? "start" : listaDiasComTipo[i]._type.includes('Prorrogação de prazo') ? "susp" : listaDiasComTipo[i]._type.includes('Fim do Prazo') ? "end" : (i > days) ? listaDiasComTipo[i].typeofDay == 'Feriado' ? 'red' : 'susp' : 'blue',
+            });
+        }
     }
 
 
     //concatenate the two arrays
     var eventDates = eventDates.concat(daysList);
-    console.log(eventDates)
+    console.log(listaDiasComTipo)
 
 
 
@@ -517,7 +587,20 @@ function calculateResults(e) {
     var events = [
         { date: new Date(moment().format('YYYY-M-DD')), message: 'hi' }]
 
+    $("#reportBtn").click(function () {
 
+        $('html,body').animate({
+            scrollTop: $("#listReport").offset().top
+        },
+            500);
+    });
+    $("#inlineCalendarBtn").click(function () {
+
+        $('html,body').animate({
+            scrollTop: $("#collapseCalendar").offset().top
+        },
+            500);
+    });
 
 
 
