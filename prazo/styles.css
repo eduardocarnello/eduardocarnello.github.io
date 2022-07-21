@@ -1,3 +1,8 @@
+@charset "UTF-8";
+.card {
+  border-radius: 2.25em;
+}
+
 .header {
   font-family: Verdana, Geneva, sans-serif;
   color: black !important;
@@ -226,8 +231,51 @@ textarea {
   justify-content: space-evenly;
 }
 
+.form-control button.btn.dropdown-toggle.btn-light {
+  background-color: transparent;
+  border: none;
+}
+
+.bootstrap-select.form-control {
+  border: 1px solid #ced4da;
+}
+
+.tooltip-helper {
+  pointer-events: auto;
+}
+
+/* PARA USAR QUANDO ESTIVER COM MAIS CIDADES
+// NÃO REMOVER
+select.empty {
+    color: grey;
+}
+
+
+li.disabled.selected.active {
+    display: none;
+}
+
+.form-control button.btn.dropdown-toggle.btn-light.show {
+    background-color: none !important;
+}
+*/
+.bootstrap-select.form-floating > .form-control {
+  padding-right: 0;
+  padding-left: 0;
+}
+
+.dropdown.bootstrap-select.form-control .btn.dropdown-toggle {
+  padding: 0 !important;
+}
+
+h2#finalDate {
+  font-family: Geneva, sans-serif;
+  font-weight: 900;
+  white-space: nowrap;
+}
+
 .hm-gradient {
-  background-image: linear-gradient(3deg, rgb(211, 224, 255) 26.2%, rgb(255, 255, 255) 100%);
+  background: linear-gradient(3deg, rgb(211, 224, 255) 26.2%, rgb(255, 255, 255) 100%) right/10000px 1730px no-repeat rgb(255, 255, 255);
 }
 
 .darken-grey-text {

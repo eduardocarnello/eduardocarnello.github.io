@@ -1,3 +1,23 @@
+$(document).on('keydown', 'input[type="search"]', function (e) {
+  if (e.which == 13) {
+    $('#days').focus();
+    $('.selectpicker').selectpicker('toggle');
+  }
+}
+);
+var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+  return new bootstrap.Tooltip(tooltipTriggerEl)
+})
+
+
+
+//on click input with class "dropdown bootstrap-select", add class "show" to div class="dropdown-menu"
+
+
+
+
+
 
 
 moment.locale('pt-br');
@@ -48,6 +68,8 @@ $("#button_calendar").calendar({
     //fix:  when inputing direct in the input, the calendar dont auto update
 
   },
+
+
   text: {
     days: ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"],
     months: [
