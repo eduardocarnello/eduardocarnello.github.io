@@ -21,14 +21,7 @@ $(document).on('click', '#removeRow', function () {
   id--
 });
 
-function myFunction() {
-  var x = document.getElementById("myTopnav");
-  if (x.className === "topnav") {
-    x.className += " responsive";
-  } else {
-    x.className = "topnav";
-  }
-}
+
 
 
 $(document).on('keydown', 'input[type="search"]', function (e) {
