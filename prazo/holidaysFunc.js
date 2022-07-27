@@ -5,6 +5,12 @@ const amendment = [
 
 ]
 
+const sistDown = [
+    { downDate: '08/07/2022', description: "Indisponibilidade no Saj", city: 'Marília' },
+    { downDate: '12/07/2022', description: "Indisponibilidade no Saj", city: 'Bauru' },
+
+]
+
 function Easter(Y) {
     var C = Math.floor(Y / 100);
     var N = Y - 19 * Math.floor(Y / 19);

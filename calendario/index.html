@@ -79,11 +79,28 @@
                 <div class="card">
 
                     <div class="card-body">
+
                         <h2 class="heading display-5 pb-3 text-center default-text py-3 header"> Calendário
                         </h2>
                         <!--Body-->
+                        <div class="col-md-8 mx-auto">
+                            <div class="form-floating form-floating-group flex-grow-1">
 
+                                <select class="selectpicker form-control empty" id="floatingSelect"
+                                    data-show-subtext="false" data-live-search="true" data-width="auto">
+                                    <!--option value="" selected disabled>Please select</option-->
+                                    <option data-subtext="" value="0" selected>Tudo</option>
+                                    <option data-subtext="SP" value="Marília">Marília</option>
 
+                                    </option>
+                                </select>
+                                <label for="floatingSelect">Comarca:
+                                    <i data-bs-toggle="tooltip" data-bs-placement="top" title="Informe a comarca para cálculo. É importante que seja escolhida a comarca em que o processo tramita, uma vez que existem suspensões de prazos e feriados municipais específicos para cada comarca.
+                                    Nem todas as comarcas estão disponíves para cálculo."
+                                        class="fas fa-info-circle fa-sm tooltip-helper"></i></label>
+
+                            </div>
+                        </div>
 
 
 
