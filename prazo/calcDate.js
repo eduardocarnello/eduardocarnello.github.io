@@ -260,10 +260,7 @@ function calculateResults(e) {
     moment.defaultFormat = "DD/MM/YYYY"
     dateForCalc = moment(dateForCalc, 'DD/MM/YYYY')
 
-    const sistDown = [
-        { downDate: '08/07/2022', description: "Indisponibilidade no Saj" },
 
-    ]
 
     //check if a date is a downDate and return its description
     function downDateDescription(date) {

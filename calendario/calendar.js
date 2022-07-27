@@ -1,5 +1,22 @@
 moment.locale('pt-br');
 
+function loadJSON(callback) {
+    var xobj = new XMLHttpRequest();
+    xobj.overrideMimeType("application/json");
+    xobj.open('GET', 'https://www.tjsp.jus.br/CanaisComunicacao/Feriados/PesquisarFeriados?nomeMunicipio=Mar%C3%ADlia&codigoMunicipio=6830&ano=2022.json', true);
+    xobj.onreadystatechange = function () {
+        if (xobj.readyState == 4 && xobj.status == "200") {
+            callback(JSON.parse(xobj.responseText));
+        }
+    };
+    xobj.send(null);
+}
+loadJSON(function (json) {
+    console.log(json); // this will log out the json object
+});
+
+
+
 $(document).ready(function () {
     // Toggle menu on click
     //onclick #menu-toggler and screen width < 768px, add overflow: hidden to body
@@ -56,7 +73,7 @@ console.log(marilia);
 
 
 //merge nationalHolidays, marilia and SPHolidays arrays
-var myHolidays = nationalHolidays.concat(marilia, SP, amendment);
+var myHolidays = nationalHolidays.concat(marilia, SP, amendment, sistDown);
 
 console.log(myHolidays);
 
@@ -156,15 +173,11 @@ moment
 moment.defaultFormat = "DD/MM/YYYY"
 
 
-const sistDown = [
-    { downDate: '08/07/2022', description: "Indisponibilidade no Saj" },
-
-]
 
 //check if a date is a downDate and return its description
 function downDateDescription(date) {
     var down = sistDown.find(function (down) {
-        return down.downDate === date;
+        return down.downDate;
     });
     return down ? down.description : false;
 }
@@ -263,7 +276,7 @@ for (var i = 0; i < listaDias.length; i++) {
         date: currentDay,
         isWeekDay: moment(currentDay, 'DD/MM/YYYY').isBusinessDay() && currentDay != moment(dateForCalc, 'DD/MM/YYYY').format('DD/MM/YYYY') && (currentDayTypeSusp == false),
         typeofDay: type,
-        _type: currentDayTypeSusp == true ? `Prorrogação de prazo: ${downDateDescription(moment(currentDay, 'DD/MM/YYYY').format('DD/MM/YYYY'))}` : currentDay == moment(dateForCalc, 'DD/MM/YYYY').format('DD/MM/YYYY') ? 'Dia do ato (não conta)' : currentDayType == "Prazo" ? 'test' : currentDayType == "Dia Útil" ? moment(currentDay, 'DD/MM/YYYY').locale('pt-br').format('dddd') : holidayName(moment(currentDay, 'DD/MM/YYYY').format('DD/MM/YYYY')) ? holidayName(moment(currentDay, 'DD/MM/YYYY').format('DD/MM/YYYY')) : currentDay == dueDate.format() ? moment(currentDay, 'DD/MM/YYYY').locale('pt-br').format('dddd') + ' (Fim do Prazo)' : moment(currentDay, 'DD/MM/YYYY').locale('pt-br').format('dddd')
+        _type: currentDayTypeSusp == true || currentDayTypeSusp == false ? `Prorrogação de prazo: ${downDateDescription(moment(currentDay, 'DD/MM/YYYY').format('DD/MM/YYYY'))}` : currentDay == moment(dateForCalc, 'DD/MM/YYYY').format('DD/MM/YYYY') ? 'Dia do ato (não conta)' : currentDayType == "Prazo" ? 'test' : currentDayType == "Dia Útil" ? moment(currentDay, 'DD/MM/YYYY').locale('pt-br').format('dddd') : holidayName(moment(currentDay, 'DD/MM/YYYY').format('DD/MM/YYYY')) ? holidayName(moment(currentDay, 'DD/MM/YYYY').format('DD/MM/YYYY')) : currentDay == dueDate.format() ? moment(currentDay, 'DD/MM/YYYY').locale('pt-br').format('dddd') + ' (Fim do Prazo)' : moment(currentDay, 'DD/MM/YYYY').locale('pt-br').format('dddd')
         ,
 
 
@@ -351,8 +364,20 @@ for (var i = 0; i < myHolidays.length; i++) {
     eventDates.push({
         date: moment(myHolidays[i].holidayDate, 'DD/MM/YYYY').toDate(),
         message: myHolidays[i].description,
+
     });
 }
+
+//get all the dates from sistDown array and push them to eventDates only if city is Marília
+
+for (var i = 0; i < sistDown.length; i++) {
+    eventDates.push({
+        date: moment(sistDown[i].downDate, 'DD/MM/YYYY').toDate(),
+        message: `${sistDown[i].description} - ${sistDown[i].city}`,
+        class: 'susp'
+    });
+}
+
 
 
 console.log(listaDiasComTipo)
@@ -371,7 +396,7 @@ if (calcType == 'workingDays') {
         daysList.push({
             date: moment(listaDiasComTipo[i].date, 'DD/MM/YYYY').toDate(),
             message: (listaDiasComTipo[i].isWeekDay == true && listaDiasComTipo[i]._type.includes('Fim do Prazo') == false) || (listaDiasComTipo[i]._type == "sábado" || listaDiasComTipo[i]._type == "domingo") ? '' : listaDiasComTipo[i]._type,
-            class: listaDiasComTipo[i]._type == "Dia do ato (não conta)" ? "start" : listaDiasComTipo[i]._type.includes('Prorrogação de prazo') ? "susp" : listaDiasComTipo[i]._type.includes('Fim do Prazo') ? "end" : (i > days) ? listaDiasComTipo[i].typeofDay == 'Feriado' ? 'red' : 'susp' : 'blue',
+            class: listaDiasComTipo[i]._type == "Dia do ato (não conta)" ? "start" : listaDiasComTipo[i]._type.includes('Indisponibilidade') ? "susp" : listaDiasComTipo[i]._type.includes('Fim do Prazo') ? "end" : (i > days) ? listaDiasComTipo[i].typeofDay == 'Feriado' ? 'red' : 'susp' : 'blue',
         });
     }
 }
@@ -442,7 +467,7 @@ consultInline()
 
 
 
-
+$('[data-tooltip="Indisponibilidade no Saj"]').css('background-color', '#fffded !important');
 
 //document.getElementById("table-holidays").innerHTML = html;
 
@@ -471,9 +496,9 @@ function typeOfDay() {
         type = 'Feriado';
     }
     else if (sistDown.find(function (down) {
-        return down.downDate === currentDay;
+        return down.downDate;
     }
-    ) && currentDay >= originalDueDate.format()) {
+    )) {
         //é uma suspensão
         currentDayTypeSusp = true;
         currentDayType = "Indisponibilidade";
@@ -541,6 +566,8 @@ function calcDate() {
     //}
 
     //onclick button type reset, do this
+
+
 
 
 
