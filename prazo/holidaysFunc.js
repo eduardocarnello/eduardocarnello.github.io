@@ -89,7 +89,7 @@ function holidaysFunc(currentYear, expectedFinalYear, Easter) {
         );
 
         SP.push(
-            { holidayDate: currentYear == 2020 ? "" : `09/07/${i}`, description: currentYear == 2020 ? '' : "Revolução Constitucionalista de São Paulo" }
+            { holidayDate: currentYear == 2020 ? "" : `09/07/${i}`, description: currentYear == 2020 ? '' : "Revolução Constitucionalista de São Paulo", state: 'SP' }
         );
 
     }

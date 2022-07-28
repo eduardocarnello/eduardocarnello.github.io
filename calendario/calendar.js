@@ -1,19 +1,29 @@
 moment.locale('pt-br');
 
-function loadJSON(callback) {
-    var xobj = new XMLHttpRequest();
-    xobj.overrideMimeType("application/json");
-    xobj.open('GET', 'https://www.tjsp.jus.br/CanaisComunicacao/Feriados/PesquisarFeriados?nomeMunicipio=Mar%C3%ADlia&codigoMunicipio=6830&ano=2022.json', true);
-    xobj.onreadystatechange = function () {
-        if (xobj.readyState == 4 && xobj.status == "200") {
-            callback(JSON.parse(xobj.responseText));
-        }
-    };
-    xobj.send(null);
-}
-loadJSON(function (json) {
-    console.log(json); // this will log out the json object
-});
+
+
+/*const LoadData = async () => {
+    try {
+        const url = 'http://cors-anywhere.herokuapp.com/https://www.tjsp.jus.br/CanaisComunicacao/Feriados/PesquisarSuspensoes?nomeMunicipio=Mar%C3%ADlia&codigoMunicipio=6830&ano=2022'
+
+        const res = await fetch(url, {
+            method: 'GET', // *GET, POST, PUT, DELETE, etc.
+            mode: 'cors', // no-cors, *cors, same-origin
+            cache: 'no-cache'
+        });
+        var data = []
+        data = res.json();
+        //console.log(data);
+        return data;
+    } catch (err) {
+        console.error(err)
+    }
+};
+
+LoadData().then((data) => { console.log(data) })*/
+
+
+
 
 
 
@@ -82,8 +92,11 @@ function holidayName(date) {
     var holiday = myHolidays.find(function (holiday) {
         return holiday.holidayDate === date;
     });
-    return holiday ? holiday.description : false;
+    return holiday ? `${holiday.description} - ${holiday.state}` : false;
 }
+
+
+
 
 
 
@@ -363,7 +376,7 @@ var eventDates = [];
 for (var i = 0; i < myHolidays.length; i++) {
     eventDates.push({
         date: moment(myHolidays[i].holidayDate, 'DD/MM/YYYY').toDate(),
-        message: myHolidays[i].description,
+        message: myHolidays[i].state != undefined ? `${myHolidays[i].description} - ${myHolidays[i].state}` : `${myHolidays[i].description}`,
 
     });
 }
@@ -371,11 +384,14 @@ for (var i = 0; i < myHolidays.length; i++) {
 //get all the dates from sistDown array and push them to eventDates only if city is Marília
 
 for (var i = 0; i < sistDown.length; i++) {
-    eventDates.push({
-        date: moment(sistDown[i].downDate, 'DD/MM/YYYY').toDate(),
-        message: `${sistDown[i].description} - ${sistDown[i].city}`,
-        class: 'susp'
-    });
+    //push only if city is Marília
+    if (sistDown[i].city == 'Marília') {
+        eventDates.push({
+            date: moment(sistDown[i].downDate, 'DD/MM/YYYY').toDate(),
+            message: `${sistDown[i].description} - ${sistDown[i].city}`,
+            class: 'susp'
+        });
+    }
 }
 
 
@@ -474,13 +490,7 @@ $('[data-tooltip="Indisponibilidade no Saj"]').css('background-color', '#fffded 
 
 
 
-finalDate.innerHTML = moment(dueDate).format("DD/MM/YYYY");
 
-
-//document.querySelector('#loading').style.display = 'none';
-console.log('ok aqui.');
-
-console.log('Please check your numbers.');
 
 function typeOfDay() {
     if (currentDay == initialDate.format()) {
