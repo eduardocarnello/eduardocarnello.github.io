@@ -30,6 +30,10 @@
   display: none;
 }
 
+option#selecteditem {
+  display: none !important;
+}
+
 @media screen and (max-width: 991px) {
   .topnav a:not(:first-child) {
     display: none;
@@ -338,7 +342,16 @@ h2#finalDate {
 }
 
 .hm-gradient {
-  background: linear-gradient(3deg, rgb(211, 224, 255) 26.2%, rgb(255, 255, 255) 100%) right/10000px 1730px no-repeat rgb(255, 255, 255);
+  background: -webkit-gradient(linear, right top, left bottom, from(white), to(rgb(211, 224, 255))) fixed;
+}
+
+.tutorial-icon {
+  font-weight: 400 !important;
+  font-size: 0.4em;
+  line-height: 0;
+  vertical-align: super;
+  color: #363795;
+  cursor: pointer;
 }
 
 .darken-grey-text {
@@ -424,6 +437,9 @@ input,
 input:focus {
     font-size: 16px;
   }
+  .form3 {
+    width: 15%;
+  }
 }
 input[type=tel],
 input[type=text],
@@ -503,6 +519,9 @@ body {
   flex-direction: column;
   justify-content: center;
   align-items: center;
+  margin: 0;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
 }
 
 .container {

@@ -1,4 +1,5 @@
 moment.locale('pt-br');
+var chosenCity = 0
 
 
 
@@ -51,7 +52,7 @@ var currentYear = 1900
 var expectedFinalYear = 2099
 const days = 1
 
-var { estado, SP, marilia, nationalHolidays } = holidaysFunc(currentYear, expectedFinalYear, Easter);
+var { estado, stateHolidays, cityHolidays, nationalHolidays } = holidaysFunc(currentYear, expectedFinalYear, Easter);
 
 
 
@@ -71,19 +72,19 @@ var estado = 'SP'
 
 
 
-console.log(estado == SP)
+
 
 //create an array with municipalities and their respective holidays
 
 
-console.log(marilia);
+console.log(cityHolidays);
 //get all the dates of christmas for every year from the current year to the next year
 
 
 
 
 //merge nationalHolidays, marilia and SPHolidays arrays
-var myHolidays = nationalHolidays.concat(marilia, SP, amendment, sistDown);
+var myHolidays = nationalHolidays.concat(cityHolidays, stateHolidays, amendment, sistDown);
 
 console.log(myHolidays);
 
@@ -372,28 +373,127 @@ html += "</table>";
 
 //create an array called eventDates with the holidays dates and their descriptions. Also convert the date to a Date object
 var eventDates = [];
-
 for (var i = 0; i < myHolidays.length; i++) {
-    eventDates.push({
-        date: moment(myHolidays[i].holidayDate, 'DD/MM/YYYY').toDate(),
-        message: myHolidays[i].state != undefined ? `${myHolidays[i].description} - ${myHolidays[i].state}` : `${myHolidays[i].description}`,
+    //show all the holidays that have no city and those that city='Marília'
+    if (chosenCity == 0) {
+        eventDates.push({
+            date: moment(myHolidays[i].holidayDate, 'DD/MM/YYYY').toDate(),
+            message: myHolidays[i].city != undefined ? `${myHolidays[i].description}  - ${myHolidays[i].city}` : `${myHolidays[i].description}`,
 
-    });
+        });
+    } else if (myHolidays[i].city == undefined || myHolidays[i].city == chosenCity) {
+        eventDates.push({
+            date: moment(myHolidays[i].holidayDate, 'DD/MM/YYYY').toDate(),
+            message: myHolidays[i].state != undefined ? `${myHolidays[i].description} - ${myHolidays[i].state}` : `${myHolidays[i].description}`,
+
+        });
+    }
 }
 
 //get all the dates from sistDown array and push them to eventDates only if city is Marília
 
 for (var i = 0; i < sistDown.length; i++) {
     //push only if city is Marília
-    if (sistDown[i].city == 'Marília') {
+    if (chosenCity == 0) {
         eventDates.push({
             date: moment(sistDown[i].downDate, 'DD/MM/YYYY').toDate(),
-            message: `${sistDown[i].description} - ${sistDown[i].city}`,
+            //message: `${sistDown[i].description}`,
+            message: sistDown[i].city == undefined ? `${sistDown[i].description}` : `${sistDown[i].description} - ${sistDown[i].city}`,
+            class: 'susp'
+        });
+
+    } else if (sistDown[i].city == undefined || sistDown[i].city == chosenCity) {
+        eventDates.push({
+            date: moment(sistDown[i].downDate, 'DD/MM/YYYY').toDate(),
+            //message: `${sistDown[i].description}`,
+            message: sistDown[i].city == undefined ? `${sistDown[i].description}` : `${sistDown[i].description} - ${sistDown[i].city}`,
             class: 'susp'
         });
     }
 }
+//jquery onchange #chosenCity value, do the following
+$('select').on('change', function () {
 
+    var chosenCity = $('#chosenCity').val();
+    var eventDates = [];
+    //clear $('#consultInline')
+    $('#consultInline').empty();
+
+
+
+    for (var i = 0; i < myHolidays.length; i++) {
+        //show all the holidays that have no city and those that city='Marília'
+        if (chosenCity == 0) {
+            eventDates.push({
+                date: moment(myHolidays[i].holidayDate, 'DD/MM/YYYY').toDate(),
+                message: myHolidays[i].city != undefined ? `${myHolidays[i].description}  - ${myHolidays[i].city}` : `${myHolidays[i].description}`,
+
+
+            });
+        } else if (myHolidays[i].city == undefined || myHolidays[i].city == chosenCity) {
+            eventDates.push({
+                date: moment(myHolidays[i].holidayDate, 'DD/MM/YYYY').toDate(),
+                message: myHolidays[i].city != undefined ? `${myHolidays[i].description}  - ${myHolidays[i].city}` : `${myHolidays[i].description}`,
+
+
+            });
+        }
+    }
+
+    //get all the dates from sistDown array and push them to eventDates only if city is Marília
+
+    for (var i = 0; i < sistDown.length; i++) {
+        //push only if city is Marília
+        if (chosenCity == 0) {
+            eventDates.push({
+                date: moment(sistDown[i].downDate, 'DD/MM/YYYY').toDate(),
+                //message: `${sistDown[i].description}`,
+                message: sistDown[i].city == undefined ? `${sistDown[i].description} - ${sistDown[i].city}` : `${sistDown[i].description} `,
+                class: 'susp'
+            });
+
+        } else if (sistDown[i].city == undefined || sistDown[i].city == chosenCity) {
+            eventDates.push({
+                date: moment(sistDown[i].downDate, 'DD/MM/YYYY').toDate(),
+                //message: `${sistDown[i].description}`,
+                message: sistDown[i].city == undefined ? `${sistDown[i].description}` : `${sistDown[i].description} - ${sistDown[i].city}`,
+                class: 'susp'
+            });
+        }
+    }
+    function consultInline() {
+        $('#consultInline').calendar({
+            refresh: true,
+
+
+            type: 'date',
+            eventClass: 'darkred',
+            //eventsDates should return the array of holidays
+            //eventDates should be a function that get the dates of the holidays
+            eventDates: eventDates,
+
+
+
+            //use the myHolidays array to create a list of events
+
+
+
+
+            text: {
+                days: ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'],
+                months: ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'],
+                monthsShort: ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'],
+                today: 'Hoje',
+                now: 'Agora',
+                am: 'AM',
+                pm: 'PM'
+            },
+
+        });
+
+    }
+    consultInline()
+});
 
 
 console.log(listaDiasComTipo)
@@ -481,11 +581,21 @@ function consultInline() {
 consultInline()
 
 
+//LISTA DE FERIADOS - ARRUMAR PARA MOSTRAR APENAS ANO DO CALENDÁRIO
+/*var html = "<table class='table table-hover' border='1|1'><thead class='table-light'><tr><th scope='col' class='text-center'>#</th><th scope='col'>Data</th></tr></thead>";
+for (var i = 0; i < eventDates.length; i++) {
+    html += "<tr>";
+
+    html += "<td>" + moment(eventDates[i].date).format() + "</td>";
+    html += "<td>" + eventDates[i].message + "</td>";
+    html += "</tr>";
+}
+html += "</table>";*/
 
 
 $('[data-tooltip="Indisponibilidade no Saj"]').css('background-color', '#fffded !important');
 
-//document.getElementById("table-holidays").innerHTML = html;
+document.getElementById("table-holidays").innerHTML = html;
 
 
 

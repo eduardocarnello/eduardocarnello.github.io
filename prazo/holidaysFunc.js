@@ -6,8 +6,8 @@ const amendment = [
 ]
 
 const sistDown = [
-    { downDate: '08/07/2022', description: "Indisponibilidade no Saj", city: 'Marília' },
-    { downDate: '12/07/2022', description: "Indisponibilidade no Saj", city: 'Bauru' },
+    { downDate: '08/07/2022', description: "Indisponibilidade no Saj", },
+    { downDate: '12/07/2022', description: "Indisponibilidade no Saj", },
 
 ]
 
@@ -28,9 +28,10 @@ function Easter(Y) {
 }
 function holidaysFunc(currentYear, expectedFinalYear, Easter) {
     var estado = 'SP';
-    const marilia = [];
+    const cityHolidays = [];
+    const stateHolidays = [];
     const nationalHolidays = [];
-    const SP = [];
+
 
 
 
@@ -83,15 +84,55 @@ function holidaysFunc(currentYear, expectedFinalYear, Easter) {
 
 
         );
-        marilia.push(
-            { holidayDate: `04/04/${i}`, description: "Aniversário do Município de Marília" },
-            { holidayDate: `11/07/${i}`, description: "São Bento, Padroeiro de Marília" }
+        cityHolidays.push(
+
+            //5ª RAJ
+            //ADAMANTINA
+            { holidayDate: `13/06/${i}`, description: "Padroeiro e Fundação da Cidade", city: "Adamantina" },
+
+            //ASSIS
+            { holidayDate: `01/07/${i}`, description: "Dia do Município", city: "Assis" },
+            { holidayDate: `04/10/${i}`, description: "São Franciso, Padroeiro da Cidade", city: "Assis" },
+
+            //BASTOS
+            { holidayDate: `18/06/${i}`, description: "Fundação do Município", city: "Bastos" },
+            { holidayDate: `03/12/${i}`, description: "São Francisco Xavier, Padroeiro do Município", city: "Bastos" },
+
+            //CÂNDIDO MOTA
+            { holidayDate: `12/10/${i}`, description: "N. Sra. das Dores, Padroeira do Município", city: "Cândido Mota" },
+            { holidayDate: `26/10/${i}`, description: "Emancipação Político-Administrativa", city: "Cândido Mota" },
+
+            //DRACENA
+            { holidayDate: `08/12/${i}`, description: "Padroeira e Fundação da Cidade", city: "Dracena" },
+
+            //FLÓRIDA PAULISTA
+            { holidayDate: `25/10/${i}`, description: "Padroeira e Fundação da Cidade", city: "Flórida Paulista" },
+
+            //GÁLIA
+            { holidayDate: `19/03/${i}`, description: "São José, Padroeiro do Município", city: "Gália" },
+            { holidayDate: `14/04/${i}`, description: "Aniversário da Cidade", city: "Gália" },
+
+            //GARÇA
+            { holidayDate: `05/05/${i}`, description: "Emancipação Político-Administrativa e Dia do Menino Jesus de Aracoeli", city: "Garça" },
+            { holidayDate: `29/06/${i}`, description: "Padroeiro São Pedro e Dia da Comunidade Religiosa Municipal", city: "Garça" },
+
+
+
+
+
+
+
+            //MARÍLIA
+            { holidayDate: `04/04/${i}`, description: "Fundação da Cidade", city: "Marília" },
+            { holidayDate: `11/07/${i}`, description: "São Bento, Padroeiro da Cidade", city: "Marília" }
+
+
         );
 
-        SP.push(
+        stateHolidays.push(
             { holidayDate: currentYear == 2020 ? "" : `09/07/${i}`, description: currentYear == 2020 ? '' : "Revolução Constitucionalista de São Paulo", state: 'SP' }
         );
 
     }
-    return { estado, SP, marilia, nationalHolidays };
+    return { estado, stateHolidays, cityHolidays, nationalHolidays };
 }

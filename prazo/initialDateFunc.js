@@ -11,6 +11,7 @@ function initialDateFunc() {
         initialDate: moment(),
         currentCentury: 2022,
         today: true,
+
         popupOptions: {
             position: "bottom left"
         },
