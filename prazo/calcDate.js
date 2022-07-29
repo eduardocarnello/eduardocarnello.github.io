@@ -40,71 +40,15 @@ function calculateResults(e) {
     //excpected final year
     const expectedFinalYear = moment(initialDate).businessAdd(days).year();
     console.log(expectedFinalYear);
+    const chosenCity = 'Marília'
     //if the initialDate year is less than the dueyear
 
 
 
 
-    var { estado, SP, marilia, nationalHolidays } = holidaysFunc(currentYear, expectedFinalYear, Easter);
-
-    /*else {
-        nationalHolidays.push(
-
-            //RECESSO FORENSE E ART. 116, § 2º, DO RITJSP
-            { holidayDate: `01/01/${currentYear}`, description: "Recesso - Art. 116, § 2º do RITJSP" },
-            { holidayDate: `02/01/${currentYear}`, description: "Recesso - Art. 116, § 2º do RITJSP" },
-            { holidayDate: `03/01/${currentYear}`, description: "Recesso - Art. 116, § 2º do RITJSP" },
-            { holidayDate: `04/01/${currentYear}`, description: "Recesso - Art. 116, § 2º do RITJSP" },
-            { holidayDate: `05/01/${currentYear}`, description: "Recesso - Art. 116, § 2º do RITJSP" },
-            { holidayDate: `06/01/${currentYear}`, description: "Recesso - Art. 116, § 2º do RITJSP" },
-
-            { holidayDate: `07/01/${currentYear}`, description: "Art. 116, § 2º do RITJSP" },
-            { holidayDate: `08/01/${currentYear}`, description: "Art. 116, § 2º do RITJSP" },
-            { holidayDate: `09/01/${currentYear}`, description: "Art. 116, § 2º do RITJSP" },
-            { holidayDate: `10/01/${currentYear}`, description: "Art. 116, § 2º do RITJSP" },
-            { holidayDate: `11/01/${currentYear}`, description: "Art. 116, § 2º do RITJSP" },
-            { holidayDate: `12/01/${currentYear}`, description: "Art. 116, § 2º do RITJSP" },
-            { holidayDate: `13/01/${currentYear}`, description: "Art. 116, § 2º do RITJSP" },
-            { holidayDate: `14/01/${currentYear}`, description: "Art. 116, § 2º do RITJSP" },
-            { holidayDate: `15/01/${currentYear}`, description: "Art. 116, § 2º do RITJSP" },
-            { holidayDate: `16/01/${currentYear}`, description: "Art. 116, § 2º do RITJSP" },
-            { holidayDate: `17/01/${currentYear}`, description: "Art. 116, § 2º do RITJSP" },
-            { holidayDate: `18/01/${currentYear}`, description: "Art. 116, § 2º do RITJSP" },
-            { holidayDate: `19/01/${currentYear}`, description: "Art. 116, § 2º do RITJSP" },
-            { holidayDate: `20/01/${currentYear}`, description: "Art. 116, § 2º do RITJSP" },
+    var { estado, stateHolidays, cityHolidays, nationalHolidays } = holidaysFunc(currentYear, expectedFinalYear, Easter);
 
 
-            //EASTER HOLIDAYS
-            { holidayDate: (Easter(currentYear)).subtract(48, "days").format('DD/MM/YYYY'), description: "Emenda de Carnaval" },
-            { holidayDate: (Easter(currentYear)).subtract(47, "days").format('DD/MM/YYYY'), description: "Carnaval" },
-            { holidayDate: (Easter(currentYear)).subtract(3, "days").format('DD/MM/YYYY'), description: "Endoenças" },
-            { holidayDate: (Easter(currentYear)).subtract(2, "days").format('DD/MM/YYYY'), description: "Paixão de Cristo" },
-            { holidayDate: (Easter(currentYear)).format('DD/MM/YYYY'), description: "Páscoa" },
-            { holidayDate: (Easter(currentYear)).add(60, "days").format('DD/MM/YYYY'), description: "Corpus Christi" },
-
-            //FIXED HOLIDAYS
-            { holidayDate: `01/01/${currentYear}`, description: "Confraternização Universal" },
-            { holidayDate: currentYear >= 1965 ? `21/04/${currentYear}` : '', description: currentYear >= 1965 ? "Tiradentes" : '' },
-            { holidayDate: `01/05/${currentYear}`, description: "Dia do Trabalhador" },
-            { holidayDate: `07/09/${currentYear}`, description: "Independência do Brasil" },
-            { holidayDate: `12/10/${currentYear}`, description: "Nossa Senhora Aparecida, Padroeira do Brasil" },
-            { holidayDate: `02/11/${currentYear}`, description: "Finados" },
-            { holidayDate: `15/11/${currentYear}`, description: "Proclamação da República" },
-            { holidayDate: `08/11/${currentYear}`, description: "Dia da Justiça" },
-            { holidayDate: `25/12/${currentYear}`, description: "Natal" },
-        );
-        
-        
-        marilia.push(
-            { holidayDate: `04/07/${currentYear}`, description: "Aniversário do Município de Marília" },
-            { holidayDate: `11/07/${currentYear}`, description: "São Bento, Padroeiro de Marília" },
-        );
-
-        SP.push(
-            { holidayDate: currentYear == 2020 ? "" : `09/07/${currentYear}`, description: currentYear == 2020 ? '' : "Revolução Constitucionalista de São Paulo" }
-        )
-        
-    }*/
 
 
 
@@ -124,19 +68,29 @@ function calculateResults(e) {
 
 
 
-    console.log(estado == SP)
+
 
     //create an array with municipalities and their respective holidays
 
 
-    console.log(marilia);
+
     //get all the dates of christmas for every year from the current year to the next year
 
 
 
 
-    //merge nationalHolidays, marilia and SPHolidays arrays
-    var myHolidays = nationalHolidays.concat(marilia, SP, amendment);
+    //merge nationalHolidays, stateHolidays, amendment into one array
+    var myHolidays = nationalHolidays.concat(stateHolidays, amendment);
+
+    //merge the days from cityHolidays that the city is the same as chosenCity into myHolidays
+    for (let i = 0; i < cityHolidays.length; i++) {
+        if (cityHolidays[i].city == chosenCity) {
+            myHolidays = myHolidays.concat(cityHolidays[i]);
+        }
+    }
+
+
+
 
     console.log(myHolidays);
 
@@ -496,15 +450,7 @@ function calculateResults(e) {
 
 
     //create a table with the all the holidays dates and descriptions
-    var html = "<table class='table table-hover' border='1|1'><thead class='table-light'><tr><th scope='col' class='text-center'>#</th><th scope='col'>Data</th></tr></thead>";
-    for (var i = 0; i < myHolidays.length; i++) {
-        html += "<tr>";
 
-        html += "<td>" + myHolidays[i].holidayDate + "</td>";
-        html += "<td>" + myHolidays[i].description + "</td>";
-        html += "</tr>";
-    }
-    html += "</table>";
     //sort the holidays by date
 
     //display an inline calendar from semantic ui with the holidays
@@ -519,12 +465,32 @@ function calculateResults(e) {
     var eventDates = [];
     if (calcType == 'workingDays') {
         for (var i = 0; i < myHolidays.length; i++) {
-            eventDates.push({
-                date: moment(myHolidays[i].holidayDate, 'DD/MM/YYYY').toDate(),
-                message: myHolidays[i].description,
-            });
+            //show all the holidays that have no city and those that city='Marília'
+            if (chosenCity == 0) {
+                eventDates.push({
+                    date: moment(myHolidays[i].holidayDate, 'DD/MM/YYYY').toDate(),
+                    message: myHolidays[i].city != undefined ? `${myHolidays[i].description}  - ${myHolidays[i].city}` : `${myHolidays[i].description}`,
+
+                });
+            } else if (myHolidays[i].city == undefined || myHolidays[i].city == chosenCity) {
+                eventDates.push({
+                    date: moment(myHolidays[i].holidayDate, 'DD/MM/YYYY').toDate(),
+                    message: myHolidays[i].state != undefined ? `${myHolidays[i].description} - ${myHolidays[i].state}` : `${myHolidays[i].description}`,
+
+                });
+            }
         }
     }
+
+    var html = "<table class='table table-hover' border='1|1'><thead class='table-light'><tr><th scope='col' class='text-center'>#</th><th scope='col'>Data</th></tr></thead>";
+    for (var i = 0; i < eventDates.length; i++) {
+        html += "<tr>";
+
+        html += "<td>" + moment(eventDates[i].date).format() + "</td>";
+        html += "<td>" + eventDates[i].message + "</td>";
+        html += "</tr>";
+    }
+    html += "</table>";
 
     console.log(listaDiasComTipo)
     //create an array with all the dates of the listaDiasComTipo with the type of day
@@ -671,7 +637,7 @@ function calculateResults(e) {
 
 
 
-    //document.getElementById("table-holidays").innerHTML = html;
+    //    document.getElementById("table-holidays").innerHTML = html;
 
 
 

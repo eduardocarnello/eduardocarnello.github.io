@@ -1,5 +1,163 @@
+//if screen size is less than 768px, do the following
+//$("#countType").selectpicker('toggle');
+$("#countType").selectpicker('render');
+
+introJsFunc(false, { element: document.querySelector('#reset1'), intro: "Clique aqui para limpar rapidamente os campos <b>'Data inicial'</b> e <b>'dias'</b>. Os demais campos permanecerão com a opção escolhida para agilizar seus cálculos." });
+//store introJs object in a variable
+//var intro = introJs(false, );
+
+//onclick .tutorial-icon, call introJs
+//$('#tutorial-icon').click(introJsFunc(false, { element: document.querySelector('#reset1'), intro: "Click here to login!" }))
+
+
+if ($(window).width() < 768) {
+
+
+  $("#countType").change(function () {
+
+    //$("#countType option:selected").text($(this).val());
+
+    $("#selecteditem").val($(this).val())
+
+    $("#selecteditem").attr("title", $(this).find(":selected").attr("title"));
+
+
+
+
+
+
+    //show the title atribute of the selected option
+    //$("#selecteditem").val($(this).find("option:selected"));
+    $("#selecteditem").text($("#countType option:selected").text());
+    //shot as text the title attribute of the selected option
+
+    $("#selecteditem").text($(this).find("option:selected").attr("title"));
+
+    $("#selecteditem").prop('selected', true);
+    $("#selecteditem").show();
+  })
+}
+
+
+
+//show the text of the selected option countType
+$("#countType").change(function () {
+  $("#selecteditem").text($(this).find("option:selected").text());
+}
+);
+
+//toggle countType  ;
+
+
+
+
+
+
+
+
+//jquery get second option of class "dropdown-menu inner show"
+//$(".dropdown-menu.inner.show li:nth-child(2)").text();
+
+
+
+
 
 var html = '';
+function introJsFunc(a, b) {
+  $("#countType").selectpicker('toggle');
+  $("#countType").selectpicker('toggle');
+
+  var intro = introJs();
+  intro.setOptions(
+
+    {
+      nextLabel: 'Próximo',
+      hidePrev: true,
+      prevLabel: 'Voltar',
+      doneLabel: 'Concluir',
+      disableInteraction: true,
+      dontShowAgain: a,
+
+      steps: [
+        {
+          intro: "<p>Este é um <b>tutorial</b> de como utilizar esta calculadora de prazos.</p><p> Siga os passos para saber como proceder em cada campo.</p>",
+        },
+        {
+          element: document.querySelector('#divCity'),
+          intro: "<p>Selecione a comarca para cálculo.</p><p> É <b>importante</b> selecionar corretamente para que o cálculo considere <b>feriados e suspensões</b> daquela comarca.",
+        },
+        {
+          element: document.querySelector('#divCalcType'),
+          intro: "Selecione entre dias <b>úteis</b> ou <b>corridos</b> conforme a forma de contagem para o processo em questão."
+        },
+
+        {
+          element: document.querySelector('.form3'),
+          intro: "<p>Nessa opção são exibidas os tipos de contagem.</p><p> Veja quais são no próximo passo.</p> "
+        },
+        {
+          element: document.querySelector('.dropdown-menu.show'),
+          intro: "<p>Selecione entre <b>'do ato</b>', <b>'da disponibilização no DJE'</b>, ou <b>'da publicação no DJE'</b>.</p><p> Veja mais detalhes no próximo passo.</p>",
+        },
+        {
+          element: document.querySelector('ul.dropdown-menu.inner.show :nth-child(2)'),
+          intro: "<p>Ao selecionar <b>'do ato'</b>, a contagem será feita com base na data inicial fornecida.</p><p> Selecione essa opção e, no campo de data, informe a data em que o ato de intimação/citação se efetivou (ex: <b>a data da juntada do comprovante de recebimento</b>, a data do <b>recebimento da intimação</b> etc).</p> "
+        },
+        {
+          element: document.querySelector('ul.dropdown-menu.inner.show :nth-child(3)'),
+          intro: "<p><b>Atenção:</b> Não confunda a data da <b>disponibilização</b> com a data da publicação no DJE. A forma da contagem escolhida impacta diretamente o prazo final.</p><p>Para essa opção, guie-se pelo <b>dia da disponibilização no DJE</b> (essa data encontra-se no <b>cabeçalho</b> da página do DJE).</p>"
+        },
+        {
+          element: document.querySelector('ul.dropdown-menu.inner.show :nth-child(4)'),
+          intro: "<p><b>Atenção:</b> Não confunda a data da disponibilização com a data da publicação no DJE. A forma da contagem escolhida impacta diretamente o prazo final.</p><p>Para essa opção, deve-se optar pelo <b>dia útil posterior à data da disponibilização do DJE</b> (geralmente esta data consta em certidões de publicação nos autos).</p><p> Na dúvida, selecione a opção <b>da disponibilização no DJE</b> acima e informe o dia que consta no cabeçalho do DJE.</p>"
+        },
+        {
+          element: document.querySelector('#divInitialDate'),
+          intro: "Informe a <b>data de início</b> da contagem aqui."
+        },
+        {
+          element: document.querySelector('#button_calendar'),
+          intro: "Caso prefira, clique nesse ícone para abrir o calendário e selecione o dia clicando na data desejada."
+        },
+        {
+          element: document.querySelector('#divDays'),
+          intro: "<p>Informe o prazo em dias.</p><p>Caso queira, utilize os botões laterais para navegar entre os principais prazos.</p>"
+        },
+        {
+          element: document.querySelector('.tooltip-helper'),
+          intro: "<p>Alguns campos possuem esse ícone para auxiliar com informações</p><p>Passe o mouse sobre ele para ver uma pequena ajuda (caso esteja utilizando um dispositivo touch, toque sobre ele por 1 segundo para exibir a ajuda).</p>"
+        },
+        {
+          element: document.querySelector('#calcBtn'),
+          intro: "<p>Clique aqui para calcular o prazo.</p><p>O resultado será exibido abaixo.</p>"
+        },
+        b,
+
+      ],
+    }), intro.onbeforechange(function () {
+      if (this._currentStep == 4) {
+        //$("#countType").selectpicker('show');
+        $("#countType").selectpicker('toggle');
+
+
+      } if (5 >= this._currentStep <= 7) {
+        //$("#countType").selectpicker('show');
+        $("#countType").selectpicker('toggle');
+        $("#countType").selectpicker('toggle');
+      }
+      if (this._currentStep == 8) {
+        //$("#countType").selectpicker('show');
+        $("#countType").selectpicker('toggle');
+
+
+      }
+
+    }).start();
+}
+
+//jquery alert value from id="#bs-select-2-2"
+;
+
 function appendRow(id, input) {
   var html = '<div id="inputFormRow"><div class="input-group mb-3"><input id="' + id + '"type="text" name="title[]" class="form-control m-input" placeholder="Enter title" autocomplete="off"><div class="input-group-append"><button id="removeRow" type="button" class="btn btn-danger">Remove</button></div></div>';
   $('#newRow').append(html);
@@ -250,10 +408,13 @@ $(document).ready(function () {
 
     document.querySelector('#results').style.display = 'none !important';
     // Show loader
-    document.getElementById('deadlineCalc').reset();
+    //reset all fields but the floatingSelect calcType and countType
+    $('#initialDate').val('');
+    $('#days').val('');
+
     //document.querySelector('#loading').style.display = 'block';
     // Set timer
-    document.getElementById('initialDate').value = '';
+
     mask.updateOptions({
       mask: '',
       commit: (value, masked) => {
@@ -432,3 +593,56 @@ $("#days").keydown(function (e) {
     e.preventDefault();
   }
 });
+
+//on document ready
+$(document).ready(function () {
+  $("#calcBtn").click(function () {
+    $('html, body').animate({
+      scrollTop: $("#reportBtn").offset().top
+    }, 500);
+  });
+
+  $("#button").click(function () {
+    $('html, body').animate({
+      scrollTop: $("#myDiv").offset().top
+    }, 2000);
+  })
+})
+
+//get the text from selected option from countType and show it as label for initialDate
+$(document).ready(function () {
+  $("#countType").change(function () {
+    var selected = $(this).children("option:selected").text();
+    //get the value from selected option
+    var tooltip;
+    //case the selected option value is 0, create a var for tooltip
+    if ($(this).val() == "0") {
+      tooltip = '<p>A data do ato pode ser a data da <b>juntada do comprovante de intimação</b> nos autos, a data do <b>recebimento da intimação</b> (quando aplicável; ex: ações do JEC) ou mesmo a data em que o ato se efetivou para o início da contagem do prazo (por exemplo, a data da publicação no DJE).</p>';
+    }
+    //case the selected option value is 1, create a var for tooltip
+    else if ($(this).val() == "1") {
+      tooltip = '<p><b>Atenção:</b> Não confunda a data da disponibilização com a data da publicação no DJE. A forma da contagem escolhida impacta diretamente o prazo final.</p><p>Para essa opção, guie-se pelo <b>dia da disponibilização no DJE</b> (essa data encontra-se no <b>cabeçalho</b> da página do DJE).</p>';
+    }
+    //case the selected option value is 2, create a var for tooltip
+    else if ($(this).val() == "2") {
+      tooltip = "<p><b>Atenção:</b> Não confunda a data da disponibilização com a data da publicação no DJE. A forma da contagem escolhida impacta diretamente o prazo final.</p><p>Para essa opção, deve-se optar pelo <b>dia útil posterior à data da disponibilização do DJE</b> (geralmente esta data consta em certidões de publicação nos autos).</p><p> Na dúvida, selecione a opção <b>da disponibilização no DJE</b> acima e informe o dia que consta no cabeçalho do DJE.</p>";
+    }
+    //case the selected option value is 3, create a var for tooltip
+    else if ($(this).val() == "3") {
+      tooltip = "Intimação no Portal";
+    }
+
+
+
+    //show the selected inside #countFormatLabel but without deleting the previous text and without stacking the text on every change
+    $("#countFormatLabel").html("Data " + selected + ": " + "<i data-bs-toggle='tooltip' data-bs-html='true' data-bs-placement='top' class='fas fa-info-circle fa-sm tooltip-helper' aria-hidden='true' title='" + tooltip + "' aria-label='" + tooltip + "' class='fas fa-info-circle fa-sm tooltip-helper'></i>");
+    $('[data-bs-toggle="tooltip"]').tooltip();
+
+
+
+
+
+
+  });
+}
+);
