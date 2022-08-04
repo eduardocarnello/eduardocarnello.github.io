@@ -1,13 +1,121 @@
-//if screen size is less than 768px, do the following
-//$("#countType").selectpicker('toggle');
+
+//include the   'async':false   parameter or the object data won't get captured when loading
+
+var json = $.getJSON({ 'url': "jsonFile/default.json", 'async': false });
+
+//The next line of code will filter out all the unwanted data from the object.
+json = JSON.parse(json.responseText);
+
+//You can now access the json variable's object data like this json.a and json.c
+
+console.log(json);
+
+
+
+
+
+
+
+
+
+
+//ondocumentready
+//on click button with id="saveBtn" do the following
+$("#savebtn").click(function (e) {
+  e.preventDefault();
+  $.getJSON("https://servicodados.ibge.gov.br/api/v3/agregados/1736/periodos/202206/variaveis/44?localidades=N1[all]", function (data) {
+    //transforma o json em object
+    var obj = data1;
+    //show the first object
+    console.log(obj);//*/
+
+    var eventsholded = ['event1', 'event2', 'event3'];
+
+    //push object via ajax using type=GET, dataType=json, data=obj, url="jsonFile/index.php"
+
+    var xhr = new XMLHttpRequest(),
+      jsonArr = [],
+      method = "GET",
+      jsonRequestURL = "jsonFile/";
+    e.stopImmediatePropagation();
+    xhr.open(method, jsonRequestURL, true);
+    xhr.onreadystatechange = function () {
+      if (xhr.readyState == 4 && xhr.status == 200) {
+        // we convert your JSON into JavaScript object
+        //var obj = JSON.parse(data);
+
+        // we add new value:
+        console.log(obj)
+        jsonArr.push(obj);
+
+        // we send with new request the updated JSON file to the server:
+        xhr.open("POST", jsonRequestURL, true);
+        xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+        // if you want to handle the POST response write (in this case you do not need it):
+        xhr.onreadystatechange = function () { /* handle POST response */ };
+        xhr.send("jsonTxt=" + JSON.stringify(jsonArr));
+        // but on this place you have to have a server for write updated JSON to the file
+        return false;
+      }
+    };
+    xhr.send(null);
+  }
+  );
+
+  /*$.ajax
+    ({
+      type: "GET",
+      dataType: 'json',
+      async: false,
+      url: 'jsonFile/index.php',
+      data: { data: JSON.stringify(obj) },
+      success: function () { alert("Thanks!"); },
+      failure: function () { alert("Error!"); }
+    });*/
+
+
+  /*var eventsholded = [];
+  //push to eventsholded array this "test"
+ 
+  eventsholded.push({ "a": "b", "c": "green" });
+  $.ajax
+    ({
+      type: "GET",
+      dataType: 'json',
+      async: false,
+      url: 'jsonFile/index.php',
+      data: { data: JSON.stringify(eventsholded) },
+      success: function () { alert("Thanks!"); },
+      failure: function () { alert("Error!"); }
+    });
+  alert(JSON.stringify(eventsholded))*/
+});
+
+
+// file system module to perform file operations
+
+
+
+
+// json data
+
+
+
+
+
 $("#countType").selectpicker('render');
 
-introJsFunc(false, { element: document.querySelector('#reset1'), intro: "Clique aqui para limpar rapidamente os campos <b>'Data inicial'</b> e <b>'dias'</b>. Os demais campos permanecerão com a opção escolhida para agilizar seus cálculos." });
+introJsFunc(true);
 //store introJs object in a variable
 //var intro = introJs(false, );
 
-//onclick .tutorial-icon, call introJs
-//$('#tutorial-icon').click(introJsFunc(false, { element: document.querySelector('#reset1'), intro: "Click here to login!" }))
+//onclick .tutorial-icon, call introJsFunc
+$("#tutorial-icon").click(() => {
+  introJsFunc(false);
+}
+);
+
+
 
 
 if ($(window).width() < 768) {
@@ -63,7 +171,7 @@ $("#countType").change(function () {
 
 
 var html = '';
-function introJsFunc(a, b) {
+function introJsFunc(a) {
   $("#countType").selectpicker('toggle');
   $("#countType").selectpicker('toggle');
 
@@ -131,7 +239,6 @@ function introJsFunc(a, b) {
           element: document.querySelector('#calcBtn'),
           intro: "<p>Clique aqui para calcular o prazo.</p><p>O resultado será exibido abaixo.</p>"
         },
-        b,
 
       ],
     }), intro.onbeforechange(function () {
@@ -595,19 +702,12 @@ $("#days").keydown(function (e) {
 });
 
 //on document ready
-$(document).ready(function () {
-  $("#calcBtn").click(function () {
-    $('html, body').animate({
-      scrollTop: $("#reportBtn").offset().top
-    }, 500);
-  });
 
-  $("#button").click(function () {
-    $('html, body').animate({
-      scrollTop: $("#myDiv").offset().top
-    }, 2000);
-  })
-})
+//on form submit #calcBtn scroll to #finalDate div
+
+
+
+
 
 //get the text from selected option from countType and show it as label for initialDate
 $(document).ready(function () {

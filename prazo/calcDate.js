@@ -10,21 +10,47 @@ moment.updateLocale('pt-br', {
 
 
 document.getElementById('deadlineCalc').addEventListener('submit', function (e) {
+
     e.preventDefault();
     // Hide results
     if (document.querySelector('#results').style.display == '' || document.querySelector('#results').style.display == 'none') {
         console.log('yes')
-        setTimeout(calculateResults, 500);
+
+        setTimeout(calculateResults, 500)
+
+
+
+
+
+
+
+
+
+        //after the setTimeout, scroll to #finalDate
+
+
+
     } else {
-        document.querySelector('#results').style.display = 'none';
+
         console.log('no')
+
         setTimeout(calculateResults, 0);
     }
 
+})
+//scroll to #finalDate
+
+
+$('#calcBtn').click(function (e) {
+    $('html,body').animate({
+        scrollTop: $("#results").offset().top
+    },
+        100);
+
 });
 
+function calculateResults() {
 
-function calculateResults(e) {
 
     // UI Vars
     let initialDate = moment($('#initialDate').val(), 'DD/MM/YYYY');   //dia do ato
@@ -537,19 +563,13 @@ function calculateResults(e) {
     var events = [
         { date: new Date(moment().format('YYYY-M-DD')), message: 'hi' }]
 
-    $("#reportBtn").click(function () {
-
-        $('html,body').animate({
-            scrollTop: $("#listReport").offset().top
-        },
-            500);
+    $('#collapseReport').on('shown.bs.collapse', function () {
+        this.scrollIntoView({ behavior: "smooth" });
     });
-    $("#inlineCalendarBtn").click(function () {
 
-        $('html,body').animate({
-            scrollTop: $("#collapseCalendar").offset().top
-        },
-            500);
+
+    $('#collapseCalendar').on('shown.bs.collapse', function () {
+        this.scrollIntoView({ behavior: "smooth" });
     });
 
 
@@ -643,8 +663,18 @@ function calculateResults(e) {
 
 
     finalDate.innerHTML = moment(dueDate).format("DD/MM/YYYY");
-
+    //append div #results
+    //$('#results').append(html);
     document.querySelector('#results').style.display = 'block';
+    //scroll to results
+
+
+    document.querySelector('#results').scrollIntoView({ behavior: 'smooth' })
+
+
+
+
+
     //document.querySelector('#loading').style.display = 'none';
     console.log('ok aqui.');
 
@@ -682,6 +712,7 @@ function calculateResults(e) {
             type = 'Dia Útil';
         }
     }
+
 }
 
 
@@ -689,54 +720,4 @@ function calculateResults(e) {
 
 
 // Clear error
-function clearError() {
-    document.querySelector('.alert').remove();
-}
-function calcDate() {
 
-
-    //ondocumentready
-
-
-
-
-    //$('#calcDate').click(() => {
-
-
-
-
-
-    //var resultModal = new bootstrap.Modal(document.getElementById('exampleModal'))
-
-    //declare variables, getting the values from the inputs
-
-    //const contForm = $('#contForm').va();
-
-    //const workDay = $('#workDay').val();,
-    var
-        primeiroDiaContagem,
-        diaAto = moment('01/07/2022', 'DD/MM/YYYY'),
-        prazoPessoal,
-        dataFinal,
-        prazoDJE,
-        mostrar,
-        i = 0,
-        suspInicio = [],
-        suspFinal = [],
-        currentYear,
-        RevolucaoConst;
-
-
-
-    //Lista de Feriados cujo cálculo depende da Páscoa
-
-
-    // Verifica se houve indisponibilidade de peticionamento no dia final e, enquanto for uma data com indisponibilidade, prorroga o prazo final para o primeiro dia útil subsequente
-    //while (indisponibilidades.hasOwnProperty(dataFinal.format())) {
-    //dataFinal = dataFinal.nextBusinessDay()
-    //}
-
-    //onclick button type reset, do this
-
-
-}
