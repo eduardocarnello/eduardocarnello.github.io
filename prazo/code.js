@@ -11,6 +11,10 @@ json = JSON.parse(json.responseText);
 console.log(json);
 
 
+if (/Android|webOS|iPhone|iPad|iPod|BlackBerry/i.test(navigator.userAgent)) {
+  $('.selectpicker').selectpicker('mobile');
+}
+
 
 
 
