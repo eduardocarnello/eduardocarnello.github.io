@@ -80,8 +80,8 @@ $("#button_calendar").calendar({
   on: "click",
   centuryBreak: 90,
   currentCentury: 2022,
-  today: true,
-  closabe: true,
+
+  closabe: false,
 
   onSelect: function (date) {
     newValue = moment(date).format("DD/MM/YYYY");
@@ -135,6 +135,8 @@ $("#button_calendar").calendar({
   pegames: $("#initialDate").val(),
 });
 
+
+
 console.log('dataformat fora: ' + dataformat);
 
 pegames = $("#initialDate").val();
@@ -143,6 +145,9 @@ pegames = $("#initialDate").val();
 
 
 $(document).ready(function () {
+  $('span.next.link').click(function () {
+    console.log('hi')
+  })
 
   $(function () {
     $(document).on("click", "input[type=tel], input[type=tel]", function () {

@@ -12,6 +12,8 @@ moment.updateLocale('pt-br', {
 document.getElementById('deadlineCalc').addEventListener('submit', function (e) {
 
     e.preventDefault();
+    $('#collapseReport').collapse('hide');
+    $('#collapseCalendar').collapse('hide');
     // Hide results
     if (document.querySelector('#results').style.display == '' || document.querySelector('#results').style.display == 'none') {
         console.log('yes')
@@ -60,8 +62,17 @@ function calculateResults() {
     //    let startDay                                                                //dia de início do prazo
     //data final do prazo
     const calcType = $('#calcType').val();
+    const calcTypeText = $('#calcType option:selected').text();
     const countType = $('#countType').val();
+    const countTypeText = $('#countType option:selected').text();
     const finalDate = document.getElementById('finalDate');                     //input do dia final do prazo
+    const printInitialDate = document.getElementById('printInitialDate');       //input do dia inicial do prazo
+
+    const printDays = document.getElementById('printDays');                     //input do dia final do prazo
+    const printCountType = document.getElementById('printCountType');           //input do dia final do prazo
+    const printCalcType = document.getElementById('printCalcType');             //input do dia final do prazo
+    const printCity = document.getElementById('printCity');                     //input do dia final do prazo
+
     var currentYear = moment(initialDate).year();
     //excpected final year
     const expectedFinalYear = moment(initialDate).businessAdd(days).year();
@@ -660,9 +671,51 @@ function calculateResults() {
     //    document.getElementById("table-holidays").innerHTML = html;
 
 
+    //print a table in id=results with the results of the calculation (chosenCity, initialDate, dueDate, days, caclType, countType)  
+    function printResults(chosenCity, initialDate, dueDate, days, caclType, countType) {
+        var html = '<table class="table table-bordered table-striped table-hover">';
+        html += '<thead><tr><th>Cidade</th><th>Data Inicial</th><th>Data Final</th><th>Dias</th><th>Tipo de Cálculo</th><th>Tipo de Contagem</th></tr></thead>';
+        html += '<tbody><tr><td>' + chosenCity + '</td><td>' + initialDate + '</td><td>' + dueDate + '</td><td>' + days + '</td><td>' + caclType + '</td><td>' + countType + '</td></tr></tbody>';
+        html += '</table>';
+        $('#results').html(html);
+    }
 
 
-    finalDate.innerHTML = moment(dueDate).format("DD/MM/YYYY");
+    //print a table in id=results with the results of the calculation (chosenCity, initialDate, dueDate, days, caclType, countType)
+
+
+
+
+
+
+
+    var html = '<table class="table  table-bordered table-hover table-condensed">';
+
+
+    //display the above results in the table with two columns like this, but I need that finalDate be outside the table, first and with h2 tag
+    //Dados | Informados pelo Usuário
+    html += '<h3 class="text"><b>Prazo:</b>'
+
+    html += '<h2 class="heading display-3 pb-5 text-center py-3" id="finalDate"> ' + moment(dueDate).format("DD/MM/YYYY") + '</h>';
+    html += '<h4 class="text-center"><b>Dados da Contagem</b>'
+    html += '<tbody><tr><td>Comarca do Cálculo:</td><td>' + chosenCity + '</td></tr>';
+    html += '<tr><td>Forma da Contagem:</td><td>' + calcTypeText + '</td ></tr > ';
+
+    html += '<tr><td>Data ' + countTypeText + ':</td><td>' + moment(initialDate).format("DD/MM/YYYY") + '</td></tr > ';
+    if (countType == '1') {
+        html += '<tr><td>Data da Publicação::</td><td>' + moment(dateForCalc).format("DD/MM/YYYY") + '</td></tr > ';
+    }
+    html += '<tr><td>Dias: </td><td>' + days + '</td></tr>';
+    html += '<tr class="table-active"><td>Prazo: </td><td>' + moment(dueDate).format("DD/MM/YYYY") + '</td></tr></tbody>';
+
+    html += '</table>';
+    $('#printResults').html(html);
+
+
+
+
+
+
     //append div #results
     //$('#results').append(html);
     document.querySelector('#results').style.display = 'block';

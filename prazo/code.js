@@ -1,19 +1,27 @@
+//ondocumentready
+$(document).ready(function () {
+
+  $("#countType").selectpicker('refresh')
+
+})
+//if selectpicker is visible, hide it
+
+
+
+
 
 //include the   'async':false   parameter or the object data won't get captured when loading
-
+/*
 var json = $.getJSON({ 'url': "jsonFile/default.json", 'async': false });
-
+ 
 //The next line of code will filter out all the unwanted data from the object.
 json = JSON.parse(json.responseText);
-
+ 
 //You can now access the json variable's object data like this json.a and json.c
-
+ 
 console.log(json);
-
-
-if (/Android|webOS|iPhone|iPad|iPod|BlackBerry/i.test(navigator.userAgent)) {
-  $('.selectpicker').selectpicker('mobile');
-}
+ 
+*/
 
 
 
@@ -25,18 +33,18 @@ if (/Android|webOS|iPhone|iPad|iPod|BlackBerry/i.test(navigator.userAgent)) {
 
 //ondocumentready
 //on click button with id="saveBtn" do the following
-$("#savebtn").click(function (e) {
+/*$("#savebtn").click(function (e) {
   e.preventDefault();
   $.getJSON("https://servicodados.ibge.gov.br/api/v3/agregados/1736/periodos/202206/variaveis/44?localidades=N1[all]", function (data) {
     //transforma o json em object
     var obj = data1;
     //show the first object
-    console.log(obj);//*/
-
+    console.log(obj);//
+ 
     var eventsholded = ['event1', 'event2', 'event3'];
-
+ 
     //push object via ajax using type=GET, dataType=json, data=obj, url="jsonFile/index.php"
-
+ 
     var xhr = new XMLHttpRequest(),
       jsonArr = [],
       method = "GET",
@@ -47,16 +55,16 @@ $("#savebtn").click(function (e) {
       if (xhr.readyState == 4 && xhr.status == 200) {
         // we convert your JSON into JavaScript object
         //var obj = JSON.parse(data);
-
+ 
         // we add new value:
         console.log(obj)
         jsonArr.push(obj);
-
+ 
         // we send with new request the updated JSON file to the server:
         xhr.open("POST", jsonRequestURL, true);
         xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
         // if you want to handle the POST response write (in this case you do not need it):
-        xhr.onreadystatechange = function () { /* handle POST response */ };
+        xhr.onreadystatechange = function () { /* handle POST response  };
         xhr.send("jsonTxt=" + JSON.stringify(jsonArr));
         // but on this place you have to have a server for write updated JSON to the file
         return false;
@@ -65,35 +73,36 @@ $("#savebtn").click(function (e) {
     xhr.send(null);
   }
   );
+  */
 
-  /*$.ajax
-    ({
-      type: "GET",
-      dataType: 'json',
-      async: false,
-      url: 'jsonFile/index.php',
-      data: { data: JSON.stringify(obj) },
-      success: function () { alert("Thanks!"); },
-      failure: function () { alert("Error!"); }
-    });*/
+/*$.ajax
+  ({
+    type: "GET",
+    dataType: 'json',
+    async: false,
+    url: 'jsonFile/index.php',
+    data: { data: JSON.stringify(obj) },
+    success: function () { alert("Thanks!"); },
+    failure: function () { alert("Error!"); }
+  });*/
 
 
-  /*var eventsholded = [];
-  //push to eventsholded array this "test"
+/*var eventsholded = [];
+//push to eventsholded array this "test"
  
-  eventsholded.push({ "a": "b", "c": "green" });
-  $.ajax
-    ({
-      type: "GET",
-      dataType: 'json',
-      async: false,
-      url: 'jsonFile/index.php',
-      data: { data: JSON.stringify(eventsholded) },
-      success: function () { alert("Thanks!"); },
-      failure: function () { alert("Error!"); }
-    });
-  alert(JSON.stringify(eventsholded))*/
-});
+eventsholded.push({ "a": "b", "c": "green" });
+$.ajax
+  ({
+    type: "GET",
+    dataType: 'json',
+    async: false,
+    url: 'jsonFile/index.php',
+    data: { data: JSON.stringify(eventsholded) },
+    success: function () { alert("Thanks!"); },
+    failure: function () { alert("Error!"); }
+  });
+alert(JSON.stringify(eventsholded))
+});*/
 
 
 // file system module to perform file operations
@@ -131,6 +140,7 @@ if ($(window).width() < 768) {
 
     $("#selecteditem").val($(this).val())
 
+
     $("#selecteditem").attr("title", $(this).find(":selected").attr("title"));
 
 
@@ -154,7 +164,7 @@ if ($(window).width() < 768) {
 
 //show the text of the selected option countType
 $("#countType").change(function () {
-  $("#selecteditem").text($(this).find("option:selected").text());
+  $("#selecteditem").text($(this).find("option:selected").attr("title"));
 }
 );
 
@@ -171,13 +181,12 @@ $("#countType").change(function () {
 //$(".dropdown-menu.inner.show li:nth-child(2)").text();
 
 
-
+console.log($('ul.dropdown-menu.inner.show :nth-child(2)'))
 
 
 var html = '';
-function introJsFunc(a) {
-  $("#countType").selectpicker('toggle');
-  $("#countType").selectpicker('toggle');
+function introJsFunc(a, b) {
+
 
   var intro = introJs();
   intro.setOptions(
@@ -186,13 +195,24 @@ function introJsFunc(a) {
       nextLabel: 'Próximo',
       hidePrev: true,
       prevLabel: 'Voltar',
+      nextToDone: true,
+      stepNumbersOfLabel: '/',
+      showButtons: true,
+      scrollToElement: true,
+      showStepNumbers: true,
+      exitOnOverlayClick: false,
+
+      showBullets: false,
+      scrollTo: 'element',
       doneLabel: 'Concluir',
-      disableInteraction: true,
+
+
       dontShowAgain: a,
+      dontShowAgainLabel: "Não mostrar novamente",
 
       steps: [
         {
-          intro: "<p>Este é um <b>tutorial</b> de como utilizar esta calculadora de prazos.</p><p> Siga os passos para saber como proceder em cada campo.</p>",
+          intro: "<p><b>JUSCALC - CALCULADORA DE PRAZOS</b></p><p>Este é um <b>tutorial</b> de como utilizar esta calculadora de prazos.</p><p> Siga os passos para saber como proceder em cada campo.</p>",
         },
         {
           element: document.querySelector('#divCity'),
@@ -208,11 +228,11 @@ function introJsFunc(a) {
           intro: "<p>Nessa opção são exibidas os tipos de contagem.</p><p> Veja quais são no próximo passo.</p> "
         },
         {
-          element: document.querySelector('.dropdown-menu.show'),
+          element: document.querySelector('.form3 :nth-child(3) :nth-child(1)'),
           intro: "<p>Selecione entre <b>'do ato</b>', <b>'da disponibilização no DJE'</b>, ou <b>'da publicação no DJE'</b>.</p><p> Veja mais detalhes no próximo passo.</p>",
         },
         {
-          element: document.querySelector('ul.dropdown-menu.inner.show :nth-child(2)'),
+          element: document.querySelector('.dropdown-menu :nth-child(1) li:nth-child(2)'),
           intro: "<p>Ao selecionar <b>'do ato'</b>, a contagem será feita com base na data inicial fornecida.</p><p> Selecione essa opção e, no campo de data, informe a data em que o ato de intimação/citação se efetivou (ex: <b>a data da juntada do comprovante de recebimento</b>, a data do <b>recebimento da intimação</b> etc).</p> "
         },
         {
@@ -228,8 +248,9 @@ function introJsFunc(a) {
           intro: "Informe a <b>data de início</b> da contagem aqui."
         },
         {
-          element: document.querySelector('#button_calendar'),
-          intro: "Caso prefira, clique nesse ícone para abrir o calendário e selecione o dia clicando na data desejada."
+          element: document.querySelector('div#button_calendar'),
+          intro: "Caso prefira, clique nesse ícone para abrir o calendário e selecione o dia clicando na data desejada.",
+          position: 'top'
         },
         {
           element: document.querySelector('#divDays'),
@@ -243,18 +264,75 @@ function introJsFunc(a) {
           element: document.querySelector('#calcBtn'),
           intro: "<p>Clique aqui para calcular o prazo.</p><p>O resultado será exibido abaixo.</p>"
         },
+        {
+          element: document.querySelector('#reset1'),
+          intro: "<p>Clicando aqui, você limpa os campos <b>Data</b> e <b>Dias</b> para realizar um novo cálculo. As opções dos demais campos ficam mantidas para a realização de cálculos rapidamente..</p>"
+        },
 
       ],
-    }), intro.onbeforechange(function () {
-      if (this._currentStep == 4) {
-        //$("#countType").selectpicker('show');
-        $("#countType").selectpicker('toggle');
+    }), intro.onbeforechange(function (e) {
 
+      if (this._currentStep == 4) {
+        //$("#countType").selectpicker('render');
+        if (!$(".form3").find('.dropdown-menu').is(":visible")) {
+
+          $("#countType").selectpicker('toggle');
+
+
+          $("#countType").on("hidden.bs.select", function (e) {
+            $("#countType").selectpicker("toggle");
+
+          });
+
+        } else {
+          $("#countType").selectpicker('show');
+          $("#countType").on("hidden.bs.select", function (e) {
+            $("#countType").selectpicker('toggle');
+
+            $("#countType").selectpicker("toggle");
+
+
+            //$('.btn').css('display', 'none')
+
+
+          });
+
+
+        }
+
+
+      }
+
+      if (this._currentStep == 5) {
+        if (!$(".form3").find('.dropdown-menu').is(":visible")) {
+
+          $("#countType").selectpicker('toggle');
+
+
+          $("#countType").on("hidden.bs.select", function (e) {
+            $("#countType").selectpicker("toggle");
+
+          });
+
+        } else {
+          $("#countType").selectpicker('show');
+          $("#countType").on("hidden.bs.select", function (e) {
+            $("#countType").selectpicker('toggle');
+
+            $("#countType").selectpicker("toggle");
+
+
+            //$('.btn').css('display', 'none')
+
+
+          });
+
+
+        }
 
       } if (5 >= this._currentStep <= 7) {
         //$("#countType").selectpicker('show');
-        $("#countType").selectpicker('toggle');
-        $("#countType").selectpicker('toggle');
+
       }
       if (this._currentStep == 8) {
         //$("#countType").selectpicker('show');
@@ -263,7 +341,48 @@ function introJsFunc(a) {
 
       }
 
-    }).start();
+
+
+
+
+
+    }),
+
+    intro.onbeforeexit(function () {
+      $('#countType').selectpicker('destroy');
+      $('#countType').selectpicker('render');
+
+
+    }/* else {
+        $("#countType").on("hidden.bs.select", function (e) {
+          $('#countType').selectpicker('refresh');
+          $("#countType").selectpicker("toggle");
+
+
+          //$('.btn').css('display', 'none')
+
+
+        });
+      }*/
+
+    ), intro.onexit(function () {
+
+      if ($('.dropdown').find('.dropdown-menu.show').is(":visible")) {
+
+        $('#countType').selectpicker('destroy');
+        $('#countType').selectpicker('render');
+
+
+      } else {
+        $('#countType').selectpicker('destroy');
+        $('#countType').selectpicker('render');
+
+      }
+
+    })
+
+    , intro.refresh()
+      .start();
 }
 
 //jquery alert value from id="#bs-select-2-2"
@@ -522,6 +641,8 @@ $(document).ready(function () {
     //reset all fields but the floatingSelect calcType and countType
     $('#initialDate').val('');
     $('#days').val('');
+    $('#collapseReport').collapse('hide');
+    $('#collapseCalendar').collapse('hide');
 
     //document.querySelector('#loading').style.display = 'block';
     // Set timer
@@ -717,6 +838,8 @@ $("#days").keydown(function (e) {
 $(document).ready(function () {
   $("#countType").change(function () {
     var selected = $(this).children("option:selected").text();
+
+    //$("[aria-owns=bs-select-2]:nth-child(2)").text(newText);
     //get the value from selected option
     var tooltip;
     //case the selected option value is 0, create a var for tooltip

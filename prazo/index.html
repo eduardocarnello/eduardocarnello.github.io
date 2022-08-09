@@ -133,7 +133,7 @@
                                         <div class="form-floating form-floating-group flex-grow-1 form3">
 
                                             <select id='countType' class="selectpicker form-control"
-                                                aria-label=".form-select-lg example" data-mobile=true>
+                                                aria-label=".form-select-lg example">
                                                 <option id="selecteditem" value=""
                                                     style='display: none !important; visibility: hidden;'></option>
                                                 <option value="0" title="do ato" selected>do ato</option>
@@ -281,14 +281,18 @@
                             <div class="col-md-8 mx-auto">
                                 <div class="card">
                                     <div class="card-body">
+                                        <div id="printResults"></div>
 
-
-
-                                        <span class="text">Data Final</span>
 
 
                                         <h2 class="heading display-3 pb-5 text-center py-3" id="finalDate">
                                         </h2>
+                                        <p class="text" id="printCity"><b></b></p>
+                                        <p class="text" id="printInitialDate"><b></b></p>
+                                        <p class="text" id="printDays"><b></b></p>
+                                        <p class="text" id="printCalcType"><b></b></p>
+                                        <p class="text" id="printCountType"><b></b></p>
+
 
                                         <div class="buttons text-center">
                                             <button id="reportBtn" class="btn btn-primary" type="button"
