@@ -416,8 +416,10 @@ $('select').on('change', function () {
 
     var chosenCity = $('#chosenCity').val();
     var eventDates = [];
-    //clear $('#consultInline')
+    //render $('#consultInline')
     $('#consultInline').empty();
+
+
 
 
 
@@ -461,9 +463,11 @@ $('select').on('change', function () {
             });
         }
     }
+
+
     function consultInline() {
         $('#consultInline').calendar({
-            refresh: true,
+            refresh: false,
 
 
             type: 'date',
@@ -471,6 +475,13 @@ $('select').on('change', function () {
             //eventsDates should return the array of holidays
             //eventDates should be a function that get the dates of the holidays
             eventDates: eventDates,
+            onBeforeChange: function (newDate) {
+                var oldDate = $(this).calendar('get focusDate');
+                if (!oldDate || oldDate.getFullYear() != newDate.getFullYear()) {
+                    console.log('Year has changed!');
+                }
+            },
+
 
 
 
@@ -489,7 +500,9 @@ $('select').on('change', function () {
                 pm: 'PM'
             },
 
+
         });
+
 
     }
     consultInline()
@@ -551,12 +564,14 @@ function consultInline() {
     $('#consultInline').calendar({
         refresh: true,
 
-
+        //make the initialDate be the first day of the current year being displayed
         type: 'date',
         eventClass: 'darkred',
+
         //eventsDates should return the array of holidays
         //eventDates should be a function that get the dates of the holidays
         eventDates: eventDates,
+
 
 
 
@@ -595,7 +610,7 @@ html += "</table>";*/
 
 $('[data-tooltip="Indisponibilidade no Saj"]').css('background-color', '#fffded !important');
 
-document.getElementById("table-holidays").innerHTML = html;
+//
 
 
 
