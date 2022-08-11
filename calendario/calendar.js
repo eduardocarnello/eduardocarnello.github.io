@@ -5,7 +5,7 @@ var chosenCity = 0
 
 const LoadData = async () => {
     try {
-        const url = 'http://cors-anywhere.herokuapp.com/https://www.tjsp.jus.br/CanaisComunicacao/Feriados/PesquisarSuspensoes?nomeMunicipio=Mar%C3%ADlia&codigoMunicipio=6830&ano=2022'
+        const url = 'https://cors-anywhere.herokuapp.com/https://www.tjsp.jus.br/CanaisComunicacao/Feriados/PesquisarSuspensoes?nomeMunicipio=Mar%C3%ADlia&codigoMunicipio=6830&ano=2022'
 
         const res = await fetch(url, {
             method: 'GET', // *GET, POST, PUT, DELETE, etc.
