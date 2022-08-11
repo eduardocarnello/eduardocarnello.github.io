@@ -1,19 +1,23 @@
-<?php
+<?php /*
+$myFile = "general.json";
+$fh = fopen($myFile, 'w') or die("can't open file");
+$stringData = $_GET["data"];
+fwrite($fh, $stringData);
+fclose($fh)*/
 
-// This PHP script must be in "SOME_PATH/jsonFile/index.php"
+var_dump($_POST);
 
-$file = 'jsonFile2.json';
-
-if($_SERVER['REQUEST_METHOD'] === 'POST')
-// or if(!empty($_POST))
-{
-    file_put_contents($file, $_POST["jsonTxt"]);
-    //may be some error handeling if you want
+if (isset($_POST['json'])) {
+    $params = $_POST['json'];
+    $jsonObject = json_encode($params);
+    if (is_writable('general.json')) {
+        file_put_contents('general.json', $jsonObject);
+        echo "success";
+    } else {
+        echo "file is not writable, check permissions";
+    }
+} else {
+    echo "invalid params";
 }
-else if($_SERVER['REQUEST_METHOD'] === 'GET')
-// or else if(!empty($_GET))
-{
-    echo file_get_contents($file);
-    //may be some error handeling if you want
-}
+
 ?>

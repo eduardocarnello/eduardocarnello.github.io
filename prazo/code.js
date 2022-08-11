@@ -4,24 +4,86 @@ $(document).ready(function () {
   $("#countType").selectpicker('refresh')
 
 })
-//if selectpicker is visible, hide it
 
-
-
-
-
-//include the   'async':false   parameter or the object data won't get captured when loading
-/*
-var json = $.getJSON({ 'url': "jsonFile/default.json", 'async': false });
- 
-//The next line of code will filter out all the unwanted data from the object.
+var json = $.getJSON({ 'url': "jsonFile/general.json", 'async': false });
 json = JSON.parse(json.responseText);
- 
-//You can now access the json variable's object data like this json.a and json.c
- 
-console.log(json);
- 
-*/
+const currentMonth = moment().format('MM');
+const currentIndex = json[Object.keys(json).pop()][0][currentMonth];
+//check if today day is 10 or more
+
+
+if ((currentIndex == null || currentIndex == undefined || currentIndex == "")) {
+  console.log('runing json')
+  const thisYear = moment().format('YYYY');
+  const previousMonth = moment().subtract(1, 'month').format('MM');
+  const lastValue = json[Object.keys(json).pop()][0][previousMonth]
+  var newjson = $.getJSON({
+    "url": `https://servicodados.ibge.gov.br/api/v3/agregados/1736/periodos/${thisYear}${previousMonth}/variaveis/44?localidades=N1[all]`, 'async': false
+  })
+  json2 = JSON.parse(newjson.responseText);
+
+  var obj = parseFloat(json2[0]['resultados'][0]['series'][0]['serie'][`${thisYear}${previousMonth}`]);
+  const newValue = parseFloat((lastValue + (obj * lastValue / 100)).toFixed(6));
+  //push newValue to json with its key and month
+  json[Object.keys(json).pop()][0][currentMonth] = newValue;
+
+  //save json to localstorage
+  /*
+    $.ajax
+      ({
+        type: "GET",
+        dataType: 'json',
+        async: false,
+        url: 'jsonFile/index.php',
+        data: { params: json },
+        success: function () { alert("Thanks!"); },
+        failure: function () { alert("Error!"); }
+      });
+    alert(JSON.stringify(json))*/
+
+  $.ajax({
+    type: 'POST',
+    data: { json },
+    url: 'jsonFile/index.php',
+    success: function (data) {
+      console.log(json);
+      alert('success');
+    },
+    error: function () {
+      alert('error');
+    }
+  });
+
+} else {
+  console.log('not runing json')
+}
+
+
+
+console.log(typeof arr)
+//get last non null value from json and show it in console
+
+console.log(typeof json)
+
+
+
+
+
+
+
+
+
+
+//get the current month in format MM
+
+
+
+
+
+
+var teste22 = json[2022][0][currentMonth];
+
+
 
 
 
@@ -32,65 +94,35 @@ console.log(json);
 
 
 //ondocumentready
-//on click button with id="saveBtn" do the following
-/*$("#savebtn").click(function (e) {
-  e.preventDefault();
-  $.getJSON("https://servicodados.ibge.gov.br/api/v3/agregados/1736/periodos/202206/variaveis/44?localidades=N1[all]", function (data) {
-    //transforma o json em object
-    var obj = data1;
-    //show the first object
-    console.log(obj);//
- 
-    var eventsholded = ['event1', 'event2', 'event3'];
- 
-    //push object via ajax using type=GET, dataType=json, data=obj, url="jsonFile/index.php"
- 
-    var xhr = new XMLHttpRequest(),
-      jsonArr = [],
-      method = "GET",
-      jsonRequestURL = "jsonFile/";
-    e.stopImmediatePropagation();
-    xhr.open(method, jsonRequestURL, true);
-    xhr.onreadystatechange = function () {
-      if (xhr.readyState == 4 && xhr.status == 200) {
-        // we convert your JSON into JavaScript object
-        //var obj = JSON.parse(data);
- 
-        // we add new value:
-        console.log(obj)
-        jsonArr.push(obj);
- 
-        // we send with new request the updated JSON file to the server:
-        xhr.open("POST", jsonRequestURL, true);
-        xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
-        // if you want to handle the POST response write (in this case you do not need it):
-        xhr.onreadystatechange = function () { /* handle POST response  };
-        xhr.send("jsonTxt=" + JSON.stringify(jsonArr));
-        // but on this place you have to have a server for write updated JSON to the file
-        return false;
-      }
-    };
-    xhr.send(null);
-  }
-  );
-  */
-
-/*$.ajax
-  ({
-    type: "GET",
-    dataType: 'json',
-    async: false,
-    url: 'jsonFile/index.php',
-    data: { data: JSON.stringify(obj) },
-    success: function () { alert("Thanks!"); },
-    failure: function () { alert("Error!"); }
-  });*/
 
 
-/*var eventsholded = [];
+
+
+if (teste22 == null) {
+  console.log('teste22 is null');
+  //push the current month in the json object
+  //obj2 to integer
+  json[2022][0][currentMonth] = parseInt(obj2);
+  console.log(json[2022][0])
+
+}
+
+
+
+
+
+
+
+//push object via ajax using type=GET, dataType=json, data=obj, url="jsonFile/index.php"
+
+
+
+/*
+
+var eventsholded = [];
 //push to eventsholded array this "test"
- 
-eventsholded.push({ "a": "b", "c": "green" });
+
+eventsholded.push(obj2);
 $.ajax
   ({
     type: "GET",
@@ -102,8 +134,8 @@ $.ajax
     failure: function () { alert("Error!"); }
   });
 alert(JSON.stringify(eventsholded))
-});*/
-
+  ;
+*/
 
 // file system module to perform file operations
 
@@ -181,7 +213,7 @@ $("#countType").change(function () {
 //$(".dropdown-menu.inner.show li:nth-child(2)").text();
 
 
-console.log($('ul.dropdown-menu.inner.show :nth-child(2)'))
+
 
 
 var html = '';
