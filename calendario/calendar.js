@@ -3,7 +3,7 @@ var chosenCity = 0
 
 
 
-/*const LoadData = async () => {
+const LoadData = async () => {
     try {
         const url = 'http://cors-anywhere.herokuapp.com/https://www.tjsp.jus.br/CanaisComunicacao/Feriados/PesquisarSuspensoes?nomeMunicipio=Mar%C3%ADlia&codigoMunicipio=6830&ano=2022'
 
@@ -14,14 +14,14 @@ var chosenCity = 0
         });
         var data = []
         data = res.json();
-        //console.log(data);
+        console.log(data);
         return data;
     } catch (err) {
         console.error(err)
     }
 };
 
-LoadData().then((data) => { console.log(data) })*/
+LoadData().then((data) => { console.log(data) })
 
 
 

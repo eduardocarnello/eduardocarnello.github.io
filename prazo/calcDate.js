@@ -338,7 +338,7 @@ function calculateResults() {
 
     }
 
-    console.log(listaDias + '  ' + moment(dateForCalc).format('DD/MM/YYYY') + ' e dueDate ' + moment(dueDate).format('DD/MM/YYYY'))
+    console.log(listaDias)
 
     //show the first downDate from sistDown
 
@@ -448,7 +448,7 @@ function calculateResults() {
             html += "<b><tr class='table-active'>";
         } else (html += "<tr>");
         if (moment(listaDiasComTipo[i].date, 'DD/MM/YYYY').isBusinessDay() == false) {
-            html += "<b><tr class=''>";
+            html += "<b><tr class='table-danger'>";
         }
 
 
