@@ -6,8 +6,45 @@ const amendment = [
 ]
 
 const sistDown = [
-    { downDate: '08/07/2022', description: "Indisponibilidade no Saj", },
-    { downDate: '12/07/2022', description: "Indisponibilidade no Saj", },
+    { downDate: '09/02/2022', description: "INSTABILIDADE DO PETICIONAMENTO DE INICIAL E INTERMEDIÁRIA DE 1º E 2º GRAU", },
+    { downDate: '10/03/2022', description: "INTERMITÊNCIA NA PASTA DIGITAL DO PORTAL E-SAJ", },
+    { downDate: '25/03/2022', description: "INSTABILIDADE DO PETICIONAMENTO DE INICIAL E INTERMEDIÁRIA DE 1º E 2º GRAU", },
+    { downDate: '28/03/2022', description: "INSTABILIDADE DO PETICIONAMENTO DE INICIAL E INTERMEDIÁRIA DE 1º E 2º GRAU", },
+    { downDate: '29/03/2022', description: "INSTABILIDADE DO PETICIONAMENTO INTERMEDIÁRIO PARA PROCESSOS INCIDENTAIS DE 1º E 2º GRAU", },
+    { downDate: '30/03/2022', description: "INSTABILIDADE DO PETICIONAMENTO INTERMEDIÁRIO PARA PROCESSOS INCIDENTAIS DE 1º E 2º GRAU", },
+    { downDate: '31/03/2022', description: "INSTABILIDADE DO PETICIONAMENTO INTERMEDIÁRIO PARA PROCESSOS INCIDENTAIS DE 1º E 2º GRAU", },
+    { downDate: '04/04/2022', description: "INSTABILIDADE DO PETICIONAMENTO INTERMEDIÁRIO PARA PROCESSOS INCIDENTAIS DE 1º E 2º GRAU", },
+    { downDate: '06/04/2022', description: "INSTABILIDADE DO PETICIONAMENTO DE INICIAL E INTERMEDIÁRIA DE 1º E 2º GRAU", },
+    { downDate: '07/04/2022', description: "INSTABILIDADE DO PETICIONAMENTO DE INICIAL E INTERMEDIÁRIA DE 1º E 2º GRAU", },
+    { downDate: '08/04/2022', description: "INSTABILIDADE DO PETICIONAMENTO DE INICIAL E INTERMEDIÁRIA DE 1º E 2º GRAU", },
+    { downDate: '09/04/2022', description: "INSTABILIDADE DO PETICIONAMENTO DE INICIAL E INTERMEDIÁRIA DE 1º E 2º GRAU", },
+    { downDate: '10/04/2022', description: "INSTABILIDADE DO PETICIONAMENTO DE INICIAL E INTERMEDIÁRIA DE 1º E 2º GRAU", },
+    { downDate: '11/04/2022', description: "INSTABILIDADE DO PETICIONAMENTO DE INICIAL E INTERMEDIÁRIA DE 1º E 2º GRAU", },
+    { downDate: '12/04/2022', description: "INSTABILIDADE DO PETICIONAMENTO DE INICIAL E INTERMEDIÁRIA DE 1º E 2º GRAU", },
+    { downDate: '13/04/2022', description: "INSTABILIDADE DO PETICIONAMENTO DE INICIAL E INTERMEDIÁRIA DE 1º E 2º GRAU", },
+    { downDate: '14/04/2022', description: "INSTABILIDADE DO PETICIONAMENTO DE INICIAL E INTERMEDIÁRIA DE 1º E 2º GRAU", },
+    { downDate: '15/04/2022', description: "INSTABILIDADE DO PETICIONAMENTO DE INICIAL E INTERMEDIÁRIA DE 1º E 2º GRAU", },
+    { downDate: '16/04/2022', description: "INSTABILIDADE DO PETICIONAMENTO DE INICIAL E INTERMEDIÁRIA DE 1º E 2º GRAU", },
+    { downDate: '17/04/2022', description: "INSTABILIDADE DO PETICIONAMENTO DE INICIAL E INTERMEDIÁRIA DE 1º E 2º GRAU", },
+    { downDate: '18/04/2022', description: "INSTABILIDADE DO PETICIONAMENTO DE INICIAL E INTERMEDIÁRIA DE 1º E 2º GRAU", },
+    { downDate: '19/04/2022', description: "INSTABILIDADE DO PETICIONAMENTO DE INICIAL E INTERMEDIÁRIA DE 1º E 2º GRAU", },
+    { downDate: '20/04/2022', description: "INSTABILIDADE DO PETICIONAMENTO DE INICIAL E INTERMEDIÁRIA DE 1º E 2º GRAU", },
+    { downDate: '09/05/2022', description: "INDISPONIBILIDADE PARA DOWNLOAD DOS AUTOS EM 1º, 2º GRAU E COL. RECURSAL", },
+    { downDate: '13/05/2022', description: "INDISPONIBILIDADE NA CONSULTA PROCESSUAL DE 1ª E 2ª INSTÂNCIAS E DO COLÉGIO RECURSAL", },
+    { downDate: '13/06/2022', description: "INDISPONIBILIDADE NA CONSULTA PROCESSUAL DE 1ª INSTÂNCIA", },
+    { downDate: `16/05/2022`, description: "INDISPONIBILIDADE SEVERA NA PASTA DIGITAL DO PORTAL E-SAJ" },
+    { downDate: '29/06/2022', description: "INSTABILIDADE PARA VISUALIZAÇÃO E DOWNLOAD DOS AUTOS EM 1º GRAU", },
+    { downDate: '01/07/2022', description: "INDISPONIBILIDADE NA CONSULTA PROCESSUAL E PETICIONAMENTO DE 1ª, 2ª INSTÂNCIA E COL. RECURSAL", },
+    { downDate: '11/07/2022', description: "INDISPONIBILIDADE NA CONSULTA PROCESSUAL DOS PROCESSOS DE 1ª INSTÂNCIA", },
+    { downDate: '13/07/2022', description: "INDISPONIBILIDADE NA CONSULTA PROCESSUAL E PETICIONAMENTO DE 1ª, 2ª INSTÂNCIA E COL. RECURSAL", },
+
+    { downDate: `18/07/2022`, description: "INDISPONIBILIDADE SEVERA NA PASTA DIGITAL DO PORTAL E-SAJ" },
+    { downDate: `20/07/2022`, description: "INDISPONIBILIDADE SEVERA NA PASTA DIGITAL DO PORTAL E-SAJ" },
+    { downDate: `08/08/2022`, description: "MANUTENÇÃO PREVENTIVA IMPRESCINDÍVEL DO DATACENTER - INDISPONIBILIDADE DE SISTEMAS" },
+
+
+
+
 
 ]
 
@@ -79,14 +116,17 @@ function holidaysFunc(currentYear, expectedFinalYear, Easter) {
             { holidayDate: `02/11/${i}`, description: "Finados" },
             { holidayDate: `15/11/${i}`, description: "Proclamação da República" },
             { holidayDate: `08/11/${i}`, description: "Dia da Justiça" },
-            { holidayDate: `25/12/${i}`, description: "Natal" }
+            { holidayDate: `25/12/${i}`, description: "Natal" },
+
+            //SEVERE SYSTEM DOWN
+
 
 
 
         );
         cityHolidays.push(
 
-            //5ª RAJ
+            /*********************5ª RAJ************************************/
             //ADAMANTINA
             { holidayDate: `13/06/${i}`, description: "Padroeiro e Fundação da Cidade", city: "Adamantina" },
 
@@ -116,11 +156,19 @@ function holidaysFunc(currentYear, expectedFinalYear, Easter) {
             { holidayDate: `05/05/${i}`, description: "Emancipação Político-Administrativa e Dia do Menino Jesus de Aracoeli", city: "Garça" },
             { holidayDate: `29/06/${i}`, description: "Padroeiro São Pedro e Dia da Comunidade Religiosa Municipal", city: "Garça" },
 
+            //IEPÊ
+            { holidayDate: `24/06/${i}`, description: "Padroeiro São João Batista", city: "Iepê" },
+            { holidayDate: `30/11/${i}`, description: "Emancipaçao Política do Município", city: "Iepê" },
 
+            //JUNQUEIRÓPOLIS
+            { holidayDate: `13/06/${i}`, description: "Padroeiro Santo Antônio", city: "Junqueirópolis" },
 
+            //LUCÉLIA
+            { holidayDate: `24/06/${i}`, description: "Padroeiro São João Batista", city: "Lucélia" },
 
-
-
+            //MARACAÍ
+            { holidayDate: `04/05/${i}`, description: "Dia da Cidade", city: "Maracaí" },
+            { holidayDate: `15/08/${i}`, description: "Padroeira Nossa Senhora do Patrocínio", city: "Maracaí" },
 
             //MARÍLIA
             { holidayDate: `04/04/${i}`, description: "Fundação da Cidade", city: "Marília" },

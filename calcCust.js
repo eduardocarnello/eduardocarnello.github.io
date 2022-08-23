@@ -941,9 +941,9 @@ $('#calcCust').click(() => {
             03: 86.229189,
             04: 87.703708,
             05: 88.615826,
-            06: null,
-            07: null,
-            08: null,
+            06: 89.014597,
+            07: 89.566487,
+            08: 89.029088,
             09: null,
             10: null,
             11: null,
@@ -1010,6 +1010,8 @@ $('#calcCust').click(() => {
         finalMonthIndex = finalMonthIndex - 1;
         finalIndex = calcIndex[finalYearIndex][0][finalMonthIndex];
         notCurrentMonthIndex = true;
+        finalMonthIndexA = moment().subtract(1, 'months').format('MMMM')
+
     }
 
     //while initialIndex == null, add 1 month to the initialMonthIndex

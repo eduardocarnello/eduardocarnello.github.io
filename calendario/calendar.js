@@ -3,6 +3,8 @@ var chosenCity = 0
 
 
 
+
+/*
 const LoadData = async () => {
     try {
         const url = 'https://cors-anywhere.herokuapp.com/https://www.tjsp.jus.br/CanaisComunicacao/Feriados/PesquisarSuspensoes?nomeMunicipio=Mar%C3%ADlia&codigoMunicipio=6830&ano=2022'
@@ -22,7 +24,7 @@ const LoadData = async () => {
 };
 
 LoadData().then((data) => { console.log(data) })
-
+*/
 
 
 
@@ -31,6 +33,13 @@ LoadData().then((data) => { console.log(data) })
 $(document).ready(function () {
     // Toggle menu on click
     //onclick #menu-toggler and screen width < 768px, add overflow: hidden to body
+
+    //show the text inside span.link on console
+
+
+
+
+
 
 
 
@@ -77,9 +86,14 @@ var estado = 'SP'
 //create an array with municipalities and their respective holidays
 
 
-console.log(cityHolidays);
+
 //get all the dates of christmas for every year from the current year to the next year
 
+//get element with class ".next.link" and show it on console
+function showNext() {
+    var next = document.getElementsByClassName("next.link")[0];
+    console.log(next);
+}
 
 
 
@@ -464,8 +478,12 @@ $('select').on('change', function () {
         }
     }
 
+    //onclick span.next.link, do the following
+
+
 
     function consultInline() {
+
         $('#consultInline').calendar({
             refresh: false,
 
@@ -481,6 +499,8 @@ $('select').on('change', function () {
                     console.log('Year has changed!');
                 }
             },
+            //need to show on console when displayed month is changed
+
 
 
 
@@ -544,7 +564,7 @@ var holidaysDate = myHolidays.map(function (item) {
     return new Date(moment(item.holidayDate, 'DD/MM/YYYY').format('YYYY-M-D'));
 }
 );
-console.log(holidaysDate)
+
 
 
 
@@ -561,6 +581,7 @@ var events = [
 
 
 function consultInline() {
+
     $('#consultInline').calendar({
         refresh: true,
 
