@@ -448,7 +448,7 @@ function calculateResults() {
             html += "<b><tr class='table-active'>";
         } else (html += "<tr>");
         if (moment(listaDiasComTipo[i].date, 'DD/MM/YYYY').isBusinessDay() == false) {
-            html += "<b><tr class='table-danger'>";
+            html += "<b><tr class=''>";
         }
 
 
