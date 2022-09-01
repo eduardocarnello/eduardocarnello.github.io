@@ -55,9 +55,7 @@ $('#calcCust').click(() => {
     if (finalDate == "" || finalDate == undefined) {
         finalDate = moment().format('DD/MM/YYYY');
     }
-    if (sentenceValueNumberDecimal == "" || sentenceValueNumberDecimal == 0 || sentenceValueNumberDecimal == undefined || isNaN(sentenceValueNumberDecimal)) {
-        sentenceValueNumberDecimal = caseValueNumberDecimal;
-    }
+    
 
 
 
@@ -1042,6 +1040,10 @@ $('#calcCust').click(() => {
 
     //caseCosts are 1% of caseValueUpdated; appeal costs are 4¨% of senteceValue
     let caseCosts = parseFloat(caseValueUpdated * 0.01).toFixed(2)
+    if (sentenceValueNumberDecimal == "" || sentenceValueNumberDecimal == 0 || sentenceValueNumberDecimal == undefined || isNaN(sentenceValueNumberDecimal)) {
+        sentenceValueNumberDecimal = caseValueUpdated;
+    }
+    
     let appealCosts = parseFloat(sentenceValueNumberDecimal * 0.04).toFixed(2)
 
 
