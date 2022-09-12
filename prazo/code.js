@@ -4,7 +4,7 @@ $(document).ready(function () {
   $("#countType").selectpicker('refresh')
 
 })
-
+/*
 var json = $.getJSON({ 'url': "jsonFile/general.json", 'async': false });
 json = JSON.parse(json.responseText);
 const currentMonth = moment().format('MM');
@@ -41,6 +41,7 @@ if ((currentIndex == null || currentIndex == undefined || currentIndex == "")) {
       });
     alert(JSON.stringify(json))*/
 
+/*
   $.ajax({
     type: 'POST',
     data: { json },
@@ -143,7 +144,7 @@ alert(JSON.stringify(eventsholded))
 
 
 // json data
-
+*/
 
 
 
