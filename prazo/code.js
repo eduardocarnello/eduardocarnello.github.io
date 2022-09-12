@@ -144,7 +144,7 @@ alert(JSON.stringify(eventsholded))
 
 
 // json data
-*/
+
 
 
 
