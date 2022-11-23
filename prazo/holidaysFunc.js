@@ -121,6 +121,7 @@ function holidaysFunc(currentYear, expectedFinalYear, Easter) {
             { holidayDate: `12/10/${i}`, description: "Nossa Senhora Aparecida, Padroeira do Brasil" },
             { holidayDate: `02/11/${i}`, description: "Finados" },
             { holidayDate: `15/11/${i}`, description: "Proclamação da República" },
+            { holidayDate: i == 2022 ? `28/10/${i}` : '28/10/${i}', description: i == 2022 ? "Dia do Servidor Público" : 'Dia do Servidor Público' },
             { holidayDate: i == 2022 ? `09/12/${i}` : '08/12/${i}', description: i == 2022 ? "" : 'Dia da Justiça' },
             { holidayDate: `25/12/${i}`, description: "Natal" },
 
