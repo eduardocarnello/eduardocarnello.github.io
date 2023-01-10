@@ -16,9 +16,28 @@ $('#calcCust').click(() => {
     //declare variables, getting the values from the inputs
     var initialDate = $('#initialDate').val();
     var finalDate = $('#finalDate').val();
+    if (finalDate == "" || finalDate == undefined) {
+        finalDate = moment().format('DD/MM/YYYY');
+    }
     var caseValue = $('#caseValue').val();
     var sentenceValue = $('#sentenceValue').val();
-    const UFESP = 31.97;
+    var yearInUse = moment(finalDate).format("YYYY");
+
+    var UFESP
+    console.log(yearInUse)
+
+    switch (yearInUse) {
+
+        case '2022': UFESP = 31.97
+            break
+        case '2023': UFESP = 34.26
+            break
+
+
+
+    }
+    console.log(UFESP)
+
 
     if (sentenceValue == null || sentenceValue == "") {
         sentenceValue = 'R$ 0,00';
@@ -52,9 +71,7 @@ $('#calcCust').click(() => {
 
 
     //fixing finalDate and sentenceValue; if finalDate is empty, then we will use today date; if sentenceValue is empty, then it will consider the caseValue
-    if (finalDate == "" || finalDate == undefined) {
-        finalDate = moment().format('DD/MM/YYYY');
-    }
+
 
 
 
@@ -1134,7 +1151,7 @@ $('#calcCust').click(() => {
             dataFinal: finalDate,
             valorAtualizado: caseValueUpdatedCurrency,
         }, {
- 
+     
             valor: '',
             name: 'Item 2',
             price: '$2'
