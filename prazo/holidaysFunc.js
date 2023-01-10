@@ -42,10 +42,11 @@ const sistDown = [
     { downDate: `20/07/2022`, description: "INDISPONIBILIDADE SEVERA NA PASTA DIGITAL DO PORTAL E-SAJ" },
     { downDate: `08/08/2022`, description: "MANUTENÇÃO PREVENTIVA IMPRESCINDÍVEL DO DATACENTER - INDISPONIBILIDADE DE SISTEMAS" },
     { downDate: `30/09/2022`, description: "INDISPONIBILIDADE DE AUTENTICAÇÃO NO PORTAL E-SAJ" },
-    { downDate: `25/10/2022`, description: "INDISPONIBILIDADE DO PETICIONAMENTO ELETRÔNICO INICIAL E INTERMEDIÁRIO DE 1º GRAU PARA A CLASSE: 12154 - EXECUÇÃO DE TÍTULO EXTRAJUDICIAL NO PORTAL E-SAJ" }
-    { downDate: `26/10/2022`, description: "INDISPONIBILIDADE DO PETICIONAMENTO ELETRÔNICO INICIAL E INTERMEDIÁRIO DE 1º GRAU PARA A CLASSE: 12154 - EXECUÇÃO DE TÍTULO EXTRAJUDICIAL NO PORTAL E-SAJ" }
-    { downDate: `28/11/2022`, description: "INDISPONIBILIDADE NA CONSULTA PROCESSUAL 1ª INSTÂNCIA" }
-
+    { downDate: `25/10/2022`, description: "INDISPONIBILIDADE DO PETICIONAMENTO ELETRÔNICO INICIAL E INTERMEDIÁRIO DE 1º GRAU PARA A CLASSE: 12154 - EXECUÇÃO DE TÍTULO EXTRAJUDICIAL NO PORTAL E-SAJ" },
+    { downDate: `26/10/2022`, description: "INDISPONIBILIDADE DO PETICIONAMENTO ELETRÔNICO INICIAL E INTERMEDIÁRIO DE 1º GRAU PARA A CLASSE: 12154 - EXECUÇÃO DE TÍTULO EXTRAJUDICIAL NO PORTAL E-SAJ" },
+    { downDate: `24/11/2022`, description: "Encerramento de expediente antecipadamente - Provimento CSM nº 2.672/2022" },
+    { downDate: `24/11/2022`, description: "Encerramento de expediente antecipadamente - Provimento CSM nº 2.672/2022" },
+    { downDate: `02/12/2022`, description: "Encerramento de expediente antecipadamente - Provimento CSM nº 2.672/2022" },
 
 
 
@@ -134,7 +135,8 @@ function holidaysFunc(currentYear, expectedFinalYear, Easter) {
             { holidayDate: `12/10/${i}`, description: "Nossa Senhora Aparecida, Padroeira do Brasil" },
             { holidayDate: `02/11/${i}`, description: "Finados" },
             { holidayDate: `15/11/${i}`, description: "Proclamação da República" },
-
+            { holidayDate: i == 2022 ? `28/10/${i}` : '28/10/${i}', description: i == 2022 ? "Dia do Servidor Público" : 'Dia do Servidor Público' },
+            { holidayDate: i == 2022 ? `09/12/${i}` : '08/12/${i}', description: i == 2022 ? "" : 'Dia da Justiça' },
             { holidayDate: `25/12/${i}`, description: "Natal" },
 
             //SEVERE SYSTEM DOWN
