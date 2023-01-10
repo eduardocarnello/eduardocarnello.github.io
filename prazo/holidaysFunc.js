@@ -103,6 +103,13 @@ function holidaysFunc(currentYear, expectedFinalYear, Easter) {
             { holidayDate: `05/01/${i}`, description: "Recesso - Art. 116, § 2º do RITJSP" },
             { holidayDate: `06/01/${i}`, description: "Recesso - Art. 116, § 2º do RITJSP" },
 
+            { holidayDate: `01/01/${i + 1}`, description: "Recesso - Art. 116, § 2º do RITJSP" },
+            { holidayDate: `02/01/${i + 1}`, description: "Recesso - Art. 116, § 2º do RITJSP" },
+            { holidayDate: `03/01/${i + 1}`, description: "Recesso - Art. 116, § 2º do RITJSP" },
+            { holidayDate: `04/01/${i + 1}`, description: "Recesso - Art. 116, § 2º do RITJSP" },
+            { holidayDate: `05/01/${i + 1}`, description: "Recesso - Art. 116, § 2º do RITJSP" },
+            { holidayDate: `06/01/${i + 1}`, description: "Recesso - Art. 116, § 2º do RITJSP" },
+
             { holidayDate: `07/01/${i}`, description: "Art. 116, § 2º do RITJSP" },
             { holidayDate: `08/01/${i}`, description: "Art. 116, § 2º do RITJSP" },
             { holidayDate: `09/01/${i}`, description: "Art. 116, § 2º do RITJSP" },
