@@ -102,7 +102,7 @@ function holidaysFunc(currentYear, expectedFinalYear, Easter) {
             { holidayDate: `04/01/${i}`, description: "Recesso - Art. 116, § 2º do RITJSP" },
             { holidayDate: `05/01/${i}`, description: "Recesso - Art. 116, § 2º do RITJSP" },
             { holidayDate: `06/01/${i}`, description: "Recesso - Art. 116, § 2º do RITJSP" },
-
+            //Fix next year
             { holidayDate: `01/01/${i + 1}`, description: "Recesso - Art. 116, § 2º do RITJSP" },
             { holidayDate: `02/01/${i + 1}`, description: "Recesso - Art. 116, § 2º do RITJSP" },
             { holidayDate: `03/01/${i + 1}`, description: "Recesso - Art. 116, § 2º do RITJSP" },
@@ -124,6 +124,23 @@ function holidaysFunc(currentYear, expectedFinalYear, Easter) {
             { holidayDate: `18/01/${i}`, description: "Art. 116, § 2º do RITJSP" },
             { holidayDate: `19/01/${i}`, description: "Art. 116, § 2º do RITJSP" },
             { holidayDate: `20/01/${i}`, description: "Art. 116, § 2º do RITJSP" },
+
+            //Fix next year
+
+            { holidayDate: `07/01/${i + 1}`, description: "Art. 116, § 2º do RITJSP" },
+            { holidayDate: `08/01/${i + 1}`, description: "Art. 116, § 2º do RITJSP" },
+            { holidayDate: `09/01/${i + 1}`, description: "Art. 116, § 2º do RITJSP" },
+            { holidayDate: `10/01/${i + 1}`, description: "Art. 116, § 2º do RITJSP" },
+            { holidayDate: `11/01/${i + 1}`, description: "Art. 116, § 2º do RITJSP" },
+            { holidayDate: `12/01/${i + 1}`, description: "Art. 116, § 2º do RITJSP" },
+            { holidayDate: `13/01/${i + 1}`, description: "Art. 116, § 2º do RITJSP" },
+            { holidayDate: `14/01/${i + 1}`, description: "Art. 116, § 2º do RITJSP" },
+            { holidayDate: `15/01/${i + 1}`, description: "Art. 116, § 2º do RITJSP" },
+            { holidayDate: `16/01/${i + 1}`, description: "Art. 116, § 2º do RITJSP" },
+            { holidayDate: `17/01/${i + 1}`, description: "Art. 116, § 2º do RITJSP" },
+            { holidayDate: `18/01/${i + 1}`, description: "Art. 116, § 2º do RITJSP" },
+            { holidayDate: `19/01/${i + 1}`, description: "Art. 116, § 2º do RITJSP" },
+            { holidayDate: `20/01/${i + 1}`, description: "Art. 116, § 2º do RITJSP" },
 
 
             //EASTER HOLIDAYS
