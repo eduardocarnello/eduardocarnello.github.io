@@ -82,18 +82,18 @@ function holidaysFunc(currentYear, expectedFinalYear, Easter) {
         nationalHolidays.push(
 
             //RECESSO FORENSE E ART. 116, § 2º, DO RITJSP
-            { holidayDate: `20/12/${i - 1}`, description: "Recesso - Art. 116, § 2º do RITJSP" },
-            { holidayDate: `20/12/${i - 1}`, description: "Recesso - Art. 116, § 2º do RITJSP" },
-            { holidayDate: `20/12/${i - 1}`, description: "Recesso - Art. 116, § 2º do RITJSP" },
-            { holidayDate: `20/12/${i - 1}`, description: "Recesso - Art. 116, § 2º do RITJSP" },
-            { holidayDate: `20/12/${i - 1}`, description: "Recesso - Art. 116, § 2º do RITJSP" },
-            { holidayDate: `20/12/${i - 1}`, description: "Recesso - Art. 116, § 2º do RITJSP" },
-            { holidayDate: `20/12/${i - 1}`, description: "Recesso - Art. 116, § 2º do RITJSP" },
-            { holidayDate: `20/12/${i - 1}`, description: "Recesso - Art. 116, § 2º do RITJSP" },
-            { holidayDate: `20/12/${i - 1}`, description: "Recesso - Art. 116, § 2º do RITJSP" },
-            { holidayDate: `20/12/${i - 1}`, description: "Recesso - Art. 116, § 2º do RITJSP" },
-            { holidayDate: `20/12/${i - 1}`, description: "Recesso - Art. 116, § 2º do RITJSP" },
-            { holidayDate: `20/12/${i - 1}`, description: "Recesso - Art. 116, § 2º do RITJSP" },
+            { holidayDate: `20/12/${i}`, description: "Recesso - Art. 116, § 2º do RITJSP" },
+            { holidayDate: `21/12/${i}`, description: "Recesso - Art. 116, § 2º do RITJSP" },
+            { holidayDate: `22/12/${i}`, description: "Recesso - Art. 116, § 2º do RITJSP" },
+            { holidayDate: `23/12/${i}`, description: "Recesso - Art. 116, § 2º do RITJSP" },
+            { holidayDate: `24/12/${i}`, description: "Recesso - Art. 116, § 2º do RITJSP" },
+            { holidayDate: `25/12/${i}`, description: "Recesso - Art. 116, § 2º do RITJSP" },
+            { holidayDate: `26/12/${i}`, description: "Recesso - Art. 116, § 2º do RITJSP" },
+            { holidayDate: `27/12/${i}`, description: "Recesso - Art. 116, § 2º do RITJSP" },
+            { holidayDate: `28/12/${i}`, description: "Recesso - Art. 116, § 2º do RITJSP" },
+            { holidayDate: `29/12/${i}`, description: "Recesso - Art. 116, § 2º do RITJSP" },
+            { holidayDate: `30/12/${i}`, description: "Recesso - Art. 116, § 2º do RITJSP" },
+            { holidayDate: `31/12/${i}`, description: "Recesso - Art. 116, § 2º do RITJSP" },
 
 
             { holidayDate: `01/01/${i}`, description: "Recesso - Art. 116, § 2º do RITJSP" },
