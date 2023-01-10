@@ -55,7 +55,7 @@ $('#calcCust').click(() => {
     if (finalDate == "" || finalDate == undefined) {
         finalDate = moment().format('DD/MM/YYYY');
     }
-    
+
 
 
 
@@ -942,6 +942,20 @@ $('#calcCust').click(() => {
             06: 89.014597,
             07: 89.566487,
             08: 89.029088,
+            09: 88.753097,
+            10: 88.469087,
+            11: 88.884891,
+            12: 89.222653,
+        }],
+        2023: [{
+            01: 89.838289,
+            02: null,
+            03: null,
+            04: null,
+            05: null,
+            06: null,
+            07: null,
+            08: null,
             09: null,
             10: null,
             11: null,
@@ -1043,7 +1057,7 @@ $('#calcCust').click(() => {
     if (sentenceValueNumberDecimal == "" || sentenceValueNumberDecimal == 0 || sentenceValueNumberDecimal == undefined || isNaN(sentenceValueNumberDecimal)) {
         sentenceValueNumberDecimal = caseValueUpdated;
     }
-    
+
     let appealCosts = parseFloat(sentenceValueNumberDecimal * 0.04).toFixed(2)
 
 
