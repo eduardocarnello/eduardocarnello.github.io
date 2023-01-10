@@ -41,11 +41,6 @@ const sistDown = [
     { downDate: `18/07/2022`, description: "INDISPONIBILIDADE SEVERA NA PASTA DIGITAL DO PORTAL E-SAJ" },
     { downDate: `20/07/2022`, description: "INDISPONIBILIDADE SEVERA NA PASTA DIGITAL DO PORTAL E-SAJ" },
     { downDate: `08/08/2022`, description: "MANUTENÇÃO PREVENTIVA IMPRESCINDÍVEL DO DATACENTER - INDISPONIBILIDADE DE SISTEMAS" },
-    { downDate: `30/09/2022`, description: "INDISPONIBILIDADE DE AUTENTICAÇÃO NO PORTAL E-SAJ" },
-    { downDate: `25/10/2022`, description: "INDISPONIBILIDADE DO PETICIONAMENTO ELETRÔNICO INICIAL E INTERMEDIÁRIO DE 1º GRAU PARA A CLASSE: 12154 - EXECUÇÃO DE TÍTULO EXTRAJUDICIAL NO PORTAL E-SAJ" }
-    { downDate: `26/10/2022`, description: "INDISPONIBILIDADE DO PETICIONAMENTO ELETRÔNICO INICIAL E INTERMEDIÁRIO DE 1º GRAU PARA A CLASSE: 12154 - EXECUÇÃO DE TÍTULO EXTRAJUDICIAL NO PORTAL E-SAJ" }
-    { downDate: `28/11/2022`, description: "INDISPONIBILIDADE NA CONSULTA PROCESSUAL 1ª INSTÂNCIA" }
-
 
 
 
@@ -81,20 +76,6 @@ function holidaysFunc(currentYear, expectedFinalYear, Easter) {
         nationalHolidays.push(
 
             //RECESSO FORENSE E ART. 116, § 2º, DO RITJSP
-            { holidayDate: `20/12/${i - 1}`, description: "Recesso - Art. 116, § 2º do RITJSP" },
-            { holidayDate: `20/12/${i - 1}`, description: "Recesso - Art. 116, § 2º do RITJSP" },
-            { holidayDate: `20/12/${i - 1}`, description: "Recesso - Art. 116, § 2º do RITJSP" },
-            { holidayDate: `20/12/${i - 1}`, description: "Recesso - Art. 116, § 2º do RITJSP" },
-            { holidayDate: `20/12/${i - 1}`, description: "Recesso - Art. 116, § 2º do RITJSP" },
-            { holidayDate: `20/12/${i - 1}`, description: "Recesso - Art. 116, § 2º do RITJSP" },
-            { holidayDate: `20/12/${i - 1}`, description: "Recesso - Art. 116, § 2º do RITJSP" },
-            { holidayDate: `20/12/${i - 1}`, description: "Recesso - Art. 116, § 2º do RITJSP" },
-            { holidayDate: `20/12/${i - 1}`, description: "Recesso - Art. 116, § 2º do RITJSP" },
-            { holidayDate: `20/12/${i - 1}`, description: "Recesso - Art. 116, § 2º do RITJSP" },
-            { holidayDate: `20/12/${i - 1}`, description: "Recesso - Art. 116, § 2º do RITJSP" },
-            { holidayDate: `20/12/${i - 1}`, description: "Recesso - Art. 116, § 2º do RITJSP" },
-
-
             { holidayDate: `01/01/${i}`, description: "Recesso - Art. 116, § 2º do RITJSP" },
             { holidayDate: `02/01/${i}`, description: "Recesso - Art. 116, § 2º do RITJSP" },
             { holidayDate: `03/01/${i}`, description: "Recesso - Art. 116, § 2º do RITJSP" },
@@ -134,7 +115,7 @@ function holidaysFunc(currentYear, expectedFinalYear, Easter) {
             { holidayDate: `12/10/${i}`, description: "Nossa Senhora Aparecida, Padroeira do Brasil" },
             { holidayDate: `02/11/${i}`, description: "Finados" },
             { holidayDate: `15/11/${i}`, description: "Proclamação da República" },
-
+            { holidayDate: `08/11/${i}`, description: "Dia da Justiça" },
             { holidayDate: `25/12/${i}`, description: "Natal" },
 
             //SEVERE SYSTEM DOWN
