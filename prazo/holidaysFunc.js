@@ -47,6 +47,7 @@ const sistDown = [
     { downDate: `24/11/2022`, description: "Encerramento de expediente antecipadamente - Provimento CSM nº 2.672/2022" },
     { downDate: `24/11/2022`, description: "Encerramento de expediente antecipadamente - Provimento CSM nº 2.672/2022" },
     { downDate: `02/12/2022`, description: "Encerramento de expediente antecipadamente - Provimento CSM nº 2.672/2022" },
+    { downDate: `05/12/2022`, description: "Encerramento de expediente antecipadamente - Provimento CSM nº 2.672/2022" },
 
 
 
