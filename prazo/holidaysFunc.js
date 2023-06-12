@@ -167,6 +167,7 @@ function holidaysFunc(currentYear, expectedFinalYear, Easter) {
             { holidayDate: (Easter(i)).subtract(2, "days").format('DD/MM/YYYY'), description: "Sexta-feira Santa" },
             { holidayDate: (Easter(i)).format('DD/MM/YYYY'), description: "Páscoa" },
             { holidayDate: (Easter(i)).add(60, "days").format('DD/MM/YYYY'), description: "Corpus Christi" },
+            { holidayDate: (Easter(i)).add(61, "days").format('DD/MM/YYYY'), description: "Emenda de Corpus Christi" },
 
             //FIXED HOLIDAYS
             { holidayDate: `01/01/${i}`, description: "Confraternização Universal" },
