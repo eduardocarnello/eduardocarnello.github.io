@@ -244,7 +244,7 @@ function holidaysFunc(currentYear, expectedFinalYear, Easter) {
         );
             //Update - Dia do Padroeiro 2023
             cityHolidays.push(
-            { holidayDate: currentYear == 2023 ? "10/07/2023" : `11/07/${i}`, description: currentYear == 2023 ? '"São Bento, Padroeiro da Cidade"' : "São Bento, Padroeiro da Cidade", city: 'Marília' }
+            { holidayDate: currentYear == 2023 ? "10/07/2023" : `11/07/${i}`, description: currentYear == 2023 ? 'São Bento, Padroeiro da Cidade (2023)- Decreto Municipal nº 14.066/2023 ' : "São Bento, Padroeiro da Cidade", city: 'Marília' }
         );
         
 
