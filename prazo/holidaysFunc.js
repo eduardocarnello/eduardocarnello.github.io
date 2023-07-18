@@ -237,13 +237,16 @@ function holidaysFunc(currentYear, expectedFinalYear, Easter) {
             //MARÍLIA
             { holidayDate: `04/04/${i}`, description: "Fundação da Cidade", city: "Marília" },
             //alterado por conta da mudança da data do feriado em 2023 { holidayDate: `11/07/${i}`, description: "São Bento, Padroeiro da Cidade", city: "Marília" }
-            stateHolidays.push(
+        
+
+
+
+        );
+            //Update - Dia do Padroeiro 2023
+            cityHolidays.push(
             { holidayDate: currentYear == 2023 ? "10/07/2023" : `11/07/${i}`, description: currentYear == 2023 ? '"São Bento, Padroeiro da Cidade"' : "São Bento, Padroeiro da Cidade", city: 'Marília' }
         );
-
-
-
-        );
+        
 
         stateHolidays.push(
             { holidayDate: currentYear == 2020 ? "" : `09/07/${i}`, description: currentYear == 2020 ? '' : "Revolução Constitucionalista de São Paulo", state: 'SP' }
