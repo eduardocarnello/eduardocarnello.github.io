@@ -45,9 +45,28 @@ const sistDown = [
     { downDate: `25/10/2022`, description: "INDISPONIBILIDADE DO PETICIONAMENTO ELETRÔNICO INICIAL E INTERMEDIÁRIO DE 1º GRAU PARA A CLASSE: 12154 - EXECUÇÃO DE TÍTULO EXTRAJUDICIAL NO PORTAL E-SAJ" },
     { downDate: `26/10/2022`, description: "INDISPONIBILIDADE DO PETICIONAMENTO ELETRÔNICO INICIAL E INTERMEDIÁRIO DE 1º GRAU PARA A CLASSE: 12154 - EXECUÇÃO DE TÍTULO EXTRAJUDICIAL NO PORTAL E-SAJ" },
     { downDate: `24/11/2022`, description: "Encerramento de expediente antecipadamente - Provimento CSM nº 2.672/2022" },
+    { downDate: `28/11/2022`, description: "INDISPONIBILIDADE NA CONSULTA PROCESSUAL 1ª INSTÂNCIA" },
     { downDate: `24/11/2022`, description: "Encerramento de expediente antecipadamente - Provimento CSM nº 2.672/2022" },
     { downDate: `02/12/2022`, description: "Encerramento de expediente antecipadamente - Provimento CSM nº 2.672/2022" },
     { downDate: `05/12/2022`, description: "Encerramento de expediente antecipadamente - Provimento CSM nº 2.672/2022" },
+    { downDate: `19/01/2023`, description: "INDISPONIBILIDADE NA CONSULTA PROCESSUAL DE 1ª INSTÂNCIA DA BASE JM DO SAJ" },
+    { downDate: `27/01/2023`, description: "INSTABILIDADE DO PETICIONAMENTO DE INICIAL E INTERMEDIÁRIA DE 1º E 2º GRAU E DO COLÉGIO RECURSAL" },
+    { downDate: `13/02/2023`, description: "INSTABILIDADE DO PETICIONAMENTO DE INICIAL E INTERMEDIÁRIA DE 1º GRAU" },
+    { downDate: `15/02/2023`, description: "INDISPONIBILIDADE DOS SERVIÇOS DO PORTAL E-SAJ" },
+    { downDate: `07/03/2023`, description: "INDISPONIBILIDADE NA CONSULTA PROCESSUAL 1ª INSTÂNCIA" },
+    { downDate: `16/03/2023`, description: "INDISPONIBILIDADE NA CONSULTA PROCESSUAL DE 1ª E 2ª INSTÂNCIA DO PORTAL E-SAJ" },
+    { downDate: `28/03/2023`, description: "INDISPONIBILIDADE PARA AUTENTICAÇÃO NO PORTAL E-SAJ" },
+    { downDate: `13/04/2023`, description: "INSTABILIDADE DOS SERVIÇOS DO PORTAL E-SAJ" },
+    { downDate: `02/05/2023`, description: "INDISPONIBILIDADE DO PETICIONAMENTO ELETRONICO INICIAL E INTERMEDIÁRIA DE 1º E 2º GRAU E DO COLÉGIO RECURSAL – ERRO CMS.TSP.72." },
+    { downDate: `25/05/2023`, description: "INSTABILIDADE DO PETICIONAMENTO DE INICIAL E INTERMEDIÁRIA DE 1º E 2º GRAU E DO COLÉGIO RECURSAL" },
+    { downDate: `26/05/2023`, description: "INSTABILIDADE DO PETICIONAMENTO DE INICIAL E INTERMEDIÁRIA DE 1º E 2º GRAU E DO COLÉGIO RECURSAL" },
+    { downDate: `12/06/2023`, description: "INDISPONIBILIDADE DOS SERVIÇOS DO PORTAL E-SAJ – ERRO CMS.TSP.72." },
+    
+    
+    
+    
+    
+    
 
 
 
@@ -151,6 +170,7 @@ function holidaysFunc(currentYear, expectedFinalYear, Easter) {
             { holidayDate: (Easter(i)).subtract(2, "days").format('DD/MM/YYYY'), description: "Sexta-feira Santa" },
             { holidayDate: (Easter(i)).format('DD/MM/YYYY'), description: "Páscoa" },
             { holidayDate: (Easter(i)).add(60, "days").format('DD/MM/YYYY'), description: "Corpus Christi" },
+            { holidayDate: (Easter(i)).add(61, "days").format('DD/MM/YYYY'), description: "Emenda de Corpus Christi" },
 
             //FIXED HOLIDAYS
             { holidayDate: `01/01/${i}`, description: "Confraternização Universal" },
@@ -218,10 +238,17 @@ function holidaysFunc(currentYear, expectedFinalYear, Easter) {
 
             //MARÍLIA
             { holidayDate: `04/04/${i}`, description: "Fundação da Cidade", city: "Marília" },
-            { holidayDate: `11/07/${i}`, description: "São Bento, Padroeiro da Cidade", city: "Marília" }
+            //alterado por conta da mudança da data do feriado em 2023 { holidayDate: `11/07/${i}`, description: "São Bento, Padroeiro da Cidade", city: "Marília" }
+        
+
 
 
         );
+            //Update - Dia do Padroeiro 2023
+            cityHolidays.push(
+            { holidayDate: currentYear == 2023 ? "10/07/2023" : `11/07/${i}`, description: currentYear == 2023 ? 'São Bento, Padroeiro da Cidade (2023)- Decreto Municipal nº 14.066/2023 ' : "São Bento, Padroeiro da Cidade", city: 'Marília' }
+        );
+        
 
         stateHolidays.push(
             { holidayDate: currentYear == 2020 ? "" : `09/07/${i}`, description: currentYear == 2020 ? '' : "Revolução Constitucionalista de São Paulo", state: 'SP' }
