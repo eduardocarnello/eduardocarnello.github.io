@@ -61,12 +61,13 @@ const sistDown = [
     { downDate: `25/05/2023`, description: "INSTABILIDADE DO PETICIONAMENTO DE INICIAL E INTERMEDIÁRIA DE 1º E 2º GRAU E DO COLÉGIO RECURSAL" },
     { downDate: `26/05/2023`, description: "INSTABILIDADE DO PETICIONAMENTO DE INICIAL E INTERMEDIÁRIA DE 1º E 2º GRAU E DO COLÉGIO RECURSAL" },
     { downDate: `12/06/2023`, description: "INDISPONIBILIDADE DOS SERVIÇOS DO PORTAL E-SAJ – ERRO CMS.TSP.72." },
-    
-    
-    
-    
-    
-    
+    { downDate: `28/07/2023`, description: "INDISPONIBILIDADE NA CONSULTA PROCESSUAL DE 1º GRAU NO PORTAL E-SAJ" },
+
+
+
+
+
+
 
 
 
@@ -239,16 +240,16 @@ function holidaysFunc(currentYear, expectedFinalYear, Easter) {
             //MARÍLIA
             { holidayDate: `04/04/${i}`, description: "Fundação da Cidade", city: "Marília" },
             //alterado por conta da mudança da data do feriado em 2023 { holidayDate: `11/07/${i}`, description: "São Bento, Padroeiro da Cidade", city: "Marília" }
-        
+
 
 
 
         );
-            //Update - Dia do Padroeiro 2023
-            cityHolidays.push(
+        //Update - Dia do Padroeiro 2023
+        cityHolidays.push(
             { holidayDate: currentYear == 2023 ? "10/07/2023" : `11/07/${i}`, description: currentYear == 2023 ? 'São Bento, Padroeiro da Cidade (2023)- Decreto Municipal nº 14.066/2023 ' : "São Bento, Padroeiro da Cidade", city: 'Marília' }
         );
-        
+
 
         stateHolidays.push(
             { holidayDate: currentYear == 2020 ? "" : `09/07/${i}`, description: currentYear == 2020 ? '' : "Revolução Constitucionalista de São Paulo", state: 'SP' }
