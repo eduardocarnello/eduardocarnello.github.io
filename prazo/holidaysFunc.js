@@ -2,7 +2,10 @@ const amendment = [
     { holidayDate: "22/04/2022", description: "Suspensão de expediente (Prov. CSM 2641/2021)" },
     { holidayDate: "17/06/2022", description: "Suspensão de expediente (Prov. CSM 2641/2021)" },
     { holidayDate: "14/11/2022", description: "Suspensão de expediente (Prov. CSM 2641/2021)" },
-    { holidayDate: "08/09/2023", description: "Suspensão de expediente (Prov. CSM 2641/2021)" },
+    { holidayDate: "09/06/2023", description: "Suspensão de expediente (Prov. CSM 2678/2022)" },
+    { holidayDate: "08/09/2023", description: "Suspensão de expediente (Prov. CSM 2678/2022)" },
+    { holidayDate: "13/10/2023", description: "Suspensão de expediente (Prov. CSM 2678/2022)" },
+    { holidayDate: "03/11/2023", description: "Suspensão de expediente (Prov. CSM 2678/2022)" },
 
 ]
 
@@ -186,6 +189,7 @@ function holidaysFunc(currentYear, expectedFinalYear, Easter) {
             { holidayDate: `15/11/${i}`, description: "Proclamação da República" },
             { holidayDate: i == 2022 ? `28/10/${i}` : `28/10/${i}`, description: i == 2022 ? "Dia do Servidor Público" : 'Dia do Servidor Público' },
             { holidayDate: i == 2022 ? `09/12/${i}` : `08/12/${i}`, description: i == 2022 ? "Dia da Justiça 2022 (PROVIMENTO CSM Nº 2677/2022)" : 'Dia da Justiça' },
+            { holidayDate: i >= 2023 ? `20/11/${i}` : ``, description: i >= 2023 ? "Consciência Negra" : '' },
             { holidayDate: `25/12/${i}`, description: "Natal" },
 
             //SEVERE SYSTEM DOWN
