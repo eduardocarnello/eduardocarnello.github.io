@@ -2,6 +2,7 @@ const amendment = [
     { holidayDate: "22/04/2022", description: "Suspensão de expediente (Prov. CSM 2641/2021)" },
     { holidayDate: "17/06/2022", description: "Suspensão de expediente (Prov. CSM 2641/2021)" },
     { holidayDate: "14/11/2022", description: "Suspensão de expediente (Prov. CSM 2641/2021)" },
+    { holidayDate: "08/09/2023", description: "Suspensão de expediente (Prov. CSM 2641/2021)" },
 
 ]
 
@@ -100,7 +101,7 @@ function holidaysFunc(currentYear, expectedFinalYear, Easter) {
 
 
 
-
+''
     for (let i = currentYear; i <= expectedFinalYear; i++) {
         nationalHolidays.push(
 
