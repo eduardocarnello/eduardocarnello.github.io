@@ -67,6 +67,12 @@ const sistDown = [
     { downDate: `12/06/2023`, description: "INDISPONIBILIDADE DOS SERVIÇOS DO PORTAL E-SAJ – ERRO CMS.TSP.72." },
     { downDate: `28/07/2023`, description: "INDISPONIBILIDADE NA CONSULTA PROCESSUAL 1ª INSTÂNCIA" },
     { downDate: `16/08/2023`, description: "INDISPONIBILIDADE NA CONSULTA PROCESSUAL 1ª INSTÂNCIA" },
+    { downDate: `18/08/2023`, description: "INDISPONIBILIDADE NA CONSULTA PROCESSUAL 1ª INSTÂNCIA" },
+    { downDate: `28/08/2023`, description: "INDISPONIBILIDADE NA CONSULTA PROCESSUAL 1ª INSTÂNCIA" },
+    { downDate: `09/10/2023`, description: "INDISPONIBILIDADE NA CONSULTA PROCESSUAL 1ª INSTÂNCIA" },
+    { downDate: `10/10/2023`, description: "INDISPONIBILIDADE NA CONSULTA PROCESSUAL 1ª INSTÂNCIA" },
+    { downDate: `06/11/2023`, description: "Comunicado nº 435/2023" },
+    { downDate: `07/11/2023`, description: "Comunicado nº 435/2023" },
 
     
     
