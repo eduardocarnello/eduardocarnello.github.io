@@ -199,7 +199,8 @@ function holidaysFunc(currentYear, expectedFinalYear, Easter) {
             { holidayDate: `25/12/${i}`, description: "Natal" },
 
             //SEVERE SYSTEM DOWN
-
+            { holidayDate: `06/11/2023`, description: "Suspensão de Prazo - Comunicado nº 435/2023 (DJE de 07/11/2023, Caderno Administrativo, pág. 1)" },
+            { holidayDate: `07/11/2023`, description: "Suspensão de Prazo - Comunicado nº 435/2023 (DJE de 07/11/2023, Caderno Administrativo, pág. 1)" },
 
 
 
