@@ -151,7 +151,7 @@ alert(JSON.stringify(eventsholded))
 
 $("#countType").selectpicker('render');
 
-introJsFunc(true);
+introJsFunc(false);
 //store introJs object in a variable
 //var intro = introJs(false, );
 
