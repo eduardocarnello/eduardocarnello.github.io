@@ -73,6 +73,10 @@ const sistDown = [
     { downDate: `10/10/2023`, description: "INDISPONIBILIDADE NA CONSULTA PROCESSUAL 1ª INSTÂNCIA" },
     { downDate: `06/11/2023`, description: "Comunicado nº 435/2023" },
     { downDate: `07/11/2023`, description: "Comunicado nº 435/2023" },
+    { downDate: `08/11/2023`, description: "INDISPONIBILIDADE DO PETICIONAMENTO ELETRONICO INICIAL E INTERMEDIÁRIA DE 1º E 2º GRAU E DO COLÉGIO RECURSAL – ERRO CMS.TSP.72." },
+    { downDate: `21/11/2023`, description: "INDISPONIBILIDADE NA CONSULTA PROCESSUAL DE 1º GRAU NO PORTAL E-SAJ PARA OS PROCESSOS ALOCADOS NAS BASES PG5EF, PG5REG E PG5PP." },
+    { downDate: `29/01/2024`, description: "INDISPONIBILIDADE DOS SERVIÇOS DO PORTAL E-SAJ." },
+    
 
     
     
