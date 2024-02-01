@@ -266,7 +266,7 @@ function introJsFunc(a, b) {
         },
         {
           element: document.querySelector('.dropdown-menu :nth-child(1) li:nth-child(2)'),
-          intro: "<p>Ao selecionar <b>'do ato'</b>, a contagem será feita com base na data inicial fornecida.</p><p> Selecione essa opção e, no campo de data, informe a data em que o ato de intimação/citação se efetivou (ex: <b>a data da juntada do comprovante de recebimento</b>, a data do <b>recebimento da intimação</b> etc).</p> "
+          intro: "<p>Ao selecionar <b>'do ato'</b>, a contagem será feita com base na data inicial fornecida.</p><p> Selecione essa opção e, no campo de data, informe a data em que o ato de intimação/citação se efetivou (ex: <b>a data da juntada do comprovante de recebimento</b>, a data da publicação etc).</p> "
         },
         {
           element: document.querySelector('ul.dropdown-menu.inner.show :nth-child(3)'),
@@ -877,7 +877,7 @@ $(document).ready(function () {
     var tooltip;
     //case the selected option value is 0, create a var for tooltip
     if ($(this).val() == "0") {
-      tooltip = '<p>A data do ato pode ser a data da <b>juntada do comprovante de intimação</b> nos autos, a data do <b>recebimento da intimação</b> (quando aplicável; ex: ações do JEC) ou mesmo a data em que o ato se efetivou para o início da contagem do prazo (por exemplo, a data da publicação no DJE).</p>';
+      tooltip = '<p>A data do ato pode ser a data da <b>juntada do comprovante de intimação</b> nos autos ou a data em que o ato se efetivou para o início da contagem do prazo (por exemplo, a data da publicação no DJE).</p>';
     }
     //case the selected option value is 1, create a var for tooltip
     else if ($(this).val() == "1") {
