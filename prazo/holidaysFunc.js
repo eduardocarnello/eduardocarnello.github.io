@@ -223,6 +223,11 @@ function holidaysFunc(currentYear, expectedFinalYear, Easter) {
             //SEVERE SYSTEM DOWN
             { holidayDate: `06/11/2023`, description: "Suspensão de Prazo - Comunicado nº 435/2023 (DJE de 07/11/2023, Caderno Administrativo, pág. 1)" },
             { holidayDate: `07/11/2023`, description: "Suspensão de Prazo - Comunicado nº 435/2023 (DJE de 07/11/2023, Caderno Administrativo, pág. 1)" },
+            { holidayDate: `18/03/2024`, description: "Suspensão de Prazo - Comunicado Conjunto nº 293/2024 (DJE de 03/04/2024, Caderno Administrativo, pág. 4)" },
+            { holidayDate: `19/03/2024`, description: "Suspensão de Prazo - Comunicado Conjunto nº 293/2024 (DJE de 03/04/2024, Caderno Administrativo, pág. 4)" },
+            { holidayDate: `20/03/2024`, description: "Suspensão de Prazo - Comunicado Conjunto nº 293/2024 (DJE de 03/04/2024, Caderno Administrativo, pág. 4)" },
+            { holidayDate: `21/03/2024`, description: "Suspensão de Prazo - Comunicado Conjunto nº 293/2024 (DJE de 03/04/2024, Caderno Administrativo, pág. 4)" },
+            { holidayDate: `22/03/2024`, description: "Suspensão de Prazo - Comunicado Conjunto nº 293/2024 (DJE de 03/04/2024, Caderno Administrativo, pág. 4)" },
 
 
 
