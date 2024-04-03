@@ -6,6 +6,9 @@ const amendment = [
     { holidayDate: "08/09/2023", description: "Suspensão de expediente (Prov. CSM 2678/2022)" },
     { holidayDate: "13/10/2023", description: "Suspensão de expediente (Prov. CSM 2678/2022)" },
     { holidayDate: "03/11/2023", description: "Suspensão de expediente (Prov. CSM 2678/2022)" },
+    { holidayDate: "31/05/2024", description: "Suspensão de expediente (Prov. CSM 2728/2023)" },
+    { holidayDate: "08/07/2024", description: "Suspensão de expediente (Prov. CSM 2728/2023)" },
+
 
 ]
 
@@ -76,6 +79,7 @@ const sistDown = [
     { downDate: `08/11/2023`, description: "INDISPONIBILIDADE DO PETICIONAMENTO ELETRONICO INICIAL E INTERMEDIÁRIA DE 1º E 2º GRAU E DO COLÉGIO RECURSAL – ERRO CMS.TSP.72." },
     { downDate: `21/11/2023`, description: "INDISPONIBILIDADE NA CONSULTA PROCESSUAL DE 1º GRAU NO PORTAL E-SAJ PARA OS PROCESSOS ALOCADOS NAS BASES PG5EF, PG5REG E PG5PP." },
     { downDate: `29/01/2024`, description: "INDISPONIBILIDADE DOS SERVIÇOS DO PORTAL E-SAJ." },
+    { downDate: `15/03/2024`, description: "INDISPONIBILIDADE SEVERA - 1º DIA (Comunicado Conjunto 239/2024)." },
     
 
     
