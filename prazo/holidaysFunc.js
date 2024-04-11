@@ -80,6 +80,7 @@ const sistDown = [
     { downDate: `21/11/2023`, description: "INDISPONIBILIDADE NA CONSULTA PROCESSUAL DE 1º GRAU NO PORTAL E-SAJ PARA OS PROCESSOS ALOCADOS NAS BASES PG5EF, PG5REG E PG5PP." },
     { downDate: `29/01/2024`, description: "INDISPONIBILIDADE DOS SERVIÇOS DO PORTAL E-SAJ." },
     { downDate: `15/03/2024`, description: "INDISPONIBILIDADE SEVERA - 1º DIA (Comunicado Conjunto 239/2024)." },
+    { downDate: `10/04/2024`, description: "INDISPONIBILIDADE NA CONSULTA DE 1º GRAU" },
     
 
     
