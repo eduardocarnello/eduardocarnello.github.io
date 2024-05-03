@@ -56,62 +56,71 @@
         <textarea id="manifestacao" rows="6" cols="50" required></textarea><br><br>
         
         <button type="button" onclick="gerarPDF()">Gerar Manifestação</button>
-    </form>
 
-    <script>
-        function gerarPDF() {
-            const processo = document.getElementById('processo').value;
-            const nome = document.getElementById('nome').value;
-            const rg = document.getElementById('rg').value;
-            const cpf = document.getElementById('cpf').value;
-            const atualizarEndereco = document.getElementById('atualizarEndereco').value;
-            const endereco = document.getElementById('endereco').value;
-            const manifestacao = document.getElementById('manifestacao').value;
+        <script src="https://cdn.jsdelivr.net/npm/pdf-lib@^1.15.0/dist/pdf-lib.min.js"></script>
+        <script>
+            async function gerarPDF() {
+                const processo = document.getElementById('processo').value;
+                const nome = document.getElementById('nome').value;
+                const rg = document.getElementById('rg').value;
+                const cpf = document.getElementById('cpf').value;
+                const atualizarEndereco = document.getElementById('atualizarEndereco').value;
+                const endereco = document.getElementById('endereco').value;
+                const manifestacao = document.getElementById('manifestacao').value;
 
-            const manifestacaoText = `
-                EXCELENTÍSSIMO JUIZ DE DIREITO DO JUIZADO ESPECIAL CÍVEL DE MARÍLIA/SP
+                const manifestacaoText = `
+                    EXCELENTÍSSIMO JUIZ DE DIREITO DO JUIZADO ESPECIAL CÍVEL DE MARÍLIA/SP
 
-                Processo nº: ${processo}
+                    Processo nº: ${processo}
 
-                ${nome}, portador(a) do RG ${rg} e CPF ${cpf}${atualizarEndereco === 'sim' ? `, residente no seguinte endereço: ${endereco}` : ''},
-                já devidamente qualificado(a), nos autos da ação em epígrafe, vem, respeitosamente, apresentar manifestação nos seguintes termos:
+                    ${nome}, portador(a) do RG ${rg} e CPF ${cpf}${atualizarEndereco === 'sim' ? `, residente no seguinte endereço: ${endereco}` : ''},
+                    já devidamente qualificado(a), nos autos da ação em epígrafe, vem, respeitosamente, apresentar manifestação nos seguintes termos:
 
-                ${manifestacao}
+                    ${manifestacao}
 
-                Termos em que pede deferimento
+                    Termos em que pede deferimento
 
-                Marília/SP, ${new Date().toLocaleDateString('pt-BR')}
-                
-                _________________________
-                ${nome}
-            `;
+                    Marília/SP, ${new Date().toLocaleDateString('pt-BR')}
+                    
+                    _________________________
+                    ${nome}
+                `;
 
-            const pdfContent = `
-                <!DOCTYPE html>
-                <html lang="pt-BR">
-                <head>
-                    <meta charset="UTF-8">
-                    <title>Manifestação em Juizado Especial Cível</title>
-                </head>
-                <body>
-                    <pre>${manifestacaoText}</pre>
-                </body>
-                </html>
-            `;
+                const pdfDoc = await PDFLib.PDFDocument.create();
+                const page = pdfDoc.addPage();
+                const { width, height } = page.getSize();
 
-            const blob = new Blob([pdfContent], { type: 'application/pdf' });
-            const url = URL.createObjectURL(blob);
+                const textWidth = 500;
+                const textHeight = height - 50;
+                const fontSize = 12;
 
-            const newTab = window.open(url, '_blank');
-            if (!newTab) {
-                alert('Erro ao abrir o PDF. Verifique as configurações do seu navegador.');
+                const font = await pdfDoc.embedFont(PDFLib.StandardFonts.Helvetica);
+                page.drawText(manifestacaoText, {
+                    x: 50,
+                    y: textHeight,
+                    font,
+                    fontSize,
+                    maxWidth: textWidth,
+                    lineHeight: fontSize * 1.2,
+                    color: PDFLib.rgb(0, 0, 0),
+                });
+
+                const pdfBytes = await pdfDoc.save();
+
+                const blob = new Blob([pdfBytes], { type: 'application/pdf' });
+                const url = URL.createObjectURL(blob);
+
+                const newTab = window.open(url, '_blank');
+                if (!newTab) {
+                    alert('Erro ao abrir o PDF. Verifique as configurações do seu navegador.');
+                }
             }
-        }
 
-        document.getElementById('atualizarEndereco').addEventListener('change', function() {
-            const display = this.value === 'sim' ? 'block' : 'none';
-            document.getElementById('enderecoFields').style.display = display;
-        });
-    </script>
+            document.getElementById('atualizarEndereco').addEventListener('change', function() {
+                const display = this.value === 'sim' ? 'block' : 'none';
+                document.getElementById('enderecoFields').style.display = display;
+            });
+        </script>
+    </form>
 </body>
 </html>
