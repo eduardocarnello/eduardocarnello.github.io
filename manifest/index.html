@@ -103,10 +103,8 @@
             const url = URL.createObjectURL(blob);
 
             const newTab = window.open(url, '_blank');
-            if (newTab) {
-                newTab.document.write(`<iframe src="${url}" width="100%" height="100%"></iframe>`);
-            } else {
-                alert('Não foi possível abrir o PDF. Verifique as configurações do seu navegador.');
+            if (!newTab) {
+                alert('Erro ao abrir o PDF. Verifique as configurações do seu navegador.');
             }
         }
 
