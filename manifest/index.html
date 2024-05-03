@@ -6,54 +6,70 @@
     <title>Gerar Manifestação em PDF</title>
 
     <style>
-        @media print {
-            body {
-                font-size: 12pt;
-                font-family: Arial, sans-serif;
-                margin: 0;
-                padding: 20px;
-            }
-            h1 {
-                font-size: 16pt;
-                text-align: center;
-            }
-            label {
-                font-weight: bold;
-            }
-            #manifestacaoText {
-                white-space: pre-line;
-            }
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+
+        h1, h2 {
+            text-align: center;
+        }
+
+        .section {
+            margin-bottom: 20px;
+        }
+
+        label {
+            font-weight: bold;
+        }
+
+        #manifestacaoText {
+            white-space: pre-line;
+            font-size: 12pt;
+            line-height: 1.5;
         }
     </style>
 </head>
 <body>
     <h1>Manifestação em Juizado Especial Cível</h1>
     <form id="manifestForm">
-        <label for="processo">Processo nº:</label>
-        <input type="text" id="processo" required><br><br>
-        
-        <label for="nome">Nome da parte:</label>
-        <input type="text" id="nome" required><br><br>
-        
-        <label for="rg">RG da parte:</label>
-        <input type="text" id="rg" required><br><br>
-        
-        <label for="cpf">CPF da parte:</label>
-        <input type="text" id="cpf" required><br><br>
-        
-        <label for="atualizarEndereco">Atualizar endereço:</label>
-        <select id="atualizarEndereco">
-            <option value="nao">Não</option>
-            <option value="sim">Sim</option>
-        </select><br><br>
-        
-        <div id="enderecoFields" style="display:none;">
-            <label for="endereco">Novo endereço:</label>
-            <textarea id="endereco" rows="3" cols="40"></textarea><br><br>
+        <div class="section">
+            <label for="processo">Processo nº:</label>
+            <input type="text" id="processo" required>
         </div>
         
-        <label for="manifestacao">Manifestação:</label><br>
-        <textarea id="manifestacao" rows="6" cols="50" required></textarea><br><br>
+        <div class="section">
+            <label for="nome">Nome da parte:</label>
+            <input type="text" id="nome" required>
+        </div>
+        
+        <div class="section">
+            <label for="rg">RG da parte:</label>
+            <input type="text" id="rg" required>
+        </div>
+        
+        <div class="section">
+            <label for="cpf">CPF da parte:</label>
+            <input type="text" id="cpf" required>
+        </div>
+        
+        <div class="section">
+            <label for="atualizarEndereco">Atualizar endereço:</label>
+            <select id="atualizarEndereco">
+                <option value="nao">Não</option>
+                <option value="sim">Sim</option>
+            </select>
+        </div>
+        
+        <div class="section" id="enderecoFields" style="display:none;">
+            <label for="endereco">Novo endereço:</label>
+            <textarea id="endereco" rows="3" cols="40"></textarea>
+        </div>
+        
+        <div class="section">
+            <label for="manifestacao">Manifestação:</label><br>
+            <textarea id="manifestacao" rows="6" cols="50" required></textarea>
+        </div>
         
         <button type="button" onclick="gerarPDF()">Gerar Manifestação</button>
 
@@ -68,6 +84,13 @@
                 const endereco = document.getElementById('endereco').value;
                 const manifestacao = document.getElementById('manifestacao').value;
 
+                const pdfDoc = await PDFLib.PDFDocument.create();
+                let page = pdfDoc.addPage();
+                const { width, height } = page.getSize();
+
+                const font = await pdfDoc.embedFont(PDFLib.StandardFonts.Helvetica);
+
+                // Conteúdo da petição
                 const manifestacaoText = `
                     EXCELENTÍSSIMO JUIZ DE DIREITO DO JUIZADO ESPECIAL CÍVEL DE MARÍLIA/SP
 
@@ -86,24 +109,28 @@
                     ${nome}
                 `;
 
-                const pdfDoc = await PDFLib.PDFDocument.create();
-                const page = pdfDoc.addPage();
-                const { width, height } = page.getSize();
-
-                const textWidth = 500;
-                const textHeight = height - 50;
+                const lines = manifestacaoText.split('\n');
                 const fontSize = 12;
+                const lineHeight = fontSize * 1.5;
+                let currentY = height - 50;
+                let currentPage = 0;
 
-                const font = await pdfDoc.embedFont(PDFLib.StandardFonts.Helvetica);
-                page.drawText(manifestacaoText, {
-                    x: 50,
-                    y: textHeight,
-                    font,
-                    fontSize,
-                    maxWidth: textWidth,
-                    lineHeight: fontSize * 1.2,
-                    color: PDFLib.rgb(0, 0, 0),
-                });
+                for (let line of lines) {
+                    const textWidth = font.widthOfTextAtSize(line, fontSize);
+                    if (currentY < 50 || (currentY - lineHeight) < 50) {
+                        page = pdfDoc.addPage();
+                        currentPage++;
+                        currentY = height - 50;
+                    }
+                    page.drawText(line.trim(), {
+                        x: 50,
+                        y: currentY,
+                        font,
+                        fontSize,
+                        color: PDFLib.rgb(0, 0, 0),
+                    });
+                    currentY -= lineHeight;
+                }
 
                 const pdfBytes = await pdfDoc.save();
 
