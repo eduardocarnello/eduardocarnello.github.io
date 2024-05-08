@@ -82,6 +82,7 @@ const sistDown = [
     { downDate: `15/03/2024`, description: "INDISPONIBILIDADE SEVERA - 1º DIA (Comunicado Conjunto 239/2024)." },
     { downDate: `10/04/2024`, description: "INDISPONIBILIDADE NA CONSULTA DE 1º GRAU" },
     { downDate: `11/04/2024`, description: "INDISPONIBILIDADE NA CONSULTA DE 1º GRAU" },
+    { downDate: `07/05/2024`, description: "INDISPONIBILIDADE DO PETICIONAMENTO ELETRÔNICO DE 1º GRAU - ERRO: PETPG - 99" },
     
 
     
