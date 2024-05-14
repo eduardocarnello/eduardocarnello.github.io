@@ -83,6 +83,7 @@ const sistDown = [
     { downDate: `10/04/2024`, description: "INDISPONIBILIDADE NA CONSULTA DE 1º GRAU" },
     { downDate: `11/04/2024`, description: "INDISPONIBILIDADE NA CONSULTA DE 1º GRAU" },
     { downDate: `07/05/2024`, description: "INDISPONIBILIDADE DO PETICIONAMENTO ELETRÔNICO DE 1º GRAU - ERRO: PETPG - 99" },
+    { downDate: `13/05/2024`, description: "INDISPONIBILIDADE DOS SERVIÇOS DO PORTAL E-SAJ" },
     
 
     
