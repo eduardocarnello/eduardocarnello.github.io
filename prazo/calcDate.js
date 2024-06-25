@@ -223,6 +223,7 @@ function calculateResults() {
     */
     if (initialDate.isBusinessDay() == true) {
         diaUtil = initialDate
+        console.log("o business day é" + diaUtil)
     }
     else (initialDate = moment(diaAto).businessAdd(1)) //preciso arrumar isso usando o While
     var tipoContagem
