@@ -1,5 +1,5 @@
 moment.locale('pt-br');
-var chosenCity = 0
+var chosenCity = "Marília"
 
 
 
