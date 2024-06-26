@@ -223,12 +223,17 @@ function calculateResults() {
     */
     if (initialDate.isBusinessDay() == true) {
         diaUtil = initialDate
+        console.log("o business day")
     }
-    else (initialDate = moment(diaAto).businessAdd(1)) //preciso arrumar isso usando o While
-    var tipoContagem
+    else {
+        diaUtil = moment(initialDate).businessAdd(1) //preciso arrumar isso usando o While //erro aqui e ver com cuidado era initialDate
+        //diaAto = moment(initialDate).businessAdd(1)
+    }
+        var tipoContagem
     // Atribuindo o primeiro dia da contagem com base na opção escolhida
     if (tipoContagem == "DJE") {
         diaUtil = initialDate.businessAdd(1)
+        
     }
     //primeiroDiaContagem = diaUtil
     /*Essa parte tem que ser tirada
