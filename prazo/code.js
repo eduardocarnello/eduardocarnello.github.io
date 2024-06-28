@@ -913,7 +913,7 @@ function printDivs() {
   const divElements2 = document.getElementById('listReport').innerHTML;
   
   // Open a new window or tab
-  let printWindow = window.open('', '', 'height=auto,width=800');
+  let printWindow = window.open('', '', 'height=1800,width=1800');
 
   printWindow.document.write('<html><head><title>Relatório de Prazo</title>');
   // Include Bootstrap CSS for styling
