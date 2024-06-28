@@ -1,3 +1,4 @@
+
 //ondocumentready
 $(document).ready(function () {
 
@@ -906,3 +907,32 @@ $(document).ready(function () {
   });
 }
 );
+var initialDate = moment($('#initialDate').val(), 'DD/MM/YYYY');   //dia do ato
+function printDivs() {
+  const divElements1 = document.getElementById('printResults').innerHTML;
+  const divElements2 = document.getElementById('listReport').innerHTML;
+  
+  // Open a new window or tab
+  let printWindow = window.open('', '', 'height=auto,width=800');
+
+  printWindow.document.write('<html><head><title>Relatório de Prazo</title>');
+  // Include Bootstrap CSS for styling
+  printWindow.document.write('<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">');
+  // Optionally, include your own stylesheet for additional styles
+  printWindow.document.write('<link rel="stylesheet" href="style.css" type="text/css" />');
+  // Add print-specific CSS adjustments here
+  printWindow.document.write('<style>');
+  printWindow.document.write('body {display: block; width: 100%; overflow-x: 100%; -webkit-overflow-scrolling: touch; font-size: 10pt; }');
+  printWindow.document.write('h3 {text-align: center; }');
+  printWindow.document.write('.table-responsive { display: block; width: 100%; overflow-x: 100%; -webkit-overflow-scrolling: touch; }');
+  printWindow.document.write('table { page-break-inside: auto; }');
+  printWindow.document.write('thead { display: table-header-group; }');
+  printWindow.document.write('tr, td, th ');//{ page-break-inside: avoid; }
+  printWindow.document.write('</style>');
+  printWindow.document.write('</head><body onload="window.print(); window.close();">');
+  printWindow.document.write(divElements1);
+  printWindow.document.write(divElements2);
+  printWindow.document.write('</body></html>');
+
+  printWindow.document.close();
+}
