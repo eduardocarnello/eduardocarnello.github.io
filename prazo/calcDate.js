@@ -284,7 +284,21 @@ function calculateResults() {
         )) {
             dueDate = moment(dueDate).businessAdd(1)
         }
-    } else {
+    } 
+    else if (calcType == 'months') {
+        var originalDueDate = moment(dateForCalc).add(days, 'months')
+        var dueDate = moment(dateForCalc).add(days, 'months')
+        //
+        while (sistDown.find(function (down) {
+            return down.downDate === dueDate.format();
+        }
+        )) {
+            dueDate = moment(dueDate).add(days, 'months')
+        }
+
+        // Aqui você pode adicionar lógica adicional, se necessário, por exemplo, verificar se a nova data de vencimento cai em um feriado ou dia não útil e ajustar conforme necessário
+    } 
+    else {
         var originalDueDate = moment(dateForCalc).add(days, 'days')
         var dueDate = moment(dateForCalc).add(days, 'days')
         //check if the dueDate is not a businessDay or is a downDate then create an array prorrogationList that contains the days that are not businessDays and theirs respective descriptions (eg: weekend, Easter, etc)

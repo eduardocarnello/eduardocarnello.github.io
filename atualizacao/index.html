@@ -1,1 +1,39 @@
-hello world
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculadora de Acréscimo</title>
+</head>
+<body>
+    <label for="valorOriginal">Valor Original (R$):</label>
+    <input type="number" id="valorOriginal" oninput="atualizarValorComAcrescimo()">
+    <br>
+    <label for="valorComAcrescimo">Valor com 10% de acréscimo (R$):</label>
+    <input type="text" id="valorComAcrescimo" readonly>
+    <button onclick="copiarValor()">Copiar</button>
+
+    <script>
+        function atualizarValorComAcrescimo() {
+            const valorOriginal = document.getElementById('valorOriginal').value;
+            const valorComAcrescimo = valorOriginal * 1.10; // Acréscimo de 10%
+            // Formata o valor para moeda brasileira
+            let valorFormatado = valorComAcrescimo.toLocaleString('pt-BR', {
+                style: 'currency',
+                currency: 'BRL'
+            });
+            // Remove o símbolo "R$" do valor formatado
+            valorFormatado = valorFormatado.replace("R$", "").trim();
+            document.getElementById('valorComAcrescimo').value = valorFormatado; // Exibe o valor formatado sem o "R$"
+        }
+    
+        function copiarValor() {
+            const valorComAcrescimo = document.getElementById('valorComAcrescimo');
+            valorComAcrescimo.select(); // Seleciona o conteúdo do campo
+            valorComAcrescimo.setSelectionRange(0, 99999); // Para dispositivos móveis
+            document.execCommand('copy'); // Copia o texto selecionado
+          //  alert("Valor copiado: " + valorComAcrescimo.value); // Opcional: Mostra um alerta com o valor copiado
+        }
+    </script>
+</body>
+</html>
