@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculadora de Atualização Judicial</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            padding: 20px;
+            background-color: #f4f4f4;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #007bff;
+            color: white;
+        }
+        .container {
+            max-width: 800px;
+            margin: auto;
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        select, input[type="text"], input[type="date"] {
+            padding: 10px;
+            margin-bottom: 10px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <label for="parcelas">Número de Parcelas/Valores:</label>
+        <select id="parcelas" onchange="gerarInputs()">
+            <option value="">Selecione</option>
+            <!-- Gera opções de 1 a 20 -->
+            <script>
+                for (let i = 1; i <= 20; i++) {
+                    document.write(`<option value="${i}">${i}</option>`);
+                }
+            </script>
+        </select>
+
+        <form id="formParcelas">
+            <!-- Inputs serão gerados aqui -->
+        </form>
+        <!-- Adicionado após o form id="formParcelas" -->
+<label for="dataInicialJuros">Data Inicial para Juros (1% a.m.):</label>
+<input type="date" id="dataInicialJuros">
+
+<button onclick="calcular()">Calcular</button>
+
+<div id="resultados" class="container" style="display:none;">
+    <!-- Resultados serão exibidos aqui -->
+</div>
+    </div>
+
+    <script>
+        function gerarInputs() {
+            const numeroParcelas = document.getElementById('parcelas').value;
+            const form = document.getElementById('formParcelas');
+            form.innerHTML = ''; // Limpa o formulário antes de adicionar novos inputs
+
+            if (numeroParcelas) {
+                const tabela = document.createElement('table');
+                tabela.innerHTML = `<tr>
+                                        <th>#</th>
+                                        <th>Descrição</th>
+                                        <th>Valor (R$)</th>
+                                        <th>Data Inicial</th>
+                                    </tr>`;
+                for (let i = 1; i <= numeroParcelas; i++) {
+                    const linha = tabela.insertRow();
+                    linha.innerHTML = `<td>${i}</td>
+                                       <td><input type="text" name="descricao${i}"></td>
+                                       <td><input type="text" name="valor${i}" oninput="formatarComoMoeda(this)"></td>
+                                       <td><input type="date" name="data${i}"></td>`;
+                }
+                form.appendChild(tabela);
+            }
+        }
+
+        function formatarComoMoeda(input) {
+            let valor = input.value.replace(/\D/g, '');
+            valor = (valor / 100).toFixed(2) + '';
+            valor = valor.replace('.', ',');
+            valor = valor.replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1.');
+            input.value = valor;
+        }
+        function calcular() {
+        const dataInicialJuros = document.getElementById('dataInicialJuros').value;
+        const numeroParcelas = document.getElementById('parcelas').value;
+        const resultadosContainer = document.getElementById('resultados');
+        resultadosContainer.innerHTML = ''; // Limpa resultados anteriores
+        resultadosContainer.style.display = 'block'; // Mostra o container de resultados
+
+        let tabelaResultados = `<table>
+                                    <tr>
+                                        <th>#</th>
+                                        <th>Valor Nominal</th>
+                                        <th>Valor Atualizado (Exemplo)</th>
+                                        <th>Atualização Monetária (Exemplo)</th>
+                                        <th>Juros (Exemplo)</th>
+                                        <th>Total (Exemplo)</th>
+                                    </tr>`;
+
+        for (let i = 1; i <= numeroParcelas; i++) {
+            const valor = parseFloat(document.getElementsByName(`valor${i}`)[0].value.replace(',', '.'));
+            // Exemplo de valores, sem cálculo real
+            const valorAtualizado = valor; // Exemplo, sem cálculo real
+            const atualizacaoMonetaria = 0; // Exemplo, sem cálculo real
+            const valorJuros = 0; // Exemplo, sem cálculo real
+            const total = valor + atualizacaoMonetaria + valorJuros; // Exemplo, sem cálculo real
+
+            tabelaResultados += `<tr>
+                                    <td>${i}</td>
+                                    <td>R$ ${valor.toFixed(2)}</td>
+                                    <td>R$ ${valorAtualizado.toFixed(2)}</td>
+                                    <td>R$ ${atualizacaoMonetaria.toFixed(2)}</td>
+                                    <td>R$ ${valorJuros.toFixed(2)}</td>
+                                    <td>R$ ${total.toFixed(2)}</td>
+                                 </tr>`;
+        }
+
+        tabelaResultados += `</table>`;
+        resultadosContainer.innerHTML = tabelaResultados;
+    }
+    </script>
+</body>
+</html>
