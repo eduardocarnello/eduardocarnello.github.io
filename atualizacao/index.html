@@ -5,34 +5,77 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Calculadora de Acréscimo</title>
 </head>
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        margin: 20px;
+        padding: 20px;
+        background-color: #f4f4f4;
+    }
+    label, input, button {
+        display: block;
+        margin-bottom: 10px;
+    }
+    input, button {
+        width: 100%;
+        padding: 10px;
+        box-sizing: border-box; /* Garante que padding não aumente o tamanho do elemento */
+    }
+    button {
+        background-color: #007bff;
+        color: white;
+        border: none;
+        cursor: pointer;
+    }
+    button:hover {
+        background-color: #0056b3;
+    }
+    .container {
+        max-width: 400px;
+        margin: auto;
+        background-color: white;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+</style>
 <body>
-    <label for="valorOriginal">Valor Original (R$):</label>
-    <input type="number" id="valorOriginal" oninput="atualizarValorComAcrescimo()">
-    <br>
-    <label for="valorComAcrescimo">Valor com 10% de acréscimo (R$):</label>
-    <input type="text" id="valorComAcrescimo" readonly>
-    <button onclick="copiarValor()">Copiar</button>
+    <div class="container">
+        <label for="valorOriginal">Valor Original (R$):</label>
+        <input type="text" id="valorOriginal" oninput="formatarComoMoeda()">
 
+        <br>
+        <label for="valorComAcrescimo">Valor com 10% de acréscimo (R$):</label>
+        <input type="text" id="valorComAcrescimo" readonly>
+        <button onclick="copiarValor()">Copiar</button>
+    </div>
     <script>
+        function formatarComoMoeda() {
+            const inputValorOriginal = document.getElementById('valorOriginal');
+            let valor = inputValorOriginal.value.replace(/\D/g, ''); // Remove tudo o que não é dígito
+            valor = (valor / 100).toFixed(2) + ''; // Divide por 100 para considerar os centavos e fixa duas casas decimais
+            valor = valor.replace('.', ','); // Troca ponto por vírgula
+            valor = valor.replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1.'); // Adiciona ponto como separador de milhar
+            inputValorOriginal.value = valor; // Atualiza o valor do input
+    
+            atualizarValorComAcrescimo(); // Chama a função para atualizar o valor com acréscimo
+        }
+    
         function atualizarValorComAcrescimo() {
-            const valorOriginal = document.getElementById('valorOriginal').value;
-            const valorComAcrescimo = valorOriginal * 1.10; // Acréscimo de 10%
-            // Formata o valor para moeda brasileira
+            const valorOriginal = document.getElementById('valorOriginal').value.replace('.', '').replace(',', '.');
+            const valorComAcrescimo = parseFloat(valorOriginal) * 1.10; // Acréscimo de 10%
             let valorFormatado = valorComAcrescimo.toLocaleString('pt-BR', {
                 style: 'currency',
                 currency: 'BRL'
             });
-            // Remove o símbolo "R$" do valor formatado
             valorFormatado = valorFormatado.replace("R$", "").trim();
-            document.getElementById('valorComAcrescimo').value = valorFormatado; // Exibe o valor formatado sem o "R$"
+            document.getElementById('valorComAcrescimo').value = valorFormatado;
         }
     
         function copiarValor() {
             const valorComAcrescimo = document.getElementById('valorComAcrescimo');
-            valorComAcrescimo.select(); // Seleciona o conteúdo do campo
-            valorComAcrescimo.setSelectionRange(0, 99999); // Para dispositivos móveis
-            document.execCommand('copy'); // Copia o texto selecionado
-          //  alert("Valor copiado: " + valorComAcrescimo.value); // Opcional: Mostra um alerta com o valor copiado
+            valorComAcrescimo.select();
+            document.execCommand('copy');
         }
     </script>
 </body>
