@@ -86,14 +86,14 @@ const sistDown = [
     { downDate: `13/05/2024`, description: "INDISPONIBILIDADE DOS SERVIÇOS DO PORTAL E-SAJ" },
     { downDate: `12/06/2024`, description: "12/06/2024 – INDISPONIBILIDADE DO PETICIONAMENTO ELETRÔNICO INICIAL E INTERMEDIÁRIO DE 1º, 2º GRAU E COL RECURSAL - ERRO: PETPG – 70 E 99" },
     { downDate: `20/06/2024`, description: "INDISPONIBILIDADE DE IDENTIFICAÇÃO COM O CERTIFICADO DIGITAL AO PORTAL E-SAJ - ERRO: CERT.CLT.2" },
-    
 
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
 
 
 
@@ -124,7 +124,7 @@ function holidaysFunc(currentYear, expectedFinalYear, Easter) {
 
 
 
-''
+    ''
     for (let i = currentYear; i <= expectedFinalYear; i++) {
         nationalHolidays.push(
 
@@ -143,18 +143,18 @@ function holidaysFunc(currentYear, expectedFinalYear, Easter) {
             { holidayDate: `31/12/${i}`, description: "Recesso - Art. 116, § 2º do RITJSP" },
 
             //fix for previous year
-               { holidayDate: `20/12/${i-1}`, description: "Recesso - Art. 116, § 2º do RITJSP" },
-            { holidayDate: `21/12/${i-1}`, description: "Recesso - Art. 116, § 2º do RITJSP" },
-            { holidayDate: `22/12/${i-1}`, description: "Recesso - Art. 116, § 2º do RITJSP" },
-            { holidayDate: `23/12/${i-1}`, description: "Recesso - Art. 116, § 2º do RITJSP" },
-            { holidayDate: `24/12/${i-1}`, description: "Recesso - Art. 116, § 2º do RITJSP" },
-            { holidayDate: `25/12/${i-1}`, description: "Recesso - Art. 116, § 2º do RITJSP" },
-            { holidayDate: `26/12/${i-1}`, description: "Recesso - Art. 116, § 2º do RITJSP" },
-            { holidayDate: `27/12/${i-1}`, description: "Recesso - Art. 116, § 2º do RITJSP" },
-            { holidayDate: `28/12/${i-1}`, description: "Recesso - Art. 116, § 2º do RITJSP" },
-            { holidayDate: `29/12/${i-1}`, description: "Recesso - Art. 116, § 2º do RITJSP" },
-            { holidayDate: `30/12/${i-1}`, description: "Recesso - Art. 116, § 2º do RITJSP" },
-            { holidayDate: `31/12/${i-1}`, description: "Recesso - Art. 116, § 2º do RITJSP" },
+            { holidayDate: `20/12/${i - 1}`, description: "Recesso - Art. 116, § 2º do RITJSP" },
+            { holidayDate: `21/12/${i - 1}`, description: "Recesso - Art. 116, § 2º do RITJSP" },
+            { holidayDate: `22/12/${i - 1}`, description: "Recesso - Art. 116, § 2º do RITJSP" },
+            { holidayDate: `23/12/${i - 1}`, description: "Recesso - Art. 116, § 2º do RITJSP" },
+            { holidayDate: `24/12/${i - 1}`, description: "Recesso - Art. 116, § 2º do RITJSP" },
+            { holidayDate: `25/12/${i - 1}`, description: "Recesso - Art. 116, § 2º do RITJSP" },
+            { holidayDate: `26/12/${i - 1}`, description: "Recesso - Art. 116, § 2º do RITJSP" },
+            { holidayDate: `27/12/${i - 1}`, description: "Recesso - Art. 116, § 2º do RITJSP" },
+            { holidayDate: `28/12/${i - 1}`, description: "Recesso - Art. 116, § 2º do RITJSP" },
+            { holidayDate: `29/12/${i - 1}`, description: "Recesso - Art. 116, § 2º do RITJSP" },
+            { holidayDate: `30/12/${i - 1}`, description: "Recesso - Art. 116, § 2º do RITJSP" },
+            { holidayDate: `31/12/${i - 1}`, description: "Recesso - Art. 116, § 2º do RITJSP" },
 
 
             { holidayDate: `01/01/${i}`, description: "Recesso - Art. 116, § 2º do RITJSP" },
@@ -287,16 +287,20 @@ function holidaysFunc(currentYear, expectedFinalYear, Easter) {
             //MARÍLIA
             { holidayDate: `04/04/${i}`, description: "Fundação da Cidade", city: "Marília" },
             //alterado por conta da mudança da data do feriado em 2023 { holidayDate: `11/07/${i}`, description: "São Bento, Padroeiro da Cidade", city: "Marília" }
-        
+
 
 
 
         );
-            //Update - Dia do Padroeiro 2023
-            cityHolidays.push(
-            { holidayDate: currentYear == 2023 ? "10/07/2023" : `11/07/${i}`, description: currentYear == 2023 ? 'São Bento, Padroeiro da Cidade (2023)- Decreto Municipal nº 14.066/2023 ' : "São Bento, Padroeiro da Cidade", city: 'Marília' }
+        //Update - Dia do Padroeiro 2023
+        cityHolidays.push(
+            {
+                holidayDate: currentYear == 2023 ? "10/07/2023" : currentYear == 2024 ? "08/07/2024" : `11/07/${currentYear}`,
+                description: currentYear == 2023 ? 'São Bento, Padroeiro da Cidade (2023)- Decreto Municipal nº 14.066/2023 ' : "São Bento, Padroeiro da Cidade",
+                city: 'Marília'
+            }
         );
-        
+
 
         stateHolidays.push(
             { holidayDate: currentYear == 2020 ? "" : `09/07/${i}`, description: currentYear == 2020 ? '' : "Revolução Constitucionalista de São Paulo", state: 'SP' }
