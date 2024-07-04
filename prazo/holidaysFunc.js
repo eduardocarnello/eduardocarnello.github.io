@@ -296,7 +296,7 @@ function holidaysFunc(currentYear, expectedFinalYear, Easter) {
         cityHolidays.push(
             {
                 holidayDate: currentYear == 2023 ? "10/07/2023" : currentYear == 2024 ? "08/07/2024" : `11/07/${currentYear}`,
-                description: currentYear == 2023 ? 'São Bento, Padroeiro da Cidade (2023)- Decreto Municipal nº 14.066/2023 ' : "São Bento, Padroeiro da Cidade",
+                description: currentYear == 2023 ? 'São Bento, Padroeiro da Cidade (2023)- Decreto Municipal nº 14.066/2023 ' : currentYear == 2024 ? 'São Bento, Padroeiro da Cidade (2024)- Decreto Municipal nº 14.381/2024'  : "São Bento, Padroeiro da Cidade",
                 city: 'Marília'
             }
         );
