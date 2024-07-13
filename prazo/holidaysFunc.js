@@ -86,6 +86,7 @@ const sistDown = [
     { downDate: `13/05/2024`, description: "INDISPONIBILIDADE DOS SERVIÇOS DO PORTAL E-SAJ" },
     { downDate: `12/06/2024`, description: "12/06/2024 – INDISPONIBILIDADE DO PETICIONAMENTO ELETRÔNICO INICIAL E INTERMEDIÁRIO DE 1º, 2º GRAU E COL RECURSAL - ERRO: PETPG – 70 E 99" },
     { downDate: `20/06/2024`, description: "INDISPONIBILIDADE DE IDENTIFICAÇÃO COM O CERTIFICADO DIGITAL AO PORTAL E-SAJ - ERRO: CERT.CLT.2" },
+    { downDate: `10/07/2024`, description: "INDISPONIBILIDADE DOS SERVIÇOS DO PORTAL E-SAJ" },
 
 
 
@@ -296,7 +297,7 @@ function holidaysFunc(currentYear, expectedFinalYear, Easter) {
         cityHolidays.push(
             {
                 holidayDate: currentYear == 2023 ? "10/07/2023" : currentYear == 2024 ? "08/07/2024" : `11/07/${currentYear}`,
-                description: currentYear == 2023 ? 'São Bento, Padroeiro da Cidade (2023)- Decreto Municipal nº 14.066/2023 ' : "São Bento, Padroeiro da Cidade",
+                description: currentYear == 2023 ? 'São Bento, Padroeiro da Cidade (2023)- Decreto Municipal nº 14.066/2023 ' : currentYear == 2024 ? 'São Bento, Padroeiro da Cidade (2024)- Decreto Municipal nº 14.381/2024'  : "São Bento, Padroeiro da Cidade",
                 city: 'Marília'
             }
         );
