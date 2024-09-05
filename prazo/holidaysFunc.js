@@ -91,6 +91,7 @@ const sistDown = [
     { downDate: `12/07/2024`, description: "INDISPONIBILIDADE DOS SERVIÇOS DO PORTAL E-SAJ" },
     { downDate: `30/07/2024`, description: "INDISPONIBILIDADE DOS SERVIÇOS DO PORTAL E-SAJ" },
     { downDate: `31/07/2024`, description: "INDISPONIBILIDADE DOS SERVIÇOS DO PORTAL E-SAJ" },
+    { downDate: `04/09/2024`, description: "INDISPONIBILIDADE NA CONSULTA PROCESSUAL DE 1º GRAU DO PORTAL E-SAJ (BASE: JM E BF)" },
 
 
 
