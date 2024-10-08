@@ -95,6 +95,7 @@ const sistDown = [
     { downDate: `16/09/2024`, description: "INDISPONIBILIDADE DOS SERVIÇOS DO PORTAL E-SAJ - INTEGRADOR CNA (OAB) x e-SAJ (TJSP)" },
     { downDate: `17/09/2024`, description: "INDISPONIBILIDADE DA CONSULTA PROCESSUAL DE 1º E 2º GRAU E DO COLÉGIO RECURSAL" },
     { downDate: `03/10/2024`, description: "INDISPONIBILIDADE DOS SERVIÇOS DO PORTAL E-SAJ" },
+    { downDate: `07/10/2024`, description: "INDISPONIBILIDADE DOS SERVIÇOS DO PORTAL E-SAJ" },
 
 
 
