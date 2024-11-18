@@ -722,7 +722,7 @@ function calculateResults() {
 
     html += '<tr><td>Data ' + countTypeText + ':</td><td>' + moment(initialDate).format("DD/MM/YYYY") + '</td></tr > ';
     if (countType == '1') {
-        html += '<tr><td>Data da Publicação::</td><td>' + moment(dateForCalc).format("DD/MM/YYYY") + '</td></tr > ';
+        html += '<tr><td>Data da Publicação:</td><td>' + moment(dateForCalc).format("DD/MM/YYYY") + '</td></tr > ';
     }
     html += '<tr><td>Dias: </td><td>' + days + '</td></tr>';
     html += '<tr class="table-active"><td>Prazo: </td><td>' + moment(dueDate).format("DD/MM/YYYY") + '</td></tr></tbody>';
