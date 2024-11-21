@@ -287,7 +287,7 @@ function calculateResults() {
     } 
     else if (calcType == 'months') {
         var originalDueDate = moment(dateForCalc).add(days, 'months')
-        var dueDate = moment(dateForCalc).add(days, 'months')
+        var dueDate = moment(dateForCalc).add(days-1, 'months')
         //
         while (sistDown.find(function (down) {
             return down.downDate === dueDate.format();
