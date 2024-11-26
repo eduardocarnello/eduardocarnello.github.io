@@ -116,6 +116,7 @@ const sistDown = [ //Indisponibilidades simples (afeta apenas peticionamento fin
     { downDate: `03/10/2024`, description: "INDISPONIBILIDADE DOS SERVIÇOS DO PORTAL E-SAJ" },
     { downDate: `07/10/2024`, description: "INDISPONIBILIDADE DOS SERVIÇOS DO PORTAL E-SAJ" },
     { downDate: `07/11/2024`, description: "INDISPONIBILIDADE DA CONSULTA PROCESSUAL DE 1º GRAU DO PORTAL E-SAJ" },
+    { downDate: `21/11/2024`, description: " INDISPONIBILIDADE DOS SERVIÇOS DO PORTAL E-SAJ - INTEGRADOR CNA (OAB) x e-SAJ (TJSP)" },
 
 
 
@@ -247,7 +248,7 @@ function holidaysFunc(currentYear, expectedFinalYear, Easter) { //essa função 
 
 
             //EASTER HOLIDAYS (os feriados que são influenciados pela Páscoa)
-            { holidayDate: (Easter(i)).subtract(48, "days").format('DD/MM/YYYY'), description: "Véspera de Carnaval" }, 
+            { holidayDate: (Easter(i)).subtract(48, "days").format('DD/MM/YYYY'), description: "Véspera de Carnaval" },
             { holidayDate: (Easter(i)).subtract(47, "days").format('DD/MM/YYYY'), description: "Carnaval" }, //O feriado de Carnaval, por convenção, ocorre sempre 47 dias antes da Páscoa
             { holidayDate: (Easter(i)).subtract(3, "days").format('DD/MM/YYYY'), description: "Endoenças" },
             { holidayDate: (Easter(i)).subtract(2, "days").format('DD/MM/YYYY'), description: "Sexta-feira Santa" },
