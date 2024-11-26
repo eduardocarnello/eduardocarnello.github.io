@@ -905,6 +905,7 @@ $(document).ready(function () {
 
 
   });
+  // CONTINUAR DAQUI
 }
 );
 var initialDate = moment($('#initialDate').val(), 'DD/MM/YYYY');   //dia do ato
