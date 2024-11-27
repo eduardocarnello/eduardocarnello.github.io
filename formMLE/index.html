@@ -13,8 +13,8 @@
         }
 
         .container {
-            width: 169mm;
-            max-width: 169mm;
+            width: 186mm;
+            max-width: 186mm;
             margin: 0 auto;
             background: #fff;
             border-radius: 8px;
@@ -29,6 +29,10 @@
             margin-bottom: 20px;
             border-bottom: 2px solid #333;
             padding-bottom: 10px;
+        }
+
+        .header span {
+            font-weight: normal;
         }
 
         .section {
@@ -100,7 +104,7 @@
         .no-border-on-pdf input[type="text"],
         .no-border-on-pdf input[type="number"] {
             border: none;
-            border-bottom: 1px solid #000;
+            /*border-bottom: 1px solid #000;*/
             background: none;
             box-shadow: none;
             padding: 5px;
@@ -108,9 +112,9 @@
 
         .no-border-on-pdf {
             border: 2px solid #000;
-            padding: 10mm 10mm 10mm 5mm;
+            padding: 10mm 1mm 10mm 1mm;
             margin: 0;
-            width: 169mm;
+            width: 189mm;
         }
 
         @media print {
@@ -165,15 +169,14 @@
             background-color: #0056b3;
         }
     </style>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.mask/1.14.16/jquery.mask.min.js"></script>
+    <script src="https://unpkg.com/imask"></script>
 </head>
 
 <body>
     <div class="container">
         <div class="header">
             FORMULÁRIO MLE – MANDADO DE LEVANTAMENTO ELETRÔNICO<br>
-            (1 Formulário para cada beneficiário)
+            <span>(1 Formulário para cada beneficiário)</span>
         </div>
         <div class="inline-section smaller-margin" id="processo-section">
             <label>Número do processo (padrão CNJ):</label>
@@ -187,28 +190,36 @@
             <label>CPF/CNPJ do Credor (Beneficiário):</label>
             <input type="text" name="cpf_cnpj_credor">
         </div>
+        <p style="height: 2px;"></p>
+
         <div class="section">
             <label>Forma de recebimento:</label><br>
             <div class="radio-group">
-                <input type="radio" name="forma_recebimento" value="comparecer_banco"> Comparecer ao banco [valores até
+                <input type="radio" name="forma_recebimento" value="comparecer_banco" class="radio-option"> Comparecer
+                ao banco [valores até
                 R$ 5.000,00 – isento de tarifa]<br>
-                <input type="radio" name="forma_recebimento" value="credito_bb"> Crédito em conta do Banco do Brasil*
+                <input type="radio" name="forma_recebimento" value="credito_bb" class="radio-option"> Crédito em conta
+                do Banco do Brasil*
                 [Qualquer valor. Isento de tarifa]<br>
-                <input type="radio" name="forma_recebimento" value="credito_outros"> Crédito em conta para outros
+                <input type="radio" name="forma_recebimento" value="credito_outros" class="radio-option"> Crédito em
+                conta para outros
                 bancos* [Qualquer valor. Isento de tarifa]<br>
-                <input type="radio" name="forma_recebimento" value="pix"> IV – Pix [valores até R$ 50.000,00 – isento de
+                <input type="radio" name="forma_recebimento" value="pix" class="radio-option"> IV – Pix [valores até R$
+                50.000,00 – isento de
                 tarifa]
             </div>
         </div>
         <div class="section">
             <label>Titular da conta de destino:</label><br>
             <div class="radio-group">
-                <input type="radio" name="titular_conta" value="parte"> Parte<br>
-                <input type="radio" name="titular_conta" value="advogado"> Advogado – OAB/___ nº_____ - Procuração nas
+                <input type="radio" name="titular_conta" value="parte" class="radio-option"> Parte<br>
+                <input type="radio" name="titular_conta" value="advogado" class="radio-option"> Advogado – OAB/___
+                nº_____ - Procuração nas
                 fls. ____<br>
-                <input type="radio" name="titular_conta" value="procurador"> Procurador/Representante Legal – Procuração
+                <input type="radio" name="titular_conta" value="procurador" class="radio-option">
+                Procurador/Representante Legal – Procuração
                 nas fls. ____<br>
-                <input type="radio" name="titular_conta" value="terceiro"> Terceiro
+                <input type="radio" name="titular_conta" value="terceiro" class="radio-option"> Terceiro
             </div>
         </div>
         <div class="inline-section">
@@ -230,8 +241,8 @@
         <div class="section">
             <label>Tipo de Crédito:</label><br>
             <div class="radio-group">
-                <input type="radio" name="tipo_credito" value="conta_corrente"> Conta Corrente
-                <input type="radio" name="tipo_credito" value="poupanca"> Conta Poupança
+                <input type="radio" name="tipo_credito" value="conta_corrente" class="radio-option"> Conta Corrente
+                <input type="radio" name="tipo_credito" value="poupanca" class="radio-option"> Conta Poupança
             </div>
         </div>
         <div class="inline-section">
@@ -245,8 +256,8 @@
         <div class="section">
             <label>Tipo de Resgate:</label><br>
             <div class="radio-group">
-                <input type="radio" name="tipo_resgate" value="parcial"> Parcial
-                <input type="radio" name="tipo_resgate" value="total"> Total
+                <input type="radio" name="tipo_resgate" value="parcial" class="radio-option"> Parcial
+                <input type="radio" name="tipo_resgate" value="total" class="radio-option"> Total
             </div>
         </div>
         <div class="inline-section">
@@ -265,16 +276,21 @@
     </div>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.2/html2pdf.bundle.min.js"></script>
     <script>
-        $(document).ready(function () {
-            $('#numero_processo').mask('0000000-00.2000.8.26.0344', {
-                translation: {
-                    '0': { pattern: /[0-9]/, optional: false, fallback: '0' },
-                    '2': { pattern: /[0-9]/, optional: false, fallback: '2' },
-                    '6': { pattern: /[0-9]/, optional: false, fallback: '6' },
-                    '3': { pattern: /[0-9]/, optional: false, fallback: '3' },
-                    '4': { pattern: /[0-9]/, optional: false, fallback: '4' }
-                }
-            });
+        document.addEventListener('DOMContentLoaded', function () {
+            var element = document.getElementById('numero_processo');
+            var maskOptions = {
+                mask: '0000000-00.2X00.8.26.X344',
+                definitions: {
+                    X: {
+                        mask: '0',
+                        displayChar: '0',
+                        placeholderChar: '0',
+                    },
+                },
+                lazy: false,
+                overwrite: 'shift',
+            };
+            var mask = IMask(element, maskOptions);
         });
 
         function generatePDF() {
@@ -284,6 +300,28 @@
 
             // Ocultar o botão "Gerar PDF"
             printButton.style.display = 'none';
+
+            // Substituir botões de rádio selecionados por "X" e não selecionados por "( )"
+            const radioGroups = document.querySelectorAll('.radio-group');
+            radioGroups.forEach(group => {
+                const selectedRadio = group.querySelector('input[type="radio"]:checked');
+                if (selectedRadio) {
+                    const label = selectedRadio.nextElementSibling;
+                    const xSpan = document.createElement('span');
+                    xSpan.textContent = 'X ';
+                    label.parentNode.insertBefore(xSpan, label);
+                    selectedRadio.style.display = 'none';
+                }
+                group.querySelectorAll('input[type="radio"]').forEach(radio => {
+                    if (!radio.checked) {
+                        const label = radio.nextElementSibling;
+                        const emptySpan = document.createElement('span');
+                        emptySpan.textContent = '( ) ';
+                        label.parentNode.insertBefore(emptySpan, label);
+                    }
+                    radio.style.display = 'none';
+                });
+            });
 
             smallerSections.forEach(section => {
                 section.classList.add('print-smaller-margin');
@@ -302,6 +340,26 @@
                 element.classList.remove('no-border-on-pdf');
                 smallerSections.forEach(section => {
                     section.classList.remove('print-smaller-margin');
+                });
+
+                // Restaurar os botões de rádio
+                radioGroups.forEach(group => {
+                    group.querySelectorAll('input[type="radio"]').forEach(radio => {
+                        radio.style.display = 'inline-block';
+                    });
+                    const selectedRadio = group.querySelector('input[type="radio"]:checked');
+                    if (selectedRadio) {
+                        const label = selectedRadio.nextElementSibling;
+                        const xSpan = label.previousElementSibling;
+                        if (xSpan && xSpan.textContent === 'X ') {
+                            xSpan.remove();
+                        }
+                    }
+                    group.querySelectorAll('span').forEach(span => {
+                        if (span.textContent === '( ) ') {
+                            span.remove();
+                        }
+                    });
                 });
             });
         }
