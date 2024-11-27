@@ -117,10 +117,29 @@
             width: 189mm;
         }
 
+        .hidden {
+            display: none;
+        }
+
+        .copy-button {
+            margin-left: 10px;
+            padding: 5px 10px;
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .copy-button:hover {
+            background-color: #0056b3;
+        }
+
         @media print {
-            body {
-                background-color: #fff;
+            .copy-button {
+                display: none;
             }
+
 
             .container {
                 box-shadow: none;
@@ -150,6 +169,14 @@
                 box-shadow: none;
                 padding: 5px;
             }
+
+            .copy-button {
+                display: none;
+            }
+
+            .declaration {
+                display: block;
+            }
         }
 
         .print-button {
@@ -168,6 +195,20 @@
         .print-button:hover {
             background-color: #0056b3;
         }
+
+        .declaration {
+            display: none;
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .declaration .signature-line {
+            margin-top: 20px;
+            border-top: 1px solid #000;
+            width: 200px;
+            margin-left: auto;
+            margin-right: auto;
+        }
     </style>
     <script src="https://unpkg.com/imask"></script>
 </head>
@@ -184,11 +225,11 @@
         </div>
         <div class="inline-section smaller-margin" id="credor-section">
             <label>Nome do Credor (Beneficiário):</label>
-            <input type="text" name="nome_credor">
+            <input type="text" name="nome_credor" id="nome_credor">
         </div>
         <div class="inline-section smaller-margin" id="cpf-section">
             <label>CPF/CNPJ do Credor (Beneficiário):</label>
-            <input type="text" name="cpf_cnpj_credor">
+            <input type="text" name="cpf_cnpj_credor" id="cpf_cnpj_credor">
         </div>
         <p style="height: 2px;"></p>
 
@@ -209,49 +250,71 @@
                 tarifa]
             </div>
         </div>
-        <div class="section">
-            <label>Titular da conta de destino:</label><br>
-            <div class="radio-group">
-                <input type="radio" name="titular_conta" value="parte" class="radio-option"> Parte<br>
-                <input type="radio" name="titular_conta" value="advogado" class="radio-option"> Advogado – OAB/___
-                nº_____ - Procuração nas
-                fls. ____<br>
-                <input type="radio" name="titular_conta" value="procurador" class="radio-option">
-                Procurador/Representante Legal – Procuração
-                nas fls. ____<br>
-                <input type="radio" name="titular_conta" value="terceiro" class="radio-option"> Terceiro
+        <div id="form-fields" class="hidden">
+            <div id="hidden-fields">
+                <div class="section">
+                    <label>Titular da conta de destino:</label><br>
+                    <div class="radio-group">
+                        <input type="radio" name="titular_conta" value="parte" class="radio-option"> Parte<br>
+
+                        <!--input type="radio" name="titular_conta" value="advogado" class="radio-option"> Advogado –
+                        OAB/___ nº_____ - Procuração nas
+                        fls. ____<br>
+                        <input type="radio" name="titular_conta" value="procurador" class="radio-option">
+                        Procurador/Representante Legal – Procuração
+                        nas fls. ____<br-->
+                        <input type="radio" name="titular_conta" value="terceiro" class="radio-option"
+                            id="titular_terceiro"> Terceiro
+                        <input type="text" id="terceiro_nome" class="hidden" placeholder="Nome do terceiro">
+                    </div>
+                </div>
+                <div class="inline-section">
+                    <label>Banco:</label>
+                    <input type="text" name="banco">
+                </div>
+                <div class="inline-section">
+                    <label>Código do Banco:</label>
+                    <input type="text" name="codigo_banco">
+                </div>
+                <div class="inline-section">
+                    <label>Agência:</label>
+                    <input type="text" name="agencia">
+                </div>
+                <div class="inline-section">
+                    <label>Conta nº:</label>
+                    <input type="text" name="conta_numero">
+                </div>
+                <div class="section">
+                    <label>Tipo de Crédito:</label><br>
+                    <div class="radio-group">
+                        <input type="radio" name="tipo_credito" value="conta_corrente" class="radio-option"> Conta
+                        Corrente
+                        <input type="radio" name="tipo_credito" value="poupanca" class="radio-option"> Conta Poupança
+                    </div>
+                </div>
+                <div class="inline-section">
+                    <label>CPF/CNPJ do titular da conta destino:</label>
+                    <input type="text" name="cpf_cnpj_titular" id="cpf_cnpj_titular">
+                    <button type="button" class="copy-button" onclick="copyCpfCnpj()">Copiar</button>
+                </div>
+                <div class="inline-section">
+                    <label>Nome do titular da conta destino:</label>
+                    <input type="text" name="nome_titular" id="nome_titular">
+                    <button type="button" class="copy-button" onclick="copyNome()">Copiar</button>
+                </div>
             </div>
-        </div>
-        <div class="inline-section">
-            <label>Banco:</label>
-            <input type="text" name="banco">
-        </div>
-        <div class="inline-section">
-            <label>Código do Banco:</label>
-            <input type="text" name="codigo_banco">
-        </div>
-        <div class="inline-section">
-            <label>Agência:</label>
-            <input type="text" name="agencia">
-        </div>
-        <div class="inline-section">
-            <label>Conta nº:</label>
-            <input type="text" name="conta_numero">
-        </div>
-        <div class="section">
-            <label>Tipo de Crédito:</label><br>
-            <div class="radio-group">
-                <input type="radio" name="tipo_credito" value="conta_corrente" class="radio-option"> Conta Corrente
-                <input type="radio" name="tipo_credito" value="poupanca" class="radio-option"> Conta Poupança
+            <div id="pix-fields" class="hidden">
+                <div class="inline-section">
+                    <label>*Para a opção “IV –Pix”, será necessário informar a chave Pix (CPF ou CNPJ):</label>
+                    <input type="text" name="chave_pix" id="chave_pix">
+                    <button type="button" class="copy-button" onclick="copyCpfCnpjPix()">Copiar</button>
+                </div>
+                <div class="inline-section">
+                    <label>Nome do titular da conta destino:</label>
+                    <input type="text" name="nome_titular_pix" id="nome_titular_pix">
+                    <button type="button" class="copy-button" onclick="copyNomePix()">Copiar</button>
+                </div>
             </div>
-        </div>
-        <div class="inline-section">
-            <label>CPF/CNPJ do titular da conta destino:</label>
-            <input type="text" name="cpf_cnpj_titular">
-        </div>
-        <div class="inline-section">
-            <label>Nome do titular da conta destino:</label>
-            <input type="text" name="nome_titular">
         </div>
         <div class="section">
             <label>Tipo de Resgate:</label><br>
@@ -272,6 +335,14 @@
             <label>Observações:</label><br>
             <input type="text" name="observacoes">
         </div>
+        <div class="declaration">
+            <p>Declaro ser de minha responsabilidade os dados deste formulário, os quais eu conferi e revisei.</p>
+            <p style="height: 5px;"></p>
+            <div class="signature-line"></div>
+            <p id="nome_credor_declaration"></p>
+
+
+        </div>
         <button class="print-button" onclick="generatePDF()">Gerar PDF</button>
     </div>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.2/html2pdf.bundle.min.js"></script>
@@ -291,33 +362,140 @@
                 overwrite: 'shift',
             };
             var mask = IMask(element, maskOptions);
+
+            // Adicionar evento change aos botões de rádio
+            const radioOptions = document.querySelectorAll('input[name="forma_recebimento"]');
+            const formFields = document.getElementById('form-fields');
+            const hiddenFields = document.getElementById('hidden-fields');
+            const pixFields = document.getElementById('pix-fields');
+            const terceiroNome = document.getElementById('terceiro_nome');
+            const titularTerceiro = document.getElementById('titular_terceiro');
+            const declaration = document.querySelector('.declaration');
+
+
+
+
+
+            radioOptions.forEach(option => {
+                option.addEventListener('change', function () {
+                    formFields.classList.remove('hidden');
+                    if (this.value === 'comparecer_banco') {
+                        hiddenFields.classList.add('hidden');
+                        pixFields.classList.add('hidden');
+                    } else if (this.value === 'pix') {
+                        hiddenFields.classList.add('hidden');
+                        pixFields.classList.remove('hidden');
+                    } else {
+                        hiddenFields.classList.remove('hidden');
+                        pixFields.classList.add('hidden');
+                    }
+                });
+            });
+            // Adicionar evento change ao botão de rádio "Terceiro"
+            const titularContaOptions = document.querySelectorAll('input[name="titular_conta"]');
+            titularContaOptions.forEach(option => {
+                option.addEventListener('change', function () {
+                    if (this.value === 'terceiro') {
+                        terceiroNome.classList.remove('hidden');
+                        updateDeclarationText();
+                    } else {
+                        terceiroNome.classList.add('hidden');
+                        removeDeclarationText();
+                    }
+                });
+            });
+
+            // Adicionar evento input ao campo "Nome do Terceiro"
+            terceiroNome.addEventListener('input', updateDeclarationText);
+            function updateDeclarationText() {
+                const nomeTerceiro = document.getElementById('terceiro_nome').value;
+                let autorizacaoText = document.getElementById('autorizacao_text');
+                if (!autorizacaoText) {
+                    autorizacaoText = document.createElement('span');
+                    autorizacaoText.id = 'autorizacao_text';
+                    autorizacaoText.classList.add('hidden');
+                    declaration.querySelector('p').appendChild(autorizacaoText);
+                }
+                autorizacaoText.textContent = ` Autorizo expressamente que o recebimento dos valores seja feito na conta indicada de ${nomeTerceiro}.`;
+            }
+
+            function removeDeclarationText() {
+                const autorizacaoText = document.getElementById('autorizacao_text');
+                if (autorizacaoText) {
+                    autorizacaoText.remove();
+                }
+            }
         });
+
+        function copyCpfCnpj() {
+            const cpfCnpjCredor = document.getElementById('cpf_cnpj_credor').value;
+            document.getElementById('cpf_cnpj_titular').value = cpfCnpjCredor;
+        }
+
+        function copyNome() {
+            const nomeCredor = document.getElementById('nome_credor').value;
+            document.getElementById('nome_titular').value = nomeCredor;
+        }
+
+        function copyCpfCnpjPix() {
+            const cpfCnpjCredor = document.getElementById('cpf_cnpj_credor').value;
+            document.getElementById('chave_pix').value = cpfCnpjCredor;
+        }
+
+        function copyNomePix() {
+            const nomeCredor = document.getElementById('nome_credor').value;
+            document.getElementById('nome_titular_pix').value = nomeCredor;
+        }
 
         function generatePDF() {
             const element = document.querySelector('.container');
             const printButton = document.querySelector('.print-button');
+            const copyButtons = document.querySelectorAll('.copy-button');
             const smallerSections = document.querySelectorAll('.inline-section.smaller-margin');
+            const declaration = document.querySelector('.declaration');
+            const nomeCredor = document.getElementById('nome_credor').value;
+            const nomeCredorDeclaration = document.getElementById('nome_credor_declaration');
+            const autorizacaoText = document.getElementById('autorizacao_text');
 
             // Ocultar o botão "Gerar PDF"
             printButton.style.display = 'none';
+            copyButtons.forEach(button => {
+                button.style.display = 'none';
+            });
+
+            // Exibir o texto de autorização no PDF
+            if (autorizacaoText) {
+                autorizacaoText.classList.remove('hidden');
+            }
+            // Exibir a declaração
+            nomeCredorDeclaration.textContent = nomeCredor;
+            declaration.style.display = 'block';
+
+
 
             // Substituir botões de rádio selecionados por "X" e não selecionados por "( )"
             const radioGroups = document.querySelectorAll('.radio-group');
             radioGroups.forEach(group => {
                 const selectedRadio = group.querySelector('input[type="radio"]:checked');
                 if (selectedRadio) {
-                    const label = selectedRadio.nextElementSibling;
-                    const xSpan = document.createElement('span');
-                    xSpan.textContent = 'X ';
-                    label.parentNode.insertBefore(xSpan, label);
-                    selectedRadio.style.display = 'none';
+                    const label = selectedRadio.nextSibling;
+                    if (label && label.nodeType === Node.TEXT_NODE) {
+                        const xSpan = document.createElement('span');
+                        xSpan.textContent = '( X )';
+                        xSpan.classList.add('radio-replacement');
+                        label.parentNode.insertBefore(xSpan, label);
+                        selectedRadio.style.display = 'none';
+                    }
                 }
                 group.querySelectorAll('input[type="radio"]').forEach(radio => {
                     if (!radio.checked) {
-                        const label = radio.nextElementSibling;
-                        const emptySpan = document.createElement('span');
-                        emptySpan.textContent = '( ) ';
-                        label.parentNode.insertBefore(emptySpan, label);
+                        const label = radio.nextSibling;
+                        if (label && label.nodeType === Node.TEXT_NODE) {
+                            const emptySpan = document.createElement('span');
+                            emptySpan.innerHTML = '( )&nbsp;';
+                            emptySpan.classList.add('radio-replacement');
+                            label.parentNode.insertBefore(emptySpan, label);
+                        }
                     }
                     radio.style.display = 'none';
                 });
@@ -347,20 +525,38 @@
                     group.querySelectorAll('input[type="radio"]').forEach(radio => {
                         radio.style.display = 'inline-block';
                     });
-                    const selectedRadio = group.querySelector('input[type="radio"]:checked');
-                    if (selectedRadio) {
-                        const label = selectedRadio.nextElementSibling;
-                        const xSpan = label.previousElementSibling;
-                        if (xSpan && xSpan.textContent === 'X ') {
-                            xSpan.remove();
-                        }
-                    }
-                    group.querySelectorAll('span').forEach(span => {
-                        if (span.textContent === '( ) ') {
-                            span.remove();
-                        }
+                    group.querySelectorAll('.radio-replacement').forEach(span => {
+                        span.remove();
                     });
                 });
+
+                // Ocultar o texto de autorização novamente
+                if (autorizacaoText) {
+                    autorizacaoText.classList.add('hidden');
+                }
+            }).catch(err => {
+                console.error('Erro ao gerar PDF:', err);
+                // Mostrar o botão "Gerar PDF" novamente em caso de erro
+                printButton.style.display = 'block';
+                element.classList.remove('no-border-on-pdf');
+                smallerSections.forEach(section => {
+                    section.classList.remove('print-smaller-margin');
+                });
+
+                // Restaurar os botões de rádio em caso de erro
+                radioGroups.forEach(group => {
+                    group.querySelectorAll('input[type="radio"]').forEach(radio => {
+                        radio.style.display = 'inline-block';
+                    });
+                    group.querySelectorAll('.radio-replacement').forEach(span => {
+                        span.remove();
+                    });
+                });
+
+                // Ocultar o texto de autorização novamente em caso de erro
+                if (autorizacaoText) {
+                    autorizacaoText.classList.add('hidden');
+                }
             });
         }
     </script>
