@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -10,6 +11,7 @@
             background-color: #f4f4f4;
             color: #333;
         }
+
         .container {
             width: 169mm;
             max-width: 169mm;
@@ -19,6 +21,7 @@
             box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
             padding: 15mm;
         }
+
         .header {
             text-align: center;
             font-weight: bold;
@@ -27,74 +30,94 @@
             border-bottom: 2px solid #333;
             padding-bottom: 10px;
         }
+
         .section {
             margin-bottom: 20px;
         }
+
         .inline-section {
             display: flex;
             align-items: center;
             margin-bottom: 20px;
         }
+
         .inline-section.smaller-margin {
             margin-bottom: 10px;
         }
+
         .inline-section.print-smaller-margin {
             margin-bottom: 1px;
         }
+
         .inline-section label {
             width: 280px;
             font-weight: bold;
             margin-right: 10px;
         }
-        .inline-section input[type="text"], .inline-section input[type="number"] {
+
+        .inline-section input[type="text"],
+        .inline-section input[type="number"] {
             flex: 1;
             padding: 10px;
             border: 1px solid #ccc;
             border-radius: 4px;
         }
+
         input[type="radio"] {
             margin-right: 5px;
         }
+
         .form-group {
             margin-bottom: 15px;
         }
-        input[type="text"], input[type="number"] {
+
+        input[type="text"],
+        input[type="number"] {
             width: 100%;
             padding: 10px;
             border: 1px solid #ccc;
             border-radius: 4px;
             box-sizing: border-box;
         }
+
         label {
             font-weight: bold;
         }
+
         .radio-group label {
             font-weight: normal;
         }
+
         .radio-group {
             margin-bottom: 10px;
         }
+
         .observacoes input {
             width: calc(100% - 20px);
             padding: 10px;
         }
-        .no-border-on-pdf input[type="text"], .no-border-on-pdf input[type="number"] {
+
+        .no-border-on-pdf input[type="text"],
+        .no-border-on-pdf input[type="number"] {
             border: none;
             border-bottom: 1px solid #000;
             background: none;
             box-shadow: none;
             padding: 5px;
         }
+
         .no-border-on-pdf {
             border: 2px solid #000;
             padding: 10mm 10mm 10mm 5mm;
             margin: 0;
             width: 169mm;
         }
+
         @media print {
             body {
                 background-color: #fff;
             }
+
             .container {
                 box-shadow: none;
                 border: none;
@@ -102,15 +125,21 @@
                 margin: 0;
                 padding: 0;
             }
+
             .header {
                 font-size: 1.1em;
                 border-bottom: 1px solid #000;
                 margin-bottom: 15px;
             }
-            .inline-section, .section, .radio-group {
+
+            .inline-section,
+            .section,
+            .radio-group {
                 page-break-inside: avoid;
             }
-            .no-border-on-pdf input[type="text"], .no-border-on-pdf input[type="number"] {
+
+            .no-border-on-pdf input[type="text"],
+            .no-border-on-pdf input[type="number"] {
                 border: none;
                 border-bottom: 1px solid #000;
                 background: none;
@@ -118,6 +147,7 @@
                 padding: 5px;
             }
         }
+
         .print-button {
             display: block;
             width: 150px;
@@ -130,6 +160,7 @@
             border-radius: 4px;
             cursor: pointer;
         }
+
         .print-button:hover {
             background-color: #0056b3;
         }
@@ -137,6 +168,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.mask/1.14.16/jquery.mask.min.js"></script>
 </head>
+
 <body>
     <div class="container">
         <div class="header">
@@ -158,18 +190,24 @@
         <div class="section">
             <label>Forma de recebimento:</label><br>
             <div class="radio-group">
-                <input type="radio" name="forma_recebimento" value="comparecer_banco"> Comparecer ao banco [valores até R$ 5.000,00 – isento de tarifa]<br>
-                <input type="radio" name="forma_recebimento" value="credito_bb"> Crédito em conta do Banco do Brasil* [Qualquer valor. Isento de tarifa]<br>
-                <input type="radio" name="forma_recebimento" value="credito_outros"> Crédito em conta para outros bancos* [Qualquer valor. Isento de tarifa]<br>
-                <input type="radio" name="forma_recebimento" value="pix"> IV – Pix [valores até R$ 50.000,00 – isento de tarifa]
+                <input type="radio" name="forma_recebimento" value="comparecer_banco"> Comparecer ao banco [valores até
+                R$ 5.000,00 – isento de tarifa]<br>
+                <input type="radio" name="forma_recebimento" value="credito_bb"> Crédito em conta do Banco do Brasil*
+                [Qualquer valor. Isento de tarifa]<br>
+                <input type="radio" name="forma_recebimento" value="credito_outros"> Crédito em conta para outros
+                bancos* [Qualquer valor. Isento de tarifa]<br>
+                <input type="radio" name="forma_recebimento" value="pix"> IV – Pix [valores até R$ 50.000,00 – isento de
+                tarifa]
             </div>
         </div>
         <div class="section">
             <label>Titular da conta de destino:</label><br>
             <div class="radio-group">
                 <input type="radio" name="titular_conta" value="parte"> Parte<br>
-                <input type="radio" name="titular_conta" value="advogado"> Advogado – OAB/___ nº_____ - Procuração nas fls. ____<br>
-                <input type="radio" name="titular_conta" value="procurador"> Procurador/Representante Legal – Procuração nas fls. ____<br>
+                <input type="radio" name="titular_conta" value="advogado"> Advogado – OAB/___ nº_____ - Procuração nas
+                fls. ____<br>
+                <input type="radio" name="titular_conta" value="procurador"> Procurador/Representante Legal – Procuração
+                nas fls. ____<br>
                 <input type="radio" name="titular_conta" value="terceiro"> Terceiro
             </div>
         </div>
@@ -227,7 +265,7 @@
     </div>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.2/html2pdf.bundle.min.js"></script>
     <script>
-        $(document).ready(function(){
+        $(document).ready(function () {
             $('#numero_processo').mask('0000000-00.2000.8.26.0344', {
                 translation: {
                     '0': { pattern: /[0-9]/, optional: false, fallback: '0' },
@@ -238,14 +276,20 @@
                 }
             });
         });
-        
+
         function generatePDF() {
             const element = document.querySelector('.container');
+            const printButton = document.querySelector('.print-button');
             const smallerSections = document.querySelectorAll('.inline-section.smaller-margin');
+
+            // Ocultar o botão "Gerar PDF"
+            printButton.style.display = 'none';
+
             smallerSections.forEach(section => {
                 section.classList.add('print-smaller-margin');
             });
             element.classList.add('no-border-on-pdf');
+
             html2pdf().set({
                 margin: [10, 10, 10, 10],
                 filename: 'Formulario_MLE.pdf',
@@ -253,6 +297,8 @@
                 html2canvas: { scale: 2, useCORS: true },
                 jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
             }).from(element).save().then(() => {
+                // Mostrar o botão "Gerar PDF" novamente
+                printButton.style.display = 'block';
                 element.classList.remove('no-border-on-pdf');
                 smallerSections.forEach(section => {
                     section.classList.remove('print-smaller-margin');
@@ -261,4 +307,5 @@
         }
     </script>
 </body>
+
 </html>
