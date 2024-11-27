@@ -54,9 +54,22 @@
         }
 
         .inline-section label {
-            width: 280px;
+            width: 150px;
+            /* Ajuste conforme necessário */
             font-weight: bold;
             margin-right: 10px;
+        }
+
+        .inline-section .banco {
+            flex: 3;
+            max-width: calc(55% - 160px);
+            /* Ajuste conforme necessário */
+        }
+
+        .inline-section .codigo-banco {
+            flex: 1;
+            max-width: 60px;
+            /* Ajuste conforme necessário */
         }
 
         .inline-section input[type="text"],
@@ -86,6 +99,10 @@
 
         label {
             font-weight: bold;
+        }
+
+        label.codbanco-lab {
+            margin-left: 10px;
         }
 
         .radio-group label {
@@ -270,11 +287,22 @@
                 </div>
                 <div class="inline-section">
                     <label>Banco:</label>
-                    <input type="text" name="banco">
-                </div>
-                <div class="inline-section">
-                    <label>Código do Banco:</label>
-                    <input type="text" name="codigo_banco">
+                    <select name="banco" class="banco" id="banco_select">
+                        <option value="" disabled selected>Selecione um banco</option>
+                        <option value="Banco do Brasil" data-codigo="0001">Banco do Brasil</option>
+                        <option value="Caixa Econômica Federal" data-codigo="0247">Caixa Econômica Federal</option>
+                        <option value="Itaú Unibanco" data-codigo="0341">Itaú Unibanco</option>
+                        <option value="Banco Bradesco" data-codigo="0237">Banco Bradesco</option>
+                        <option value="Banco Santander" data-codigo="0333">Banco Santander</option>
+                        <option value="Outro">Outro</option>
+                    </select>
+                    <input type="text" name="banco_outro" id="banco_outro" class="hidden"
+                        placeholder="Digite o nome do banco">
+
+                    <label class="codbanco-lab">Código do Banco:</label>
+                    <input type="text" name="codigo_banco" id="codigo_banco" maxlength="4" class="codigo-banco"
+                        readonly>
+
                 </div>
                 <div class="inline-section">
                     <label>Agência:</label>
@@ -371,6 +399,10 @@
             const terceiroNome = document.getElementById('terceiro_nome');
             const titularTerceiro = document.getElementById('titular_terceiro');
             const declaration = document.querySelector('.declaration');
+            const bancoSelect = document.getElementById('banco_select');
+            const bancoOutro = document.getElementById('banco_outro');
+            const codigoBanco = document.getElementById('codigo_banco');
+
 
 
 
@@ -425,6 +457,21 @@
                     autorizacaoText.remove();
                 }
             }
+
+            // Adicionar evento change ao dropdown "Banco"
+            bancoSelect.addEventListener('change', function () {
+                const selectedOption = bancoSelect.options[bancoSelect.selectedIndex];
+                if (selectedOption.value === 'Outro') {
+                    bancoSelect.style.width = '10px';
+                    bancoOutro.classList.remove('hidden');
+                    codigoBanco.removeAttribute('readonly');
+                    codigoBanco.value = '';
+                } else {
+                    bancoOutro.classList.add('hidden');
+                    codigoBanco.setAttribute('readonly', true);
+                    codigoBanco.value = selectedOption.getAttribute('data-codigo');
+                }
+            });
         });
 
         function copyCpfCnpj() {
