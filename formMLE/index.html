@@ -2,6 +2,7 @@
 <html lang="pt-BR">
 
 <head>
+    <script src="https://cdn.jsdelivr.net/npm/extenso@1.0.0/dist/extenso.min.js"></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Formulário MLE - Mandado de Levantamento Eletrônico</title>
@@ -13,7 +14,7 @@
         }
 
         .container {
-            width: 186mm;
+            width: auto;
             max-width: 186mm;
             margin: 0 auto;
             background: #fff;
@@ -25,9 +26,9 @@
         .header {
             text-align: center;
             font-weight: bold;
-            font-size: 1.2em;
-            margin-bottom: 20px;
-            border-bottom: 2px solid #333;
+            font-size: 1em;
+            margin-bottom: 10px;
+            /*border-bottom: 2px solid #333;*/
             padding-bottom: 10px;
         }
 
@@ -42,7 +43,7 @@
         .inline-section {
             display: flex;
             align-items: center;
-            margin-bottom: 20px;
+            margin-bottom: 5px;
         }
 
         .inline-section.smaller-margin {
@@ -54,26 +55,35 @@
         }
 
         .inline-section label {
-            width: 150px;
+            width: 289px;
             /* Ajuste conforme necessário */
             font-weight: bold;
             margin-right: 10px;
         }
+        label.label-banco{
+            width: auto;
+            margin-right: 23px;
+        }
+
+        label.nConta-label
+        {width: 71px;}
 
         .inline-section .banco {
-            flex: 3;
-            max-width: calc(55% - 160px);
+            flex: 1;
+            /*max-width: calc(55% - 160px);
             /* Ajuste conforme necessário */
         }
 
         .inline-section .codigo-banco {
             flex: 1;
-            max-width: 60px;
+            max-width: 220px;
             /* Ajuste conforme necessário */
         }
 
         .inline-section input[type="text"],
-        .inline-section input[type="number"] {
+        .inline-section input[type="number"],
+        select#banco_select
+         {
             flex: 1;
             padding: 10px;
             border: 1px solid #ccc;
@@ -89,8 +99,9 @@
         }
 
         input[type="text"],
-        input[type="number"] {
-            width: 100%;
+        input[type="number"],
+        select#banco_select {
+            width: 50%;
             padding: 10px;
             border: 1px solid #ccc;
             border-radius: 4px;
@@ -103,15 +114,42 @@
 
         label.codbanco-lab {
             margin-left: 10px;
-        }
-
-        .radio-group label {
-            font-weight: normal;
+            width: 150px;
         }
 
         .radio-group {
-            margin-bottom: 10px;
-        }
+    margin-bottom: 20px;
+    margin-top: 8px;
+}
+
+.radio-group label {
+    font-weight: normal;
+    font-size: 16px;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    background-color: #fff;
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    margin-bottom: 5px;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.radio-group input[type="radio"] {
+    margin-right: 10px;
+    margin-bottom: 8px;
+}
+
+.radio-group input[type="radio"]:checked + label {
+    border-color: #007bff;
+    background-color: #e7f3ff;
+}
+
+.radio-group.credito {
+    margin: 0px;
+}
 
         .observacoes input {
             width: calc(100% - 20px);
@@ -119,7 +157,8 @@
         }
 
         .no-border-on-pdf input[type="text"],
-        .no-border-on-pdf input[type="number"] {
+        .no-border-on-pdf input[type="number"],
+        .no-border-on-pdf select#banco_select {
             border: none;
             /*border-bottom: 1px solid #000;*/
             background: none;
@@ -129,7 +168,7 @@
 
         .no-border-on-pdf {
             border: 2px solid #000;
-            padding: 10mm 1mm 10mm 1mm;
+            padding: 1mm 1mm 1mm 1mm;
             margin: 0;
             width: 189mm;
         }
@@ -215,17 +254,88 @@
 
         .declaration {
             display: none;
-            text-align: center;
+            text-align:justify;
             margin-top: 20px;
         }
 
         .declaration .signature-line {
             margin-top: 20px;
             border-top: 1px solid #000;
-            width: 200px;
+            width: 450px;
             margin-left: auto;
             margin-right: auto;
         }
+        select.banco {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        background-color: #fff;
+        font-size: 16px;
+        color: #333;
+        appearance: none;
+        -webkit-appearance: none;
+        -moz-appearance: none;
+    }
+
+    select.banco:focus {
+        border-color: #007bff;
+        outline: none;
+    }
+
+    /* Adicionando um ícone de seta para o dropdown */
+    select.banco {
+        background-image: url('data:image/svg+xml;utf8,<svg fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M19 9l-7 7-7-7"></path></svg>');
+        background-repeat: no-repeat;
+        background-position: right 10px center;
+        background-size: 16px 16px;
+    }
+    .inline-fields {
+    display: flex;
+    align-items: center;
+}
+
+.inline-fields .inline-section {
+    margin-right: 20px;
+}
+.radio-group-terceiro {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 20px;
+    margin-top: 10px;
+}
+
+.radio-group-terceiro .inline-input {
+    display: flex;
+    align-items: center;
+    height: 10px;
+    margin-top: 10px;
+}
+
+.radio-group-terceiro .inline-input #terceiro_nome {
+    margin-left: 10px;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    display: hidden;
+}
+
+.radio-group-terceiro .inline-input input[type="radio"]:checked + label + #terceiro_nome {
+    display: inline-block;
+    width: 80%;
+}
+
+#valor_extenso {
+    font-style: italic;
+    color: #555;
+    max-width: 250px;
+    font-size: 13px;
+}
+input#valor_deposito {
+    width: 125px;
+    flex: 0;
+}
+
     </style>
     <script src="https://unpkg.com/imask"></script>
 </head>
@@ -271,22 +381,20 @@
             <div id="hidden-fields">
                 <div class="section">
                     <label>Titular da conta de destino:</label><br>
-                    <div class="radio-group">
-                        <input type="radio" name="titular_conta" value="parte" class="radio-option"> Parte<br>
-
-                        <!--input type="radio" name="titular_conta" value="advogado" class="radio-option"> Advogado –
-                        OAB/___ nº_____ - Procuração nas
-                        fls. ____<br>
-                        <input type="radio" name="titular_conta" value="procurador" class="radio-option">
-                        Procurador/Representante Legal – Procuração
-                        nas fls. ____<br-->
-                        <input type="radio" name="titular_conta" value="terceiro" class="radio-option"
-                            id="titular_terceiro"> Terceiro
-                        <input type="text" id="terceiro_nome" class="hidden" placeholder="Nome do terceiro">
+                    <div class="radio-group-terceiro">
+                        <div>
+                            <input type="radio" name="titular_conta" value="parte" class="radio-option" id="parte">
+                            <label for="parte">Parte</label>
+                        </div>
+                        <div class="inline-input">
+                            <input type="radio" name="titular_conta" value="terceiro" class="radio-option" id="titular_terceiro">
+                            <label for="titular_terceiro">Terceiro</label>
+                            <input type="text" id="terceiro_nome" class="hidden" placeholder="Nome do terceiro">
+                        </div>
                     </div>
                 </div>
                 <div class="inline-section">
-                    <label>Banco:</label>
+                    <label class="label-banco">Banco:</label>
                     <select name="banco" class="banco" id="banco_select">
                         <option value="" disabled selected>Selecione um banco</option>
                         <option value="Banco do Brasil" data-codigo="0001">Banco do Brasil</option>
@@ -297,7 +405,7 @@
                         <option value="Outro">Outro</option>
                     </select>
                     <input type="text" name="banco_outro" id="banco_outro" class="hidden"
-                        placeholder="Digite o nome do banco">
+                        placeholder="Digite o Banco">
 
                     <label class="codbanco-lab">Código do Banco:</label>
                     <input type="text" name="codigo_banco" id="codigo_banco" maxlength="4" class="codigo-banco"
@@ -305,19 +413,20 @@
 
                 </div>
                 <div class="inline-section">
-                    <label>Agência:</label>
-                    <input type="text" name="agencia">
+                    <label style="width: auto;">Agência:</label>
+                    <input type="text" name="agencia" maxlength="4">
                 </div>
-                <div class="inline-section">
-                    <label>Conta nº:</label>
-                    <input type="text" name="conta_numero">
-                </div>
-                <div class="section">
-                    <label>Tipo de Crédito:</label><br>
-                    <div class="radio-group">
-                        <input type="radio" name="tipo_credito" value="conta_corrente" class="radio-option"> Conta
-                        Corrente
-                        <input type="radio" name="tipo_credito" value="poupanca" class="radio-option"> Conta Poupança
+                <div class="inline-fields">
+                    <div class="inline-section">
+                        <label class="nConta-label" style="margin-right: 7px;">Conta nº:</label>
+                        <input type="text" name="conta_numero" id="conta_numero" maxlength="11" style="width: 132px;">
+                    </div>
+                    <div class="inline-section">
+                        <label style="width: auto;">Tipo de Crédito:</label><br>
+                        <div class="radio-group credito">
+                            <input type="radio" name="tipo_credito" value="conta_corrente" class="radio-option"> Conta Corrente
+                            <input type="radio" name="tipo_credito" value="poupanca" class="radio-option"> Conta Poupança
+                        </div>
                     </div>
                 </div>
                 <div class="inline-section">
@@ -357,7 +466,8 @@
         </div>
         <div class="inline-section">
             <label>Valor nominal do depósito:</label>
-            <input type="text" name="valor_deposito">
+            <input type="text" name="valor_deposito" id="valor_deposito">
+            <span id="valor_extenso" style="margin-left: 10px;"></span>
         </div>
         <div class="section observacoes">
             <label>Observações:</label><br>
@@ -365,16 +475,187 @@
         </div>
         <div class="declaration">
             <p>Declaro ser de minha responsabilidade os dados deste formulário, os quais eu conferi e revisei.</p>
-            <p style="height: 5px;"></p>
+            <p style="height: 45px;"></p>
             <div class="signature-line"></div>
-            <p id="nome_credor_declaration"></p>
+            <p style="text-align: center;" id="nome_credor_declaration"></p>
 
 
         </div>
         <button class="print-button" onclick="generatePDF()">Gerar PDF</button>
     </div>
+    <script src="https://cdn.jsdelivr.net/npm/extenso@1.0.0/dist/extenso.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.2/html2pdf.bundle.min.js"></script>
     <script>
+document.addEventListener('DOMContentLoaded', function () {
+    const valorDeposito = document.getElementById('valor_deposito');
+    const valorExtenso = document.getElementById('valor_extenso');
+
+    // Aplicar máscara de dinheiro com prefixo "R$"
+    const maskOptions = {
+        mask: 'R$ num',
+        blocks: {
+            num: {
+                mask: Number,
+                scale: 2,
+                thousandsSeparator: '.',
+                radix: ',',
+                mapToRadix: ['.'],
+                padFractionalZeros: true,
+                normalizeZeros: true,
+                min: 0,
+                max: 9999999999.99
+            }
+        }
+    };
+    const mask = IMask(valorDeposito, maskOptions);
+
+    // Aplicar máscara reversa no campo "conta nº"
+    const contaMaskOptions = {
+        mask: '0000000000-0',
+        lazy: false,
+        blocks: {
+            num: {
+                mask: Number,
+                reverse: true
+            }
+        }
+    };
+    const contaMask = IMask(contaNumero, contaMaskOptions);
+
+
+    // Converter valor para extenso
+    function numeroParaExtenso(numero) {
+        const unidades = ['zero', 'um', 'dois', 'três', 'quatro', 'cinco', 'seis', 'sete', 'oito', 'nove'];
+        const dezenas = ['', 'dez', 'vinte', 'trinta', 'quarenta', 'cinquenta', 'sessenta', 'setenta', 'oitenta', 'noventa'];
+        const especiais = ['dez', 'onze', 'doze', 'treze', 'quatorze', 'quinze', 'dezesseis', 'dezessete', 'dezoito', 'dezenove'];
+        const centenas = ['', 'cento', 'duzentos', 'trezentos', 'quatrocentos', 'quinhentos', 'seiscentos', 'setecentos', 'oitocentos', 'novecentos'];
+        const milhares = ['mil', 'milhão', 'bilhão', 'trilhão'];
+
+        if (numero === 0) return 'zero reais';
+
+        let extenso = '';
+        let parteInteira = Math.floor(numero);
+        let parteDecimal = Math.round((numero - parteInteira) * 100);
+
+
+        function converteParteInteira(numero) {
+            let resultado = '';
+            if (numero === 100) {
+                return 'cem';
+            } else {
+                let milhar = Math.floor(numero / 1000);
+                let centena = Math.floor(numero / 100);
+                let dezena = Math.floor((numero % 100) / 10);
+                let unidade = numero % 10;
+                
+                
+                
+                console.log()
+                if (centena > 0 && dezena > 0 && unidade > 0 ) resultado += centenas[centena] + ' e ';
+                else if (centena > 0 && dezena > 0 && unidade == 0) { resultado += centenas[centena] + ' e  ';}
+                else if (centena > 0 && unidade > 0) { resultado += centenas[centena] + ' e  ' + dezenas[dezena];}
+                else if (centena > 0 && unidade == 0) {resultado += centenas[centena] + ' ';}
+                //if (centena > 0 && dezena == 0) resultado += centenas[centena] += ' e ';
+                if (dezena === 1) {
+                    resultado += especiais[unidade];
+                } else {
+                    if (dezena > 1 && unidade > 0) resultado += dezenas[dezena] + ' e ';
+                    if (dezena > 1 && unidade == 0) resultado += dezenas[dezena];
+                    if (unidade > 0) resultado += unidades[unidade];
+                    if (unidade === 0) resultado = resultado.trim();
+                }
+            }
+            return resultado.trim();
+        }
+
+        let partes = [];
+        let divisor = 1000;
+        while (parteInteira > 0) {
+            partes.push(parteInteira % divisor);
+            parteInteira = Math.floor(parteInteira / divisor);
+        }
+
+        for (let i = partes.length - 1; i >= 0; i--) {
+            let centena = Math.floor(numero / 100);
+                let dezena = Math.floor((numero % 100) / 10);
+                let unidade = numero % 10;
+            if (partes[i] > 0) {
+                if (i > 0) {
+                    console.log(centena)
+                    extenso += converteParteInteira(partes[i]) + ' ' + milhares[i - 1];
+                    if (i > 1 && partes[i - 1] > 0) {
+                       extenso += ', ';
+                    } else {
+                        extenso += '  ';
+                    }
+                } else {
+                    if (partes.length > 1 && partes[i] < 100) {
+                        extenso +=  ' e ';
+                    }
+                    extenso += converteParteInteira(partes[i]);
+                }
+            }
+        }
+
+        // Adicionar "e" entre milhares e centenas
+        //extenso = extenso.replace(/ mil/, ' mil,');
+
+        extenso += ' reais';
+
+        if (parteDecimal > 0) {
+            if (extenso !== '') extenso += ' e ';
+            if (parteDecimal === 1) {
+                extenso += 'um centavo';
+            } else {
+                let dezena = Math.floor(parteDecimal / 10);
+                let unidade = parteDecimal % 10;
+
+                if (dezena === 1) {
+                    extenso += especiais[unidade];
+                } else {
+                    if (dezena > 1 && unidade >0) extenso += dezenas[dezena] + ' e ';
+                    if (dezena > 1 && unidade == 0) extenso += dezenas[dezena] + ' ';
+                    if (unidade > 0) extenso += unidades[unidade];
+                }
+                extenso += ' centavos';
+            }
+        }
+
+        return extenso.trim();
+    }
+
+    // Atualizar valor por extenso ao digitar
+    valorDeposito.addEventListener('input', function () {
+        const valor = parseFloat(valorDeposito.value.replace(/[R$.\s]/g, '').replace(',', '.'));
+        if (!isNaN(valor)) {
+            valorExtenso.textContent = numeroParaExtenso(valor);
+        } else {
+            valorExtenso.textContent = '';
+        }
+    });
+});
+
+///
+        document.addEventListener('DOMContentLoaded', function () {
+        const bancoSelect = document.getElementById('banco_select');
+        const bancoOutro = document.getElementById('banco_outro');
+        const codigoBanco = document.getElementById('codigo_banco');
+
+        bancoSelect.addEventListener('change', function () {
+            const selectedOption = bancoSelect.options[bancoSelect.selectedIndex];
+            if (selectedOption.value === 'Outro') {
+                bancoSelect.classList.add('hidden');
+                bancoOutro.classList.remove('hidden');
+                codigoBanco.removeAttribute('readonly');
+                codigoBanco.value = '';
+            } else {
+                bancoSelect.classList.remove('hidden');
+                bancoOutro.classList.add('hidden');
+                codigoBanco.setAttribute('readonly', true);
+                codigoBanco.value = selectedOption.getAttribute('data-codigo');
+            }
+        });
+    });
         document.addEventListener('DOMContentLoaded', function () {
             var element = document.getElementById('numero_processo');
             var maskOptions = {
@@ -389,6 +670,7 @@
                 lazy: false,
                 overwrite: 'shift',
             };
+            
             var mask = IMask(element, maskOptions);
 
             // Adicionar evento change aos botões de rádio
@@ -402,6 +684,22 @@
             const bancoSelect = document.getElementById('banco_select');
             const bancoOutro = document.getElementById('banco_outro');
             const codigoBanco = document.getElementById('codigo_banco');
+            
+
+            document.addEventListener('DOMContentLoaded', function () {
+    const titularContaOptions = document.querySelectorAll('input[name="titular_conta"]');
+    const terceiroNome = document.getElementById('terceiro_nome');
+
+    titularContaOptions.forEach(option => {
+        option.addEventListener('change', function () {
+            if (this.value === 'terceiro') {
+                terceiroNome.classList.remove('hidden');
+            } else {
+                terceiroNome.classList.add('hidden');
+            }
+        });
+    });
+});
 
 
 
@@ -448,7 +746,7 @@
                     autorizacaoText.classList.add('hidden');
                     declaration.querySelector('p').appendChild(autorizacaoText);
                 }
-                autorizacaoText.textContent = ` Autorizo expressamente que o recebimento dos valores seja feito na conta indicada de ${nomeTerceiro}.`;
+                autorizacaoText.textContent = ` Autorizo que os valores sejam creditados na conta de ${nomeTerceiro}.`;
             }
 
             function removeDeclarationText() {
@@ -495,6 +793,11 @@
         }
 
         function generatePDF() {
+            const terceiroNome = document.getElementById('terceiro_nome');
+    if (document.getElementById('titular_terceiro').checked) {
+        terceiroNome.classList.remove('hidden');
+    }
+
             const element = document.querySelector('.container');
             const printButton = document.querySelector('.print-button');
             const copyButtons = document.querySelectorAll('.copy-button');
@@ -503,12 +806,19 @@
             const nomeCredor = document.getElementById('nome_credor').value;
             const nomeCredorDeclaration = document.getElementById('nome_credor_declaration');
             const autorizacaoText = document.getElementById('autorizacao_text');
+            
 
             // Ocultar o botão "Gerar PDF"
             printButton.style.display = 'none';
             copyButtons.forEach(button => {
                 button.style.display = 'none';
             });
+            //exibir o texto no campo titular_terceiro
+            if (document.getElementById('titular_terceiro').checked) {
+                terceiroNome.classList.remove('hidden');
+                //adicionar classe para que fique como block !important
+                terceiroNome.classList.add('block');
+            }
 
             // Exibir o texto de autorização no PDF
             if (autorizacaoText) {
@@ -520,33 +830,62 @@
 
 
 
-            // Substituir botões de rádio selecionados por "X" e não selecionados por "( )"
-            const radioGroups = document.querySelectorAll('.radio-group');
-            radioGroups.forEach(group => {
-                const selectedRadio = group.querySelector('input[type="radio"]:checked');
-                if (selectedRadio) {
-                    const label = selectedRadio.nextSibling;
-                    if (label && label.nodeType === Node.TEXT_NODE) {
-                        const xSpan = document.createElement('span');
-                        xSpan.textContent = '( X )';
-                        xSpan.classList.add('radio-replacement');
-                        label.parentNode.insertBefore(xSpan, label);
-                        selectedRadio.style.display = 'none';
-                    }
-                }
-                group.querySelectorAll('input[type="radio"]').forEach(radio => {
-                    if (!radio.checked) {
-                        const label = radio.nextSibling;
-                        if (label && label.nodeType === Node.TEXT_NODE) {
-                            const emptySpan = document.createElement('span');
-                            emptySpan.innerHTML = '( )&nbsp;';
-                            emptySpan.classList.add('radio-replacement');
-                            label.parentNode.insertBefore(emptySpan, label);
-                        }
-                    }
-                    radio.style.display = 'none';
-                });
-            });
+            // Substituir botões de rádio selecionados por "X" e não selecionados por "( )" na classe .radio-group
+const radioGroups = document.querySelectorAll('.radio-group');
+radioGroups.forEach(group => {
+    const selectedRadio = group.querySelector('input[type="radio"]:checked');
+    if (selectedRadio) {
+        const label = selectedRadio.nextSibling;
+        if (label && label.nodeType === Node.TEXT_NODE) {
+            const xSpan = document.createElement('span');
+            xSpan.textContent = '( X ) ';
+            xSpan.classList.add('radio-replacement');
+            label.parentNode.insertBefore(xSpan, label);
+            selectedRadio.style.display = 'none';
+        }
+    }
+    group.querySelectorAll('input[type="radio"]').forEach(radio => {
+        if (!radio.checked) {
+            const label = radio.nextSibling;
+            if (label && label.nodeType === Node.TEXT_NODE) {
+                const emptySpan = document.createElement('span');
+                emptySpan.innerHTML = '( )&nbsp;';
+                emptySpan.classList.add('radio-replacement');
+                label.parentNode.insertBefore(emptySpan, label);
+            }
+        }
+        radio.style.display = 'none';
+    });
+});
+
+// Substituir botões de rádio selecionados por "X" e não selecionados por "( )" na classe .radio-group-terceiro
+const radioGroupsTerceiro = document.querySelectorAll('.radio-group-terceiro');
+radioGroupsTerceiro.forEach(group => {
+    const selectedRadio = group.querySelector('input[type="radio"]:checked');
+    if (selectedRadio) {
+        const label = selectedRadio.nextSibling;
+        if (label && label.nodeType === Node.TEXT_NODE) {
+            const xSpan = document.createElement('span');
+            xSpan.textContent = '(X)';
+            xSpan.classList.add('radio-replacement');
+            label.parentNode.insertBefore(xSpan, label);
+            selectedRadio.style.display = 'none';
+        }
+    }
+    group.querySelectorAll('input[type="radio"]').forEach(radio => {
+        if (!radio.checked) {
+            const label = radio.nextSibling;
+            if (label && label.nodeType === Node.TEXT_NODE) {
+                const emptySpan = document.createElement('span');
+                emptySpan.innerHTML = '( )&nbsp;';
+                emptySpan.classList.add('radio-replacement');
+                label.parentNode.insertBefore(emptySpan, label);
+            }
+        }
+        radio.style.display = 'none';
+    });
+});
+
 
             smallerSections.forEach(section => {
                 section.classList.add('print-smaller-margin');
@@ -566,21 +905,38 @@
                 smallerSections.forEach(section => {
                     section.classList.remove('print-smaller-margin');
                 });
+                // Mostrar botões de copiar novamente
+                copyButtons.forEach(button => {
+                button.style.display = 'block';
+            });
 
-                // Restaurar os botões de rádio
-                radioGroups.forEach(group => {
-                    group.querySelectorAll('input[type="radio"]').forEach(radio => {
-                        radio.style.display = 'inline-block';
-                    });
-                    group.querySelectorAll('.radio-replacement').forEach(span => {
-                        span.remove();
-                    });
-                });
+               // Restaurar os botões de rádio
+        radioGroups.forEach(group => {
+            group.querySelectorAll('input[type="radio"]').forEach(radio => {
+                radio.style.display = 'inline-block';
+            });
+            group.querySelectorAll('.radio-replacement').forEach(span => {
+                span.remove();
+            });
+        });
+
+        radioGroupsTerceiro.forEach(group => {
+            group.querySelectorAll('input[type="radio"]').forEach(radio => {
+                radio.style.display = 'inline-block';
+            });
+            group.querySelectorAll('.radio-replacement').forEach(span => {
+                span.remove();
+            });
+        });
 
                 // Ocultar o texto de autorização novamente
                 if (autorizacaoText) {
                     autorizacaoText.classList.add('hidden');
                 }
+                // Ocultar texto da declaração novamente
+                declaration.style.display = 'none';
+
+
             }).catch(err => {
                 console.error('Erro ao gerar PDF:', err);
                 // Mostrar o botão "Gerar PDF" novamente em caso de erro
