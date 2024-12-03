@@ -5,6 +5,16 @@ $(document).ready(function () {
   $("#countType").selectpicker('refresh')
 
 })
+
+document.getElementById('countType').addEventListener('change', function() {
+  var countTypeValue = this.value;
+  var daysInput = document.getElementById('days');
+  if (countTypeValue === '3') {
+      daysInput.value = 15;
+  } else {
+      daysInput.value = ''; // Limpa o campo se outra opção for selecionada
+  }
+});
 /*
 var json = $.getJSON({ 'url': "jsonFile/general.json", 'async': false });
 json = JSON.parse(json.responseText);
