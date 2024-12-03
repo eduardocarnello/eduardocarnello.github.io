@@ -93,7 +93,7 @@ function calculateResults() {
         holidays: myHolidays.map(i => i.holidayDate),
         holidayFormat: 'DD/MM/YYYY',
     });
-// implemento Portal
+    // implemento Portal
     if (countType == '1') {
         var dispDate = moment(dateForCalc, 'DD/MM/YYYY').format('DD/MM/YYYY');
         dateForCalc = moment(dateForCalc, 'DD/MM/YYYY').businessAdd(1);
@@ -105,12 +105,12 @@ function calculateResults() {
         var iPortal = moment(dateForCalcFormat, 'DD/MM/YYYY').diff(moment(dispDate, 'DD/MM/YYYY'), 'days');
         console.log('iportal' + iPortal)
 
-        
 
-        
+
+
         console.log('dispDate' + dispDate)
-        
-        
+
+
     }
 
     // Restante do código...
@@ -120,7 +120,7 @@ function calculateResults() {
     /*Vai verificar se a data inicial é um dia útil
     * isso e importante para que a contagem de prazo considere corretamente os dias
     */
-if (initialDate.isBusinessDay() == true) {
+    if (initialDate.isBusinessDay() == true) {
         diaUtil = initialDate
         console.log("o business day")
     }
@@ -128,12 +128,12 @@ if (initialDate.isBusinessDay() == true) {
         diaUtil = moment(initialDate).businessAdd(1) //preciso arrumar isso usando o While //erro aqui e ver com cuidado era initialDate
         //diaAto = moment(initialDate).businessAdd(1)
     }
-    
-        var tipoContagem
+
+    var tipoContagem
     // Atribuindo o primeiro dia da contagem com base na opção escolhida
     if (tipoContagem == "DJE") {
         diaUtil = initialDate.businessAdd(1)
-        
+
     }
     //primeiroDiaContagem = diaUtil
     /*Essa parte tem que ser tirada
@@ -174,8 +174,8 @@ if (initialDate.isBusinessDay() == true) {
     if (calcType == 'workingDays') {
 
         if (countType == 3) {
-            var originalDueDate = moment(dateForCalc).businessAdd(days+5)
-            var dueDate = moment(dateForCalc).businessAdd(days+5)
+            var originalDueDate = moment(dateForCalc).businessAdd(days + 5)
+            var dueDate = moment(dateForCalc).businessAdd(days + 5)
             var w = 0;
         }
         var originalDueDate = moment(dateForCalc).businessAdd(days)
@@ -188,10 +188,10 @@ if (initialDate.isBusinessDay() == true) {
         )) {
             dueDate = moment(dueDate).businessAdd(1)
         }
-    } 
+    }
     else if (calcType == 'months') {
         var originalDueDate = moment(dateForCalc).add(days, 'months')
-        var dueDate = moment(dateForCalc).add(days-1, 'months')
+        var dueDate = moment(dateForCalc).add(days - 1, 'months')
         //
         while (sistDown.find(function (down) {
             return down.downDate === dueDate.format();
@@ -201,7 +201,7 @@ if (initialDate.isBusinessDay() == true) {
         }
 
         // Aqui você pode adicionar lógica adicional, se necessário, por exemplo, verificar se a nova data de vencimento cai em um feriado ou dia não útil e ajustar conforme necessário
-    } 
+    }
     else {
         var originalDueDate = moment(dateForCalc).add(days, 'days')
         var dueDate = moment(dateForCalc).add(days, 'days')
@@ -270,42 +270,44 @@ if (initialDate.isBusinessDay() == true) {
 
 
 
-// make a array of objects with the date and the type of day
-var listaDiasComTipo = [];
-if (dispDate != undefined) {
-    listaDiasComTipo.push({
-        index: '-',
-        date: dispDate,
-        _type: countType == '3' ? 'Data da Confirmação da Citação' : 'Data da Disponibilização',
-        description: countType == '3' ? 'Data da Confirmação da Citação' : 'Data da Disponibilização no DJE',
-        class: 'susp'
-    });
-}
-
-if (countType == '3') {
-    for (var i = 1; i <= 4; i++) {
-        var dayOfWeek = moment(dispDate, 'DD/MM/YYYY').businessAdd(i).format('dddd');
-
+    // make a array of objects with the date and the type of day
+    var listaDiasComTipo = [];
+    if (dispDate != undefined) {
         listaDiasComTipo.push({
             index: '-',
-            date: moment(dispDate, 'DD/MM/YYYY').businessAdd(i).format('DD/MM/YYYY'),
-            _type: `${dayOfWeek} (Não Conta - ${i}º Dia Útil)`,
-            description: `${dayOfWeek} (Não Conta - ${i}º Dia Útil)`,
+            date: dispDate,
+            _type: countType == '3' ? 'Data da Confirmação da Citação' : 'Data da Disponibilização',
+            description: countType == '3' ? 'Data da Confirmação da Citação' : 'Data da Disponibilização no DJE',
             class: 'susp'
         });
     }
-    dateForCalc = moment(dispDate, 'DD/MM/YYYY').businessAdd(5).format('DD/MM/YYYY');
-    listaDiasComTipo.push({
-        index: '<b>-</b>',
-        date: dateForCalc,
-        _type: '5º Dia Útil - Início do Prazo (art. 231, IX, do CPC)',
-        description: '5º Dia Útil - Início do Prazo (art. 231, IX, do CPC) Início do Prazo',
-        class: 'susp'
-    });
-}
-// implemento Portal
-if (countType == '3') {
-    var i = iPortal }
+
+    if (countType == '3') {
+        for (var i = 1; i <= 4; i++) {
+
+            var dayOfWeek = moment(dispDate, 'DD/MM/YYYY').businessAdd(i).format('dddd');
+
+            listaDiasComTipo.push({
+                index: '-',
+                date: moment(dispDate, 'DD/MM/YYYY').businessAdd(i).format('DD/MM/YYYY'),
+                _type: `${dayOfWeek} (Não Conta - ${i}º Dia Útil)`,
+                description: `${dayOfWeek} (Não Conta - ${i}º Dia Útil)`,
+                class: 'susp'
+            });
+        }
+        dateForCalc = moment(dispDate, 'DD/MM/YYYY').businessAdd(5).format('DD/MM/YYYY');
+        listaDiasComTipo.push({
+            index: '<b>-</b>',
+            date: dateForCalc,
+            _type: '5º Dia Útil - Início do Prazo (art. 231, IX, do CPC)',
+            description: '5º Dia Útil - Início do Prazo (art. 231, IX, do CPC) Início do Prazo',
+            class: 'susp'
+        });
+    }
+    // implemento Portal
+    if (countType == '3') {
+        var i = iPortal
+    }
     else var i = 0
     for (var i; i < listaDias.length; i++) {
         var currentDay = listaDias[i]
@@ -369,23 +371,23 @@ if (countType == '3') {
             date: currentDay,
             isWeekDay: moment(currentDay, 'DD/MM/YYYY').isBusinessDay() && currentDay != moment(dateForCalc, 'DD/MM/YYYY').format('DD/MM/YYYY') && (currentDayTypeSusp == false),
             typeofDay: type,
-            _type: currentDayTypeSusp == true ? 
-    `${moment(currentDay, 'DD/MM/YYYY').locale('pt-br').format('dddd')} (Prorrogação de prazo: ${downDateDescription(moment(currentDay, 'DD/MM/YYYY').format('DD/MM/YYYY'))})` : 
-    currentDay == moment(dateForCalc, 'DD/MM/YYYY').format('DD/MM/YYYY') ? 
-        (dispDate != undefined && countType == 1 || countType == 2) ? 
-            'Data da Publicação no DJE (não conta)' : 
-            countType == 3 ? 
-                'Início do Prazo (art. 231, IX, do CPC)' : 
-                    'Dia do ato (não conta)' : 
-        currentDayType == "Prazo" ? 
-            'test' : 
-            currentDayType == "Dia Útil" ? 
-                moment(currentDay, 'DD/MM/YYYY').locale('pt-br').format('dddd') : 
-                holidayName(moment(currentDay, 'DD/MM/YYYY').format('DD/MM/YYYY')) ? 
-                    holidayName(moment(currentDay, 'DD/MM/YYYY').format('DD/MM/YYYY')) : 
-                    currentDay == dueDate.format() ? 
-                        moment(currentDay, 'DD/MM/YYYY').locale('pt-br').format('dddd') + ' (Fim do Prazo)' : 
-                        moment(currentDay, 'DD/MM/YYYY').locale('pt-br').format('dddd')
+            _type: currentDayTypeSusp == true ?
+                `${moment(currentDay, 'DD/MM/YYYY').locale('pt-br').format('dddd')} (Prorrogação de prazo: ${downDateDescription(moment(currentDay, 'DD/MM/YYYY').format('DD/MM/YYYY'))})` :
+                currentDay == moment(dateForCalc, 'DD/MM/YYYY').format('DD/MM/YYYY') ?
+                    (dispDate != undefined && countType == 1 || countType == 2) ?
+                        'Data da Publicação no DJE (não conta)' :
+                        countType == 3 ?
+                            'Início do Prazo (art. 231, IX, do CPC)' :
+                            'Dia do ato (não conta)' :
+                    currentDayType == "Prazo" ?
+                        'test' :
+                        currentDayType == "Dia Útil" ?
+                            moment(currentDay, 'DD/MM/YYYY').locale('pt-br').format('dddd') :
+                            holidayName(moment(currentDay, 'DD/MM/YYYY').format('DD/MM/YYYY')) ?
+                                holidayName(moment(currentDay, 'DD/MM/YYYY').format('DD/MM/YYYY')) :
+                                currentDay == dueDate.format() ?
+                                    moment(currentDay, 'DD/MM/YYYY').locale('pt-br').format('dddd') + ' (Fim do Prazo)' :
+                                    moment(currentDay, 'DD/MM/YYYY').locale('pt-br').format('dddd')
             ,
 
 
@@ -667,7 +669,7 @@ if (countType == '3') {
     } else if (countType == '3') {
         html += '<tr><td>Início do Prazo (art. 231, IX, do CPC):</td><td>' + moment(dispDate, 'DD/MM/YYYY').businessAdd(5).format('DD/MM/YYYY') + '</td></tr>';
     }
-    
+
     html += '<tr><td>Dias: </td><td>' + days + '</td></tr>';
     html += '<tr class="table-active"><td>Prazo: </td><td>' + moment(dueDate).format("DD/MM/YYYY") + '</td></tr></tbody>';
 
