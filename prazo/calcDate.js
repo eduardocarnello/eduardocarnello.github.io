@@ -52,15 +52,10 @@ $('#calcBtn').click(function (e) {
 });
 
 function calculateResults() {
-
-
     // UI Vars
     let initialDate = moment($('#initialDate').val(), 'DD/MM/YYYY');   //dia do ato
     const days = $('#days').val();                                              //prazo
     let dateForCalc = moment(initialDate, 'DD/MM/YYYY').format('DD/MM/YYYY');
-    //  let isCaclWorkDay = false;                                                  //conta por dia útil ou 
-    //    let startDay                                                                //dia de início do prazo
-    //data final do prazo
     const calcType = $('#calcType').val();
     const calcTypeText = $('#calcType option:selected').text();
     const countType = $('#countType').val();
@@ -74,64 +69,18 @@ function calculateResults() {
     const printCity = document.getElementById('printCity');                     //input do dia final do prazo
 
     var currentYear = moment(initialDate).year();
-    //excpected final year
     const expectedFinalYear = moment(initialDate).businessAdd(days).year();
-    console.log(expectedFinalYear);
-    const chosenCity = 'Marília'
-    //if the initialDate year is less than the dueyear
-
-
-
+    const chosenCity = 'Marília';
 
     var { estado, stateHolidays, cityHolidays, nationalHolidays } = holidaysFunc(currentYear, expectedFinalYear, Easter);
 
-
-
-
-
-
-
-
-
-
-
-    //if var estado == 'SP', then concatenate the SP array into the holidays. Else, concatenate the RJ array.
-
-
-
-
-
-
-
-
-
-
-
-    //create an array with municipalities and their respective holidays
-
-
-
-    //get all the dates of christmas for every year from the current year to the next year
-
-
-
-
-    //merge nationalHolidays, stateHolidays, amendment into one array
     var myHolidays = nationalHolidays.concat(stateHolidays, amendment);
-
-    //merge the days from cityHolidays that the city is the same as chosenCity into myHolidays
     for (let i = 0; i < cityHolidays.length; i++) {
         if (cityHolidays[i].city == chosenCity) {
             myHolidays = myHolidays.concat(cityHolidays[i]);
         }
     }
 
-
-
-
-    console.log(myHolidays);
-
-    //check if a date is a holiday and return its description
     function holidayName(date) {
         var holiday = myHolidays.find(function (holiday) {
             return holiday.holidayDate === date;
@@ -139,89 +88,39 @@ function calculateResults() {
         return holiday ? holiday.description : false;
     }
 
-
-
     holidays = moment.updateLocale('pt-br', {
         format: 'DD/MM/YYYY',
         holidays: myHolidays.map(i => i.holidayDate),
         holidayFormat: 'DD/MM/YYYY',
-
-
     });
-
-    var el = myHolidays.find(h => h.holidayDate.includes("17/06"));
-    console.log(el)
-
-    // check if the date is a holiday, then return its date and name
-    /*function checkHoliday(date) {
-        var holiday = holidays.isHoliday(date);
-        if (holiday) {
-            console.log(holiday.date + ' - ' + holiday.name);
-            return holiday.date + ' - ' + holiday.name;
-     
-        } else {
-            return false;
-        }
-    }
-    checkHoliday(moment().format());*/
-
-
-
-
-    //create an array with the holidays dates and name
-    //var holidays = [
-    //    {
-    //        date: '01/01/2020',
-    //        name: 'Ano Novo'
-    //    },
-    //    {
-    //        date: '01/04/2020',
-    //        name: 'Aniversário de Marília'
-    //    },
-    //    {
-    //        date: '21/04/2020',
-    //        name: 'Tiradentes'
-    //    },
-    //    {
-    //        date: '01/05/2020',
-    //        name: 'Dia do Trabalho'
-    //    },
-    //    {
-    //        date: '25/05/2020',
-    //        name: 'Revolução Constitucionalista'
-    //    },
-    //    {
-    //        date: '11/07/2020',
-    //        name: 'Padroeiro de Marília'
-    //    }
-    //];
-
-    //check if the date is a holiday, then return its date and name
-    // Calculate date
-    /*  if (initialDate.isBusinessDay() == true) {
-          dateForCalc = initialDate
-          console.log('deu true')
-      } else {
-          dateForCalc = moment(initialDate).businessAdd(1)
-          console.log('deu false')
-      }*/
-
-
-
-
-    console.log(initialDate)
+// implemento Portal
     if (countType == '1') {
         var dispDate = moment(dateForCalc, 'DD/MM/YYYY').format('DD/MM/YYYY');
         dateForCalc = moment(dateForCalc, 'DD/MM/YYYY').businessAdd(1);
-        console.log('dentro do countType 1')
+    } else if (countType == '3') {
+        var dispDate = moment(dateForCalc, 'DD/MM/YYYY').format('DD/MM/YYYY');
+        dateForCalc = moment(dispDate, 'DD/MM/YYYY').businessAdd(5);
+        var dateForCalcFormat = moment(dateForCalc, 'DD/MM/YYYY').format('DD/MM/YYYY');
+        // create a var iPortal that calculates the number of days between dispDate and dateForCalcFormat
+        var iPortal = moment(dateForCalcFormat, 'DD/MM/YYYY').diff(moment(dispDate, 'DD/MM/YYYY'), 'days');
+        console.log('iportal' + iPortal)
+
+        
+
+        
+        console.log('dispDate' + dispDate)
+        
+        
     }
-    console.log(initialDate)
+
+    // Restante do código...
+
 
 
     /*Vai verificar se a data inicial é um dia útil
     * isso e importante para que a contagem de prazo considere corretamente os dias
     */
-    if (initialDate.isBusinessDay() == true) {
+if (initialDate.isBusinessDay() == true) {
         diaUtil = initialDate
         console.log("o business day")
     }
@@ -229,6 +128,7 @@ function calculateResults() {
         diaUtil = moment(initialDate).businessAdd(1) //preciso arrumar isso usando o While //erro aqui e ver com cuidado era initialDate
         //diaAto = moment(initialDate).businessAdd(1)
     }
+    
         var tipoContagem
     // Atribuindo o primeiro dia da contagem com base na opção escolhida
     if (tipoContagem == "DJE") {
@@ -273,7 +173,11 @@ function calculateResults() {
 
     if (calcType == 'workingDays') {
 
-
+        if (countType == 3) {
+            var originalDueDate = moment(dateForCalc).businessAdd(days+5)
+            var dueDate = moment(dateForCalc).businessAdd(days+5)
+            var w = 0;
+        }
         var originalDueDate = moment(dateForCalc).businessAdd(days)
         var dueDate = moment(dateForCalc).businessAdd(days)
 
@@ -366,23 +270,44 @@ function calculateResults() {
 
 
 
-    // make a array of objects with the date and the type of day
-    var listaDiasComTipo = []
-    if (dispDate != undefined) {
+// make a array of objects with the date and the type of day
+var listaDiasComTipo = [];
+if (dispDate != undefined) {
+    listaDiasComTipo.push({
+        index: '-',
+        date: dispDate,
+        _type: countType == '3' ? 'Data da Confirmação da Citação' : 'Data da Disponibilização',
+        description: countType == '3' ? 'Data da Confirmação da Citação' : 'Data da Disponibilização no DJE',
+        class: 'susp'
+    });
+}
+
+if (countType == '3') {
+    for (var i = 1; i <= 4; i++) {
+        var dayOfWeek = moment(dispDate, 'DD/MM/YYYY').businessAdd(i).format('dddd');
+
         listaDiasComTipo.push({
             index: '-',
-            date: dispDate,
-            _type: 'Data da Disponibilização',
-            description: 'Data da Disponibilização no DJE',
-            //isWeekDay: false,
+            date: moment(dispDate, 'DD/MM/YYYY').businessAdd(i).format('DD/MM/YYYY'),
+            _type: `${dayOfWeek} (Não Conta - ${i}º Dia Útil)`,
+            description: `${dayOfWeek} (Não Conta - ${i}º Dia Útil)`,
             class: 'susp'
-
-
-
-        }
-        )
+        });
     }
-    for (var i = 0; i < listaDias.length; i++) {
+    dateForCalc = moment(dispDate, 'DD/MM/YYYY').businessAdd(5).format('DD/MM/YYYY');
+    listaDiasComTipo.push({
+        index: '<b>-</b>',
+        date: dateForCalc,
+        _type: '5º Dia Útil - Início do Prazo (art. 231, IX, do CPC)',
+        description: '5º Dia Útil - Início do Prazo (art. 231, IX, do CPC) Início do Prazo',
+        class: 'susp'
+    });
+}
+// implemento Portal
+if (countType == '3') {
+    var i = iPortal }
+    else var i = 0
+    for (var i; i < listaDias.length; i++) {
         var currentDay = listaDias[i]
         var currentDayTypeSusp = false;
         var type;
@@ -444,7 +369,23 @@ function calculateResults() {
             date: currentDay,
             isWeekDay: moment(currentDay, 'DD/MM/YYYY').isBusinessDay() && currentDay != moment(dateForCalc, 'DD/MM/YYYY').format('DD/MM/YYYY') && (currentDayTypeSusp == false),
             typeofDay: type,
-            _type: currentDayTypeSusp == true ? `${moment(currentDay, 'DD/MM/YYYY').locale('pt-br').format('dddd')} (Prorrogação de prazo: ${downDateDescription(moment(currentDay, 'DD/MM/YYYY').format('DD/MM/YYYY'))})` : currentDay == moment(dateForCalc, 'DD/MM/YYYY').format('DD/MM/YYYY') ? dispDate != undefined ? 'Data da Publicação no DJE (não conta)' : countType == 2 ? 'Data da Publicação no DJE (não conta)' : 'Dia do ato (não conta)' : currentDayType == "Prazo" ? 'test' : currentDayType == "Dia Útil" ? moment(currentDay, 'DD/MM/YYYY').locale('pt-br').format('dddd') : holidayName(moment(currentDay, 'DD/MM/YYYY').format('DD/MM/YYYY')) ? holidayName(moment(currentDay, 'DD/MM/YYYY').format('DD/MM/YYYY')) : currentDay == dueDate.format() ? moment(currentDay, 'DD/MM/YYYY').locale('pt-br').format('dddd') + ' (Fim do Prazo)' : moment(currentDay, 'DD/MM/YYYY').locale('pt-br').format('dddd')
+            _type: currentDayTypeSusp == true ? 
+    `${moment(currentDay, 'DD/MM/YYYY').locale('pt-br').format('dddd')} (Prorrogação de prazo: ${downDateDescription(moment(currentDay, 'DD/MM/YYYY').format('DD/MM/YYYY'))})` : 
+    currentDay == moment(dateForCalc, 'DD/MM/YYYY').format('DD/MM/YYYY') ? 
+        (dispDate != undefined && countType == 1 || countType == 2) ? 
+            'Data da Publicação no DJE (não conta)' : 
+            countType == 3 ? 
+                'Início do Prazo (art. 231, IX, do CPC)' : 
+                    'Dia do ato (não conta)' : 
+        currentDayType == "Prazo" ? 
+            'test' : 
+            currentDayType == "Dia Útil" ? 
+                moment(currentDay, 'DD/MM/YYYY').locale('pt-br').format('dddd') : 
+                holidayName(moment(currentDay, 'DD/MM/YYYY').format('DD/MM/YYYY')) ? 
+                    holidayName(moment(currentDay, 'DD/MM/YYYY').format('DD/MM/YYYY')) : 
+                    currentDay == dueDate.format() ? 
+                        moment(currentDay, 'DD/MM/YYYY').locale('pt-br').format('dddd') + ' (Fim do Prazo)' : 
+                        moment(currentDay, 'DD/MM/YYYY').locale('pt-br').format('dddd')
             ,
 
 
@@ -723,7 +664,10 @@ function calculateResults() {
     html += '<tr><td>Data ' + countTypeText + ':</td><td>' + moment(initialDate).format("DD/MM/YYYY") + '</td></tr > ';
     if (countType == '1') {
         html += '<tr><td>Data da Publicação:</td><td>' + moment(dateForCalc).format("DD/MM/YYYY") + '</td></tr > ';
+    } else if (countType == '3') {
+        html += '<tr><td>Início do Prazo (art. 231, IX, do CPC):</td><td>' + moment(dispDate, 'DD/MM/YYYY').businessAdd(5).format('DD/MM/YYYY') + '</td></tr>';
     }
+    
     html += '<tr><td>Dias: </td><td>' + days + '</td></tr>';
     html += '<tr class="table-active"><td>Prazo: </td><td>' + moment(dueDate).format("DD/MM/YYYY") + '</td></tr></tbody>';
 
@@ -769,12 +713,10 @@ function calculateResults() {
             return down.downDate === currentDay;
         }
         ) && currentDay >= originalDueDate.format() && currentDay <= dueDate.format()) {
-            //é uma suspensão
             currentDayTypeSusp = true;
             currentDayType = "Indisponibilidade";
             type = "Indisponibilidade";
         }
-
         else if (moment(currentDay, 'DD/MM/YYYY').isBusinessDay() == false) {
             currentDayType = 'Fim de Semana';
             type = 'Fim de Semana';

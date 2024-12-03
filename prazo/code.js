@@ -890,7 +890,7 @@ $(document).ready(function () {
     }
     //case the selected option value is 3, create a var for tooltip
     else if ($(this).val() == "3") {
-      tooltip = "Intimação no Portal";
+      tooltip = "Citação no Portal";
     }
 
 
