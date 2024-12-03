@@ -4,31 +4,257 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Atualização de Dívida Judicial</title>
+    <title>Pedido de Parcelamento (art. 916, do CPC)</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f4f4f4;
+            color: #000;
+        }
+
+        .container {
+            width: auto;
+            max-width: 186mm;
+            margin: 0 auto;
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+            padding: 15mm;
+        }
+
+        .header {
+            text-align: center;
+            font-weight: bold;
+            font-size: 1.1em;
+            margin-bottom: 10px;
+            padding-bottom: 10px;
+        }
+
+        .section {
+            margin-bottom: 20px;
+        }
+
+        .inline-section {
+            display: flex;
+            align-items: center;
+            margin-bottom: 5px;
+        }
+
+        .inline-section label {
+            width: 200px;
+            font-weight: bold;
+            margin-right: 10px;
+        }
+
+        .inline-section input[type="text"],
+        .inline-section input[type="number"],
+        .inline-section input[type="date"],
+        .inline-section select {
+            flex: 1;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 1em;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .print-button {
+            display: block;
+            width: 150px;
+            margin: 20px auto;
+            padding: 10px;
+            background-color: #007bff;
+            color: #fff;
+            text-align: center;
+            text-decoration: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .print-button:hover {
+            background-color: #0056b3;
+        }
+    </style>
 </head>
 
 <body>
-    <h1>Atualização de Dívida Judicial</h1>
-    <form id="debtForm">
-        <label for="debtValue">Valor da Dívida:</label>
-        <input type="number" id="debtValue" name="debtValue" required><br><br>
+    <div class="container">
+        <div class="header">
+            Pedido de Parcelamento (art. 916, do CPC)
+        </div>
+        <div class="inline-section">
+            <label>Nº do Processo:</label>
+            <input type="text" id="numero_processo">
+        </div>
+        <div class="inline-section">
+            <label>Nome do Executado:</label>
+            <input type="text" id="nome_executado">
+        </div>
+        <div class="inline-section">
+            <label>Atualizar Endereço?</label>
+            <input type="checkbox" id="atualizar_endereco">
+        </div>
+        <div class="inline-section hidden" id="endereco_section">
+            <label>Novo Endereço:</label>
+            <input type="text" id="novo_endereco">
+        </div>
+        <div class="inline-section">
+            <label>Valor da Dívida (R$):</label>
+            <input type="number" id="valor_divida" step="0.01">
+        </div>
+        <div class="inline-section">
+            <label>Valor da Entrada (30%):</label>
+            <input type="text" id="valor_entrada" readonly>
+        </div>
+        <div class="inline-section">
+            <label>Parcelas:</label>
+            <select id="parcelas">
+                <option value="1">1</option>
+                <option value="2">2</option>
+                <option value="3">3</option>
+                <option value="4">4</option>
+                <option value="5">5</option>
+                <option value="6">6</option>
+            </select>
+        </div>
+        <div class="inline-section">
+            <label>Valor da Parcela:</label>
+            <input type="text" id="valor_parcela" readonly>
+        </div>
+        <div class="inline-section">
+            <label>Data da Primeira Parcela:</label>
+            <input type="date" id="data_primeira_parcela">
+        </div>
+        <div class="section">
+            <label>Datas das Parcelas:</label>
+            <ul id="datas_parcelas"></ul>
+        </div>
+        <button class="print-button" onclick="generatePDF()">Gerar PDF</button>
+    </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.2/html2pdf.bundle.min.js"></script>
+    <script>
+        document.getElementById('atualizar_endereco').addEventListener('change', function () {
+            const enderecoSection = document.getElementById('endereco_section');
+            if (this.checked) {
+                enderecoSection.classList.remove('hidden');
+            } else {
+                enderecoSection.classList.add('hidden');
+            }
+        });
 
-        <label for="initialDate">Data Inicial:</label>
-        <input type="date" id="initialDate" name="initialDate" required><br><br>
+        document.getElementById('valor_divida').addEventListener('input', function () {
+            const valorDivida = parseFloat(this.value);
+            if (!isNaN(valorDivida)) {
+                const valorEntrada = (valorDivida * 0.3).toFixed(2);
+                document.getElementById('valor_entrada').value = `R$ ${valorEntrada}`;
+                updateParcelas();
+            }
+        });
 
-        <label for="interestStartDate">Data Inicial para Incidência de Juros:</label>
-        <input type="date" id="interestStartDate" name="interestStartDate" required><br><br>
+        document.getElementById('parcelas').addEventListener('change', updateParcelas);
 
-        <label for="finalDate">Data Final:</label>
-        <input type="date" id="finalDate" name="finalDate" value="" required><br><br>
+        document.getElementById('data_primeira_parcela').addEventListener('input', updateDatasParcelas);
 
-        <button type="button" onclick="calculateDebt()">Calcular</button>
-    </form>
+        function formatCurrency(value) {
+            return value.toFixed(2).replace('.', ',');
+        }
 
-    <h2>Resultado</h2>
-    <p id="result"></p>
+        document.getElementById('valor_divida').addEventListener('input', function () {
+            const valorDivida = parseFloat(this.value);
+            if (!isNaN(valorDivida)) {
+                const valorEntrada = (valorDivida * 0.3).toFixed(2);
+                document.getElementById('valor_entrada').value = `R$ ${formatCurrency(parseFloat(valorEntrada))}`;
+                updateParcelas();
+            }
+        });
 
-    <script src="script.js"></script>
+        function updateParcelas() {
+            const valorDivida = parseFloat(document.getElementById('valor_divida').value);
+            const valorEntrada = valorDivida * 0.3;
+            const parcelas = parseInt(document.getElementById('parcelas').value);
+            const valorParcela = ((valorDivida - valorEntrada) / parcelas).toFixed(2);
+            document.getElementById('valor_parcela').value = `R$ ${formatCurrency(parseFloat(valorParcela))}`;
+            updateDatasParcelas();
+        }
+
+        function updateDatasParcelas() {
+            const dataPrimeiraParcela = new Date(document.getElementById('data_primeira_parcela').value);
+            const parcelas = parseInt(document.getElementById('parcelas').value);
+            const valorParcela = parseFloat(document.getElementById('valor_parcela').value.replace('R$ ', '').replace(',', '.'));
+            const datasParcelas = document.getElementById('datas_parcelas');
+            datasParcelas.innerHTML = '';
+
+            for (let i = 0; i < parcelas; i++) {
+                const dataParcela = new Date(dataPrimeiraParcela);
+                dataParcela.setMonth(dataParcela.getMonth() + i);
+                const valorParcelaComJuros = (valorParcela * Math.pow(1.01, i + 1)).toFixed(2).replace('.', ',');
+                const li = document.createElement('li');
+                li.textContent = `${dataParcela.toLocaleDateString()} - R$ ${valorParcelaComJuros}`;
+                datasParcelas.appendChild(li);
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', function () {
+            const dataPrimeiraParcela = document.getElementById('data_primeira_parcela');
+            const hoje = new Date();
+            const proximoMes = new Date(hoje.setMonth(hoje.getMonth() + 1));
+            dataPrimeiraParcela.value = proximoMes.toISOString().split('T')[0];
+            dataPrimeiraParcela.max = proximoMes.toISOString().split('T')[0];
+            updateDatasParcelas();
+        });
+
+        function generatePDF() {
+            const numeroProcesso = document.getElementById('numero_processo').value;
+            const nomeExecutado = document.getElementById('nome_executado').value;
+            const valorDivida = parseFloat(document.getElementById('valor_divida').value);
+            const valorEntrada = (valorDivida * 0.3).toFixed(2);
+            const parcelas = parseInt(document.getElementById('parcelas').value);
+            const valorParcela = ((valorDivida - valorEntrada) / parcelas).toFixed(2);
+            const dataPrimeiraParcela = new Date(document.getElementById('data_primeira_parcela').value);
+            const datasParcelas = document.getElementById('datas_parcelas').innerHTML;
+            const hoje = new Date();
+            const dataExtenso = hoje.toLocaleDateString('pt-BR', { day: 'numeric', month: 'long', year: 'numeric' });
+            const atualizarEndereco = document.getElementById('atualizar_endereco').checked;
+            const novoEndereco = document.getElementById('novo_endereco').value;
+
+            let enderecoSection = '';
+            if (atualizarEndereco) {
+                enderecoSection = `<u>residente e domiciliado na ${novoEndereco}</u>, `;
+            }
+
+            const peticaoContent = `
+        <div style="font-family: Arial, sans-serif; padding: 20px;">
+            <p style="text-align: center;">AO JUIZADO ESPECIAL CÍVEL</p>
+            <p>Processo nº ${numeroProcesso}</p>
+            <p>${nomeExecutado}, ${enderecoSection} já qualificado(a) nos autos da ação em epígrafe, vem, respeitosamente, à presença de Vossa Excelência requerer o</p>
+            <p style="text-align: center; font-weight: bold;">PARCELAMENTO DO DÉBITO, COM BASE NO ART. 916, DO CPC</p>
+            <p>nos termos que seguem.</p>
+            <p>O executado reconhece o débito em execução e propõe o seu parcelamento nos seguintes moldes:</p>
+            <p>30% do valor da dívida, no importe de R$ ${valorEntrada}, a ser depositado judicialmente nesta data, conforme comprovante que acompanha esta petição.</p>
+            <p>O restante, no valor de R$ ${(valorDivida - valorEntrada).toFixed(2)} será parcelado em ${parcelas} parcelas, com início dos pagamentos em ${dataPrimeiraParcela.toLocaleDateString()}, acrescidas de juros de 1% ao mês, conforme abaixo:</p>
+            <ul>${datasParcelas}</ul>
+            <p>O executado está ciente de que o descumprimento do parcelamento importará no vencimento antecipado de todas as parcelas não pagas, junto com o acréscimo de multa de 10%, vedada a oposição de embargos à execução em razão do reconhecimento do débito.</p>
+            <p>Requer seja o exequente intimado para ciência da presente proposta e que seja a execução suspensa pelo prazo previsto para cumprimento do parcelamento.</p>
+            <p>Pede o deferimento.</p>
+            <p>Marília, ${dataExtenso}</p>
+            <p style="text-align: center;">______________________________<br>${nomeExecutado}</p>
+        </div>
+    `;
+
+            const opt = {
+                margin: 1,
+                filename: 'Peticao_Parcelamento.pdf',
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2 },
+                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+            };
+
+            html2pdf().from(peticaoContent).set(opt).save();
+        }
+    </script>
 </body>
 
 </html>
