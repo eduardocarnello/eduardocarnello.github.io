@@ -74,10 +74,102 @@
             cursor: pointer;
         }
 
+        .hidden {
+            display: none;
+        }
+
         .print-button:hover {
             background-color: #0056b3;
         }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 10mm;
+            }
+
+            .inline-section {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .inline-section label {
+                width: 100%;
+                margin-bottom: 5px;
+            }
+
+            .inline-section input[type="text"],
+            .inline-section input[type="number"],
+            .inline-section input[type="date"],
+            .inline-section select {
+                width: 100%;
+            }
+
+            .print-button {
+                width: 100%;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: 5mm;
+            }
+
+            .header {
+                font-size: 1em;
+            }
+
+            .inline-section label {
+                font-size: 0.9em;
+            }
+
+            .inline-section input[type="text"],
+            .inline-section input[type="number"],
+            .inline-section input[type="date"],
+            .inline-section select {
+                font-size: 0.9em;
+            }
+
+            .print-button {
+                font-size: 0.9em;
+            }
+        }
+
+        .inline-section {
+            display: flex;
+            align-items: center;
+            margin-bottom: 5px;
+        }
+
+        .inline-section label {
+            width: 200px;
+            font-weight: bold;
+            margin-right: 10px;
+        }
+
+        .inline-section input[type="text"],
+        .inline-section input[type="number"],
+        .inline-section input[type="date"],
+        .inline-section select {
+            flex: 1;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 1em;
+        }
+
+        .inline-section.hidden {
+            display: none;
+        }
+
+        .inline-section label+label {
+            margin-left: 20px;
+        }
+
+        .inline-section input[type="text"]+input[type="text"] {
+            margin-left: 10px;
+        }
     </style>
+
 </head>
 
 <body>
@@ -92,14 +184,33 @@
         <div class="inline-section">
             <label>Nome do Executado:</label>
             <input type="text" id="nome_executado">
+            <input type="hidden" id="genero_executado" value="">
         </div>
         <div class="inline-section">
             <label>Atualizar Endereço?</label>
             <input type="checkbox" id="atualizar_endereco">
         </div>
         <div class="inline-section hidden" id="endereco_section">
-            <label>Novo Endereço:</label>
-            <input type="text" id="novo_endereco">
+            <label>CEP:</label>
+            <input type="text" id="cep" maxlength="9" placeholder="#####-###">
+        </div>
+        <div class="inline-section hidden" id="endereco_completo_section">
+            <label>Rua:</label>
+            <input type="text" id="rua" readonly>
+            <label>Número:</label>
+            <input type="text" id="numero">
+        </div>
+        <div class="inline-section hidden" id="complemento_bairro_section">
+            <label>Complemento:</label>
+            <input type="text" id="complemento">
+            <label>Bairro:</label>
+            <input type="text" id="bairro" readonly>
+        </div>
+        <div class="inline-section hidden" id="cidade_estado_section">
+            <label>Cidade:</label>
+            <input type="text" id="cidade" readonly>
+            <label>Estado:</label>
+            <input type="text" id="estado" readonly>
         </div>
         <div class="inline-section">
             <label>Valor da Dívida (R$):</label>
@@ -128,23 +239,189 @@
             <label>Data da Primeira Parcela:</label>
             <input type="date" id="data_primeira_parcela">
         </div>
-        <div class="section">
+        <div class="section hidden" id="datas_parcelas_section">
             <label>Datas das Parcelas:</label>
             <ul id="datas_parcelas"></ul>
         </div>
         <button class="print-button" onclick="generatePDF()">Gerar PDF</button>
     </div>
+    <script src="https://unpkg.com/imask"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.2/html2pdf.bundle.min.js"></script>
     <script>
-        document.getElementById('atualizar_endereco').addEventListener('change', function () {
-            const enderecoSection = document.getElementById('endereco_section');
-            if (this.checked) {
-                enderecoSection.classList.remove('hidden');
-            } else {
-                enderecoSection.classList.add('hidden');
+        document.getElementById('nome_executado').addEventListener('blur', function () {
+            var nomeExecutado = this.value;
+            if (nomeExecutado) {
+                fetch(`https://api.genderize.io?name=${nomeExecutado}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        const generoExecutadoElement = document.getElementById('genero_executado');
+                        if (data.gender && data.probability >= 0.9) {
+                            generoExecutadoElement.value = data.gender;
+                        } else {
+                            generoExecutadoElement.value = 'unknown';
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Erro ao determinar o gênero:', error);
+                        const generoExecutadoElement = document.getElementById('genero_executado');
+                        generoExecutadoElement.value = 'unknown';
+                    });
             }
         });
 
+
+
+
+        document.addEventListener('DOMContentLoaded', function () {
+            var element = document.getElementById('numero_processo');
+            var maskOptions = {
+                mask: '0000000-00.2X00.8.26.X344',
+                definitions: {
+                    X: {
+                        mask: '0',
+                        displayChar: '0',
+                        placeholderChar: '0',
+                    },
+                },
+                lazy: false,
+                overwrite: 'shift',
+            };
+
+            var mask = IMask(element, maskOptions);
+        });
+
+        document.getElementById('atualizar_endereco').addEventListener('change', function () {
+            const enderecoSection = document.getElementById('endereco_section');
+            const enderecoCompletoSection = document.getElementById('endereco_completo_section');
+            const complementoBairroSection = document.getElementById('complemento_bairro_section');
+            const cidadeEstadoSection = document.getElementById('cidade_estado_section');
+
+            if (this.checked) {
+                enderecoSection.classList.remove('hidden');
+                enderecoCompletoSection.classList.remove('hidden');
+                complementoBairroSection.classList.remove('hidden');
+                cidadeEstadoSection.classList.remove('hidden');
+            } else {
+                enderecoSection.classList.add('hidden');
+                enderecoCompletoSection.classList.add('hidden');
+                complementoBairroSection.classList.add('hidden');
+                cidadeEstadoSection.classList.add('hidden');
+            }
+        });
+
+        document.getElementById('cep').addEventListener('input', function () {
+            const cep = this.value.replace(/\D/g, '');
+            if (cep.length === 8) {
+                fetch(`https://viacep.com.br/ws/${cep}/json/`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (!data.erro) {
+                            document.getElementById('rua').value = data.logradouro;
+                            document.getElementById('bairro').value = data.bairro;
+                            document.getElementById('cidade').value = data.localidade;
+                            document.getElementById('estado').value = data.uf;
+                        } else {
+                            alert('CEP não encontrado.');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Erro ao buscar o CEP:', error);
+                        alert('Erro ao buscar o CEP.');
+                    });
+            }
+        });
+
+        document.getElementById('cep').addEventListener('input', function () {
+            this.value = this.value.replace(/\D/g, '').replace(/^(\d{5})(\d)/, '$1-$2');
+        });
+
+        //
+        document.addEventListener('DOMContentLoaded', function () {
+            const dataPrimeiraParcelaElement = document.getElementById('data_primeira_parcela');
+            const today = new Date();
+            const minDate = new Date(today);
+            const maxDate = new Date(today);
+
+            minDate.setDate(today.getDate() + 30);
+            maxDate.setDate(today.getDate() + 60);
+
+            const formatDate = (date) => {
+                const day = String(date.getDate()).padStart(2, '0');
+                const month = String(date.getMonth() + 1).padStart(2, '0');
+                const year = date.getFullYear();
+                return `${year}-${month}-${day}`;
+            };
+
+            dataPrimeiraParcelaElement.min = formatDate(today);
+            dataPrimeiraParcelaElement.max = formatDate(maxDate);
+            dataPrimeiraParcelaElement.value = formatDate(minDate);
+        });
+
+        document.getElementById('valor_divida').addEventListener('input', function () {
+            const valorDivida = parseFloat(this.value);
+            if (!isNaN(valorDivida)) {
+                const valorEntrada = (valorDivida * 0.3).toFixed(2);
+                document.getElementById('valor_entrada').value = `R$ ${formatCurrency(parseFloat(valorEntrada))}`;
+                document.getElementById('datas_parcelas_section').classList.remove('hidden');
+                updateParcelas();
+            }
+        });
+
+        function updateParcelas() {
+            const valorDivida = parseFloat(document.getElementById('valor_divida').value);
+            const valorEntrada = valorDivida * 0.3;
+            const parcelas = parseInt(document.getElementById('parcelas').value);
+            const valorParcela = ((valorDivida - valorEntrada) / parcelas).toFixed(2);
+            document.getElementById('valor_parcela').value = `R$ ${formatCurrency(parseFloat(valorParcela))}`;
+            updateDatasParcelas();
+        }
+
+        function updateDatasParcelas() {
+            const valorEntrada = document.getElementById('valor_entrada').value;
+            if (valorEntrada === '') {
+                return;
+            }
+
+            const dataPrimeiraParcelaElement = document.getElementById('data_primeira_parcela');
+            const parcelasElement = document.getElementById('parcelas');
+            const valorParcelaElement = document.getElementById('valor_parcela');
+            const datasParcelasElement = document.getElementById('datas_parcelas');
+
+            if (!dataPrimeiraParcelaElement || !parcelasElement || !valorParcelaElement || !datasParcelasElement) {
+                console.error('Um ou mais elementos necessários não foram encontrados.');
+                return;
+            }
+
+            const dataPrimeiraParcela = new Date(dataPrimeiraParcelaElement.value);
+            if (isNaN(dataPrimeiraParcela)) {
+                console.error('Data da primeira parcela inválida.');
+                return;
+            }
+
+            const parcelas = parseInt(parcelasElement.value);
+            if (isNaN(parcelas) || parcelas <= 0) {
+                console.error('Número de parcelas inválido.');
+                return;
+            }
+
+            const valorParcela = parseFloat(valorParcelaElement.value.replace('R$ ', '').replace(',', '.'));
+            if (isNaN(valorParcela)) {
+                console.error('Valor da parcela inválido.');
+                return;
+            }
+
+            datasParcelasElement.innerHTML = '';
+
+            for (let i = 0; i < parcelas; i++) {
+                const dataParcela = new Date(dataPrimeiraParcela);
+                dataParcela.setMonth(dataParcela.getMonth() + i);
+                const valorParcelaComJuros = (valorParcela * Math.pow(1.01, i + 1)).toFixed(2).replace('.', ',');
+                const li = document.createElement('li');
+                li.textContent = `${dataParcela.toLocaleDateString()} - R$ ${valorParcelaComJuros}`;
+                datasParcelasElement.appendChild(li);
+            }
+        }
+        //
         document.getElementById('valor_divida').addEventListener('input', function () {
             const valorDivida = parseFloat(this.value);
             if (!isNaN(valorDivida)) {
@@ -162,11 +439,13 @@
             return value.toFixed(2).replace('.', ',');
         }
 
+
         document.getElementById('valor_divida').addEventListener('input', function () {
             const valorDivida = parseFloat(this.value);
             if (!isNaN(valorDivida)) {
                 const valorEntrada = (valorDivida * 0.3).toFixed(2);
                 document.getElementById('valor_entrada').value = `R$ ${formatCurrency(parseFloat(valorEntrada))}`;
+                document.getElementById('datas_parcelas_section').classList.remove('hidden');
                 updateParcelas();
             }
         });
@@ -181,11 +460,40 @@
         }
 
         function updateDatasParcelas() {
-            const dataPrimeiraParcela = new Date(document.getElementById('data_primeira_parcela').value);
-            const parcelas = parseInt(document.getElementById('parcelas').value);
-            const valorParcela = parseFloat(document.getElementById('valor_parcela').value.replace('R$ ', '').replace(',', '.'));
-            const datasParcelas = document.getElementById('datas_parcelas');
-            datasParcelas.innerHTML = '';
+            const valorEntrada = document.getElementById('valor_entrada').value;
+            if (valorEntrada === '') {
+                return;
+            }
+
+            const dataPrimeiraParcelaElement = document.getElementById('data_primeira_parcela');
+            const parcelasElement = document.getElementById('parcelas');
+            const valorParcelaElement = document.getElementById('valor_parcela');
+            const datasParcelasElement = document.getElementById('datas_parcelas');
+
+            if (!dataPrimeiraParcelaElement || !parcelasElement || !valorParcelaElement || !datasParcelasElement) {
+                console.error('Um ou mais elementos necessários não foram encontrados.');
+                return;
+            }
+
+            const dataPrimeiraParcela = new Date(dataPrimeiraParcelaElement.value);
+            if (isNaN(dataPrimeiraParcela)) {
+                console.error('Data da primeira parcela inválida.');
+                return;
+            }
+
+            const parcelas = parseInt(parcelasElement.value);
+            if (isNaN(parcelas) || parcelas <= 0) {
+                console.error('Número de parcelas inválido.');
+                return;
+            }
+
+            const valorParcela = parseFloat(valorParcelaElement.value.replace('R$ ', '').replace(',', '.'));
+            if (isNaN(valorParcela)) {
+                console.error('Valor da parcela inválido.');
+                return;
+            }
+
+            datasParcelasElement.innerHTML = '';
 
             for (let i = 0; i < parcelas; i++) {
                 const dataParcela = new Date(dataPrimeiraParcela);
@@ -193,50 +501,97 @@
                 const valorParcelaComJuros = (valorParcela * Math.pow(1.01, i + 1)).toFixed(2).replace('.', ',');
                 const li = document.createElement('li');
                 li.textContent = `${dataParcela.toLocaleDateString()} - R$ ${valorParcelaComJuros}`;
-                datasParcelas.appendChild(li);
+                datasParcelasElement.appendChild(li);
             }
         }
 
-        document.addEventListener('DOMContentLoaded', function () {
-            const dataPrimeiraParcela = document.getElementById('data_primeira_parcela');
-            const hoje = new Date();
-            const proximoMes = new Date(hoje.setMonth(hoje.getMonth() + 1));
-            dataPrimeiraParcela.value = proximoMes.toISOString().split('T')[0];
-            dataPrimeiraParcela.max = proximoMes.toISOString().split('T')[0];
-            updateDatasParcelas();
-        });
+
 
         function generatePDF() {
-            const numeroProcesso = document.getElementById('numero_processo').value;
-            const nomeExecutado = document.getElementById('nome_executado').value;
-            const valorDivida = parseFloat(document.getElementById('valor_divida').value);
+
+
+
+
+            const numeroProcessoElement = document.getElementById('numero_processo');
+            const nomeExecutadoElement = document.getElementById('nome_executado');
+            var generoExecutadoElement = document.getElementById('genero_executado');
+            const valorDividaElement = document.getElementById('valor_divida');
+            const parcelasElement = document.getElementById('parcelas');
+            const dataPrimeiraParcelaElement = document.getElementById('data_primeira_parcela');
+            const datasParcelasElement = document.getElementById('datas_parcelas');
+            const atualizarEnderecoElement = document.getElementById('atualizar_endereco');
+            const ruaElement = document.getElementById('rua');
+            const numeroElement = document.getElementById('numero');
+            const complementoElement = document.getElementById('complemento');
+            const bairroElement = document.getElementById('bairro');
+            const cepElement = document.getElementById('cep');
+            const cidadeElement = document.getElementById('cidade');
+            const estadoElement = document.getElementById('estado');
+
+            if (!numeroProcessoElement || !nomeExecutadoElement || !valorDividaElement || !parcelasElement || !dataPrimeiraParcelaElement || !datasParcelasElement || !atualizarEnderecoElement) {
+                console.error('Um ou mais elementos necessários não foram encontrados.');
+                return;
+            }
+
+            const numeroProcesso = numeroProcessoElement.value;
+            const nomeExecutado = nomeExecutadoElement.value;
+            var generoExecutado = generoExecutadoElement.value;
+
+            const valorDivida = parseFloat(valorDividaElement.value);
             const valorEntrada = (valorDivida * 0.3).toFixed(2);
-            const parcelas = parseInt(document.getElementById('parcelas').value);
+            const parcelas = parseInt(parcelasElement.value);
             const valorParcela = ((valorDivida - valorEntrada) / parcelas).toFixed(2);
-            const dataPrimeiraParcela = new Date(document.getElementById('data_primeira_parcela').value);
-            const datasParcelas = document.getElementById('datas_parcelas').innerHTML;
+            const dataPrimeiraParcela = new Date(dataPrimeiraParcelaElement.value);
+            const datasParcelas = datasParcelasElement.innerHTML;
             const hoje = new Date();
             const dataExtenso = hoje.toLocaleDateString('pt-BR', { day: 'numeric', month: 'long', year: 'numeric' });
-            const atualizarEndereco = document.getElementById('atualizar_endereco').checked;
-            const novoEndereco = document.getElementById('novo_endereco').value;
+            const atualizarEndereco = atualizarEnderecoElement.checked;
+
+
+            var executadoTerm;
+            var concordancia
+            if (generoExecutado === 'male') {
+                executadoTerm = 'executado';
+                concordancia = 'o';
+            } else if (generoExecutado === 'female') {
+                executadoTerm = 'executada';
+                concordancia = 'a';
+
+            } else {
+                executadoTerm = 'executado(a)';
+                concordancia = 'o(a)';
+            }
+            console.log(generoExecutadoElement.value + ' ' + nomeExecutado + ' ' + generoExecutado + ' ' + executadoTerm);
 
             let enderecoSection = '';
             if (atualizarEndereco) {
-                enderecoSection = `<u>residente e domiciliado na ${novoEndereco}</u>, `;
+                const rua = ruaElement.value;
+                const numero = numeroElement.value;
+                const complemento = complementoElement.value;
+                const bairro = bairroElement.value;
+                const cep = cepElement.value;
+                const cidade = cidadeElement.value;
+                const estado = estadoElement.value;
+
+                enderecoSection = `<u>residente e domiciliado na Rua ${rua}, nº ${numero}, Bairro ${bairro}`;
+                if (complemento) {
+                    enderecoSection += `, Complemento ${complemento}`;
+                }
+                enderecoSection += `, CEP ${cep}, ${cidade}/${estado}</u>`;
             }
 
             const peticaoContent = `
         <div style="font-family: Arial, sans-serif; padding: 20px;">
             <p style="text-align: center;">AO JUIZADO ESPECIAL CÍVEL</p>
             <p>Processo nº ${numeroProcesso}</p>
-            <p>${nomeExecutado}, ${enderecoSection} já qualificado(a) nos autos da ação em epígrafe, vem, respeitosamente, à presença de Vossa Excelência requerer o</p>
+            <p>${nomeExecutado}, ${enderecoSection} já qualificad${concordancia} nos autos da ação em epígrafe, vem, respeitosamente, à presença de Vossa Excelência requerer o</p>
             <p style="text-align: center; font-weight: bold;">PARCELAMENTO DO DÉBITO, COM BASE NO ART. 916, DO CPC</p>
             <p>nos termos que seguem.</p>
-            <p>O executado reconhece o débito em execução e propõe o seu parcelamento nos seguintes moldes:</p>
+            <p>${concordancia.toUpperCase()} ${executadoTerm} reconhece o débito em execução e propõe o seu parcelamento nos seguintes moldes:</p>
             <p>30% do valor da dívida, no importe de R$ ${valorEntrada}, a ser depositado judicialmente nesta data, conforme comprovante que acompanha esta petição.</p>
             <p>O restante, no valor de R$ ${(valorDivida - valorEntrada).toFixed(2)} será parcelado em ${parcelas} parcelas, com início dos pagamentos em ${dataPrimeiraParcela.toLocaleDateString()}, acrescidas de juros de 1% ao mês, conforme abaixo:</p>
             <ul>${datasParcelas}</ul>
-            <p>O executado está ciente de que o descumprimento do parcelamento importará no vencimento antecipado de todas as parcelas não pagas, junto com o acréscimo de multa de 10%, vedada a oposição de embargos à execução em razão do reconhecimento do débito.</p>
+            <p>${concordancia.toUpperCase()} ${executadoTerm} está ciente de que o descumprimento do parcelamento importará no vencimento antecipado de todas as parcelas não pagas, junto com o acréscimo de multa de 10%, vedada a oposição de embargos à execução em razão do reconhecimento do débito.</p>
             <p>Requer seja o exequente intimado para ciência da presente proposta e que seja a execução suspensa pelo prazo previsto para cumprimento do parcelamento.</p>
             <p>Pede o deferimento.</p>
             <p>Marília, ${dataExtenso}</p>
