@@ -1,0 +1,745 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pedido de Parcelamento (art. 916, do CPC)</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f4f4f4;
+            color: #000;
+        }
+
+        .container {
+            width: auto;
+            max-width: 186mm;
+            margin: 0 auto;
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+            padding: 15mm;
+        }
+
+        .header {
+            text-align: center;
+            font-weight: bold;
+            font-size: 1.1em;
+            margin-bottom: 10px;
+            padding-bottom: 10px;
+        }
+
+        .section {
+            margin-bottom: 20px;
+        }
+
+        .inline-section {
+            display: flex;
+            align-items: center;
+            margin-bottom: 5px;
+        }
+
+
+
+        .inline-section input[type="text"],
+        .inline-section input[type="number"],
+        .inline-section input[type="date"],
+        .inline-section select {
+            flex: 1;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 1em;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .print-button {
+            display: block;
+            width: 150px;
+            margin: 20px auto;
+            padding: 10px;
+            background-color: #007bff;
+            color: #fff;
+            text-align: center;
+            text-decoration: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .print-button:hover {
+            background-color: #0056b3;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 10mm;
+            }
+
+            .inline-section {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .inline-section label {
+                width: 100%;
+                margin-bottom: 5px;
+            }
+
+            .inline-section input[type="text"],
+            .inline-section input[type="number"],
+            .inline-section input[type="date"],
+            .inline-section select {
+                width: 100%;
+            }
+
+            .print-button {
+                width: 100%;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: 5mm;
+            }
+
+            .header {
+                font-size: 1em;
+            }
+
+            .inline-section label {
+                font-size: 0.9em;
+            }
+
+            .inline-section input[type="text"],
+            .inline-section input[type="number"],
+            .inline-section input[type="date"],
+            .inline-section select {
+                font-size: 0.9em;
+            }
+
+            .print-button {
+                font-size: 0.9em;
+            }
+        }
+
+        .inline-section {
+            display: flex;
+            align-items: center;
+            margin-bottom: 5px;
+        }
+
+        .inline-section label {
+            width: 180px;
+            font-weight: bold;
+            margin-right: 10px;
+        }
+
+        .inline-section input[type="text"],
+        .inline-section input[type="number"],
+        .inline-section input[type="date"],
+        .inline-section select {
+            flex: 1;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 1em;
+        }
+
+        .inline-section.hidden {
+            display: none;
+        }
+
+        .inline-section label+label {
+            margin-left: 20px;
+        }
+
+        .inline-section input[type="text"]+input[type="text"] {
+            margin-left: 10px;
+        }
+
+        .executado-section {
+            margin-bottom: 20px;
+        }
+
+        .executado-section .inline-section {
+            margin-bottom: 10px;
+        }
+
+        .executado-section .remove-executado {
+            margin-left: 10px;
+            cursor: pointer;
+            color: red;
+        }
+
+        .executado-section .remove-executado:hover {
+            text-decoration: underline;
+        }
+
+        .executado-section .executado-header {
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .executado-signature {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+
+        .executado-signature div {
+            width: 100%;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .numero {
+            width: 80px;
+        }
+
+        input.rua {
+            flex: auto !important;
+            width: 275px !important;
+        }
+
+        label.labrua {
+            width: auto !important;
+            margin-left: 10px !important;
+        }
+
+        label.labnumero {
+            width: auto !important;
+            margin-left: 10px !important;
+        }
+
+        input.complemento {
+            flex: auto !important
+        }
+
+        label.labbairro {
+            width: auto !important;
+            margin-left: 5px !important;
+        }
+
+        input.cidade {
+            flex: auto !important;
+            width: 335px !important;
+        }
+
+        label.labestado {
+            margin-left: 5px !important;
+            width: auto !important;
+        }
+
+        input.estado {
+            width: 10px !important;
+        }
+
+        .add-executado-button {
+            display: inline-block;
+            padding: 10px 20px;
+            background-color: #6c757d;
+            color: #fff;
+            text-align: center;
+            text-decoration: none;
+            border-radius: 4px;
+            cursor: pointer;
+            border: none;
+            font-size: 1em;
+            margin-bottom: 20px;
+        }
+
+        .add-executado-button:hover {
+            background-color: #5a6268;
+        }
+    </style>
+
+</head>
+
+<body>
+    <div class="container">
+        <div class="header">
+            Pedido de Parcelamento (art. 916, do CPC)
+        </div>
+        <div class="inline-section">
+            <label>Nº do Processo:</label>
+            <input type="text" id="numero_processo">
+        </div>
+        <div id="executados-container">
+            <div class="executado-section" id="executado-1">
+                <div class="inline-section">
+                    <label>Nome do Executado:</label>
+                    <input type="text" class="nome-executado" data-index="1">
+                    <input type="hidden" class="genero-executado" data-index="1" value="">
+                </div>
+                <div class="inline-section">
+                    <label>Atualizar Endereço?</label>
+                    <input type="checkbox" class="atualizar-endereco" data-index="1">
+                </div>
+                <div class="inline-section hidden endereco-section" data-index="1">
+                    <label>CEP:</label>
+                    <input type="text" class="cep" data-index="1" maxlength="9" placeholder="#####-###">
+                </div>
+                <div class="inline-section hidden endereco-completo-section" data-index="1">
+                    <label>Rua:</label>
+                    <input style="flex: auto; width: 275px;" type="text" class="rua" data-index="1" readonly>
+                    <label class="labnumero">Nº:</label>
+                    <input type="text" class="numero" data-index="1" maxlength="6">
+                </div>
+                <div class="inline-section hidden complemento-bairro-section" data-index="1">
+                    <label>Complemento:</label>
+                    <input type="text" class="complemento" data-index="1" style="flex: auto;">
+                    <label class="labbairro">Bairro:</label>
+                    <input type="text" class="bairro" data-index="1" readonly>
+                </div>
+                <div class="inline-section hidden cidade-estado-section" data-index="1">
+                    <label>Cidade:</label>
+                    <input type="text" class="cidade" data-index="1" readonly="" style="
+                        flex: auto;
+                        width: 335px;
+                    ">
+                    <label class="labestado">Estado:</label>
+                    <input type="text" class="estado" data-index="1" readonly="" style="
+                        width: 10px;
+                    ">
+                </div>
+            </div>
+        </div>
+        <button id="add-executado-button" class="add-executado-button">Adicionar Executado</button>
+        <div class="inline-section">
+            <label>Valor da Dívida (R$):</label>
+            <input type="number" id="valor_divida" step="0.01">
+        </div>
+        <div class="inline-section">
+            <label>Valor da Entrada (30%):</label>
+            <input type="text" id="valor_entrada" readonly>
+        </div>
+        <div class="inline-section">
+            <label>Parcelas:</label>
+            <select id="parcelas">
+                <option value="1">1</option>
+                <option value="2">2</option>
+                <option value="3">3</option>
+                <option value="4">4</option>
+                <option value="5">5</option>
+                <option value="6">6</option>
+            </select>
+        </div>
+        <div class="inline-section">
+            <label>Valor da Parcela:</label>
+            <input type="text" id="valor_parcela" readonly>
+        </div>
+        <div class="inline-section">
+            <label>Data da Primeira Parcela:</label>
+            <input type="date" id="data_primeira_parcela">
+        </div>
+        <div class="inline-section">
+            <label>Outros Pedidos:</label>
+            <textarea id="outros_pedidos" rows="4" style="width: 100%;"></textarea>
+        </div>
+        <div class="section hidden" id="datas_parcelas_section">
+            <label>Datas das Parcelas:</label>
+            <ul id="datas_parcelas"></ul>
+        </div>
+        <button class="print-button">Gerar PDF</button>
+    </div>
+    <script src="https://unpkg.com/imask"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.2/html2pdf.bundle.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            let executadoCount = 1;
+            const maxExecutados = 4;
+
+            document.getElementById('add-executado-button').addEventListener('click', function () {
+
+                if (executadoCount < maxExecutados) {
+                    executadoCount++;
+                    const executadoSection = document.createElement('div');
+                    executadoSection.classList.add('executado-section');
+                    executadoSection.id = `executado-${executadoCount}`;
+                    executadoSection.innerHTML = `
+                    ${executadoCount > 1 ? `<div class="executado-header">Executado ${executadoCount} <span class="remove-executado" data-index="${executadoCount}">Remover</span></div>` : ''}
+                    <div class="inline-section">
+                        <label>Nome do Executado:</label>
+                        <input type="text" class="nome-executado" data-index="${executadoCount}">
+                        <input type="hidden" class="genero-executado" data-index="${executadoCount}" value="">
+                    </div>
+                    <div class="inline-section">
+                        <label>Atualizar Endereço?</label>
+                        <input type="checkbox" class="atualizar-endereco" data-index="${executadoCount}">
+                    </div>
+                    <div class="inline-section hidden endereco-section" data-index="${executadoCount}">
+                        <label>CEP:</label>
+                        <input type="text" class="cep" data-index="${executadoCount}" maxlength="9" placeholder="#####-###">
+                    </div>
+                    <div class="inline-section hidden endereco-completo-section" data-index="${executadoCount}">
+                        <label>Rua:</label>
+                        <input type="text" class="rua" data-index="${executadoCount}" readonly>
+                        <label class="labnumero">Nº:</label>
+                        <input type="text" class="numero" data-index="${executadoCount}" maxlength="6">
+                    </div>
+                    <div class="inline-section hidden complemento-bairro-section" data-index="${executadoCount}">
+                        <label>Complemento:</label>
+                        <input type="text" class="complemento" data-index="${executadoCount}">
+                        <label class="labbairro">Bairro:</label>
+                        <input type="text" class="bairro" data-index="${executadoCount}" readonly>
+                    </div>
+                    <div class="inline-section hidden cidade-estado-section" data-index="${executadoCount}">
+                        <label>Cidade:</label>
+                        <input type="text" class="cidade" data-index="${executadoCount}" readonly>
+                        <label class="labestado">Estado:</label>
+                        <input type="text" class="estado" data-index="${executadoCount}" readonly>
+                    </div>
+                `;
+                    document.getElementById('executados-container').appendChild(executadoSection);
+                    addEventListenersToExecutado(executadoCount);
+
+                    if (executadoCount === maxExecutados) {
+                        document.getElementById('add-executado-button').style.display = 'none';
+                    }
+                }
+            });
+
+            function addEventListenersToExecutado(index) {
+                const removeButton = document.querySelector(`.remove-executado[data-index="${index}"]`);
+                const atualizarEnderecoCheckbox = document.querySelector(`.atualizar-endereco[data-index="${index}"]`);
+                const nomeExecutadoInput = document.querySelector(`.nome-executado[data-index="${index}"]`);
+                const cepInput = document.querySelector(`.cep[data-index="${index}"]`);
+
+                if (removeButton) {
+                    removeButton.addEventListener('click', function () {
+                        document.getElementById(`executado-${index}`).remove();
+                        executadoCount--;
+                        if (executadoCount < maxExecutados) {
+                            document.getElementById('add-executado-button').style.display = 'block';
+                        }
+                    });
+                }
+
+                if (atualizarEnderecoCheckbox) {
+                    atualizarEnderecoCheckbox.addEventListener('change', function () {
+                        const enderecoSection = document.querySelector(`.endereco-section[data-index="${index}"]`);
+                        const enderecoCompletoSection = document.querySelector(`.endereco-completo-section[data-index="${index}"]`);
+                        const complementoBairroSection = document.querySelector(`.complemento-bairro-section[data-index="${index}"]`);
+                        const cidadeEstadoSection = document.querySelector(`.cidade-estado-section[data-index="${index}"]`);
+
+                        if (this.checked) {
+                            enderecoSection.classList.remove('hidden');
+                            enderecoCompletoSection.classList.remove('hidden');
+                            complementoBairroSection.classList.remove('hidden');
+                            cidadeEstadoSection.classList.remove('hidden');
+                        } else {
+                            enderecoSection.classList.add('hidden');
+                            enderecoCompletoSection.classList.add('hidden');
+                            complementoBairroSection.classList.add('hidden');
+                            cidadeEstadoSection.classList.add('hidden');
+                        }
+                    });
+                }
+
+                if (nomeExecutadoInput) {
+                    nomeExecutadoInput.addEventListener('blur', function () {
+                        const nomeExecutado = this.value;
+                        if (nomeExecutado) {
+                            fetch(`https://api.genderize.io?name=${nomeExecutado}`)
+                                .then(response => response.json())
+                                .then(data => {
+                                    const generoExecutadoElement = document.querySelector(`.genero-executado[data-index="${index}"]`);
+                                    if (data.gender && data.probability >= 0.9) {
+                                        generoExecutadoElement.value = data.gender;
+                                    } else {
+                                        generoExecutadoElement.value = 'unknown';
+                                    }
+                                })
+                                .catch(error => {
+                                    console.error('Erro ao determinar o gênero:', error);
+                                    const generoExecutadoElement = document.querySelector(`.genero-executado[data-index="${index}"]`);
+                                    generoExecutadoElement.value = 'unknown';
+                                });
+                        }
+                    });
+                }
+
+                if (cepInput) {
+                    cepInput.addEventListener('input', function () {
+                        const cep = this.value.replace(/\D/g, '');
+                        if (cep.length === 8) {
+                            fetch(`https://viacep.com.br/ws/${cep}/json/`)
+                                .then(response => response.json())
+                                .then(data => {
+                                    if (!data.erro) {
+                                        document.querySelector(`.rua[data-index="${index}"]`).value = data.logradouro;
+                                        document.querySelector(`.bairro[data-index="${index}"]`).value = data.bairro;
+                                        document.querySelector(`.cidade[data-index="${index}"]`).value = data.localidade;
+                                        document.querySelector(`.estado[data-index="${index}"]`).value = data.uf;
+                                    } else {
+                                        alert('CEP não encontrado.');
+                                    }
+                                })
+                                .catch(error => {
+                                    console.error('Erro ao buscar o CEP:', error);
+                                    alert('Erro ao buscar o CEP.');
+                                });
+                        }
+                    });
+
+                    cepInput.addEventListener('input', function () {
+                        this.value = this.value.replace(/\D/g, '').replace(/^(\d{5})(\d)/, '$1-$2');
+                    });
+                }
+            }
+
+            addEventListenersToExecutado(1);
+
+            var element = document.getElementById('numero_processo');
+            var maskOptions = {
+                mask: '0000000-00.2X00.8.26.X344',
+                definitions: {
+                    X: {
+                        mask: '0',
+                        displayChar: '0',
+                        placeholderChar: '0',
+                    },
+                },
+                lazy: false,
+                overwrite: 'shift',
+            };
+
+            var mask = IMask(element, maskOptions);
+
+            const dataPrimeiraParcelaElement = document.getElementById('data_primeira_parcela');
+            const today = new Date();
+            const minDate = new Date(today);
+            const maxDate = new Date(today);
+
+            minDate.setDate(today.getDate() + 30);
+            maxDate.setDate(today.getDate() + 60);
+
+            const formatDate = (date) => {
+                const day = String(date.getDate()).padStart(2, '0');
+                const month = String(date.getMonth() + 1).padStart(2, '0');
+                const year = date.getFullYear();
+                return `${year}-${month}-${day}`;
+            };
+
+            dataPrimeiraParcelaElement.min = formatDate(today);
+            dataPrimeiraParcelaElement.max = formatDate(maxDate);
+            dataPrimeiraParcelaElement.value = formatDate(minDate);
+
+            document.getElementById('valor_divida').addEventListener('input', function () {
+                const valorDivida = parseFloat(this.value);
+                if (!isNaN(valorDivida)) {
+                    const valorEntrada = (valorDivida * 0.3).toFixed(2);
+                    document.getElementById('valor_entrada').value = `R$ ${formatCurrency(parseFloat(valorEntrada))}`;
+                    document.getElementById('datas_parcelas_section').classList.remove('hidden');
+                    updateParcelas();
+                }
+            });
+
+            document.getElementById('parcelas').addEventListener('change', updateParcelas);
+
+            document.getElementById('data_primeira_parcela').addEventListener('input', updateDatasParcelas);
+
+            function updateParcelas() {
+                const valorDivida = parseFloat(document.getElementById('valor_divida').value);
+                const valorEntrada = valorDivida * 0.3;
+                const parcelas = parseInt(document.getElementById('parcelas').value);
+                const valorParcela = ((valorDivida - valorEntrada) / parcelas).toFixed(2);
+                document.getElementById('valor_parcela').value = `R$ ${formatCurrency(parseFloat(valorParcela))}`;
+                updateDatasParcelas();
+            }
+
+            function updateDatasParcelas() {
+                const valorEntrada = document.getElementById('valor_entrada').value;
+                if (valorEntrada === '') {
+                    return;
+                }
+
+                const dataPrimeiraParcelaElement = document.getElementById('data_primeira_parcela');
+                const parcelasElement = document.getElementById('parcelas');
+                const valorParcelaElement = document.getElementById('valor_parcela');
+                const datasParcelasElement = document.getElementById('datas_parcelas');
+
+                if (!dataPrimeiraParcelaElement || !parcelasElement || !valorParcelaElement || !datasParcelasElement) {
+                    console.error('Um ou mais elementos necessários não foram encontrados.');
+                    return;
+                }
+
+                const dataPrimeiraParcela = new Date(dataPrimeiraParcelaElement.value);
+                if (isNaN(dataPrimeiraParcela)) {
+                    console.error('Data da primeira parcela inválida.');
+                    return;
+                }
+
+                const parcelas = parseInt(parcelasElement.value);
+                if (isNaN(parcelas) || parcelas <= 0) {
+                    console.error('Número de parcelas inválido.');
+                    return;
+                }
+
+                const valorParcela = parseFloat(valorParcelaElement.value.replace('R$ ', '').replace(',', '.'));
+                if (isNaN(valorParcela)) {
+                    console.error('Valor da parcela inválido.');
+                    return;
+                }
+
+                datasParcelasElement.innerHTML = '';
+
+                for (let i = 0; i < parcelas; i++) {
+                    const dataParcela = new Date(dataPrimeiraParcela);
+                    dataParcela.setMonth(dataParcela.getMonth() + i);
+                    const valorParcelaComJuros = (valorParcela * Math.pow(1.01, i + 1)).toFixed(2).replace('.', ',');
+                    const li = document.createElement('li');
+                    li.textContent = `${dataParcela.toLocaleDateString()} - R$ ${valorParcelaComJuros}`;
+                    datasParcelasElement.appendChild(li);
+                }
+            }
+
+            function formatCurrency(value) {
+                return value.toFixed(2).replace('.', ',');
+            }
+
+            document.querySelector('.print-button').addEventListener('click', generatePDF);
+
+            function generatePDF() {
+                const numeroProcessoElement = document.getElementById('numero_processo');
+                const valorDividaElement = document.getElementById('valor_divida');
+                const parcelasElement = document.getElementById('parcelas');
+                const dataPrimeiraParcelaElement = document.getElementById('data_primeira_parcela');
+                const datasParcelasElement = document.getElementById('datas_parcelas');
+                const outrosPedidosElement = document.getElementById('outros_pedidos');
+                const outrosPedidos = outrosPedidosElement.value;
+
+                if (!numeroProcessoElement || !valorDividaElement || !parcelasElement || !dataPrimeiraParcelaElement || !datasParcelasElement) {
+                    console.error('Um ou mais elementos necessários não foram encontrados.');
+                    return;
+                }
+
+                const numeroProcesso = numeroProcessoElement.value;
+                const valorDivida = parseFloat(valorDividaElement.value);
+                const valorEntrada = (valorDivida * 0.3).toFixed(2);
+                const parcelas = parseInt(parcelasElement.value);
+                const valorParcela = ((valorDivida - valorEntrada) / parcelas).toFixed(2);
+                const dataPrimeiraParcela = new Date(dataPrimeiraParcelaElement.value);
+                const datasParcelas = datasParcelasElement.innerHTML;
+                const hoje = new Date();
+                const dataExtenso = hoje.toLocaleDateString('pt-BR', { day: 'numeric', month: 'long', year: 'numeric' });
+
+                let executadosContent = '<p>';
+                let assinaturasContent = '';
+                let concordancia = '';
+                let concordanciaCirc = 'e';
+                let concordanciaM = '';
+                let concordanciaEsta = 'á';
+                let concordanciaS = '';
+                let concordanciaRequer = '';
+
+                const executados = document.querySelectorAll('.executado-section');
+                executados.forEach((executado, index) => {
+                    const nomeExecutado = executado.querySelector('.nome-executado').value;
+                    const generoExecutado = executado.querySelector('.genero-executado').value;
+                    const atualizarEndereco = executado.querySelector('.atualizar-endereco').checked;
+
+                    let executadoTerm;
+                    if (generoExecutado === 'male') {
+                        executadoTerm = 'executado';
+                        concordancia = 'o';
+                    } else if (generoExecutado === 'female') {
+                        executadoTerm = 'executada';
+                        concordancia = 'a';
+                    } else {
+                        executadoTerm = 'executado(a)';
+                        concordancia = 'o(a)';
+                    }
+
+                    let enderecoSection = '';
+                    if (atualizarEndereco) {
+                        const rua = executado.querySelector('.rua').value;
+                        const numero = executado.querySelector('.numero').value;
+                        const complemento = executado.querySelector('.complemento').value;
+                        const bairro = executado.querySelector('.bairro').value;
+                        const cep = executado.querySelector('.cep').value;
+                        const cidade = executado.querySelector('.cidade').value;
+                        const estado = executado.querySelector('.estado').value;
+
+                        enderecoSection = `, <u>residente e domiciliado na ${rua}, nº ${numero}, Bairro ${bairro}`;
+                        if (complemento) {
+                            enderecoSection += `, Complemento ${complemento}`;
+                        }
+                        enderecoSection += `, CEP ${cep}, ${cidade}/${estado}</u>`;
+                    }
+
+                    executadosContent += `${nomeExecutado}${enderecoSection}`;
+
+                    if (index < executados.length - 2) {
+                        executadosContent += ', ';
+                    } else if (index === executados.length - 2) {
+                        executadosContent += ' e ';
+                    }
+
+                    assinaturasContent += `<div style="text-align: center; margin-top: 20px;">
+            ______________________________
+            <br>${nomeExecutado}
+        </div>`;
+                    if ((index + 1) % 2 === 0) {
+                        assinaturasContent += '</div><div class="executado-signature">';
+                        console.log('sim')
+                    } else { }
+                });
+
+                if (executados.length > 1) {
+                    concordancia = 'os';
+                    concordanciaCirc = 'ê';
+                    concordanciaM = 'm';
+                    concordanciaEsta = 'ão';
+                    concordanciaS = 's';
+                    concordanciaRequer = 'em';
+                }
+
+                executadosContent += `, já qualificad${concordancia} nos autos da ação em epígrafe, v${concordanciaCirc}m, respeitosamente, à presença de Vossa Excelência requer ${concordancia} o</p>`
+
+                const peticaoContent = `
+                    <div style="font-family: Arial, sans-serif; padding: 20px;">
+                        <p style="text-align: center; font-weight: bold; font-size: 20px;">EXMO. SR. JUIZ DE DIREITO DO JUIZADO ESPECIAL CÍVEL DE MARÍLIA/SP</p>
+                        <p style="margin-bottom: 50px;"></p>
+                        <p style="font-weight: bold; font-size: 16px; margin-bottom: 50px;">Processo nº ${numeroProcesso}</p>
+                        <p></p>
+                        ${executadosContent}
+                        <p style="margin-bottom: 30px;"></p>
+                        <p style="text-align: center; font-weight: bold; margin-bottom: 30px; font-size: 18px;">PARCELAMENTO DO DÉBITO COM SUSPENSÃO DA EXECUÇÃO (ART. 916, DO CPC)</p>
+                        <p></p>
+                        <p style="text-align: justify;">${executados.length > 1 ? 'Os' : 'O'} ${executados.length > 1 ? 'executados' : 'executado'} reconhece${concordanciaM} o débito em execução e propõe${concordanciaM} o seu parcelamento nos seguintes moldes:</p>
+                        <p style="text-align: justify;">30% do valor da dívida, no importe de R$ ${(valorEntrada).replace('.', ',')}, a ser depositado judicialmente nesta data, conforme comprovante que acompanha esta petição.</p>
+                        <p style="text-align: justify;">O restante, no valor de R$ ${(valorDivida - valorEntrada).toFixed(2).replace('.', ',')} será parcelado em ${parcelas} parcelas, com início dos pagamentos em ${dataPrimeiraParcela.toLocaleDateString()}, acrescidas de juros de 1% ao mês, conforme abaixo:</p>
+                        <ul>${datasParcelas}</ul>
+                        <p style="text-align: justify;">${executados.length > 1 ? 'Os' : 'O'} ${executados.length > 1 ? 'executados' : 'executado'} est${concordanciaEsta} ciente${concordanciaS} de que o descumprimento do parcelamento importará no vencimento antecipado de todas as parcelas não pagas, junto com o acréscimo de multa de 10%, vedada a oposição de embargos à execução em razão do reconhecimento do débito.</p>
+                        <p style="text-align: justify;">Requer${concordanciaRequer} seja o exequente intimado para ciência da presente proposta e que seja a execução suspensa pelo prazo previsto para cumprimento do parcelamento.</p>
+                        <p style="text-align: justify;">${outrosPedidos}</p>
+                        <p style="text-align: justify;"">Pede${concordanciaM} o deferimento.</p>
+                        <p>Marília, ${dataExtenso}</p>
+                        <div class="executado-signature">${assinaturasContent}</div>
+                    </div>
+                `;
+
+                const opt = {
+                    margin: 1,
+                    filename: 'Peticao_Parcelamento.pdf',
+                    image: { type: 'jpeg', quality: 0.98 },
+                    html2canvas: { scale: 2 },
+                    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+                };
+
+                html2pdf().from(peticaoContent).set(opt).save();
+            }
+        });
+    </script>
+</body>
+
+</html>
