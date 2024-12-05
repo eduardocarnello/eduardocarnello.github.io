@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pedido de Parcelamento (art. 916, do CPC)</title>
+    <title>Proposta de Acordo</title>
     <style>
         body {
             font-family: 'Arial', sans-serif;
@@ -40,12 +40,6 @@
             margin-bottom: 5px;
         }
 
-        .inline-section label {
-            width: 200px;
-            font-weight: bold;
-            margin-right: 10px;
-        }
-
         .inline-section input[type="text"],
         .inline-section input[type="number"],
         .inline-section input[type="date"],
@@ -72,10 +66,6 @@
             text-decoration: none;
             border-radius: 4px;
             cursor: pointer;
-        }
-
-        .hidden {
-            display: none;
         }
 
         .print-button:hover {
@@ -134,142 +124,51 @@
             }
         }
 
-        .inline-section {
-            display: flex;
-            align-items: center;
-            margin-bottom: 5px;
-        }
-
-        .inline-section label {
-            width: 200px;
-            font-weight: bold;
-            margin-right: 10px;
-        }
-
-        .inline-section input[type="text"],
-        .inline-section input[type="number"],
-        .inline-section input[type="date"],
-        .inline-section select {
-            flex: 1;
-            padding: 8px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            font-size: 1em;
-        }
-
-        .inline-section.hidden {
-            display: none;
-        }
-
-        .inline-section label+label {
-            margin-left: 20px;
-        }
-
-        .inline-section input[type="text"]+input[type="text"] {
-            margin-left: 10px;
-        }
-
-        .executado-section {
-            margin-bottom: 20px;
-        }
-
-        .executado-section .inline-section {
-            margin-bottom: 10px;
-        }
-
-        .executado-section .remove-executado {
-            margin-left: 10px;
-            cursor: pointer;
-            color: red;
-        }
-
-        .executado-section .remove-executado:hover {
-            text-decoration: underline;
-        }
-
-        .executado-section .executado-header {
-            font-weight: bold;
-            margin-bottom: 10px;
-        }
-
         .executado-signature {
             display: flex;
             justify-content: space-between;
             margin-bottom: 20px;
-        }
-
-        .executado-signature div {
-            width: 100%;
-            text-align: center;
-            margin-bottom: 20px;
+            page-break-inside: avoid;
         }
     </style>
-
 </head>
 
 <body>
     <div class="container">
         <div class="header">
-            Pedido de Parcelamento (art. 916, do CPC)
+            Proposta de Acordo
         </div>
         <div class="inline-section">
             <label>Nº do Processo:</label>
             <input type="text" id="numero_processo">
         </div>
-        <div id="executados-container">
-            <div class="executado-section" id="executado-1">
-                <div class="inline-section">
-                    <label>Nome do Executado:</label>
-                    <input type="text" class="nome-executado" data-index="1">
-                    <input type="hidden" class="genero-executado" data-index="1" value="">
-                </div>
-                <div class="inline-section">
-                    <label>Atualizar Endereço?</label>
-                    <input type="checkbox" class="atualizar-endereco" data-index="1">
-                </div>
-                <div class="inline-section hidden endereco-section" data-index="1">
-                    <label>CEP:</label>
-                    <input type="text" class="cep" data-index="1" maxlength="9" placeholder="#####-###">
-                </div>
-                <div class="inline-section hidden endereco-completo-section" data-index="1">
-                    <label>Rua:</label>
-                    <input type="text" class="rua" data-index="1" readonly>
-                    <label>Número:</label>
-                    <input type="text" class="numero" data-index="1">
-                </div>
-                <div class="inline-section hidden complemento-bairro-section" data-index="1">
-                    <label>Complemento:</label>
-                    <input type="text" class="complemento" data-index="1">
-                    <label>Bairro:</label>
-                    <input type="text" class="bairro" data-index="1" readonly>
-                </div>
-                <div class="inline-section hidden cidade-estado-section" data-index="1">
-                    <label>Cidade:</label>
-                    <input type="text" class="cidade" data-index="1" readonly>
-                    <label>Estado:</label>
-                    <input type="text" class="estado" data-index="1" readonly>
-                </div>
-            </div>
+        <div class="inline-section">
+            <label>Nome do Executado:</label>
+            <input type="text" id="nome_executado">
         </div>
-        <button id="add-executado-button">Adicionar Executado</button>
         <div class="inline-section">
             <label>Valor da Dívida (R$):</label>
             <input type="number" id="valor_divida" step="0.01">
         </div>
         <div class="inline-section">
-            <label>Valor da Entrada (30%):</label>
-            <input type="text" id="valor_entrada" readonly>
+            <label>Tem Entrada?</label>
+            <input type="checkbox" id="tem_entrada">
+        </div>
+        <div class="inline-section hidden" id="entrada_section">
+            <label>Entrada (R$):</label>
+            <input type="number" id="valor_entrada" step="0.01">
+        </div>
+        <div class="inline-section hidden" id="data_entrada_section">
+            <label>Data da Entrada:</label>
+            <input type="date" id="data_entrada">
+        </div>
+        <div class="inline-section">
+            <label>Parcelamento por Valor (R$):</label>
+            <input type="number" id="parcelamento_valor" step="0.01">
         </div>
         <div class="inline-section">
             <label>Parcelas:</label>
-            <select id="parcelas">
-                <option value="1">1</option>
-                <option value="2">2</option>
-                <option value="3">3</option>
-                <option value="4">4</option>
-                <option value="5">5</option>
-                <option value="6">6</option>
-            </select>
+            <input type="number" id="parcelas" min="1" max="120">
         </div>
         <div class="inline-section">
             <label>Valor da Parcela:</label>
@@ -279,398 +178,192 @@
             <label>Data da Primeira Parcela:</label>
             <input type="date" id="data_primeira_parcela">
         </div>
+        <div class="inline-section">
+            <label>Aplicar Juros de 1% ao mês:</label>
+            <input type="checkbox" id="aplicar_juros">
+        </div>
+        <div class="inline-section">
+            <label>Aplicar Multa pelo Descumprimento?</label>
+            <input type="checkbox" id="aplicar_multa">
+        </div>
+        <div class="inline-section hidden" id="multa_section">
+            <label>Valor da Multa (%):</label>
+            <select id="valor_multa">
+                <option value="5">5%</option>
+                <option value="10">10%</option>
+                <option value="15">15%</option>
+                <option value="20">20%</option>
+                <option value="25">25%</option>
+                <option value="30">30%</option>
+                <option value="35">35%</option>
+                <option value="40">40%</option>
+                <option value="50">50%</option>
+                <option value="60">60%</option>
+            </select>
+        </div>
         <div class="section hidden" id="datas_parcelas_section">
             <label>Datas das Parcelas:</label>
             <ul id="datas_parcelas"></ul>
         </div>
         <button class="print-button">Gerar PDF</button>
     </div>
-    <script src="https://unpkg.com/imask"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.2/html2pdf.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            let executadoCount = 1;
-            const maxExecutados = 4;
+        document.getElementById('valor_divida').addEventListener('input', updateParcelas);
+        document.getElementById('valor_entrada').addEventListener('input', updateParcelas);
+        document.getElementById('parcelamento_valor').addEventListener('input', updateParcelas);
+        document.getElementById('parcelas').addEventListener('input', updateParcelas);
+        document.getElementById('data_primeira_parcela').addEventListener('input', updateDatasParcelas);
+        document.getElementById('aplicar_juros').addEventListener('change', updateDatasParcelas);
+        document.getElementById('aplicar_multa').addEventListener('change', function () {
+            const multaSection = document.getElementById('multa_section');
+            if (this.checked) {
+                multaSection.classList.remove('hidden');
+            } else {
+                multaSection.classList.add('hidden');
+            }
+        });
+        document.getElementById('tem_entrada').addEventListener('change', function () {
+            const entradaSection = document.getElementById('entrada_section');
+            const dataEntradaSection = document.getElementById('data_entrada_section');
+            if (this.checked) {
+                entradaSection.classList.remove('hidden');
+                dataEntradaSection.classList.remove('hidden');
+            } else {
+                entradaSection.classList.add('hidden');
+                dataEntradaSection.classList.add('hidden');
+            }
+            updateParcelas();
+        });
 
-            document.getElementById('add-executado-button').addEventListener('click', function () {
+        function updateParcelas() {
+            const valorDivida = parseFloat(document.getElementById('valor_divida').value) || 0;
+            const valorEntrada = parseFloat(document.getElementById('valor_entrada').value) || 0;
+            const parcelamentoValor = parseFloat(document.getElementById('parcelamento_valor').value) || 0;
+            const parcelas = parseInt(document.getElementById('parcelas').value) || 0;
+            const valorRestante = valorDivida - valorEntrada;
 
-                if (executadoCount < maxExecutados) {
-                    executadoCount++;
-                    const executadoSection = document.createElement('div');
-                    executadoSection.classList.add('executado-section');
-                    executadoSection.id = `executado-${executadoCount}`;
-                    executadoSection.innerHTML = `
-                    ${executadoCount > 1 ? `<div class="executado-header">Executado ${executadoCount} <span class="remove-executado" data-index="${executadoCount}">Remover</span></div>` : ''}
-                    <div class="inline-section">
-                        <label>Nome do Executado:</label>
-                        <input type="text" class="nome-executado" data-index="${executadoCount}">
-                        <input type="hidden" class="genero-executado" data-index="${executadoCount}" value="">
-                    </div>
-                    <div class="inline-section">
-                        <label>Atualizar Endereço?</label>
-                        <input type="checkbox" class="atualizar-endereco" data-index="${executadoCount}">
-                    </div>
-                    <div class="inline-section hidden endereco-section" data-index="${executadoCount}">
-                        <label>CEP:</label>
-                        <input type="text" class="cep" data-index="${executadoCount}" maxlength="9" placeholder="#####-###">
-                    </div>
-                    <div class="inline-section hidden endereco-completo-section" data-index="${executadoCount}">
-                        <label>Rua:</label>
-                        <input type="text" class="rua" data-index="${executadoCount}" readonly>
-                        <label>Número:</label>
-                        <input type="text" class="numero" data-index="${executadoCount}">
-                    </div>
-                    <div class="inline-section hidden complemento-bairro-section" data-index="${executadoCount}">
-                        <label>Complemento:</label>
-                        <input type="text" class="complemento" data-index="${executadoCount}">
-                        <label>Bairro:</label>
-                        <input type="text" class="bairro" data-index="${executadoCount}" readonly>
-                    </div>
-                    <div class="inline-section hidden cidade-estado-section" data-index="${executadoCount}">
-                        <label>Cidade:</label>
-                        <input type="text" class="cidade" data-index="${executadoCount}" readonly>
-                        <label>Estado:</label>
-                        <input type="text" class="estado" data-index="${executadoCount}" readonly>
-                    </div>
-                `;
-                    document.getElementById('executados-container').appendChild(executadoSection);
-                    addEventListenersToExecutado(executadoCount);
-
-                    if (executadoCount === maxExecutados) {
-                        document.getElementById('add-executado-button').style.display = 'none';
-                    }
-                }
-            });
-
-            function addEventListenersToExecutado(index) {
-                const removeButton = document.querySelector(`.remove-executado[data-index="${index}"]`);
-                const atualizarEnderecoCheckbox = document.querySelector(`.atualizar-endereco[data-index="${index}"]`);
-                const nomeExecutadoInput = document.querySelector(`.nome-executado[data-index="${index}"]`);
-                const cepInput = document.querySelector(`.cep[data-index="${index}"]`);
-
-                if (removeButton) {
-                    removeButton.addEventListener('click', function () {
-                        document.getElementById(`executado-${index}`).remove();
-                        executadoCount--;
-                        if (executadoCount < maxExecutados) {
-                            document.getElementById('add-executado-button').style.display = 'block';
-                        }
-                    });
-                }
-
-                if (atualizarEnderecoCheckbox) {
-                    atualizarEnderecoCheckbox.addEventListener('change', function () {
-                        const enderecoSection = document.querySelector(`.endereco-section[data-index="${index}"]`);
-                        const enderecoCompletoSection = document.querySelector(`.endereco-completo-section[data-index="${index}"]`);
-                        const complementoBairroSection = document.querySelector(`.complemento-bairro-section[data-index="${index}"]`);
-                        const cidadeEstadoSection = document.querySelector(`.cidade-estado-section[data-index="${index}"]`);
-
-                        if (this.checked) {
-                            enderecoSection.classList.remove('hidden');
-                            enderecoCompletoSection.classList.remove('hidden');
-                            complementoBairroSection.classList.remove('hidden');
-                            cidadeEstadoSection.classList.remove('hidden');
-                        } else {
-                            enderecoSection.classList.add('hidden');
-                            enderecoCompletoSection.classList.add('hidden');
-                            complementoBairroSection.classList.add('hidden');
-                            cidadeEstadoSection.classList.add('hidden');
-                        }
-                    });
-                }
-
-                if (nomeExecutadoInput) {
-                    nomeExecutadoInput.addEventListener('blur', function () {
-                        const nomeExecutado = this.value;
-                        if (nomeExecutado) {
-                            fetch(`https://api.genderize.io?name=${nomeExecutado}`)
-                                .then(response => response.json())
-                                .then(data => {
-                                    const generoExecutadoElement = document.querySelector(`.genero-executado[data-index="${index}"]`);
-                                    if (data.gender && data.probability >= 0.9) {
-                                        generoExecutadoElement.value = data.gender;
-                                    } else {
-                                        generoExecutadoElement.value = 'unknown';
-                                    }
-                                })
-                                .catch(error => {
-                                    console.error('Erro ao determinar o gênero:', error);
-                                    const generoExecutadoElement = document.querySelector(`.genero-executado[data-index="${index}"]`);
-                                    generoExecutadoElement.value = 'unknown';
-                                });
-                        }
-                    });
-                }
-
-                if (cepInput) {
-                    cepInput.addEventListener('input', function () {
-                        const cep = this.value.replace(/\D/g, '');
-                        if (cep.length === 8) {
-                            fetch(`https://viacep.com.br/ws/${cep}/json/`)
-                                .then(response => response.json())
-                                .then(data => {
-                                    if (!data.erro) {
-                                        document.querySelector(`.rua[data-index="${index}"]`).value = data.logradouro;
-                                        document.querySelector(`.bairro[data-index="${index}"]`).value = data.bairro;
-                                        document.querySelector(`.cidade[data-index="${index}"]`).value = data.localidade;
-                                        document.querySelector(`.estado[data-index="${index}"]`).value = data.uf;
-                                    } else {
-                                        alert('CEP não encontrado.');
-                                    }
-                                })
-                                .catch(error => {
-                                    console.error('Erro ao buscar o CEP:', error);
-                                    alert('Erro ao buscar o CEP.');
-                                });
-                        }
-                    });
-
-                    cepInput.addEventListener('input', function () {
-                        this.value = this.value.replace(/\D/g, '').replace(/^(\d{5})(\d)/, '$1-$2');
-                    });
-                }
+            if (parcelamentoValor > 0) {
+                const numParcelas = Math.ceil(valorRestante / parcelamentoValor);
+                document.getElementById('parcelas').value = numParcelas;
+                const ultimaParcela = valorRestante % parcelamentoValor;
+                const valorParcela = ultimaParcela > 0 ? `${parcelamentoValor.toFixed(2).replace('.', ',')} (última parcela: ${ultimaParcela.toFixed(2).replace('.', ',')})` : parcelamentoValor.toFixed(2).replace('.', ',');
+                document.getElementById('valor_parcela').value = `R$ ${valorParcela}`;
+            } else if (parcelas > 0) {
+                const valorParcela = (valorRestante / parcelas).toFixed(2).replace('.', ',');
+                document.getElementById('valor_parcela').value = `R$ ${valorParcela}`;
             }
 
-            addEventListenersToExecutado(1);
+            updateDatasParcelas();
+        }
 
-            var element = document.getElementById('numero_processo');
-            var maskOptions = {
-                mask: '0000000-00.2X00.8.26.X344',
-                definitions: {
-                    X: {
-                        mask: '0',
-                        displayChar: '0',
-                        placeholderChar: '0',
-                    },
-                },
-                lazy: false,
-                overwrite: 'shift',
-            };
+        function updateDatasParcelas() {
+            const dataPrimeiraParcela = new Date(document.getElementById('data_primeira_parcela').value);
+            const parcelas = parseInt(document.getElementById('parcelas').value) || 0;
+            const valorParcela = parseFloat(document.getElementById('valor_parcela').value.replace('R$ ', '').replace(',', '.')) || 0;
+            const aplicarJuros = document.getElementById('aplicar_juros').checked;
+            const datasParcelas = document.getElementById('datas_parcelas');
+            datasParcelas.innerHTML = '';
 
-            var mask = IMask(element, maskOptions);
-
-            const dataPrimeiraParcelaElement = document.getElementById('data_primeira_parcela');
-            const today = new Date();
-            const minDate = new Date(today);
-            const maxDate = new Date(today);
-
-            minDate.setDate(today.getDate() + 30);
-            maxDate.setDate(today.getDate() + 60);
-
-            const formatDate = (date) => {
-                const day = String(date.getDate()).padStart(2, '0');
-                const month = String(date.getMonth() + 1).padStart(2, '0');
-                const year = date.getFullYear();
-                return `${year}-${month}-${day}`;
-            };
-
-            dataPrimeiraParcelaElement.min = formatDate(today);
-            dataPrimeiraParcelaElement.max = formatDate(maxDate);
-            dataPrimeiraParcelaElement.value = formatDate(minDate);
-
-            document.getElementById('valor_divida').addEventListener('input', function () {
-                const valorDivida = parseFloat(this.value);
-                if (!isNaN(valorDivida)) {
-                    const valorEntrada = (valorDivida * 0.3).toFixed(2);
-                    document.getElementById('valor_entrada').value = `R$ ${formatCurrency(parseFloat(valorEntrada))}`;
-                    document.getElementById('datas_parcelas_section').classList.remove('hidden');
-                    updateParcelas();
-                }
-            });
-
-            document.getElementById('parcelas').addEventListener('change', updateParcelas);
-
-            document.getElementById('data_primeira_parcela').addEventListener('input', updateDatasParcelas);
-
-            function updateParcelas() {
-                const valorDivida = parseFloat(document.getElementById('valor_divida').value);
-                const valorEntrada = valorDivida * 0.3;
-                const parcelas = parseInt(document.getElementById('parcelas').value);
-                const valorParcela = ((valorDivida - valorEntrada) / parcelas).toFixed(2);
-                document.getElementById('valor_parcela').value = `R$ ${formatCurrency(parseFloat(valorParcela))}`;
-                updateDatasParcelas();
-            }
-
-            function updateDatasParcelas() {
-                const valorEntrada = document.getElementById('valor_entrada').value;
-                if (valorEntrada === '') {
-                    return;
-                }
-
-                const dataPrimeiraParcelaElement = document.getElementById('data_primeira_parcela');
-                const parcelasElement = document.getElementById('parcelas');
-                const valorParcelaElement = document.getElementById('valor_parcela');
-                const datasParcelasElement = document.getElementById('datas_parcelas');
-
-                if (!dataPrimeiraParcelaElement || !parcelasElement || !valorParcelaElement || !datasParcelasElement) {
-                    console.error('Um ou mais elementos necessários não foram encontrados.');
-                    return;
-                }
-
-                const dataPrimeiraParcela = new Date(dataPrimeiraParcelaElement.value);
-                if (isNaN(dataPrimeiraParcela)) {
-                    console.error('Data da primeira parcela inválida.');
-                    return;
-                }
-
-                const parcelas = parseInt(parcelasElement.value);
-                if (isNaN(parcelas) || parcelas <= 0) {
-                    console.error('Número de parcelas inválido.');
-                    return;
-                }
-
-                const valorParcela = parseFloat(valorParcelaElement.value.replace('R$ ', '').replace(',', '.'));
-                if (isNaN(valorParcela)) {
-                    console.error('Valor da parcela inválido.');
-                    return;
-                }
-
-                datasParcelasElement.innerHTML = '';
-
+            if (aplicarJuros) {
                 for (let i = 0; i < parcelas; i++) {
                     const dataParcela = new Date(dataPrimeiraParcela);
                     dataParcela.setMonth(dataParcela.getMonth() + i);
                     const valorParcelaComJuros = (valorParcela * Math.pow(1.01, i + 1)).toFixed(2).replace('.', ',');
                     const li = document.createElement('li');
                     li.textContent = `${dataParcela.toLocaleDateString()} - R$ ${valorParcelaComJuros}`;
-                    datasParcelasElement.appendChild(li);
+                    datasParcelas.appendChild(li);
+                }
+            } else {
+                const dataUltimaParcela = new Date(dataPrimeiraParcela);
+                dataUltimaParcela.setMonth(dataUltimaParcela.getMonth() + parcelas - 1);
+                const diaPrimeiraParcela = dataPrimeiraParcela.getDate();
+                const textoParcelas = `A primeira parcela será depositada no dia ${dataPrimeiraParcela.toLocaleDateString()} e as demais todo dia ${diaPrimeiraParcela}, com última parcela prevista para ${dataUltimaParcela.toLocaleDateString()}.`;
+                const li = document.createElement('li');
+                li.textContent = textoParcelas;
+                datasParcelas.appendChild(li);
+            }
+        }
+
+        document.querySelector('.print-button').addEventListener('click', generatePDF);
+
+        function generatePDF() {
+            const numeroProcesso = document.getElementById('numero_processo').value;
+            const nomeExecutado = document.getElementById('nome_executado').value;
+            const valorDivida = parseFloat(document.getElementById('valor_divida').value);
+            const temEntrada = document.getElementById('tem_entrada').checked;
+            const valorEntrada = temEntrada ? parseFloat(document.getElementById('valor_entrada').value) || 0 : 0;
+            const dataEntrada = temEntrada ? new Date(document.getElementById('data_entrada').value).toLocaleDateString('pt-BR') : '';
+            const parcelas = parseInt(document.getElementById('parcelas').value);
+            const valorParcela = parseFloat(document.getElementById('valor_parcela').value.replace('R$ ', '').replace(',', '.'));
+            const dataPrimeiraParcela = new Date(document.getElementById('data_primeira_parcela').value);
+            const hoje = new Date();
+            const dataExtenso = hoje.toLocaleDateString('pt-BR', { day: 'numeric', month: 'long', year: 'numeric' });
+            const aplicarJuros = document.getElementById('aplicar_juros').checked;
+            const aplicarMulta = document.getElementById('aplicar_multa').checked;
+            const valorMulta = aplicarMulta ? document.getElementById('valor_multa').value : 0;
+
+            let datasParcelas = '';
+            if (aplicarJuros) {
+                for (let i = 0; i < parcelas; i++) {
+                    const dataParcela = new Date(dataPrimeiraParcela);
+                    dataParcela.setMonth(dataParcela.getMonth() + i);
+                    const valorParcelaComJuros = (valorParcela * Math.pow(1.01, i + 1)).toFixed(2).replace('.', ',');
+                    datasParcelas += `<li>${dataParcela.toLocaleDateString()} - R$ ${valorParcelaComJuros}</li>`;
+                }
+            } else {
+                const dataUltimaParcela = new Date(dataPrimeiraParcela);
+                dataUltimaParcela.setMonth(dataUltimaParcela.getMonth() + parcelas - 1);
+                const diaPrimeiraParcela = dataPrimeiraParcela.getDate();
+                const resto = (valorDivida - valorEntrada) % valorParcela;
+                if (resto > 0) {
+                    datasParcelas = `O valor do débito, no importe de R$ ${valorDivida.toFixed(2).replace('.', ',')}, será pago em ${parcelas - 1} parcelas iguais e sucessivas no valor de R$ ${valorParcela.toFixed(2).replace('.', ',')}, com pagamento da primeira para o dia ${dataPrimeiraParcela.toLocaleDateString()} e as demais todo dia ${diaPrimeiraParcela} dos meses subsequentes, com uma última parcela no valor de R$ ${(valorParcela + resto).toFixed(2).replace('.', ',')}, no dia ${dataUltimaParcela.toLocaleDateString()}.`;
+                } else {
+                    datasParcelas = `O valor do débito, no importe de R$ ${valorDivida.toFixed(2).replace('.', ',')}, será pago em ${parcelas} parcelas iguais e sucessivas no valor de R$ ${valorParcela.toFixed(2).replace('.', ',')}, com pagamento da primeira para o dia ${dataPrimeiraParcela.toLocaleDateString()} e as demais todo dia ${diaPrimeiraParcela} dos meses subsequentes, com data de término prevista para o dia ${dataUltimaParcela.toLocaleDateString()}.`;
                 }
             }
 
-            function formatCurrency(value) {
-                return value.toFixed(2).replace('.', ',');
-            }
-
-            document.querySelector('.print-button').addEventListener('click', generatePDF);
-
-            function generatePDF() {
-                const numeroProcessoElement = document.getElementById('numero_processo');
-                const valorDividaElement = document.getElementById('valor_divida');
-                const parcelasElement = document.getElementById('parcelas');
-                const dataPrimeiraParcelaElement = document.getElementById('data_primeira_parcela');
-                const datasParcelasElement = document.getElementById('datas_parcelas');
-
-                if (!numeroProcessoElement || !valorDividaElement || !parcelasElement || !dataPrimeiraParcelaElement || !datasParcelasElement) {
-                    console.error('Um ou mais elementos necessários não foram encontrados.');
-                    return;
-                }
-
-                const numeroProcesso = numeroProcessoElement.value;
-                const valorDivida = parseFloat(valorDividaElement.value);
-                const valorEntrada = (valorDivida * 0.3).toFixed(2);
-                const parcelas = parseInt(parcelasElement.value);
-                const valorParcela = ((valorDivida - valorEntrada) / parcelas).toFixed(2);
-                const dataPrimeiraParcela = new Date(dataPrimeiraParcelaElement.value);
-                const datasParcelas = datasParcelasElement.innerHTML;
-                const hoje = new Date();
-                const dataExtenso = hoje.toLocaleDateString('pt-BR', { day: 'numeric', month: 'long', year: 'numeric' });
-
-                let executadosContent = '<p>';
-                let assinaturasContent = '';
-                let concordancia = '';
-                let concordanciaCirc = 'e';
-                let concordanciaM = '';
-                let concordanciaEsta = 'á';
-                let concordanciaS = '';
-                let concordanciaRequer = '';
-
-                const executados = document.querySelectorAll('.executado-section');
-                executados.forEach((executado, index) => {
-                    const nomeExecutado = executado.querySelector('.nome-executado').value;
-                    const generoExecutado = executado.querySelector('.genero-executado').value;
-                    const atualizarEndereco = executado.querySelector('.atualizar-endereco').checked;
-
-                    let executadoTerm;
-                    if (generoExecutado === 'male') {
-                        executadoTerm = 'executado';
-                        concordancia = 'o';
-                    } else if (generoExecutado === 'female') {
-                        executadoTerm = 'executada';
-                        concordancia = 'a';
-                    } else {
-                        executadoTerm = 'executado(a)';
-                        concordancia = 'o(a)';
-                    }
-
-                    let enderecoSection = '';
-                    if (atualizarEndereco) {
-                        const rua = executado.querySelector('.rua').value;
-                        const numero = executado.querySelector('.numero').value;
-                        const complemento = executado.querySelector('.complemento').value;
-                        const bairro = executado.querySelector('.bairro').value;
-                        const cep = executado.querySelector('.cep').value;
-                        const cidade = executado.querySelector('.cidade').value;
-                        const estado = executado.querySelector('.estado').value;
-
-                        enderecoSection = `, <u>residente e domiciliado na Rua ${rua}, nº ${numero}, Bairro ${bairro}`;
-                        if (complemento) {
-                            enderecoSection += `, Complemento ${complemento}`;
-                        }
-                        enderecoSection += `, CEP ${cep}, ${cidade}/${estado}</u>`;
-                    }
-
-                    executadosContent += `${nomeExecutado}${enderecoSection}`;
-
-                    if (index < executados.length - 2) {
-                        executadosContent += ', ';
-                    } else if (index === executados.length - 2) {
-                        executadosContent += ' e ';
-                    }
-
-                    assinaturasContent += `<div style="text-align: center; margin-top: 20px;">
-            ______________________________
-            <br>${nomeExecutado}
-        </div>`;
-                    if ((index + 1) % 2 === 0) {
-                        assinaturasContent += '</div><div class="executado-signature">';
-                        console.log('sim')
-                    } else { }
-                });
-
-                if (executados.length > 1) {
-                    concordancia = 'os';
-                    concordanciaCirc = 'ê';
-                    concordanciaM = 'm';
-                    concordanciaEsta = 'ão';
-                    concordanciaS = 's';
-                    concordanciaRequer = 'em';
-                }
-
-                executadosContent += `, já qualificad${concordancia} nos autos da ação em epígrafe, v${concordanciaCirc}m, respeitosamente, à presença de Vossa Excelência requer ${concordancia} o</p>`
-
-                const peticaoContent = `
-                    <div style="font-family: Arial, sans-serif; padding: 20px;">
-                        <p style="text-align: center; font-weight: bold; font-size: 20px;">AO JUIZADO ESPECIAL CÍVEL</p>
-                        <p style="margin-bottom: 50px;"></p>
-                        <p style="font-weight: bold; font-size: 16px; margin-bottom: 50px;">Processo nº ${numeroProcesso}</p>
-                        <p></p>
-                        ${executadosContent}
-                        <p style="margin-bottom: 30px;"></p>
-                        <p style="text-align: center; font-weight: bold; margin-bottom: 30px; font-size: 18px;">PARCELAMENTO DO DÉBITO, COM BASE NO ART. 916, DO CPC</p>
-                        <p></p>
-                        <p style="text-align: justify;">${executados.length > 1 ? 'Os' : 'O'} ${executados.length > 1 ? 'executados' : 'executado'} reconhece${concordanciaM} o débito em execução e propõe${concordanciaM} o seu parcelamento nos seguintes moldes:</p>
-                        <p style="text-align: justify;">30% do valor da dívida, no importe de R$ ${(valorEntrada).replace('.', ',')}, a ser depositado judicialmente nesta data, conforme comprovante que acompanha esta petição.</p>
-                        <p style="text-align: justify;">O restante, no valor de R$ ${(valorDivida - valorEntrada).toFixed(2).replace('.', ',')} será parcelado em ${parcelas} parcelas, com início dos pagamentos em ${dataPrimeiraParcela.toLocaleDateString()}, acrescidas de juros de 1% ao mês, conforme abaixo:</p>
-                        <ul>${datasParcelas}</ul>
-                        <p style="text-align: justify;">${executados.length > 1 ? 'Os' : 'O'} ${executados.length > 1 ? 'executados' : 'executado'} est${concordanciaEsta} ciente${concordanciaS} de que o descumprimento do parcelamento importará no vencimento antecipado de todas as parcelas não pagas, junto com o acréscimo de multa de 10%, vedada a oposição de embargos à execução em razão do reconhecimento do débito.</p>
-                        <p style="text-align: justify;">Requer${concordanciaRequer} seja o exequente intimado para ciência da presente proposta e que seja a execução suspensa pelo prazo previsto para cumprimento do parcelamento.</p>
-                        <p style="text-align: justify;"">Pede${concordanciaM} o deferimento.</p>
-                        <p>Marília, ${dataExtenso}</p>
-                        <div class="executado-signature">${assinaturasContent}</div>
+            const peticaoContent = `
+                <div style="font-family: Arial, sans-serif; padding: 20px;">
+                    <p style="text-align: center; font-weight: bold; font-size: 20px;">EXMO. DR. JUIZ DE DIREITO DO JUIZADO ESPECIAL CÍVEL DE MARÍLIA/SP</p>
+                    <p style="margin-bottom: 20px;"></p>
+                    <p style="font-weight: bold; font-size: 16px; margin-bottom: 20px;">Processo nº ${numeroProcesso}</p>
+                    <p></p>
+                    <p style="margin-bottom: 20px;"></p>
+                    <p style="text-align: center; font-weight: bold; margin-bottom: 20px; font-size: 18px;">PROPOSTA DE ACORDO</p>
+                    <p style="margin-bottom: 20px;"></p>
+                    <p style="text-align: justify;">O executado reconhece o débito em execução e propõe o seu parcelamento nos seguintes moldes:</p>
+                    
+                    <p style="text-align: justify;">${datasParcelas}</p>
+                    <p style="text-align: justify;">O executado está ciente de que o descumprimento do parcelamento importará no vencimento antecipado de todas as parcelas não pagas${aplicarMulta ? `, junto com o acréscimo de multa de ${valorMulta}%` : ''}, vedada a oposição de embargos à execução em razão do reconhecimento do débito.</p>
+                    <p style="text-align: justify;">Requer seja a parte exequente intimada para ciência da presente proposta e que seja a execução suspensa pelo prazo previsto para cumprimento do parcelamento.</p>
+                    <p style="text-align: justify;">Pede o deferimento.</p>
+                    <p>Marília, ${dataExtenso}</p>
+                    <div class="executado-signature" style="page-break-inside: avoid;">______________________________<br>${nomeExecutado}</div>
+                    <div class="page-footer" style="position: fixed; bottom: 0; width: 100%; text-align: center; font-size: 12px;">
+                        Página <span class="page-number"></span> de <span class="total-pages"></span>
                     </div>
-                `;
+                </div>
+            `;
 
-                const opt = {
-                    margin: 1,
-                    filename: 'Peticao_Parcelamento.pdf',
-                    image: { type: 'jpeg', quality: 0.98 },
-                    html2canvas: { scale: 2 },
-                    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
-                };
+            const opt = {
+                margin: [10, 10, 10, 10],
+                filename: 'Proposta_Acordo.pdf',
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2 },
+                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+                pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
+            };
 
-                html2pdf().from(peticaoContent).set(opt).save();
-            }
-        });
+            html2pdf().from(peticaoContent).set(opt).toPdf().get('pdf').then(function (pdf) {
+                const totalPages = pdf.internal.getNumberOfPages();
+
+                for (let i = 1; i <= totalPages; i++) {
+                    pdf.setPage(i);
+                    pdf.text(`Página ${i} de ${totalPages}`, pdf.internal.pageSize.getWidth() / 2, pdf.internal.pageSize.getHeight() - 10, { align: 'center' });
+                }
+            }).save();
+        }
     </script>
 </body>
 
