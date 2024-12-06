@@ -6,13 +6,13 @@ $(document).ready(function () {
 
 })
 
-document.getElementById('countType').addEventListener('change', function() {
+document.getElementById('countType').addEventListener('change', function () {
   var countTypeValue = this.value;
   var daysInput = document.getElementById('days');
   if (countTypeValue === '3') {
-      daysInput.value = 15;
+    daysInput.value = 15;
   } else {
-      daysInput.value = ''; // Limpa o campo se outra opção for selecionada
+    daysInput.value = ''; // Limpa o campo se outra opção for selecionada
   }
 });
 /*
@@ -922,7 +922,7 @@ var initialDate = moment($('#initialDate').val(), 'DD/MM/YYYY');   //dia do ato
 function printDivs() {
   const divElements1 = document.getElementById('printResults').innerHTML;
   const divElements2 = document.getElementById('listReport').innerHTML;
-  
+
   // Open a new window or tab
   let printWindow = window.open('', '', 'height=1800,width=1800');
 
