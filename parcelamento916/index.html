@@ -295,6 +295,11 @@
                     <input type="hidden" class="genero-executado" data-index="1" value="">
                 </div>
                 <div class="inline-section">
+                    <label class="cpf-cnpj-label" data-index="1">CPF/CNPJ:</label>
+                    <input type="text" class="cpf-cnpj" data-index="1" maxlength="">
+                    <input type="hidden" class="cpf-cnpj-type" data-index="1" value="">
+                </div>
+                <div class="inline-section">
                     <label>Atualizar Endereço?</label>
                     <input type="checkbox" class="atualizar-endereco" data-index="1">
                 </div>
@@ -484,7 +489,9 @@
             datasParcelasElement.innerHTML = '';
 
             const table = document.createElement('table');
-            table.style.borderCollapse = 'collapse'; // Mantém o espaço entre as linhas o menor possível
+            table.style.borderCollapse = 'collapse';
+            table.style.textAlign = 'center';
+            //             Mantém o espaço entre as linhas o menor possível
 
             const headerRow = document.createElement('tr');
 
@@ -617,6 +624,11 @@
                         <input type="hidden" class="genero-executado" data-index="${executadoCount}" value="">
                     </div>
                     <div class="inline-section">
+                        <label class="cpf-cnpj-label" data-index="${executadoCount}">CPF/CNPJ:</label>
+                        <input type="text" class="cpf-cnpj" data-index="${executadoCount}">
+                        <input type="hidden" class="cpf-cnpj-type" data-index="${executadoCount}" value="">
+                    </div>
+                    <div class="inline-section">
                         <label>Atualizar Endereço?</label>
                         <input type="checkbox" class="atualizar-endereco" data-index="${executadoCount}">
                     </div>
@@ -657,6 +669,9 @@
                 const atualizarEnderecoCheckbox = document.querySelector(`.atualizar-endereco[data-index="${index}"]`);
                 const nomeExecutadoInput = document.querySelector(`.nome-executado[data-index="${index}"]`);
                 const cepInput = document.querySelector(`.cep[data-index="${index}"]`);
+                var cpfCnpjInput = document.querySelector(`.cpf-cnpj[data-index="${index}"]`);
+                //cpfCNPJLabel
+
 
                 if (removeButton) {
                     removeButton.addEventListener('click', function () {
@@ -737,6 +752,41 @@
 
                     cepInput.addEventListener('input', function () {
                         this.value = this.value.replace(/\D/g, '').replace(/^(\d{5})(\d)/, '$1-$2');
+                    });
+                }
+
+                if (cpfCnpjInput) {
+                    IMask(cpfCnpjInput, {
+                        mask: [
+                            {
+                                mask: '000.000.000-00',
+                                startsWith: '0',
+                                lazy: false,
+                                maxLength: 11
+                            },
+                            {
+                                mask: '00.000.000/0000-00',
+                                startsWith: '1',
+                                lazy: false,
+                                maxLength: 15
+                            }
+                        ],
+                        dispatch: function (appended, dynamicMasked) {
+                            var number = (dynamicMasked.value + appended).replace(/\D/g, '');
+                            var mask = dynamicMasked.compiledMasks.find(function (m) {
+                                return number.length <= m.maxLength;
+                            });
+                            var label = document.querySelector(`.cpf-cnpj-label[data-index="${index}"]`);
+                            var typeInput = document.querySelector(`.cpf-cnpj-type[data-index="${index}"]`);
+                            if (mask.maxLength === 11) {
+                                label.textContent = 'CPF:';
+                                typeInput.value = 'CPF';
+                            } else {
+                                label.textContent = 'CNPJ:';
+                                typeInput.value = 'CNPJ';
+                            }
+                            return mask;
+                        }
                     });
                 }
             }
@@ -822,7 +872,7 @@
                 }
 
                 const valorRestante = valorDivida - valorEntrada;
-                const valorParcela = (valorRestante * Math.pow(1.01, parcelas)) / parcelas;
+                const valorParcela = (valorRestante / parcelas);
                 document.getElementById('valor_parcela').value = `R$ ${formatCurrency(parseFloat(valorParcela))}`;
                 updateDatasParcelas(valorRestante, parcelas);
             }
@@ -834,6 +884,8 @@
 
 
             document.querySelector('.print-button').addEventListener('click', generatePDF);
+
+
 
             function generatePDF() {
                 const numeroProcessoElement = document.getElementById('numero_processo');
@@ -878,6 +930,8 @@
                 executados.forEach((executado, index) => {
                     const nomeExecutado = executado.querySelector('.nome-executado').value;
                     const generoExecutado = executado.querySelector('.genero-executado').value;
+                    const cpfCnpj = executado.querySelector('.cpf-cnpj').value;
+                    const cpfCnpjType = executado.querySelector('.cpf-cnpj-type').value;
                     const atualizarEndereco = executado.querySelector('.atualizar-endereco').checked;
 
                     let executadoTerm;
@@ -920,6 +974,7 @@
                     assinaturasContent += `<div style="text-align: center; margin-top: 20px;">
             ________________________________________
             <br>${nomeExecutado}
+            <br>${cpfCnpjType}: ${cpfCnpj}
         </div>`;
                     if ((index + 1) % 2 === 0) {
                         assinaturasContent += '</div><div class="executado-signature">';
@@ -937,9 +992,9 @@
                 }
                 let textoParcelamento;
                 if (parcelas === 1) {
-                    textoParcelamento = `— O restante, no valor de <b> ${(valorDivida - valorEntrada).toFixed(2).replace('.', ',')}</b> será pago em <b>uma única parcela</b>, acrescida de juros de 1%, na data de <b>${formatDate(dataPrimeiraParcela)}</b>.`;
+                    textoParcelamento = `<b>Do restante:</b> O restante, no valor de <b> R$ ${((valorDivida - valorEntrada) * Math.pow(1.01, 1)).toFixed(2).replace('.', ',')}</b> será pago em <b>uma única parcela</b>, já acrescida de juros de 1%, na data de <b>${formatDate(dataPrimeiraParcela)}</b>.`;
                 } else {
-                    textoParcelamento = `— O restante, no valor de <b>R$ ${(valorDivida - valorEntrada).toFixed(2).replace('.', ',')}</b> será parcelado em <b>${parcelas} parcelas</b> mensais, com início dos pagamentos em <b>${formatDate(dataPrimeiraParcela)}</b>, acrescidas de juros de 1% ao mês, conforme segue:
+                    textoParcelamento = `<b>Do parcelamento:</b> O restante, no valor de <b>R$ ${(valorDivida - valorEntrada).toFixed(2).replace('.', ',')}</b> será parcelado em <b>${parcelas} parcelas</b> mensais, com início dos pagamentos em <b>${formatDate(dataPrimeiraParcela)}</b>, acrescidas de juros de 1% ao mês, conforme segue:
                      <p>${datasParcelas}</p>`;;
                 }
 
@@ -958,10 +1013,10 @@
                         <p style="margin-bottom: 30px;"></p>
                         <p style="text-align: center; font-weight: bold; margin-bottom: 30px; font-size: 18px;">PARCELAMENTO DO DÉBITO COM SUSPENSÃO DA EXECUÇÃO (ART. 916, DO CPC)</p>
                         <p></p>
-                        <p style="text-align: justify;">${executados.length > 1 ? 'Os' : 'O'} ${executados.length > 1 ? 'executados' : 'executado'} reconhece${concordanciaM} o débito em execução, no valor de R$ ${valorDivida.toFixed(2).replace('.', ',')}, e propõe${concordanciaM} o seu parcelamento nos seguintes moldes:</p>
-                        <p style="text-align: justify;">— ${percentual} do valor da dívida, no importe de <b> R$ ${valorEntrada.toFixed(2).replace('.', ',')}</b>, a ser depositado judicialmente nesta data, conforme comprovante que acompanha esta petição.</p>
+                        <p style="text-align: justify;"><b>Do reconhecimento da dívida: </b> ${executados.length > 1 ? 'Os' : 'O'} ${executados.length > 1 ? 'executados' : 'executado'} reconhece${concordanciaM} o débito em execução, no valor de R$ ${valorDivida.toFixed(2).replace('.', ',')}, e propõe${concordanciaM} o seu parcelamento nos seguintes moldes:</p>
+                        <p style="text-align: justify;"><b>Da entrada: </b> ${Number.isInteger(parseFloat(percentual)) ? parseInt(percentual) : percentual.replace('.', ',')}% do valor da dívida, no importe de <b> R$ ${valorEntrada.toFixed(2).replace('.', ',')}</b>, a ser depositado judicialmente nesta data, conforme comprovante que acompanha esta petição.</p>
                         <p style="text-align: justify;">${textoParcelamento}</p>
-                        <p style="text-align: justify;">Os pagamentos serão feitos por meio de depósito judicial, salvo modalidade diversa indicada pela parte credora e após a devida intimação. Os pagamentos ocorrerão mensalmente no mesmo dia da primeira parcela, prorrogando-se para o dia útil seguinte caso a data seja feriado, final de semana ou dia sem expediente bancário. ${executados.length > 1 ? 'Os' : 'O'} ${executados.length > 1 ? 'executados' : 'executado'} est${concordanciaEsta} ciente${concordanciaS} de que o descumprimento do parcelamento importará no vencimento antecipado de todas as parcelas não pagas, junto com o acréscimo de multa de 10%, vedada a oposição de embargos à execução em razão do reconhecimento do débito.</p>
+                        <p style="text-align: justify;"><b>Da forma de pagamento e demais disposições:</b> Os pagamentos serão feitos por meio de depósito judicial, salvo modalidade diversa indicada pela parte credora e após a devida intimação. Os pagamentos ocorrerão mensalmente no mesmo dia da primeira parcela, prorrogando-se para o dia útil seguinte caso a data seja feriado, final de semana ou dia sem expediente bancário. ${executados.length > 1 ? 'Os' : 'O'} ${executados.length > 1 ? 'executados' : 'executado'} est${concordanciaEsta} ciente${concordanciaS} de que o descumprimento do parcelamento importará no vencimento antecipado de todas as parcelas não pagas, junto com o acréscimo de multa de 10%, vedada a oposição de embargos à execução em razão do reconhecimento do débito.</p>
                         <p style="text-align: justify;">Requer${concordanciaRequer} seja o exequente intimado para ciência da presente proposta e que seja a execução suspensa pelo prazo previsto para cumprimento do parcelamento.</p>
                         <p style="text-align: justify;">${outrosPedidos}</p>
                         <p style="text-align: justify;"">Pede${concordanciaM} o deferimento.</p>
