@@ -453,6 +453,7 @@
             $("#data_primeira_parcela").datepicker({
                 dateFormat: "dd/mm/yy",
                 maxDate: maxDate,
+                minDate: 0,
                 beforeShowDay: function (date) {
                     var day = date.getDay();
                     return [(day != 0 && day != 6), ''];
