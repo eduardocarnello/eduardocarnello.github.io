@@ -1,4 +1,28 @@
+// Configuração do toastr
+toastr.options = {
+  "closeButton": true,
+  "debug": false,
+  "newestOnTop": false,
+  "progressBar": true,
+  "positionClass": "toast-bottom-right",
+  "preventDuplicates": false,
+  "onclick": null,
+  "showDuration": "300",
+  "hideDuration": "1000",
+  "timeOut": "5000",
+  "extendedTimeOut": "1000",
+  "showEasing": "swing",
+  "hideEasing": "linear",
+  "showMethod": "fadeIn",
+  "hideMethod": "fadeOut"
+};
 
+// Remova os testes de notificação
+/*
+document.addEventListener('DOMContentLoaded', (event) => {
+  toastr.success('Toastr está funcionando corretamente!');
+});
+*/
 //ondocumentready
 $(document).ready(function () {
 
@@ -918,10 +942,16 @@ $(document).ready(function () {
   // CONTINUAR DAQUI
 }
 );
+//create a const that makes a div that merge printResults and listReport
+
+
 var initialDate = moment($('#initialDate').val(), 'DD/MM/YYYY');   //dia do ato
 function printDivs() {
   const divElements1 = document.getElementById('printResults').innerHTML;
   const divElements2 = document.getElementById('listReport').innerHTML;
+  //create a const that merge divElements1 and divElements2
+
+
 
   // Open a new window or tab
   let printWindow = window.open('', '', 'height=1800,width=1800');
@@ -938,7 +968,7 @@ function printDivs() {
   printWindow.document.write('.table-responsive { display: block; width: 100%; overflow-x: 100%; -webkit-overflow-scrolling: touch; }');
   printWindow.document.write('table { page-break-inside: auto; }');
   printWindow.document.write('thead { display: table-header-group; }');
-  printWindow.document.write('tr, td, th ');//{ page-break-inside: avoid; }
+  printWindow.document.write('tr, td, th { page-break-inside: avoid; }');
   printWindow.document.write('</style>');
   printWindow.document.write('</head><body onload="window.print(); window.close();">');
   printWindow.document.write(divElements1);
@@ -946,4 +976,64 @@ function printDivs() {
   printWindow.document.write('</body></html>');
 
   printWindow.document.close();
+
+  /* Copy the area of both printResults AND listReport to be printed as an image to the clipboard
+  html2canvas(tempContainer).then(canvas => {
+    canvas.toBlob(blob => {
+      const item = new ClipboardItem({ 'image/png': blob });
+      navigator.clipboard.write([item]);
+    });
+    // Remove the temporary container
+    document.body.removeChild(tempContainer);*/
+
 }
+
+function showToast() {
+  var toastEl = document.getElementById('liveToast');
+  var toast = new bootstrap.Toast(toastEl);
+  toast.show();
+}
+
+function copyAll() {
+  const divElements1 = document.getElementById('printResults').innerHTML;
+  const divElements2 = document.getElementById('listReport').innerHTML;
+
+  // Create a temporary container div
+  const tempContainer = document.createElement('div');
+  tempContainer.id = 'tempContainer';
+  tempContainer.style.position = 'absolute';
+  tempContainer.style.top = '-9999px';
+  tempContainer.innerHTML = divElements1 + divElements2;
+  document.body.appendChild(tempContainer);
+
+  // Copy the area of both printResults AND listReport to be printed as an image to the clipboard
+  html2canvas(tempContainer).then(canvas => {
+    canvas.toBlob(blob => {
+      const item = new ClipboardItem({ 'image/png': blob });
+      navigator.clipboard.write([item]).then(() => {
+        showToast();
+      }).catch(err => {
+        console.error('Erro ao copiar para a área de transferência: ', err);
+      });
+    });
+    // Remove the temporary container
+    document.body.removeChild(tempContainer);
+  });
+}
+
+function copyListReport() {
+  const listReport = document.getElementById('listReport');
+
+  // Copy the area of listReport to be printed as an image to the clipboard
+  html2canvas(listReport).then(canvas => {
+    canvas.toBlob(blob => {
+      const item = new ClipboardItem({ 'image/png': blob });
+      navigator.clipboard.write([item]).then(() => {
+        showToast();
+      }).catch(err => {
+        console.error('Erro ao copiar para a área de transferência: ', err);
+      });
+    });
+  });
+}
+
