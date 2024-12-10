@@ -289,7 +289,7 @@ function calculateResults() {
 
             listaDiasComTipo.push({
                 index: '-',
-                date: moment(dispDate, 'DD/MM/YYYY').businessAdd(i).format('DD/MM/YYYY'),
+                date: p(dispDate, 'DD/MM/YYYY').businessAdd(i).format('DD/MM/YYYY'),
                 _type: `${dayOfWeek} (Não Conta - ${i}º Dia Útil)`,
                 description: `${dayOfWeek} (Não Conta - ${i}º Dia Útil)`,
                 class: 'susp'
