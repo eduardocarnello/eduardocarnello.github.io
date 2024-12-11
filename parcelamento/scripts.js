@@ -61,11 +61,14 @@ document.addEventListener('DOMContentLoaded', function () {
                 $('#entrada_section').addClass('hidden');
                 $('#restante_section').addClass('hidden');
                 $('#data_entrada_section').addClass('hidden'); // Hide the date picker for entry date
-                $('#valor_entrada').val('');
+                $('#valor_entrada').val('0'); // Ensure the value is set to 0
                 $('#data_entrada').val(''); // Clear the entry date
                 updateParcelas();
             }
         });
+
+        // Ensure the value is set to 0 at the beginning
+        $('#valor_entrada').val('0');
 
         $("#data_entrada").datepicker({
             dateFormat: "dd/mm/yy"
@@ -82,8 +85,11 @@ document.addEventListener('DOMContentLoaded', function () {
         $('#valor_entrada').change(function () {
             $('#resto_opcao option[value="somar"]').prop('disabled', false);
             const valorDivida = parseFloat($('#valor_divida').val().replace('R$ ', '').replace(',', '.'));
-            const valorEntrada = parseFloat($(this).val().replace('R$ ', '').replace(',', '.'));
-            if (!isNaN(valorDivida) && !isNaN(valorEntrada)) {
+            let valorEntrada = parseFloat($(this).val().replace('R$ ', '').replace(',', '.'));
+            if (isNaN(valorEntrada)) {
+                valorEntrada = 0;
+            }
+            if (!isNaN(valorDivida)) {
                 const valorRestante = valorDivida - valorEntrada;
                 $('#valor_restante').val(`R$ ${formatCurrency(valorRestante)}`);
                 updateParcelas();
