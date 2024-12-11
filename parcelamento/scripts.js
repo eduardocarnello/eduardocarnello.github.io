@@ -79,22 +79,42 @@ document.addEventListener('DOMContentLoaded', function () {
         $('#valor_parcela').change(updateParcelasFromValorParcela);
         $('#resto_opcao').change(updateParcelasFromValorParcela);
 
+        $('#valor_entrada').change(function () {
+            $('#resto_opcao option[value="somar"]').prop('disabled', false);
+            const valorDivida = parseFloat($('#valor_divida').val().replace('R$ ', '').replace(',', '.'));
+            const valorEntrada = parseFloat($(this).val().replace('R$ ', '').replace(',', '.'));
+            if (!isNaN(valorDivida) && !isNaN(valorEntrada)) {
+                const valorRestante = valorDivida - valorEntrada;
+                $('#valor_restante').val(`R$ ${formatCurrency(valorRestante)}`);
+                updateParcelas();
+            }
+        });
+
         function updateParcelas() {
             const valorDivida = parseFloat($('#valor_divida').val().replace('R$ ', '').replace(',', '.'));
-            let valorEntrada = 0;
-            let valorRestante = valorDivida;
+            let valorEntrada = parseFloat($('#valor_entrada').val().replace('R$ ', '').replace(',', '.'));
+            if (isNaN(valorEntrada)) {
+                valorEntrada = 0;
+            }
+            let valorRestante = valorDivida - valorEntrada;
 
-            if ($('#havera_entrada').is(':checked')) {
-                valorEntrada = parseFloat($('#valor_entrada').val().replace('R$ ', '').replace(',', '.'));
-                valorRestante = valorDivida - valorEntrada;
+            if (!isNaN(valorRestante)) {
                 $('#valor_restante').val(`R$ ${formatCurrency(valorRestante)}`);
+            } else {
+                $('#valor_restante').val('');
             }
 
             const parcelas = parseInt($('#parcelas').val());
             if (!isNaN(parcelas) && parcelas > 0 && !isNaN(valorRestante)) {
                 const valorParcela = valorRestante / parcelas;
-                $('#valor_parcela').val(valorParcela.toFixed(2));
+                if (!isNaN(valorParcela)) {
+                    $('#valor_parcela').val(valorParcela.toFixed(2));
+                } else {
+                    $('#valor_parcela').val('');
+                }
                 updateDatasParcelas(valorRestante, parcelas);
+            } else {
+                $('#valor_parcela').val('');
             }
         }
 
@@ -135,7 +155,8 @@ document.addEventListener('DOMContentLoaded', function () {
                     $('#parcelas').val(parcelas + (resto > 0 ? 1 : 0)); // Adiciona uma nova parcela se houver resto
                     if (resto > 0) {
                         $('#valor_parcela').val(valorParcela.toFixed(2));
-                        $('#ultima_parcela_info').text(`${parcelas + 1} parcelas, sendo ${parcelas} no valor de R$ ${valorParcela.toFixed(2)} e a última  parcela no valor de R$ ${resto.toFixed(2)}`); $('#ultima_parcela_section').removeClass('hidden');
+                        $('#ultima_parcela_info').text(`${parcelas + 1} parcelas, sendo ${parcelas} no valor de R$ ${valorParcela.toFixed(2)} e a última  parcela no valor de R$ ${resto.toFixed(2)}`);
+                        $('#ultima_parcela_section').removeClass('hidden');
                     } else {
                         $('#valor_parcela').val(valorParcela.toFixed(2));
                         $('#ultima_parcela_info').text('');
@@ -144,10 +165,36 @@ document.addEventListener('DOMContentLoaded', function () {
                 }
 
                 updateDatasParcelas(valorRestante, parcelas);
+            } else {
+                $('#valor_parcela').val('');
             }
         }
 
+        $('#valor_parcela').change(function () {
+            const valorRestante = parseFloat($('#valor_restante').val().replace('R$ ', '').replace(',', '.'));
+            const valorParcela = parseFloat($(this).val());
+            if (!isNaN(valorRestante) && !isNaN(valorParcela)) {
+                const parcelas = Math.floor(valorRestante / valorParcela);
+                const resto = valorRestante % valorParcela;
+
+                if (parcelas === 1 && resto > 0) {
+                    $('#resto_opcao').val('nova');
+                    $('#resto_opcao option[value="somar"]').prop('disabled', true);
+                } else {
+                    $('#resto_opcao.option[value="somar"]').prop('disabled', false);
+                }
+
+                updateParcelasFromValorParcela();
+            }
+        });
+
+        $('#parcelas').change(function () {
+            $('#resto_opcao option[value="somar"]').prop('disabled', false);
+            updateParcelas();
+        });
+
         function updateDatasParcelas(valorRestante, parcelas) {
+            const aplicarJuros = document.getElementById('aplicar_juros').checked;
             const valorEntrada = document.getElementById('valor_entrada').value;
             if (valorEntrada === '') {
                 return;
@@ -178,7 +225,7 @@ document.addEventListener('DOMContentLoaded', function () {
             const table = document.createElement('table');
             table.style.borderCollapse = 'collapse';
             table.style.textAlign = 'center';
-            //             Mantém o espaço entre as linhas o menor possível
+            // Mantém o espaço entre as linhas o menor possível
 
             const headerRow = document.createElement('tr');
 
@@ -208,8 +255,8 @@ document.addEventListener('DOMContentLoaded', function () {
                     dataParcela.setDate(dataParcela.getDate() + 1);
                 }
 
-                // Calcular o valor da parcela com juros de 1% ao mês
-                const valorParcelaComJuros = (valorRestante * Math.pow(1.01, i + 1)) / parcelas;
+                // Calcular o valor da parcela com juros de 1% ao mês, se aplicável
+                const valorParcelaComJuros = aplicarJuros ? (valorRestante * Math.pow(1.01, i + 1)) / parcelas : valorRestante / parcelas;
 
                 const row = document.createElement('tr');
 
@@ -341,22 +388,24 @@ document.addEventListener('DOMContentLoaded', function () {
         document.getElementById('valor_divida').addEventListener('change', function () {
             const valorDivida = parseFloat(this.value.replace('R$ ', '').replace(',', '.'));
             if (!isNaN(valorDivida)) {
-                $('#valor_restante').val(`R$ ${formatCurrency(valorDivida)}`);
-                $('#valor_entrada').val('');
+                const valorEntrada = document.getElementById('valor_entrada').value
+                document.getElementById('datas_parcelas_section').classList.remove('hidden');
                 updateParcelas();
             }
         });
         let executadoCount = 1;
         const maxExecutados = 4;
 
-        document.getElementById('add-executado-button').addEventListener('click', function () {
+        const addExecutadoButton = document.getElementById('add-executado-button');
+        if (addExecutadoButton) {
+            addExecutadoButton.addEventListener('click', function () {
 
-            if (executadoCount < maxExecutados) {
-                executadoCount++;
-                const executadoSection = document.createElement('div');
-                executadoSection.classList.add('executado-section');
-                executadoSection.id = `executado-${executadoCount}`;
-                executadoSection.innerHTML = `
+                if (executadoCount < maxExecutados) {
+                    executadoCount++;
+                    const executadoSection = document.createElement('div');
+                    executadoSection.classList.add('executado-section');
+                    executadoSection.id = `executado-${executadoCount}`;
+                    executadoSection.innerHTML = `
                     ${executadoCount > 1 ? `<div class="executado-header">Executado ${executadoCount} <span class="remove-executado" data-index="${executadoCount}">Remover</span></div>` : ''}
                     <div class="inline-section">
                         <label>Nome do Executado:</label>
@@ -395,14 +444,15 @@ document.addEventListener('DOMContentLoaded', function () {
                         <input type="text" class="estado" data-index="${executadoCount}" readonly>
                     </div>
                 `;
-                document.getElementById('executados-container').appendChild(executadoSection);
-                addEventListenersToExecutado(executadoCount);
+                    document.getElementById('executados-container').appendChild(executadoSection);
+                    addEventListenersToExecutado(executadoCount);
 
-                if (executadoCount === maxExecutados) {
-                    document.getElementById('add-executado-button').style.display = 'none';
+                    if (executadoCount === maxExecutados) {
+                        document.getElementById('add-executado-button').style.display = 'none';
+                    }
                 }
-            }
-        });
+            });
+        }
         addEventListenersToExecutado(1);
 
         function addEventListenersToExecutado(index) {
@@ -537,10 +587,10 @@ document.addEventListener('DOMContentLoaded', function () {
 
 
         const dataPrimeiraParcelaElement = document.getElementById('data_primeira_parcela');
-        const today = new Date();
+        /*const today = new Date();
 
-        const minDate = new Date(today);
-        const maxDate = new Date(today);
+        //const minDate = new Date(today);
+        //const maxDate = new Date(today);
 
 
 
@@ -566,13 +616,12 @@ document.addEventListener('DOMContentLoaded', function () {
 
         dataPrimeiraParcelaElement.min = formatDate(today);
         dataPrimeiraParcelaElement.max = formatDate(maxDate);
-        dataPrimeiraParcelaElement.value = formatDate(minDate);
+        dataPrimeiraParcelaElement.value = formatDate(minDate);*/
 
         document.getElementById('valor_divida').addEventListener('change', function () {
             const valorDivida = parseFloat(this.value);
             if (!isNaN(valorDivida)) {
-                var valorEntrada = (valorDivida * 0.3).toFixed(2);
-                document.getElementById('valor_entrada').value = `${formatCurrency(parseFloat(valorEntrada))}`;
+                var valorEntrada = document.getElementById('valor_entrada').value// = `${formatCurrency(parseFloat(valorEntrada))}`;
                 document.getElementById('datas_parcelas_section').classList.remove('hidden');
                 updateParcelas();
             }
@@ -613,7 +662,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
         document.getElementById('parcelas').addEventListener('change', updateParcelas);
         document.getElementById('valor_entrada').addEventListener('change', updateParcelas);
-        document.getElementById('novoValorEntrada').addEventListener('change', updateParcelas);
+        //document.getElementById('novoValorEntrada').addEventListener('change', updateParcelas);
 
         function isValidCPF(cpf) {
             cpf = cpf.replace(/[^\d]+/g, '');
@@ -844,11 +893,11 @@ document.addEventListener('DOMContentLoaded', function () {
             <br>${cpfCnpjType}: ${cpfCnpj}
         </div>`;
                 if ((index + 1) % 2 === 0) {
-        </div > `;
-                if ((index + 1) % 2 === 0) {
                     assinaturasContent += '</div><div class="executado-signature">';
-                    console.log('sim')
-                } else { }
+                    console.log('sim');
+                } else {
+                    // ...existing code...
+                }
             });
 
             if (executados.length > 1) {
@@ -861,16 +910,16 @@ document.addEventListener('DOMContentLoaded', function () {
             }
             let textoParcelamento;
             if (parcelas === 1) {
-                textoParcelamento = `< b > Do restante:</b > O restante, no valor de < b > R$ ${ ((valorDivida - valorEntrada) * Math.pow(1.01, 1)).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) }</b > será pago em < b > uma única parcela</b >, já acrescida de juros de 1 %, na data de < b > ${ formatDate(dataPrimeiraParcela) }</b >.`;
+                textoParcelamento = `< b > Do restante:</b > O restante, no valor de < b > R$ ${((valorDivida - valorEntrada) * Math.pow(1.01, 1)).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</b > será pago em < b > uma única parcela</b >, já acrescida de juros de 1 %, na data de < b > ${formatDate(dataPrimeiraParcela)}</b >.`;
             } else {
-                textoParcelamento = `< b > Do parcelamento:</b > O restante, no valor de < b > R$ ${ (valorDivida - valorEntrada).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) }</b > será parcelado em < b > ${ parcelas } parcelas</b > mensais, com início dos pagamentos em < b > ${ formatDate(dataPrimeiraParcela) }</b >, acrescidas de juros de 1 % ao mês, conforme segue:
+                textoParcelamento = `< b > Do parcelamento:</b > O restante, no valor de < b > R$ ${(valorDivida - valorEntrada).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</b > será parcelado em < b > ${parcelas} parcelas</b > mensais, com início dos pagamentos em < b > ${formatDate(dataPrimeiraParcela)}</b >, acrescidas de juros de 1 % ao mês, conforme segue:
                     <p>${datasParcelas}</p>`;;
             }
 
 
 
 
-            executadosContent += `, já qualificad${ concordancia } nos autos da ação em epígrafe, v${ concordanciaCirc } m, respeitosamente, à presença de Vossa Excelência requerer o</p > `
+            executadosContent += `, já qualificad${concordancia} nos autos da ação em epígrafe, v${concordanciaCirc} m, respeitosamente, à presença de Vossa Excelência requerer o</p > `
 
             const peticaoContent = `
                         < div style = "font-family: Arial, sans-serif; padding: 20px;" >
@@ -878,7 +927,7 @@ document.addEventListener('DOMContentLoaded', function () {
                         <p style="margin-bottom: 50px;"></p>
                         <p style="font-weight: bold; font-size: 16px; margin-bottom: 50px;">Processo nº ${numeroProcesso}</p>
                         <p></p>
-                        ${ executadosContent }
+                        ${executadosContent}
                         <p style="margin-bottom: 30px;"></p>
                         <p style="text-align: center; font-weight: bold; margin-bottom: 30px; font-size: 18px;">PARCELAMENTO DO DÉBITO COM SUSPENSÃO DA EXECUÇÃO (ART. 916, DO CPC)</p>
                         <p></p>
@@ -889,7 +938,7 @@ document.addEventListener('DOMContentLoaded', function () {
                         <p style="text-align: justify;">Requer${concordanciaRequer} seja o exequente intimado para ciência da presente proposta e que seja a execução suspensa pelo prazo previsto para cumprimento do parcelamento.</p>
                         <p style="text-align: justify;">${outrosPedidos}</p>
                         <p style="text-align: justify;"">Pede${concordanciaM} o deferimento.</p>
-                        < p style = "margin-bottom: 50px;" > Marília, ${ dataExtenso }.</p >
+                        < p style = "margin-bottom: 50px;" > Marília, ${dataExtenso}.</p >
                             <div class="executado-signature">${assinaturasContent}</div>
                     </div >
                         `;
@@ -901,7 +950,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
             const opt = {
                 margin: 1,
-                filename: `Acordo${ numeroProcesso }.pdf`,
+                filename: `Acordo${numeroProcesso}.pdf`,
                 image: { type: 'jpeg', quality: 0.7 },
                 html2canvas: { scale: 2 },
                 jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
