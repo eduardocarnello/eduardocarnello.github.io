@@ -84,14 +84,23 @@
             <input type="text" id="valor_restante" readonly>
         </div>
         <div class="inline-section">
+            <label>Tipo de Parcelamento:</label>
+            <select id="tipo_parcelamento">
+                <option value="parcelas">Por Parcelas</option>
+                <option value="valor">Por Valor</option>
+            </select>
+        </div>
+        <div class="inline-section" id="parcelas_section">
             <label>Parcelas:</label>
             <input type="number" id="parcelas" min="1" max="120">
+            <label>Valor de Cada Parcela:</label>
+            <input type="text" id="valor_parcela" readonly>
+        </div>
+        <div class="inline-section hidden" id="valor_parcela_section">
             <label>Valor da Parcela:</label>
             <input type="number" id="valor_parcela" step="0.01">
-        </div>
-        <div class="inline-section">
-            <label>Aplicar Juros de 1% a.m:</label>
-            <input type="checkbox" id="aplicar_juros">
+            <label>Número de Parcelas:</label>
+            <input type="text" id="numero_parcelas" readonly>
         </div>
         <div class="inline-section hidden" id="resto">
             <label>Resto:</label>
