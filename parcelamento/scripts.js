@@ -91,7 +91,7 @@ document.addEventListener('DOMContentLoaded', function () {
         });
 
         $('#valor_entrada').change(updateParcelas);
-        $('#parcelas').on('input', function () {
+        $('#parcelas').on('change', function () {
             $('#resto').addClass('hidden');
             $('#ultima_parcela_section').addClass('hidden');
             updateParcelasFromParcelas();
@@ -101,11 +101,9 @@ document.addEventListener('DOMContentLoaded', function () {
             $('#resto').removeClass('hidden');
             updateParcelasFromValorParcela();
         });
-        $('#resto_opcao').change(updateParcelasFromValorParcela);
         $('#aplicar_juros').change(updateParcelasFromValorParcela);
 
         $('#valor_entrada').change(function () {
-            $('#resto_opcao option[value="somar"]').prop('disabled', false);
             const valorDivida = parseFloat($('#valor_divida').val().replace('R$ ', '').replace(',', '.'));
             let valorEntrada = parseFloat($(this).val().replace('R$ ', '').replace(',', '.'));
             if (isNaN(valorEntrada)) {
@@ -159,70 +157,66 @@ document.addEventListener('DOMContentLoaded', function () {
         function updateParcelasFromParcelas() {
             const valorRestante = parseFloat($('#valor_restante').val().replace('R$ ', '').replace(',', '.'));
             const parcelas = parseInt($('#parcelas').val());
-            const restoOpcao = $('#resto_opcao').val();
 
             if (!isNaN(parcelas) && parcelas > 0 && !isNaN(valorRestante)) {
-                const valorParcela = Math.floor(valorRestante / parcelas);
+
+                valorParcela = (valorRestante / parcelas).toFixed(2);;
+                //remake the above to show it in currency (reais)
+
+
+
+
+
+                const somaParcelas = valorParcela * (parcelas - 1);
+
+                const ultimaParcela = valorRestante - somaParcelas;
+                console.log('ultima', ultimaParcela)
+                console.log('soma', somaParcelas)
+                console.log('valorRestante', valorRestante)
+                console.log('parcelas', parcelas)
+                console.log('valor parcela', valorParcela)
+
                 const resto = valorRestante % parcelas;
-                $('#valor_parcela').val(valorParcela.toFixed(2));
+                $('#valor_parcela').val(valorParcela);
                 if (resto > 0) {
-                    if (restoOpcao === 'somar') {
-                        $('#ultima_parcela_info').text(`Última parcela no valor de R$ ${(valorParcela + resto).toFixed(2)}`);
-                        $('#ultima_parcela_section').removeClass('hidden');
-                    } else if (restoOpcao === 'nova') {
-                        $('#parcelas').val(parcelas + 1);
-                        $('#ultima_parcela_info').text(`${parcelas + 1} parcelas, sendo ${parcelas} no valor de R$ ${valorParcela.toFixed(2)} e a última no valor de R$ ${resto.toFixed(2)}`);
-                        $('#ultima_parcela_section').removeClass('hidden');
-                    }
+                    $('#ultima_parcela_info').text(`última parcela no valor de R$ ${ultimaParcela.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`);
+                    $('#ultima_parcela_section').removeClass('hidden');
                 } else {
                     $('#ultima_parcela_info').text('');
                     $('#ultima_parcela_section').addClass('hidden');
                 }
-                updateDatasParcelas(valorRestante, parcelas + (resto > 0 && restoOpcao === 'nova' ? 1 : 0));
+                updateDatasParcelas(valorRestante, parcelas + (resto > 0 ? 1 : 0));
             }
         }
 
         function updateParcelasFromValorParcela() {
             const valorRestante = parseFloat($('#valor_restante').val().replace('R$ ', '').replace(',', '.'));
             const valorParcela = parseFloat($('#valor_parcela').val());
-            const restoOpcao = $('#resto_opcao').val();
 
             if (!isNaN(valorParcela) && valorParcela > 0 && !isNaN(valorRestante)) {
                 const parcelas = Math.floor(valorRestante / valorParcela);
                 const resto = valorRestante % valorParcela;
 
-                if (restoOpcao === 'somar') {
-                    $('#parcelas').val(parcelas); // Não adiciona uma nova parcela
-                    if (resto > 0) {
-                        $('#valor_parcela').val(valorParcela.toFixed(2));
-                        $('#ultima_parcela_info').text(`${parcelas} parcelas, sendo ${parcelas - 1} de R$ ${valorParcela.toFixed(2)} e a última no valor de R$ ${(valorParcela + resto).toFixed(2)}`);
-                        $('#ultima_parcela_section').removeClass('hidden');
-                    } else {
-                        $('#valor_parcela').val(valorParcela.toFixed(2));
-                        $('#ultima_parcela_info').text('');
-                        $('#ultima_parcela_section').addClass('hidden');
-                    }
-                } else if (restoOpcao === 'nova') {
-                    $('#parcelas').val(parcelas + (resto > 0 ? 1 : 0)); // Adiciona uma nova parcela se houver resto
-                    if (resto > 0) {
-                        $('#valor_parcela').val(valorParcela.toFixed(2));
-                        $('#ultima_parcela_info').text(`${parcelas + 1} parcelas, sendo ${parcelas} no valor de R$ ${valorParcela.toFixed(2)} e a última no valor de R$ ${resto.toFixed(2)}`);
-                        $('#ultima_parcela_section').removeClass('hidden');
-                    } else {
-                        $('#valor_parcela').val(valorParcela.toFixed(2));
-                        $('#ultima_parcela_info').text('');
-                        $('#ultima_parcela_section').addClass('hidden');
-                    }
+                $('#parcelas').val(parcelas + (resto > 0 ? 1 : 0)); // Adiciona uma nova parcela se houver resto
+                if (resto > 0) {
+                    $('#valor_parcela').val(valorParcela.toFixed(2));
+                    $('#ultima_parcela_info').text(`${parcelas + 1} parcelas, sendo ${parcelas} no valor de R$ ${valorParcela.toFixed(2)} e a última no valor de R$ ${resto.toFixed(2)}`);
+                    $('#ultima_parcela_section').removeClass('hidden');
+                } else {
+                    $('#valor_parcela').val(valorParcela.toFixed(2));
+                    $('#ultima_parcela_info').text('');
+                    $('#ultima_parcela_section').addClass('hidden');
                 }
 
-                updateDatasParcelasFromValorParcela(valorRestante, valorParcela, parcelas + (resto > 0 && restoOpcao === 'nova' ? 1 : 0));
+                updateDatasParcelasFromValorParcela(valorRestante, valorParcela, parcelas + (resto > 0 ? 1 : 0));
             } else {
                 $('#valor_parcela').val('');
             }
         }
 
         function updateDatasParcelas(valorRestante, parcelas) {
-            const aplicarJuros = document.getElementById('aplicar_juros').checked;
+            const aplicarJurosElement = document.getElementById('aplicar_juros');
+            const aplicarJuros = aplicarJurosElement ? aplicarJurosElement.checked : false;
             var valorEntrada = document.getElementById('valor_entrada').value;
             if (valorEntrada === '' || valorEntrada === '0' || valorEntrada === null) {
                 valorEntrada = 0;
@@ -1085,4 +1079,219 @@ document.addEventListener('DOMContentLoaded', function () {
             html2pdf().from(peticaoContent).set(opt).save();
         }
     });
+
+    $('#tipo_parcelamento').change(function () {
+        const tipoParcelamento = $(this).val();
+        if (tipoParcelamento === 'parcelas') {
+            $('#parcelas_section').removeClass('hidden');
+            $('#valor_parcela_section').addClass('hidden');
+            $('#valor_parcela').val('');
+            $('#numero_parcelas').val('');
+        } else if (tipoParcelamento === 'valor') {
+            $('#parcelas_section').addClass('hidden');
+            $('#valor_parcela_section').removeClass('hidden');
+            $('#parcelas').val('');
+            $('#valor_parcela').val('');
+        }
+        updateParcelas();
+    });
+
+    $('#parcelas').change(updateParcelas);
+    $('#valor_parcela').change(updateParcelas);
+    $('#valor_entrada').change(updateParcelas);
+    $('#data_primeira_parcela').change(updateDatasParcelas);
+
+    function updateParcelas() {
+        const valorDivida = parseFloat($('#valor_divida').val().replace('R$ ', '').replace(',', '.'));
+        let valorEntrada = parseFloat($('#valor_entrada').val().replace('R$ ', '').replace(',', '.'));
+        if (isNaN(valorEntrada)) {
+            valorEntrada = 0;
+        }
+        const valorRestante = valorDivida - valorEntrada;
+        $('#valor_restante').val(`R$ ${formatCurrency(valorRestante)}`);
+
+        const tipoParcelamento = $('#tipo_parcelamento').val();
+        if (tipoParcelamento === 'parcelas') {
+            const parcelas = parseInt($('#parcelas').val());
+            if (!isNaN(parcelas) && parcelas > 0) {
+                const valorParcela = Math.floor(valorRestante / parcelas);
+                const resto = valorRestante - (valorParcela * (parcelas - 1));
+                $('#valor_parcela').val(valorParcela.toFixed(2));
+                if (resto > 0) {
+                    $('#ultima_parcela_info').text(`Última parcela no valor de R$ ${resto.toFixed(2)}`);
+                    $('#ultima_parcela_section').removeClass('hidden');
+                } else {
+                    $('#ultima_parcela_info').text('');
+                    $('#ultima_parcela_section').addClass('hidden');
+                }
+                updateDatasParcelas(valorRestante, parcelas, valorParcela, resto);
+            }
+        } else if (tipoParcelamento === 'valor') {
+            const valorParcela = parseFloat($('#valor_parcela').val());
+            if (!isNaN(valorParcela) && valorParcela > 0) {
+                const parcelas = Math.floor(valorRestante / valorParcela);
+                const resto = valorRestante % valorParcela;
+                $('#numero_parcelas').val(parcelas + (resto > 0 ? 1 : 0));
+                if (resto > 0) {
+                    $('#ultima_parcela_info').text(`Última parcela no valor de R$ ${resto.toFixed(2)}`);
+                    $('#ultima_parcela_section').removeClass('hidden');
+                } else {
+                    $('#ultima_parcela_info').text('');
+                    $('#ultima_parcela_section').addClass('hidden');
+                }
+                updateDatasParcelas(valorRestante, parcelas + (resto > 0 ? 1 : 0), valorParcela, resto);
+            }
+        }
+    }
+
+    function updateDatasParcelas(valorRestante, parcelas, valorParcela, resto) {
+        const aplicarJurosElement = document.getElementById('aplicar_juros');
+        const aplicarJuros = aplicarJurosElement ? aplicarJurosElement.checked : false;
+        var valorEntrada = document.getElementById('valor_entrada').value;
+        if (valorEntrada === '' || valorEntrada === '0' || valorEntrada === null) {
+            valorEntrada = 0;
+        }
+
+        const dataPrimeiraParcelaElement = document.getElementById('data_primeira_parcela');
+        const valorParcelaElement = document.getElementById('valor_parcela');
+        const datasParcelasElement = document.getElementById('datas_parcelas');
+
+        if (!dataPrimeiraParcelaElement || !valorParcelaElement || !datasParcelasElement) {
+            console.error('Um ou mais elementos necessários não foram encontrados.');
+            return;
+        }
+
+        const dataPrimeiraParcela = parseDate(dataPrimeiraParcelaElement.value);
+        if (isNaN(dataPrimeiraParcela)) {
+            console.error('Data da primeira parcela inválida.');
+            return;
+        }
+
+        function isWeekday(date) {
+            const day = date.getDay();
+            return day !== 0 && day !== 6; // 0 = Domingo, 6 = Sábado
+        }
+
+        datasParcelasElement.innerHTML = '';
+
+        const container = document.createElement('div');
+        container.style.display = 'flex';
+        container.style.flexWrap = 'wrap';
+
+        let table = createTable();
+
+        for (let i = 0; i < parcelas - 1; i++) { // Adjust loop to go up to parcelas - 1
+            if (i > 0 && i % 10 === 0) {
+                container.appendChild(table);
+                table = createTable();
+            }
+
+            let dataParcela = new Date(dataPrimeiraParcela);
+            dataParcela.setMonth(dataParcela.getMonth() + i);
+
+            // Ajusta a data para o próximo dia útil, se necessário
+            while (!isWeekday(dataParcela)) {
+                dataParcela.setDate(dataParcela.getDate() + 1);
+            }
+
+            // Calcular o valor da parcela com juros de 1% ao mês, se aplicável
+            const valorParcelaComJuros = aplicarJuros ? (valorRestante * Math.pow(1.01, i + 1)) / parcelas : valorParcela;
+
+            const row = document.createElement('tr');
+
+            const cellNumber = document.createElement('td');
+            cellNumber.textContent = i + 1;
+            cellNumber.style.padding = '0 5px'; // Espaço lateral entre as colunas
+            row.appendChild(cellNumber);
+
+            const cellDate = document.createElement('td');
+            cellDate.textContent = formatDate(dataParcela); // Formata a data corretamente
+            cellDate.style.padding = '0 5px'; // Espaço lateral entre as colunas
+            row.appendChild(cellDate);
+
+            const cellValue = document.createElement('td');
+            cellValue.textContent = `R$ ${valorParcelaComJuros.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+            cellValue.style.padding = '0 5px'; // Espaço lateral entre as colunas
+            row.appendChild(cellValue);
+
+            table.appendChild(row);
+        }
+
+        // Adiciona a última parcela com o valor ajustado, somando o resto
+        let dataParcela = new Date(dataPrimeiraParcela);
+        dataParcela.setMonth(dataParcela.getMonth() + (parcelas - 1));
+
+        // Ajusta a data para o próximo dia útil, se necessário
+        while (!isWeekday(dataParcela)) {
+            dataParcela.setDate(dataParcela.getDate() + 1);
+        }
+
+        const row = document.createElement('tr');
+
+        const cellNumber = document.createElement('td');
+        cellNumber.textContent = parcelas;
+        cellNumber.style.padding = '0 5px'; // Espaço lateral entre as colunas
+        row.appendChild(cellNumber);
+
+        const cellDate = document.createElement('td');
+        cellDate.textContent = formatDate(dataParcela); // Formata a data corretamente
+        cellDate.style.padding = '0 5px'; // Espaço lateral entre as colunas
+        row.appendChild(cellDate);
+
+        const cellValue = document.createElement('td');
+        cellValue.textContent = `R$ ${resto.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+        cellValue.style.padding = '0 5px'; // Espaço lateral entre as colunas
+        row.appendChild(cellValue);
+
+        table.appendChild(row);
+
+        container.appendChild(table);
+        datasParcelasElement.appendChild(container);
+    }
+
+    function createTable() {
+        const table = document.createElement('table');
+        table.style.borderCollapse = 'collapse';
+        table.style.textAlign = 'center';
+        table.style.marginRight = '10px'; // Espaço entre os blocos
+
+        const headerRow = document.createElement('tr');
+
+        const headerNumber = document.createElement('th');
+        headerNumber.textContent = "#";
+        headerNumber.style.padding = '0 5px'; // Espaço lateral entre as colunas
+        headerRow.appendChild(headerNumber);
+
+        const headerDate = document.createElement('th');
+        headerDate.textContent = "Data da Parcela";
+        headerDate.style.padding = '0 5px'; // Espaço lateral entre as colunas
+        headerRow.appendChild(headerDate);
+
+        const headerValue = document.createElement('th');
+        headerValue.textContent = "Valor da Parcela";
+        headerValue.style.padding = '0 5px'; // Espaço lateral entre as colunas
+        headerRow.appendChild(headerValue);
+
+        table.appendChild(headerRow);
+
+        return table;
+    }
+
+    function formatCurrency(value) {
+        return value.toFixed(2).replace('.', ',');
+    }
+
+    function formatDate(date) {
+        const day = String(date.getDate()).padStart(2, '0');
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const year = date.getFullYear();
+        return `${day}/${month}/${year}`;
+    }
+
+    function parseDate(input) {
+        const parts = input.split('/');
+        return new Date(parts[2], parts[1] - 1, parts[0]);
+    }
+
+    // ...existing code...
 });
