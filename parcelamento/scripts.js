@@ -61,11 +61,30 @@ document.addEventListener('DOMContentLoaded', function () {
                 $('#entrada_section').addClass('hidden');
                 $('#restante_section').addClass('hidden');
                 $('#data_entrada_section').addClass('hidden'); // Hide the date picker for entry date
-                $('#valor_entrada').val('');
+                $('#valor_entrada').val('0'); // Ensure the value is set to 0
                 $('#data_entrada').val(''); // Clear the entry date
                 updateParcelas();
             }
         });
+
+        // Ensure the value is set to 0 at the beginning
+        $('#valor_entrada').val('0');
+        //onchange valor_divida, valor_restante = valor_divida - valor_entrada
+        $('#valor_divida').change(function () {
+            const valorDivida = parseFloat($(this).val().replace('R$ ', '').replace(',', '.'));
+            let valorEntrada = parseFloat($('#valor_entrada').val().replace('R$ ', '').replace(',', '.'));
+            if (isNaN(valorEntrada)) {
+                valorEntrada = 0;
+            }
+            const valorRestante = valorDivida - valorEntrada;
+            $('#valor_restante').val(`R$ ${formatCurrency(valorRestante)}`);
+            updateParcelas();
+        });
+
+
+
+
+
 
         $("#data_entrada").datepicker({
             dateFormat: "dd/mm/yy"
@@ -73,39 +92,93 @@ document.addEventListener('DOMContentLoaded', function () {
 
         $('#valor_entrada').change(updateParcelas);
         $('#parcelas').on('input', function () {
+            $('#resto').addClass('hidden');
             $('#ultima_parcela_section').addClass('hidden');
             updateParcelasFromParcelas();
+            updateDatasParcelas(parseFloat($('#valor_restante').val().replace('R$ ', '').replace(',', '.')), parseInt($('#parcelas').val()));
         });
-        $('#valor_parcela').change(updateParcelasFromValorParcela);
+        $('#valor_parcela').change(function () {
+            $('#resto').removeClass('hidden');
+            updateParcelasFromValorParcela();
+        });
         $('#resto_opcao').change(updateParcelasFromValorParcela);
+        $('#aplicar_juros').change(updateParcelasFromValorParcela);
+
+        $('#valor_entrada').change(function () {
+            $('#resto_opcao option[value="somar"]').prop('disabled', false);
+            const valorDivida = parseFloat($('#valor_divida').val().replace('R$ ', '').replace(',', '.'));
+            let valorEntrada = parseFloat($(this).val().replace('R$ ', '').replace(',', '.'));
+            if (isNaN(valorEntrada)) {
+                valorEntrada = 0;
+                valorRestante = 0;
+            }
+            if (!isNaN(valorDivida)) {
+                const valorRestante = valorDivida - valorEntrada;
+                console.log('aqui');
+                $('#valor_restante').val(`R$ ${formatCurrency(valorRestante)}`);
+                updateParcelas();
+            }
+        });
 
         function updateParcelas() {
             const valorDivida = parseFloat($('#valor_divida').val().replace('R$ ', '').replace(',', '.'));
-            let valorEntrada = 0;
-            let valorRestante = valorDivida;
+            let valorEntrada = parseFloat($('#valor_entrada').val().replace('R$ ', '').replace(',', '.'));
+            if (isNaN(valorEntrada)) {
+                valorEntrada = 0;
+            }
+            let valorRestante = valorDivida - valorEntrada;
 
-            if ($('#havera_entrada').is(':checked')) {
-                valorEntrada = parseFloat($('#valor_entrada').val().replace('R$ ', '').replace(',', '.'));
-                valorRestante = valorDivida - valorEntrada;
+            if (!isNaN(valorRestante)) {
                 $('#valor_restante').val(`R$ ${formatCurrency(valorRestante)}`);
+            } else {
+                $('#valor_restante').val('');
             }
 
             const parcelas = parseInt($('#parcelas').val());
             if (!isNaN(parcelas) && parcelas > 0 && !isNaN(valorRestante)) {
-                const valorParcela = valorRestante / parcelas;
-                $('#valor_parcela').val(valorParcela.toFixed(2));
+                const valorParcela = Math.floor(valorRestante / parcelas);
+                const resto = valorRestante % parcelas;
+                if (!isNaN(valorParcela)) {
+                    $('#valor_parcela').val(valorParcela.toFixed(2));
+                    if (resto > 0) {
+                        $('#ultima_parcela_info').text(`Última parcela no valor de R$ ${(valorParcela + resto).toFixed(2)}`);
+                        $('#ultima_parcela_section').removeClass('hidden');
+                    } else {
+                        $('#ultima_parcela_info').text('');
+                        $('#ultima_parcela_section').addClass('hidden');
+                    }
+                } else {
+                    $('#valor_parcela').val('');
+                }
                 updateDatasParcelas(valorRestante, parcelas);
+            } else {
+                $('#valor_parcela').val('');
             }
         }
 
         function updateParcelasFromParcelas() {
             const valorRestante = parseFloat($('#valor_restante').val().replace('R$ ', '').replace(',', '.'));
             const parcelas = parseInt($('#parcelas').val());
+            const restoOpcao = $('#resto_opcao').val();
 
             if (!isNaN(parcelas) && parcelas > 0 && !isNaN(valorRestante)) {
-                const valorParcela = valorRestante / parcelas;
+                const valorParcela = Math.floor(valorRestante / parcelas);
+                const resto = valorRestante % parcelas;
                 $('#valor_parcela').val(valorParcela.toFixed(2));
-                updateDatasParcelas(valorRestante, parcelas);
+                if (resto > 0) {
+                    if (restoOpcao === 'somar') {
+                        $('#ultima_parcela_info').text(`Última parcela no valor de R$ ${(valorParcela + resto).toFixed(2)}`);
+                        $('#ultima_parcela_section').removeClass('hidden');
+                    } else if (restoOpcao === 'nova') {
+                        $('#parcelas').val(parcelas + 1);
+                        $('#ultima_parcela_info').text(`${parcelas + 1} parcelas, sendo ${parcelas} no valor de R$ ${valorParcela.toFixed(2)} e a última no valor de R$ ${resto.toFixed(2)}`);
+                        $('#ultima_parcela_section').removeClass('hidden');
+                    }
+                } else {
+                    $('#ultima_parcela_info').text('');
+                    $('#ultima_parcela_section').addClass('hidden');
+                }
+                updateDatasParcelas(valorRestante, parcelas + (resto > 0 && restoOpcao === 'nova' ? 1 : 0));
             }
         }
 
@@ -124,18 +197,17 @@ document.addEventListener('DOMContentLoaded', function () {
                         $('#valor_parcela').val(valorParcela.toFixed(2));
                         $('#ultima_parcela_info').text(`${parcelas} parcelas, sendo ${parcelas - 1} de R$ ${valorParcela.toFixed(2)} e a última no valor de R$ ${(valorParcela + resto).toFixed(2)}`);
                         $('#ultima_parcela_section').removeClass('hidden');
-                        $('#resto').removeClass('hidden');
                     } else {
                         $('#valor_parcela').val(valorParcela.toFixed(2));
                         $('#ultima_parcela_info').text('');
                         $('#ultima_parcela_section').addClass('hidden');
-                        $('#resto').addClass('hidden');
                     }
                 } else if (restoOpcao === 'nova') {
                     $('#parcelas').val(parcelas + (resto > 0 ? 1 : 0)); // Adiciona uma nova parcela se houver resto
                     if (resto > 0) {
                         $('#valor_parcela').val(valorParcela.toFixed(2));
-                        $('#ultima_parcela_info').text(`${parcelas + 1} parcelas, sendo ${parcelas} no valor de R$ ${valorParcela.toFixed(2)} e a última  parcela no valor de R$ ${resto.toFixed(2)}`); $('#ultima_parcela_section').removeClass('hidden');
+                        $('#ultima_parcela_info').text(`${parcelas + 1} parcelas, sendo ${parcelas} no valor de R$ ${valorParcela.toFixed(2)} e a última no valor de R$ ${resto.toFixed(2)}`);
+                        $('#ultima_parcela_section').removeClass('hidden');
                     } else {
                         $('#valor_parcela').val(valorParcela.toFixed(2));
                         $('#ultima_parcela_info').text('');
@@ -143,14 +215,17 @@ document.addEventListener('DOMContentLoaded', function () {
                     }
                 }
 
-                updateDatasParcelas(valorRestante, parcelas);
+                updateDatasParcelasFromValorParcela(valorRestante, valorParcela, parcelas + (resto > 0 && restoOpcao === 'nova' ? 1 : 0));
+            } else {
+                $('#valor_parcela').val('');
             }
         }
 
         function updateDatasParcelas(valorRestante, parcelas) {
-            const valorEntrada = document.getElementById('valor_entrada').value;
-            if (valorEntrada === '') {
-                return;
+            const aplicarJuros = document.getElementById('aplicar_juros').checked;
+            var valorEntrada = document.getElementById('valor_entrada').value;
+            if (valorEntrada === '' || valorEntrada === '0' || valorEntrada === null) {
+                valorEntrada = 0;
             }
 
             const dataPrimeiraParcelaElement = document.getElementById('data_primeira_parcela');
@@ -175,31 +250,18 @@ document.addEventListener('DOMContentLoaded', function () {
 
             datasParcelasElement.innerHTML = '';
 
-            const table = document.createElement('table');
-            table.style.borderCollapse = 'collapse';
-            table.style.textAlign = 'center';
-            //             Mantém o espaço entre as linhas o menor possível
+            const container = document.createElement('div');
+            container.style.display = 'flex';
+            container.style.flexWrap = 'wrap';
 
-            const headerRow = document.createElement('tr');
+            let table = createTable();
 
-            const headerNumber = document.createElement('th');
-            headerNumber.textContent = "#";
-            headerNumber.style.padding = '0 15px'; // Espaço lateral entre as colunas
-            headerRow.appendChild(headerNumber);
+            for (let i = 0; i < parcelas - 1; i++) { // Adjust loop to go up to parcelas - 1
+                if (i > 0 && i % 10 === 0) {
+                    container.appendChild(table);
+                    table = createTable();
+                }
 
-            const headerDate = document.createElement('th');
-            headerDate.textContent = "Data da Parcela";
-            headerDate.style.padding = '0 15px'; // Espaço lateral entre as colunas
-            headerRow.appendChild(headerDate);
-
-            const headerValue = document.createElement('th');
-            headerValue.textContent = "Valor da Parcela";
-            headerValue.style.padding = '0 15px'; // Espaço lateral entre as colunas
-            headerRow.appendChild(headerValue);
-
-            table.appendChild(headerRow);
-
-            for (let i = 0; i < parcelas; i++) {
                 let dataParcela = new Date(dataPrimeiraParcela);
                 dataParcela.setMonth(dataParcela.getMonth() + i);
 
@@ -208,67 +270,198 @@ document.addEventListener('DOMContentLoaded', function () {
                     dataParcela.setDate(dataParcela.getDate() + 1);
                 }
 
-                // Calcular o valor da parcela com juros de 1% ao mês
-                const valorParcelaComJuros = (valorRestante * Math.pow(1.01, i + 1)) / parcelas;
+                // Calcular o valor da parcela com juros de 1% ao mês, se aplicável
+                const valorParcelaComJuros = aplicarJuros ? (valorRestante * Math.pow(1.01, i + 1)) / parcelas : valorRestante / parcelas;
 
                 const row = document.createElement('tr');
 
                 const cellNumber = document.createElement('td');
                 cellNumber.textContent = i + 1;
-                cellNumber.style.padding = '0 15px'; // Espaço lateral entre as colunas
+                cellNumber.style.padding = '0 5px'; // Espaço lateral entre as colunas
                 row.appendChild(cellNumber);
 
                 const cellDate = document.createElement('td');
                 cellDate.textContent = formatDate(dataParcela); // Formata a data corretamente
-                cellDate.style.padding = '0 15px'; // Espaço lateral entre as colunas
+                cellDate.style.padding = '0 5px'; // Espaço lateral entre as colunas
                 row.appendChild(cellDate);
 
                 const cellValue = document.createElement('td');
                 cellValue.textContent = `R$ ${valorParcelaComJuros.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-                cellValue.style.padding = '0 15px'; // Espaço lateral entre as colunas
+                cellValue.style.padding = '0 5px'; // Espaço lateral entre as colunas
                 row.appendChild(cellValue);
 
                 table.appendChild(row);
             }
 
-            // Adiciona a última parcela com o valor ajustado, se houver resto
-            const resto = valorRestante % (valorRestante / parcelas);
-            const restoOpcao = $('#resto_opcao').val();
-            if (resto > 0) {
+            // Adiciona a última parcela com o valor ajustado, somando o resto
+            const valorParcela = parseFloat($('#valor_parcela').val());
+            const somaParcelas = valorParcela * (parcelas - 1);
+            const ultimaParcela = valorRestante - somaParcelas;
+            let dataParcela = new Date(dataPrimeiraParcela);
+            dataParcela.setMonth(dataParcela.getMonth() + (parcelas - 1));
+
+            // Ajusta a data para o próximo dia útil, se necessário
+            while (!isWeekday(dataParcela)) {
+                dataParcela.setDate(dataParcela.getDate() + 1);
+            }
+
+            const row = document.createElement('tr');
+
+            const cellNumber = document.createElement('td');
+            cellNumber.textContent = parcelas;
+            cellNumber.style.padding = '0 5px'; // Espaço lateral entre as colunas
+            row.appendChild(cellNumber);
+
+            const cellDate = document.createElement('td');
+            cellDate.textContent = formatDate(dataParcela); // Formata a data corretamente
+            cellDate.style.padding = '0 5px'; // Espaço lateral entre as colunas
+            row.appendChild(cellDate);
+
+            const cellValue = document.createElement('td');
+            cellValue.textContent = `R$ ${ultimaParcela.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+            cellValue.style.padding = '0 5px'; // Espaço lateral entre as colunas
+            row.appendChild(cellValue);
+
+            table.appendChild(row);
+
+            container.appendChild(table);
+            datasParcelasElement.appendChild(container);
+        }
+
+        function updateDatasParcelasFromValorParcela(valorRestante, valorParcela, parcelas) {
+            const aplicarJuros = document.getElementById('aplicar_juros').checked;
+            var valorEntrada = document.getElementById('valor_entrada').value;
+            if (valorEntrada === '' || valorEntrada === '0' || valorEntrada === null) {
+                valorEntrada = 0;
+            }
+
+            const dataPrimeiraParcelaElement = document.getElementById('data_primeira_parcela');
+            const valorParcelaElement = document.getElementById('valor_parcela');
+            const datasParcelasElement = document.getElementById('datas_parcelas');
+
+            if (!dataPrimeiraParcelaElement || !valorParcelaElement || !datasParcelasElement) {
+                console.error('Um ou mais elementos necessários não foram encontrados.');
+                return;
+            }
+
+            const dataPrimeiraParcela = parseDate(dataPrimeiraParcelaElement.value);
+            if (isNaN(dataPrimeiraParcela)) {
+                console.error('Data da primeira parcela inválida.');
+                return;
+            }
+
+            function isWeekday(date) {
+                const day = date.getDay();
+                return day !== 0 && day !== 6; // 0 = Domingo, 6 = Sábado
+            }
+
+            datasParcelasElement.innerHTML = '';
+
+            const container = document.createElement('div');
+            container.style.display = 'flex';
+            container.style.flexWrap = 'wrap';
+
+            let table = createTable();
+
+            for (let i = 0; i < parcelas - 1; i++) { // Adjust loop to go up to parcelas - 1
+                if (i > 0 && i % 10 === 0) {
+                    container.appendChild(table);
+                    table = createTable();
+                }
+
                 let dataParcela = new Date(dataPrimeiraParcela);
-                dataParcela.setMonth(dataParcela.getMonth() + parcelas);
+                dataParcela.setMonth(dataParcela.getMonth() + i);
 
                 // Ajusta a data para o próximo dia útil, se necessário
                 while (!isWeekday(dataParcela)) {
                     dataParcela.setDate(dataParcela.getDate() + 1);
                 }
 
+                // Calcular o valor da parcela com juros de 1% ao mês, se aplicável
+                const valorParcelaComJuros = aplicarJuros ? (valorRestante * Math.pow(1.01, i + 1)) / parcelas : valorParcela;
+
                 const row = document.createElement('tr');
 
                 const cellNumber = document.createElement('td');
-                cellNumber.textContent = parcelas + 1;
-                cellNumber.style.padding = '0 15px'; // Espaço lateral entre as colunas
+                cellNumber.textContent = i + 1;
+                cellNumber.style.padding = '0 5px'; // Espaço lateral entre as colunas
                 row.appendChild(cellNumber);
 
                 const cellDate = document.createElement('td');
                 cellDate.textContent = formatDate(dataParcela); // Formata a data corretamente
-                cellDate.style.padding = '0 15px'; // Espaço lateral entre as colunas
+                cellDate.style.padding = '0 5px'; // Espaço lateral entre as colunas
                 row.appendChild(cellDate);
 
                 const cellValue = document.createElement('td');
-                if (restoOpcao === 'somar') {
-                    cellValue.textContent = `R$ ${(valorRestante / parcelas + resto).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-                } else if (restoOpcao === 'nova') {
-                    cellValue.textContent = `R$ ${resto.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-                }
-                cellValue.style.padding = '0 15px'; // Espaço lateral entre as colunas
+                cellValue.textContent = `R$ ${valorParcelaComJuros.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+                cellValue.style.padding = '0 5px'; // Espaço lateral entre as colunas
                 row.appendChild(cellValue);
 
                 table.appendChild(row);
             }
 
-            datasParcelasElement.appendChild(table);
+            // Adiciona a última parcela com o valor ajustado, somando o resto
+            const somaParcelas = valorParcela * (parcelas - 1);
+            const ultimaParcela = valorRestante - somaParcelas;
+            let dataParcela = new Date(dataPrimeiraParcela);
+            dataParcela.setMonth(dataParcela.getMonth() + (parcelas - 1));
+
+            // Ajusta a data para o próximo dia útil, se necessário
+            while (!isWeekday(dataParcela)) {
+                dataParcela.setDate(dataParcela.getDate() + 1);
+            }
+
+            const row = document.createElement('tr');
+
+            const cellNumber = document.createElement('td');
+            cellNumber.textContent = parcelas;
+            cellNumber.style.padding = '0 5px'; // Espaço lateral entre as colunas
+            row.appendChild(cellNumber);
+
+            const cellDate = document.createElement('td');
+            cellDate.textContent = formatDate(dataParcela); // Formata a data corretamente
+            cellDate.style.padding = '0 5px'; // Espaço lateral entre as colunas
+            row.appendChild(cellDate);
+
+            const cellValue = document.createElement('td');
+            cellValue.textContent = `R$ ${ultimaParcela.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+            cellValue.style.padding = '0 5px'; // Espaço lateral entre as colunas
+            row.appendChild(cellValue);
+
+            table.appendChild(row);
+
+            container.appendChild(table);
+            datasParcelasElement.appendChild(container);
         }
+
+        function createTable() {
+            const table = document.createElement('table');
+            table.style.borderCollapse = 'collapse';
+            table.style.textAlign = 'center';
+            table.style.marginRight = '10px'; // Espaço entre os blocos
+
+            const headerRow = document.createElement('tr');
+
+            const headerNumber = document.createElement('th');
+            headerNumber.textContent = "#";
+            headerNumber.style.padding = '0 5px'; // Espaço lateral entre as colunas
+            headerRow.appendChild(headerNumber);
+
+            const headerDate = document.createElement('th');
+            headerDate.textContent = "Data da Parcela";
+            headerDate.style.padding = '0 5px'; // Espaço lateral entre as colunas
+            headerRow.appendChild(headerDate);
+
+            const headerValue = document.createElement('th');
+            headerValue.textContent = "Valor da Parcela";
+            headerValue.style.padding = '0 5px'; // Espaço lateral entre as colunas
+            headerRow.appendChild(headerValue);
+
+            table.appendChild(headerRow);
+
+            return table;
+        }
+
         function formatCurrency(value) {
             return value.toFixed(2).replace('.', ',');
         }
@@ -341,22 +534,24 @@ document.addEventListener('DOMContentLoaded', function () {
         document.getElementById('valor_divida').addEventListener('change', function () {
             const valorDivida = parseFloat(this.value.replace('R$ ', '').replace(',', '.'));
             if (!isNaN(valorDivida)) {
-                $('#valor_restante').val(`R$ ${formatCurrency(valorDivida)}`);
-                $('#valor_entrada').val('');
+                const valorEntrada = document.getElementById('valor_entrada').value
+                document.getElementById('datas_parcelas_section').classList.remove('hidden');
                 updateParcelas();
             }
         });
         let executadoCount = 1;
         const maxExecutados = 4;
 
-        document.getElementById('add-executado-button').addEventListener('click', function () {
+        const addExecutadoButton = document.getElementById('add-executado-button');
+        if (addExecutadoButton) {
+            addExecutadoButton.addEventListener('click', function () {
 
-            if (executadoCount < maxExecutados) {
-                executadoCount++;
-                const executadoSection = document.createElement('div');
-                executadoSection.classList.add('executado-section');
-                executadoSection.id = `executado-${executadoCount}`;
-                executadoSection.innerHTML = `
+                if (executadoCount < maxExecutados) {
+                    executadoCount++;
+                    const executadoSection = document.createElement('div');
+                    executadoSection.classList.add('executado-section');
+                    executadoSection.id = `executado-${executadoCount}`;
+                    executadoSection.innerHTML = `
                     ${executadoCount > 1 ? `<div class="executado-header">Executado ${executadoCount} <span class="remove-executado" data-index="${executadoCount}">Remover</span></div>` : ''}
                     <div class="inline-section">
                         <label>Nome do Executado:</label>
@@ -395,14 +590,15 @@ document.addEventListener('DOMContentLoaded', function () {
                         <input type="text" class="estado" data-index="${executadoCount}" readonly>
                     </div>
                 `;
-                document.getElementById('executados-container').appendChild(executadoSection);
-                addEventListenersToExecutado(executadoCount);
+                    document.getElementById('executados-container').appendChild(executadoSection);
+                    addEventListenersToExecutado(executadoCount);
 
-                if (executadoCount === maxExecutados) {
-                    document.getElementById('add-executado-button').style.display = 'none';
+                    if (executadoCount === maxExecutados) {
+                        document.getElementById('add-executado-button').style.display = 'none';
+                    }
                 }
-            }
-        });
+            });
+        }
         addEventListenersToExecutado(1);
 
         function addEventListenersToExecutado(index) {
@@ -537,42 +733,20 @@ document.addEventListener('DOMContentLoaded', function () {
 
 
         const dataPrimeiraParcelaElement = document.getElementById('data_primeira_parcela');
-        const today = new Date();
+        //const today = new Date();
+        const nextMonth = new Date(today);
+        nextMonth.setMonth(today.getMonth() + 1);
 
-        const minDate = new Date(today);
-        const maxDate = new Date(today);
+        if (nextMonth.getDate() !== today.getDate()) {
+            nextMonth.setDate(0); // Set to last day of the previous month if the next month doesn't have the same date
+        }
 
-
-
-        //minDate.setDate(today.getDate() + 30);
-        //add 1 month to minDate
-        minDate.setMonth(minDate.getMonth() + 1);
-
-
-
-        if (minDate.getDay() === 0) minDate.setDate(today.getDate() + 0);
-        if (minDate.getDay() === 6) minDate.setDate(today.getDate() + 0);
-
-        maxDate.setDate(today.getDate() + 30);
-        if (minDate.getDay() === 0) minDate.setDate(today.getDate() + 1);
-        if (minDate.getDay() === 6) minDate.setDate(today.getDate() + 2);
-
-        const formatDate = (date) => {
-            const day = String(date.getDate()).padStart(2, '0');
-            const month = String(date.getMonth() + 1).padStart(2, '0');
-            const year = date.getFullYear();
-            return `${day}/${month}/${year}`;
-        };
-
-        dataPrimeiraParcelaElement.min = formatDate(today);
-        dataPrimeiraParcelaElement.max = formatDate(maxDate);
-        dataPrimeiraParcelaElement.value = formatDate(minDate);
+        dataPrimeiraParcelaElement.value = formatDate(nextMonth);
 
         document.getElementById('valor_divida').addEventListener('change', function () {
             const valorDivida = parseFloat(this.value);
             if (!isNaN(valorDivida)) {
-                var valorEntrada = (valorDivida * 0.3).toFixed(2);
-                document.getElementById('valor_entrada').value = `${formatCurrency(parseFloat(valorEntrada))}`;
+                var valorEntrada = document.getElementById('valor_entrada').value// = `${formatCurrency(parseFloat(valorEntrada))}`;
                 document.getElementById('datas_parcelas_section').classList.remove('hidden');
                 updateParcelas();
             }
@@ -606,14 +780,15 @@ document.addEventListener('DOMContentLoaded', function () {
             const valorRestante = valorDivida - valorEntrada;
             document.getElementById('valor_restante').value = `R$ ${formatCurrency(valorRestante)}`;
 
-            const valorParcela = (valorRestante) / parcelas;
-            document.getElementById('valor_parcela').value = `R$ ${formatCurrency(parseFloat(valorParcela))}`;
+            const valorParcela = (valorRestante) / parcelas;//para corrigir defeito do campo
+            document.getElementById('valor_parcela').value = valorParcela.toFixed(2);
             updateDatasParcelas(valorRestante, parcelas);
         }
 
         document.getElementById('parcelas').addEventListener('change', updateParcelas);
+        document.getElementById('valor_parcela').addEventListener('change', updateParcelas);
         document.getElementById('valor_entrada').addEventListener('change', updateParcelas);
-        document.getElementById('novoValorEntrada').addEventListener('change', updateParcelas);
+        //document.getElementById('novoValorEntrada').addEventListener('change', updateParcelas);
 
         function isValidCPF(cpf) {
             cpf = cpf.replace(/[^\d]+/g, '');
@@ -670,7 +845,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 const valorDividaElement = document.getElementById('valor_divida');
                 const valorDivida = parseFloat(valorDividaElement.value.replace('R$ ', '').replace(',', '.'));
                 if (isNaN(valorDivida) || valorDivida <= 0) {
-                    alert('Por favor, preencha o campo "Valor da Dívida" corretamente.');
+                    alert('Por favor, preencha o campo "Valor da D��vida" corretamente.');
                     valorDividaElement.focus();
                     return;
                 }
@@ -844,11 +1019,11 @@ document.addEventListener('DOMContentLoaded', function () {
             <br>${cpfCnpjType}: ${cpfCnpj}
         </div>`;
                 if ((index + 1) % 2 === 0) {
-        </div > `;
-                if ((index + 1) % 2 === 0) {
                     assinaturasContent += '</div><div class="executado-signature">';
-                    console.log('sim')
-                } else { }
+                    console.log('sim');
+                } else {
+                    // ...existing code...
+                }
             });
 
             if (executados.length > 1) {
@@ -861,16 +1036,16 @@ document.addEventListener('DOMContentLoaded', function () {
             }
             let textoParcelamento;
             if (parcelas === 1) {
-                textoParcelamento = `< b > Do restante:</b > O restante, no valor de < b > R$ ${ ((valorDivida - valorEntrada) * Math.pow(1.01, 1)).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) }</b > será pago em < b > uma única parcela</b >, já acrescida de juros de 1 %, na data de < b > ${ formatDate(dataPrimeiraParcela) }</b >.`;
+                textoParcelamento = `< b > Do restante:</b > O restante, no valor de < b > R$ ${((valorDivida - valorEntrada) * Math.pow(1.01, 1)).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</b > será pago em < b > uma única parcela</b >, já acrescida de juros de 1 %, na data de < b > ${formatDate(dataPrimeiraParcela)}</b >.`;
             } else {
-                textoParcelamento = `< b > Do parcelamento:</b > O restante, no valor de < b > R$ ${ (valorDivida - valorEntrada).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) }</b > será parcelado em < b > ${ parcelas } parcelas</b > mensais, com início dos pagamentos em < b > ${ formatDate(dataPrimeiraParcela) }</b >, acrescidas de juros de 1 % ao mês, conforme segue:
+                textoParcelamento = `< b > Do parcelamento:</b > O restante, no valor de < b > R$ ${(valorDivida - valorEntrada).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</b > será parcelado em < b > ${parcelas} parcelas</b > mensais, com início dos pagamentos em < b > ${formatDate(dataPrimeiraParcela)}</b >, acrescidas de juros de 1 % ao mês, conforme segue:
                     <p>${datasParcelas}</p>`;;
             }
 
 
 
 
-            executadosContent += `, já qualificad${ concordancia } nos autos da ação em epígrafe, v${ concordanciaCirc } m, respeitosamente, à presença de Vossa Excelência requerer o</p > `
+            executadosContent += `, já qualificad${concordancia} nos autos da ação em epígrafe, v${concordanciaCirc} m, respeitosamente, à presença de Vossa Excelência requerer o</p > `
 
             const peticaoContent = `
                         < div style = "font-family: Arial, sans-serif; padding: 20px;" >
@@ -878,7 +1053,7 @@ document.addEventListener('DOMContentLoaded', function () {
                         <p style="margin-bottom: 50px;"></p>
                         <p style="font-weight: bold; font-size: 16px; margin-bottom: 50px;">Processo nº ${numeroProcesso}</p>
                         <p></p>
-                        ${ executadosContent }
+                        ${executadosContent}
                         <p style="margin-bottom: 30px;"></p>
                         <p style="text-align: center; font-weight: bold; margin-bottom: 30px; font-size: 18px;">PARCELAMENTO DO DÉBITO COM SUSPENSÃO DA EXECUÇÃO (ART. 916, DO CPC)</p>
                         <p></p>
@@ -889,7 +1064,7 @@ document.addEventListener('DOMContentLoaded', function () {
                         <p style="text-align: justify;">Requer${concordanciaRequer} seja o exequente intimado para ciência da presente proposta e que seja a execução suspensa pelo prazo previsto para cumprimento do parcelamento.</p>
                         <p style="text-align: justify;">${outrosPedidos}</p>
                         <p style="text-align: justify;"">Pede${concordanciaM} o deferimento.</p>
-                        < p style = "margin-bottom: 50px;" > Marília, ${ dataExtenso }.</p >
+                        < p style = "margin-bottom: 50px;" > Marília, ${dataExtenso}.</p >
                             <div class="executado-signature">${assinaturasContent}</div>
                     </div >
                         `;
@@ -901,7 +1076,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
             const opt = {
                 margin: 1,
-                filename: `Acordo${ numeroProcesso }.pdf`,
+                filename: `Acordo${numeroProcesso}.pdf`,
                 image: { type: 'jpeg', quality: 0.7 },
                 html2canvas: { scale: 2 },
                 jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
