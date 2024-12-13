@@ -28,6 +28,10 @@ body {
     margin-bottom: 20px;
 }
 
+input#valor_parcela_insert {
+    width: 50%;
+}
+
 .inline-section {
     display: flex;
     align-items: center;
