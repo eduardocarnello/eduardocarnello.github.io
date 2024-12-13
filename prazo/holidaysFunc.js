@@ -139,6 +139,7 @@ const sistDown = [ //Indisponibilidades simples (afeta apenas peticionamento fin
 
 
 
+
 ]
 
 function Easter(Y) { //Essa função calcula, automaticamente, a Páscoa.

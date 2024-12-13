@@ -97,7 +97,7 @@ document.addEventListener('DOMContentLoaded', function () {
             updateParcelasFromParcelas();
             updateDatasParcelas(parseFloat($('#valor_restante').val().replace('R$ ', '').replace(',', '.')), parseInt($('#parcelas').val()));
         });
-        $('#valor_parcela').change(function () {
+        $('#valor_parcela_insert').change(function () {
             $('#resto').removeClass('hidden');
             updateParcelasFromValorParcela();
         });
@@ -115,6 +115,10 @@ document.addEventListener('DOMContentLoaded', function () {
                 console.log('aqui');
                 $('#valor_restante').val(`R$ ${formatCurrency(valorRestante)}`);
                 updateParcelas();
+            }
+            if (valorEntrada === 0) {
+                $('#valor_restante').val('nova_parcela');
+                updateParcelasFromValorParcela();
             }
         });
 
@@ -155,6 +159,7 @@ document.addEventListener('DOMContentLoaded', function () {
         }
 
         function updateParcelasFromParcelas() {
+            console.log('entrou na função ok')
             const valorRestante = parseFloat($('#valor_restante').val().replace('R$ ', '').replace(',', '.'));
             const parcelas = parseInt($('#parcelas').val());
 
@@ -185,30 +190,111 @@ document.addEventListener('DOMContentLoaded', function () {
                     $('#ultima_parcela_info').text('');
                     $('#ultima_parcela_section').addClass('hidden');
                 }
+                //if valor_resto value checked is nova_parcela, then add +1 to parcelas
+                if ($('#valor_restante').val() === 'nova_parcela') {
+                    console.log('aqui124')
+                    //   parcelas = parcelas + 1;
+                    $('#valor_restante').val('');
+                }
+
+
                 updateDatasParcelas(valorRestante, parcelas + (resto > 0 ? 1 : 0));
             }
         }
 
-        function updateParcelasFromValorParcela() {
-            const valorRestante = parseFloat($('#valor_restante').val().replace('R$ ', '').replace(',', '.'));
-            const valorParcela = parseFloat($('#valor_parcela').val());
+        //change resto_ultima_parcela, then updateParcelasFromValorParcela()
+        $('#resto_ultima_parcela').change(function () {
+            updateParcelasFromValorParcela();
+        });
+
+        $('#resto_nova_parcela').change(function () {
+            console.log('nova parcela');
+            handleRestoNovaParcela();
+        });
+        function handleRestoNovaParcela() {
+            console.log('entrou na função handleRestoNovaParcela');
+
+            // Obtenha o valor do campo #valor_restante e remova caracteres indesejados
+            let valorRestanteStr = $('#valor_restante').val();
+            valorRestanteStr = valorRestanteStr.replace('R$ ', '').replace('.', '').replace(',', '.');
+            var valorRestante = $('#valor_resto').val();
+            console.log('valor sem parse', valorRestante)
+            //make valorRestante a number
+            valorRestante = parseFloat(valorRestante.replace('R$ ', ''));
+            console.log('valor', valorRestante)
+
+            // Obtenha o valor do campo #valor_parcela_insert e remova caracteres indesejados
+            let valorParcelaStr = $('#valor_parcela_insert').val();
+            valorParcelaStr = valorParcelaStr.replace('R$ ', '').replace('.', '').replace(',', '.');
+            const valorParcela = parseFloat(valorParcelaStr);
+
+            console.log('valorRestante', valorRestante);
+            console.log('valorParcela', valorParcela);
 
             if (!isNaN(valorParcela) && valorParcela > 0 && !isNaN(valorRestante)) {
-                const parcelas = Math.floor(valorRestante / valorParcela);
+                console.log('if do handle')
+                let parcelas = Math.floor(valorRestante / valorParcela);
                 const resto = valorRestante % valorParcela;
 
-                $('#parcelas').val(parcelas + (resto > 0 ? 1 : 0)); // Adiciona uma nova parcela se houver resto
                 if (resto > 0) {
-                    $('#valor_parcela').val(valorParcela.toFixed(2));
-                    $('#ultima_parcela_info').text(`${parcelas + 1} parcelas, sendo ${parcelas} no valor de R$ ${valorParcela.toFixed(2)} e a última no valor de R$ ${resto.toFixed(2)}`);
-                    $('#ultima_parcela_section').removeClass('hidden');
-                } else {
-                    $('#valor_parcela').val(valorParcela.toFixed(2));
-                    $('#ultima_parcela_info').text('');
-                    $('#ultima_parcela_section').addClass('hidden');
+                    parcelas += 1;
                 }
 
-                updateDatasParcelasFromValorParcela(valorRestante, valorParcela, parcelas + (resto > 0 ? 1 : 0));
+                $('#numero_parcelas').val(parcelas);
+                $('#valor_resto').val(`R$ ${resto.toFixed(2)}`);
+                if (resto > 0) {
+                    $('#resto_section').removeClass('hidden');
+                } else {
+                    $('#resto_section').addClass('hidden');
+                }
+                updateDatasParcelasFromValorParcela(valorRestante, valorParcela, parcelas);
+                console.log(`Total de parcelas: ${parcelas}`);
+            } else {
+                console.log('else do handle')
+                const resto = valorRestante % valorParcela;
+                if (resto > 0) {
+                    parcelas += 1;
+                }
+                $('#valor_parcela').val('');
+            }
+        }
+
+
+        function updateParcelasFromValorParcela() {
+            console.log('entrou na função Valor Parcela');
+            const restoOption = $('input[name="resto_option"]:checked').val();
+            console.log('restoOption', restoOption);
+
+            // Obtenha o valor do campo #valor_restante e remova caracteres indesejados
+            let valorRestanteStr = $('#valor_restante').val();
+            valorRestanteStr = valorRestanteStr.replace('R$ ', '').replace('.', '').replace(',', '.');
+            const valorRestante = parseFloat(valorRestanteStr);
+
+            // Obtenha o valor do campo #valor_parcela_insert e remova caracteres indesejados
+            let valorParcelaStr = $('#valor_parcela_insert').val();
+            valorParcelaStr = valorParcelaStr.replace('R$ ', '').replace('.', '').replace(',', '.');
+            const valorParcela = parseFloat(valorParcelaStr);
+
+            console.log('valorRestante', valorRestante);
+            console.log('valorParcela', valorParcela);
+
+            if (!isNaN(valorParcela) && valorParcela > 0 && !isNaN(valorRestante)) {
+                let parcelas = Math.floor(valorRestante / valorParcela);
+                const resto = valorRestante % valorParcela;
+
+                if (resto > 0 && restoOption === 'nova_parcela') {
+                    parcelas += 1;
+                }
+
+                $('#numero_parcelas').val(parcelas);
+                $('#valor_resto').val(`R$ ${resto.toFixed(2)}`);
+                if (resto > 0) {
+                    $('#resto_section').removeClass('hidden');
+                } else {
+                    $('#resto_section').addClass('hidden');
+                }
+                updateDatasParcelasFromValorParcela(valorRestante, valorParcela, parcelas);
+                console.log(`Total de parcelas: ${parcelas}`);
             } else {
                 $('#valor_parcela').val('');
             }
@@ -323,7 +409,8 @@ document.addEventListener('DOMContentLoaded', function () {
         }
 
         function updateDatasParcelasFromValorParcela(valorRestante, valorParcela, parcelas) {
-            const aplicarJuros = document.getElementById('aplicar_juros').checked;
+            const aplicarJurosElement = document.getElementById('aplicar_juros');
+            const aplicarJuros = aplicarJurosElement ? aplicarJurosElement.checked : false;
             var valorEntrada = document.getElementById('valor_entrada').value;
             if (valorEntrada === '' || valorEntrada === '0' || valorEntrada === null) {
                 valorEntrada = 0;
@@ -777,6 +864,9 @@ document.addEventListener('DOMContentLoaded', function () {
             const valorParcela = (valorRestante) / parcelas;//para corrigir defeito do campo
             document.getElementById('valor_parcela').value = valorParcela.toFixed(2);
             updateDatasParcelas(valorRestante, parcelas);
+
+            //if valor_resto value checked is nova_parcela, then add +1 to parcelas
+
         }
 
         document.getElementById('parcelas').addEventListener('change', updateParcelas);
@@ -1080,24 +1170,36 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
 
+    /* $('#tipo_parcelamento').change(function () {
+         if ($(this).val() === 'valor') {
+             $('#parcelas_section').addClass('hidden');
+             $('#valor_parcela_section').removeClass('hidden');
+         } else {
+             $('#parcelas_section').removeClass('hidden');
+             $('#valor_parcela_section').addClass('hidden');
+         }
+         updateParcelas();
+     });*/
+
     $('#tipo_parcelamento').change(function () {
         const tipoParcelamento = $(this).val();
-        if (tipoParcelamento === 'parcelas') {
-            $('#parcelas_section').removeClass('hidden');
-            $('#valor_parcela_section').addClass('hidden');
-            $('#valor_parcela').val('');
-            $('#numero_parcelas').val('');
-        } else if (tipoParcelamento === 'valor') {
+        if (tipoParcelamento === 'valor') {
             $('#parcelas_section').addClass('hidden');
             $('#valor_parcela_section').removeClass('hidden');
-            $('#parcelas').val('');
+            $('#resto_section').removeClass('hidden');
             $('#valor_parcela').val('');
+            $('#numero_parcelas').val('');
+        } else if (tipoParcelamento === 'parcelas') {
+            $('#parcelas_section').removeClass('hidden');
+            $('#valor_parcela_section').addClass('hidden');
+            $('#resto_section').addClass('hidden');
+            $('#valor_parcela_insert').val('');
         }
         updateParcelas();
     });
 
     $('#parcelas').change(updateParcelas);
-    $('#valor_parcela').change(updateParcelas);
+    $('#valor_parcela_insert').change(updateParcelas);
     $('#valor_entrada').change(updateParcelas);
     $('#data_primeira_parcela').change(updateDatasParcelas);
 
@@ -1111,7 +1213,21 @@ document.addEventListener('DOMContentLoaded', function () {
         $('#valor_restante').val(`R$ ${formatCurrency(valorRestante)}`);
 
         const tipoParcelamento = $('#tipo_parcelamento').val();
-        if (tipoParcelamento === 'parcelas') {
+        if (tipoParcelamento === 'valor') {
+            const valorParcela = parseFloat($('#valor_parcela_insert').val());
+            if (!isNaN(valorParcela) && valorParcela > 0) {
+                const parcelas = Math.floor(valorRestante / valorParcela);
+                const resto = valorRestante % valorParcela;
+                $('#numero_parcelas').val(parcelas + (resto > 0 ? 1 : 0));
+                $('#valor_resto').val(`R$ ${resto.toFixed(2)}`);
+                if (resto > 0) {
+                    $('#resto_section').removeClass('hidden');
+                } else {
+                    $('#resto_section').addClass('hidden');
+                }
+                updateDatasParcelas(valorRestante, parcelas, valorParcela, resto);
+            }
+        } else {
             const parcelas = parseInt($('#parcelas').val());
             if (!isNaN(parcelas) && parcelas > 0) {
                 const valorParcela = Math.floor(valorRestante / parcelas);
@@ -1125,21 +1241,6 @@ document.addEventListener('DOMContentLoaded', function () {
                     $('#ultima_parcela_section').addClass('hidden');
                 }
                 updateDatasParcelas(valorRestante, parcelas, valorParcela, resto);
-            }
-        } else if (tipoParcelamento === 'valor') {
-            const valorParcela = parseFloat($('#valor_parcela').val());
-            if (!isNaN(valorParcela) && valorParcela > 0) {
-                const parcelas = Math.floor(valorRestante / valorParcela);
-                const resto = valorRestante % valorParcela;
-                $('#numero_parcelas').val(parcelas + (resto > 0 ? 1 : 0));
-                if (resto > 0) {
-                    $('#ultima_parcela_info').text(`Última parcela no valor de R$ ${resto.toFixed(2)}`);
-                    $('#ultima_parcela_section').removeClass('hidden');
-                } else {
-                    $('#ultima_parcela_info').text('');
-                    $('#ultima_parcela_section').addClass('hidden');
-                }
-                updateDatasParcelas(valorRestante, parcelas + (resto > 0 ? 1 : 0), valorParcela, resto);
             }
         }
     }
@@ -1218,6 +1319,15 @@ document.addEventListener('DOMContentLoaded', function () {
         }
 
         // Adiciona a última parcela com o valor ajustado, somando o resto
+        const restoOption = $('input[name="resto_option"]:checked').val();
+        console.log('restoOption', restoOption);
+        //if valor_resto value checked is nova_parcela, then add +1 to parcelas
+        if (restoOption === 'nova_parcela') {
+            //   console.log('aqui123')
+            //    parcelas = parcelas + 1;
+            $('#valor_restante').val('');
+        }
+
         let dataParcela = new Date(dataPrimeiraParcela);
         dataParcela.setMonth(dataParcela.getMonth() + (parcelas - 1));
 
@@ -1226,28 +1336,56 @@ document.addEventListener('DOMContentLoaded', function () {
             dataParcela.setDate(dataParcela.getDate() + 1);
         }
 
-        const row = document.createElement('tr');
+        if (restoOption === 'ultima_parcela') {
+            // Add remainder to the last parcel
+            const ultimaParcela = valorParcela + resto;
+            const row = document.createElement('tr');
 
-        const cellNumber = document.createElement('td');
-        cellNumber.textContent = parcelas;
-        cellNumber.style.padding = '0 5px'; // Espaço lateral entre as colunas
-        row.appendChild(cellNumber);
+            const cellNumber = document.createElement('td');
+            cellNumber.textContent = parcelas;
+            cellNumber.style.padding = '0 5px'; // Espaço lateral entre as colunas
+            row.appendChild(cellNumber);
 
-        const cellDate = document.createElement('td');
-        cellDate.textContent = formatDate(dataParcela); // Formata a data corretamente
-        cellDate.style.padding = '0 5px'; // Espaço lateral entre as colunas
-        row.appendChild(cellDate);
+            const cellDate = document.createElement('td');
+            cellDate.textContent = formatDate(dataParcela); // Formata a data corretamente
+            cellDate.style.padding = '0 5px'; // Espaço lateral entre as colunas
+            row.appendChild(cellDate);
 
-        const cellValue = document.createElement('td');
-        cellValue.textContent = `R$ ${resto.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-        cellValue.style.padding = '0 5px'; // Espaço lateral entre as colunas
-        row.appendChild(cellValue);
+            const cellValue = document.createElement('td');
+            cellValue.textContent = `R$ ${ultimaParcela.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+            cellValue.style.padding = '0 5px'; // Espaço lateral entre as colunas
+            row.appendChild(cellValue);
 
-        table.appendChild(row);
+            table.appendChild(row);
+        } else if (restoOption === 'nova_parcela') {
+            // Create a new parcel for the remainder
+            const row = document.createElement('tr');
+
+            const cellNumber = document.createElement('td');
+            cellNumber.textContent = parcelas// + 1;
+            cellNumber.style.padding = '0 5px'; // Espaço lateral entre as colunas
+            row.appendChild(cellNumber);
+
+            const cellDate = document.createElement('td');
+            cellDate.textContent = formatDate(dataParcela); // Formata a data corretamente
+            cellDate.style.padding = '0 5px'; // Espaço lateral entre as colunas
+            row.appendChild(cellDate);
+
+            const cellValue = document.createElement('td');
+            cellValue.textContent = `R$ ${resto.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+            cellValue.style.padding = '0 5px'; // Espaço lateral entre as colunas
+            row.appendChild(cellValue);
+
+            table.appendChild(row);
+        }
 
         container.appendChild(table);
         datasParcelasElement.appendChild(container);
     }
+
+    $('input[name="resto_option"]').change(function () {
+        updateParcelas();
+    });
 
     function createTable() {
         const table = document.createElement('table');
