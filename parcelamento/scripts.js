@@ -211,17 +211,34 @@ document.addEventListener('DOMContentLoaded', function () {
             console.log('nova parcela');
             handleRestoNovaParcela();
         });
+        function calcularParcelas(valorTotal, valorParcela) {
+            const numeroParcelas = Math.floor(valorTotal / valorParcela);
+            const resto = valorTotal % valorParcela;
+
+            const parcelas = new Array(numeroParcelas).fill(valorParcela);
+            if (resto > 0) {
+                parcelas.push(resto);
+            }
+
+            return parcelas;
+        }
+
         function handleRestoNovaParcela() {
             console.log('entrou na função handleRestoNovaParcela');
 
+            const valorDivida = parseFloat($('#valor_divida').val().replace('R$ ', '').replace(',', '.'));
+            let valorEntrada = parseFloat($('#valor_entrada').val().replace('R$ ', '').replace(',', '.'));
+            const valorRestanteFix = valorDivida - valorEntrada;
+            document.getElementById('valor_restante').value = `R$ ${formatCurrency(valorRestanteFix)}`;
+
             // Obtenha o valor do campo #valor_restante e remova caracteres indesejados
             let valorRestanteStr = $('#valor_restante').val();
+            if (!valorRestanteStr) {
+                valorRestanteStr = '0';
+            }
             valorRestanteStr = valorRestanteStr.replace('R$ ', '').replace('.', '').replace(',', '.');
-            var valorRestante = $('#valor_resto').val();
-            console.log('valor sem parse', valorRestante)
-            //make valorRestante a number
-            valorRestante = parseFloat(valorRestante.replace('R$ ', ''));
-            console.log('valor', valorRestante)
+            let valorRestante = parseFloat(valorRestanteStr);
+            console.log('valor sem parse', valorRestante);
 
             // Obtenha o valor do campo #valor_parcela_insert e remova caracteres indesejados
             let valorParcelaStr = $('#valor_parcela_insert').val();
@@ -232,29 +249,22 @@ document.addEventListener('DOMContentLoaded', function () {
             console.log('valorParcela', valorParcela);
 
             if (!isNaN(valorParcela) && valorParcela > 0 && !isNaN(valorRestante)) {
-                console.log('if do handle')
-                let parcelas = Math.floor(valorRestante / valorParcela);
-                const resto = valorRestante % valorParcela;
+                console.log('if do handle');
+                const parcelas = calcularParcelas(valorRestante, valorParcela);
+                const numeroParcelas = parcelas.length;
+                const resto = parcelas[parcelas.length - 1] !== valorParcela ? parcelas[parcelas.length - 1] : 0;
 
-                if (resto > 0) {
-                    parcelas += 1;
-                }
-
-                $('#numero_parcelas').val(parcelas);
+                $('#numero_parcelas').val(numeroParcelas);
                 $('#valor_resto').val(`R$ ${resto.toFixed(2)}`);
                 if (resto > 0) {
                     $('#resto_section').removeClass('hidden');
                 } else {
                     $('#resto_section').addClass('hidden');
                 }
-                updateDatasParcelasFromValorParcela(valorRestante, valorParcela, parcelas);
-                console.log(`Total de parcelas: ${parcelas}`);
+                updateDatasParcelasFromValorParcela(valorRestante, valorParcela, numeroParcelas);
+                console.log(`Total de parcelas: ${numeroParcelas}`);
             } else {
-                console.log('else do handle')
-                const resto = valorRestante % valorParcela;
-                if (resto > 0) {
-                    parcelas += 1;
-                }
+                console.log('else do handle');
                 $('#valor_parcela').val('');
             }
         }
@@ -520,6 +530,8 @@ document.addEventListener('DOMContentLoaded', function () {
             table.style.borderCollapse = 'collapse';
             table.style.textAlign = 'center';
             table.style.marginRight = '10px'; // Espaço entre os blocos
+            table.style.height = '-webkit-fill-available';
+
 
             const headerRow = document.createElement('tr');
 
