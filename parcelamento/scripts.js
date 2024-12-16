@@ -1,3 +1,14 @@
+$(document).ready(function () {
+    $('#exequente_presente').change(function () {
+        if ($(this).is(':checked')) {
+            $('#exequente_section').removeClass('hidden');
+            $('#cpf_exequente_section').removeClass('hidden');
+        } else {
+            $('#exequente_section').addClass('hidden');
+            $('#cpf_exequente_section').addClass('hidden');
+        }
+    });
+});
 document.addEventListener('DOMContentLoaded', function () {
     var element = document.getElementById('numero_processo');
     var maskOptions = {
