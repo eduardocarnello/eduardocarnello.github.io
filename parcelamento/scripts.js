@@ -1,3 +1,5 @@
+
+
 $(document).ready(function () {
     $('#exequente_presente').change(function () {
         if ($(this).is(':checked')) {
@@ -25,6 +27,15 @@ document.addEventListener('DOMContentLoaded', function () {
     };
 
     var mask = IMask(element, maskOptions);
+    document.getElementById('valor_acordo_menor').addEventListener('change', function () {
+        var valorOriginalSection = document.getElementById('valor_original_section');
+        if (this.value === 'sim') {
+            valorOriginalSection.classList.remove('hidden');
+        } else {
+            valorOriginalSection.classList.add('hidden');
+        }
+    });
+
 
     $(function () {
         $.datepicker.setDefaults($.datepicker.regional['pt-BR'] = {
