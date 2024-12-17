@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerenciar Feriados</title>
+</head>
+
+<body>
+    <form id="holidayForm">
+        <label for="holidayDate">Data do Feriado:</label>
+        <input type="date" id="holidayDate" name="holidayDate" required>
+
+        <label for="description">Descrição:</label>
+        <input type="text" id="description" name="description" required>
+
+        <label for="city">Cidade:</label>
+        <input type="text" id="city" name="city" required>
+
+        <button type="submit">Adicionar/Atualizar Feriado</button>
+    </form>
+
+    <ul id="holidayList"></ul>
+
+    <script>
+        let holidays = [
+            { holidayDate: `13/06/2023`, description: "Padroeiro e Fundação da Cidade", city: "Adamantina" },
+            // Adicione os outros feriados aqui
+        ];
+
+        function renderHolidays() {
+            const holidayList = document.getElementById('holidayList');
+            holidayList.innerHTML = '';
+            holidays.forEach((holiday, index) => {
+                const li = document.createElement('li');
+                li.textContent = `${holiday.holidayDate} - ${holiday.description} - ${holiday.city}`;
+                const editButton = document.createElement('button');
+                editButton.textContent = 'Editar';
+                editButton.onclick = () => editHoliday(index);
+                const deleteButton = document.createElement('button');
+                deleteButton.textContent = 'Excluir';
+                deleteButton.onclick = () => deleteHoliday(index);
+                li.appendChild(editButton);
+                li.appendChild(deleteButton);
+                holidayList.appendChild(li);
+            });
+        }
+
+        function addOrUpdateHoliday(event) {
+            event.preventDefault();
+            const holidayDate = document.getElementById('holidayDate').value;
+            const description = document.getElementById('description').value;
+            const city = document.getElementById('city').value;
+            const existingIndex = holidays.findIndex(holiday => holiday.holidayDate === holidayDate && holiday.city === city);
+            if (existingIndex >= 0) {
+                holidays[existingIndex] = { holidayDate, description, city };
+            } else {
+                holidays.push({ holidayDate, description, city });
+            }
+            renderHolidays();
+            document.getElementById('holidayForm').reset();
+        }
+
+        function editHoliday(index) {
+            const holiday = holidays[index];
+            document.getElementById('holidayDate').value = holiday.holidayDate;
+            document.getElementById('description').value = holiday.description;
+            document.getElementById('city').value = holiday.city;
+        }
+
+        function deleteHoliday(index) {
+            holidays.splice(index, 1);
+            renderHolidays();
+        }
+
+        document.getElementById('holidayForm').addEventListener('submit', addOrUpdateHoliday);
+
+        renderHolidays();
+    </script>
+</body>
+
+</html>
