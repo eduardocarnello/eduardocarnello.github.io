@@ -869,7 +869,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
 
 
-        document.getElementById('data_primeira_parcela').addEventListener('change', updateDatasParcelas);
+        //  document.getElementById('data_primeira_parcela').addEventListener('change', updateDatasParcelas);
 
         function updateParcelas() {
             const valorDivida = parseFloat(document.getElementById('valor_divida').value.replace('R$ ', '').replace(',', '.'));
@@ -1235,7 +1235,15 @@ document.addEventListener('DOMContentLoaded', function () {
     $('#parcelas').change(updateParcelas);
     $('#valor_parcela_insert').change(updateParcelas);
     $('#valor_entrada').change(updateParcelas);
-    $('#data_primeira_parcela').change(updateDatasParcelas);
+    //  $('#data_primeira_parcela').change(updateParcelas);
+
+    $('#data_primeira_parcela').change(function () {
+        // Limpar os checkboxes
+        $('#resto_ultima_parcela').prop('checked', false);
+        $('#resto_nova_parcela').prop('checked', false);
+        // Chamar a função updateParcelas
+        updateParcelas();
+    });
 
     function updateParcelas() {
         const valorDivida = parseFloat($('#valor_divida').val().replace('R$ ', '').replace(',', '.'));
@@ -1268,6 +1276,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 const resto = valorRestante - (valorParcela * (parcelas - 1));
                 $('#valor_parcela').val(valorParcela.toFixed(2));
                 if (resto > 0) {
+
                     $('#ultima_parcela_info').text(`Última parcela no valor de R$ ${resto.toFixed(2)}`);
                     $('#ultima_parcela_section').removeClass('hidden');
                 } else {
@@ -1276,6 +1285,14 @@ document.addEventListener('DOMContentLoaded', function () {
                 }
                 updateDatasParcelas(valorRestante, parcelas, valorParcela, resto);
             }
+        }
+        // Verificar se a div "radio-column" está visível e se nenhum checkbox está selecionado
+        if ($('.radio-column').is(':visible') && !$('#resto_ultima_parcela').is(':checked') && !$('#resto_nova_parcela').is(':checked')) {
+            $('#datas_parcelas_section').addClass('hidden');
+            $('#mensagem_resto').text('Selecione uma das opções sobre o resto').removeClass('hidden');
+        } else {
+            $('#datas_parcelas_section').removeClass('hidden');
+            $('#mensagem_resto').addClass('hidden');
         }
     }
 
