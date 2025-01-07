@@ -124,6 +124,7 @@ const sistDown = [ //Indisponibilidades simples (afeta apenas peticionamento fin
     { downDate: `25/11/2024`, description: "INDISPONIBILIDADE NOS SERVIÇOS DO PORTAL E-SAJ" },
     { downDate: `26/11/2024`, description: "INDISPONIBILIDADE NOS SERVIÇOS DO PORTAL E-SAJ" },
     { downDate: `09/12/2024`, description: "INDISPONIBILIDADE DOS SERVIÇOS DE CONSULTA PROCESSUAL E VISUALIZAÇÃO DA PASTA DIGITAL DE 1 GRAU DO PORTAL e-SAJ (TJSP)" },
+    { downDate: `12/12/2024`, description: "INDISPONIBILIDADE NOS SERVIÇOS DO PORTAL E-SAJ" },
 
 
 
