@@ -1,153 +1,168 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gerar Manifestação em PDF</title>
-
+    <title>Gerar Manifestação</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.2/html2pdf.bundle.min.js"></script>
     <style>
         body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
             font-family: Arial, sans-serif;
-            margin: 20px;
+            background-color: #f0f0f0;
         }
 
-        h1, h2 {
+        #manifestForm {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 600px;
+        }
+
+        #manifestForm h1 {
             text-align: center;
-        }
-
-        .section {
             margin-bottom: 20px;
         }
 
-        label {
+        #manifestForm label {
+            display: block;
+            margin-bottom: 5px;
             font-weight: bold;
         }
 
-        #manifestacaoText {
-            white-space: pre-line;
-            font-size: 12pt;
-            line-height: 1.5;
+        #manifestForm input,
+        #manifestForm textarea {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+
+        #manifestForm button {
+            width: 100%;
+            padding: 10px;
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        #manifestForm button:hover {
+            background-color: #0056b3;
+        }
+
+        #pdfContent {
+            width: 210mm;
+            height: 296mm;
+            padding: 10mm;
+            font-family: Arial, sans-serif;
+            font-size: 18pt;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .text-justify {
+            text-align: justify;
+        }
+
+        footer {
+            text-align: center;
+            font-size: 10pt;
+            font-style: italic;
         }
     </style>
 </head>
+
 <body>
-    <h1>Manifestação em Juizado Especial Cível</h1>
     <form id="manifestForm">
-        <div class="section">
-            <label for="processo">Processo nº:</label>
-            <input type="text" id="processo" required>
-        </div>
-        
-        <div class="section">
-            <label for="nome">Nome da parte:</label>
-            <input type="text" id="nome" required>
-        </div>
-        
-        <div class="section">
-            <label for="rg">RG da parte:</label>
-            <input type="text" id="rg" required>
-        </div>
-        
-        <div class="section">
-            <label for="cpf">CPF da parte:</label>
-            <input type="text" id="cpf" required>
-        </div>
-        
-        <div class="section">
-            <label for="atualizarEndereco">Atualizar endereço:</label>
-            <select id="atualizarEndereco">
-                <option value="nao">Não</option>
-                <option value="sim">Sim</option>
-            </select>
-        </div>
-        
-        <div class="section" id="enderecoFields" style="display:none;">
-            <label for="endereco">Novo endereço:</label>
-            <textarea id="endereco" rows="3" cols="40"></textarea>
-        </div>
-        
-        <div class="section">
-            <label for="manifestacao">Manifestação:</label><br>
-            <textarea id="manifestacao" rows="6" cols="50" required></textarea>
-        </div>
-        
-        <button type="button" onclick="gerarPDF()">Gerar Manifestação</button>
+        <h1>Formulário de Manifestação</h1>
+        <label for="processNumber">Nº do processo (Obrigatório):</label>
+        <input type="text" id="processNumber" name="processNumber" required>
 
-        <script src="https://cdn.jsdelivr.net/npm/pdf-lib@^1.15.0/dist/pdf-lib.min.js"></script>
-        <script>
-            async function gerarPDF() {
-                const processo = document.getElementById('processo').value;
-                const nome = document.getElementById('nome').value;
-                const rg = document.getElementById('rg').value;
-                const cpf = document.getElementById('cpf').value;
-                const atualizarEndereco = document.getElementById('atualizarEndereco').value;
-                const endereco = document.getElementById('endereco').value;
-                const manifestacao = document.getElementById('manifestacao').value;
+        <label for="name">Seu nome (Obrigatório):</label>
+        <input type="text" id="name" name="name" required>
 
-                const pdfDoc = await PDFLib.PDFDocument.create();
-                let page = pdfDoc.addPage();
-                const { width, height } = page.getSize();
+        <label for="cpf">CPF (Obrigatório):</label>
+        <input type="text" id="cpf" name="cpf" required>
 
-                const font = await pdfDoc.embedFont(PDFLib.StandardFonts.Helvetica);
+        <label for="content">Campo de digitação (Obrigatório):</label>
+        <textarea id="content" name="content" rows="10" required></textarea>
 
-                // Conteúdo da petição
-                const manifestacaoText = `
-                    EXCELENTÍSSIMO JUIZ DE DIREITO DO JUIZADO ESPECIAL CÍVEL DE MARÍLIA/SP
-
-                    Processo nº: ${processo}
-
-                    ${nome}, portador(a) do RG ${rg} e CPF ${cpf}${atualizarEndereco === 'sim' ? `, residente no seguinte endereço: ${endereco}` : ''},
-                    já devidamente qualificado(a), nos autos da ação em epígrafe, vem, respeitosamente, apresentar manifestação nos seguintes termos:
-
-                    ${manifestacao}
-
-                    Termos em que pede deferimento
-
-                    Marília/SP, ${new Date().toLocaleDateString('pt-BR')}
-                    
-                    _________________________
-                    ${nome}
-                `;
-
-                const lines = manifestacaoText.split('\n');
-                const fontSize = 12;
-                const lineHeight = fontSize * 1.5;
-                let currentY = height - 50;
-                let currentPage = 0;
-
-                for (let line of lines) {
-                    const textWidth = font.widthOfTextAtSize(line, fontSize);
-                    if (currentY < 50 || (currentY - lineHeight) < 50) {
-                        page = pdfDoc.addPage();
-                        currentPage++;
-                        currentY = height - 50;
-                    }
-                    page.drawText(line.trim(), {
-                        x: 50,
-                        y: currentY,
-                        font,
-                        fontSize,
-                        color: PDFLib.rgb(0, 0, 0),
-                    });
-                    currentY -= lineHeight;
-                }
-
-                const pdfBytes = await pdfDoc.save();
-
-                const blob = new Blob([pdfBytes], { type: 'application/pdf' });
-                const url = URL.createObjectURL(blob);
-
-                const newTab = window.open(url, '_blank');
-                if (!newTab) {
-                    alert('Erro ao abrir o PDF. Verifique as configurações do seu navegador.');
-                }
-            }
-
-            document.getElementById('atualizarEndereco').addEventListener('change', function() {
-                const display = this.value === 'sim' ? 'block' : 'none';
-                document.getElementById('enderecoFields').style.display = display;
-            });
-        </script>
+        <button type="button" onclick="generatePDF()">Gerar Manifestação</button>
     </form>
+
+    <div id="pdfContent" style="display: none;">
+        <div>
+            <p class="text-justify" style="font-weight: bold;">EXMO. SR. JUIZ DE DIREITO DO JUIZADO ESPECIAL CÍVEL DA
+                COMARCA DE MARÍLIA/SP</p>
+            <p class="text-justify">Processo nº <span id="pdfProcessNumber"></span></p>
+            <p class="text-justify">Solicitante: <span id="pdfName"></span></p>
+            <p class="text-justify">A parte acima apresenta sua MANIFESTAÇÃO, nos seguintes termos:</p>
+            <p class="text-justify" id="pdfContentText"></p>
+            <p class="text-justify">Termos em que pede deferimento.</p>
+            <p class="text-justify">Marília, <span id="pdfDate"></span>.</p>
+            <br><br>
+            <p class="text-justify">______________________________</p>
+            <p class="text-justify"><span id="pdfSignatureName"></span></p>
+            <p class="text-justify"><span id="pdfSignatureCPF"></span></p>
+        </div>
+        <footer>
+            Esta manifestação é de exclusiva responsabilidade da parte que a redigiu.
+            <p><b>ATENÇÃO</b>: essa manifestação somente será juntada no processo após ser apresentada impressa e
+                assinada no Balcão Presencial do Juizado Especial Cível de Marília/SP.</p>
+            <p>Caso queira, a parte poderá enviar a manifestação assinada e em formato .pdf para o endereço de e-mail
+                mariliajec@tjsp.jus.br juntamente com documento de identidade (em formato .pdf ou .jpg) que contenha a
+                assinatura da parte. Deverá ser informado no campo "assunto" o número do processo e no corpo do texto do
+                e-mail a solicitação de que seja juntada a manifestação no processo. A manifestação e o documento de
+                identidade que comprova a assinatura deverão ser anexados ao e-mail.</p>
+        </footer>
+    </div>
+
+    <script>
+        async function generatePDF() {
+            const processNumber = document.getElementById('processNumber').value;
+            const name = document.getElementById('name').value;
+            const cpf = document.getElementById('cpf').value;
+            const content = document.getElementById('content').value;
+            const today = new Date();
+            const dateStr = today.toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' });
+
+            document.getElementById('pdfProcessNumber').innerText = processNumber;
+            document.getElementById('pdfName').innerText = name;
+            document.getElementById('pdfContentText').innerText = content;
+            document.getElementById('pdfDate').innerText = dateStr;
+            document.getElementById('pdfSignatureName').innerText = name;
+            document.getElementById('pdfSignatureCPF').innerText = cpf;
+
+            const element = document.getElementById('pdfContent');
+            element.style.display = 'block';
+
+            const opt = {
+                margin: 10,
+                filename: 'manifestacao.pdf',
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2 },
+                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+            };
+
+            html2pdf().from(element).set(opt).save().then(() => {
+                element.style.display = 'none';
+            });
+        }
+    </script>
 </body>
+
 </html>
