@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gerar Manifestação</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.2/html2pdf.bundle.min.js"></script>
+    <script src="https://unpkg.com/imask"></script>
     <style>
         body {
             display: flex;
@@ -15,15 +16,19 @@
             margin: 0;
             font-family: Arial, sans-serif;
             background-color: #f0f0f0;
+            font-size: 1.7em;
+
         }
 
         #manifestForm {
             background-color: #fff;
-            padding: 20px;
+            padding: 2%;
             border-radius: 8px;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
             width: 100%;
-            max-width: 600px;
+            max-width: 50%;
+            box-sizing: border-box;
+
         }
 
         #manifestForm h1 {
@@ -45,6 +50,7 @@
             border: 1px solid #ccc;
             border-radius: 4px;
             box-sizing: border-box;
+            font-size: 1em;
         }
 
         #manifestForm button {
@@ -55,7 +61,7 @@
             border: none;
             border-radius: 4px;
             cursor: pointer;
-            font-size: 16px;
+            font-size: 1em;
         }
 
         #manifestForm button:hover {
@@ -64,11 +70,12 @@
 
         #pdfContent {
             width: 210mm;
-            height: 296mm;
-            padding: 10mm;
+            min-height: 285mm;
+            padding: 10mm 10mm 0mm 10mm;
             font-family: Arial, sans-serif;
-            font-size: 18pt;
+            font-size: 14pt;
             box-sizing: border-box;
+            position: relative;
             display: flex;
             flex-direction: column;
             justify-content: space-between;
@@ -76,12 +83,34 @@
 
         .text-justify {
             text-align: justify;
+            page-break-inside: avoid;
+        }
+
+        .content {
+            flex: 1;
+            overflow: hidden;
         }
 
         footer {
-            text-align: center;
-            font-size: 10pt;
+            text-align: justify;
+            font-size: 8pt;
             font-style: italic;
+            position: absolute;
+            bottom: 5mm;
+            left: 10mm;
+            right: 10mm;
+            page-break-inside: avoid;
+        }
+
+        @media (max-width: 600px) {
+            #manifestForm {
+                width: 95%;
+                padding: 5%;
+            }
+
+            #manifestForm button {
+                font-size: 14px;
+            }
         }
     </style>
 </head>
@@ -98,41 +127,100 @@
         <label for="cpf">CPF (Obrigatório):</label>
         <input type="text" id="cpf" name="cpf" required>
 
-        <label for="content">Campo de digitação (Obrigatório):</label>
+        <label for="content">Digite sua manifestação abaixo:</label>
         <textarea id="content" name="content" rows="10" required></textarea>
 
-        <button type="button" onclick="generatePDF()">Gerar Manifestação</button>
+        <button type="button" onclick="validateAndGeneratePDF()">Gerar Manifestação</button>
     </form>
 
     <div id="pdfContent" style="display: none;">
-        <div>
-            <p class="text-justify" style="font-weight: bold;">EXMO. SR. JUIZ DE DIREITO DO JUIZADO ESPECIAL CÍVEL DA
+        <div class="content">
+            <p class="text-justify" style="font-weight: bold; margin-bottom: 40px;">EXMO. SR. JUIZ DE DIREITO DO JUIZADO
+                ESPECIAL CÍVEL DA
                 COMARCA DE MARÍLIA/SP</p>
-            <p class="text-justify">Processo nº <span id="pdfProcessNumber"></span></p>
-            <p class="text-justify">Solicitante: <span id="pdfName"></span></p>
-            <p class="text-justify">A parte acima apresenta sua MANIFESTAÇÃO, nos seguintes termos:</p>
-            <p class="text-justify" id="pdfContentText"></p>
+            <p class="text-justify"><b>Processo nº:</b> <span id="pdfProcessNumber"></span></p>
+            <p class="text-justify" style="margin-bottom: 40px;"><b>Solicitante:</b> <span id="pdfName"></span></p>
+            <p class="text-justify" style="margin-bottom: 40px;">A parte acima apresenta sua <b>MANIFESTAÇÃO</b>, nos
+                seguintes termos:</p>
+            <p class="text-justify" style="margin-bottom: 40px;" id="pdfContentText"></p>
             <p class="text-justify">Termos em que pede deferimento.</p>
             <p class="text-justify">Marília, <span id="pdfDate"></span>.</p>
-            <br><br>
-            <p class="text-justify">______________________________</p>
-            <p class="text-justify"><span id="pdfSignatureName"></span></p>
-            <p class="text-justify"><span id="pdfSignatureCPF"></span></p>
+            <p style="margin-bottom: 100px;">
+            <div class="page-break">
+                <p style="text-align: center;">_________________________________________________</p>
+                <p style="text-align: center;"><span id="pdfSignatureName"></span></p>
+                <p style="text-align: center;" style="margin-bottom: 50px;"><span id="pdfSignatureCPF"></span></p>
+            </div>
         </div>
         <footer>
-            Esta manifestação é de exclusiva responsabilidade da parte que a redigiu.
-            <p><b>ATENÇÃO</b>: essa manifestação somente será juntada no processo após ser apresentada impressa e
-                assinada no Balcão Presencial do Juizado Especial Cível de Marília/SP.</p>
-            <p>Caso queira, a parte poderá enviar a manifestação assinada e em formato .pdf para o endereço de e-mail
-                mariliajec@tjsp.jus.br juntamente com documento de identidade (em formato .pdf ou .jpg) que contenha a
-                assinatura da parte. Deverá ser informado no campo "assunto" o número do processo e no corpo do texto do
-                e-mail a solicitação de que seja juntada a manifestação no processo. A manifestação e o documento de
-                identidade que comprova a assinatura deverão ser anexados ao e-mail.</p>
+            _________________________________________________________________________________________________________________________
+            <br>
+            <br>
+            <b>ATENÇÃO: Esta manifestação somente terá validade se assinada pelo solicitante e juntada no processo.</b>
+            <br><br>
+            Para juntar esta manifestação no processo, entregue-a assinada no balcão do Juizado Especial Cível da
+            Comarca de Marília/SP.
+            O solicitante poderá enviar a manifestação por e-mail para que seja juntada no processo. Para isso, a
+            manifestação deverá ser assinada e encaminhada como anexo em formato .pdf ou .jpg para o e-mail
+            mariliajec@tjsp.jus.br, juntamente com um documento de identidade em formato .pdf ou .jpg que comprove a
+            assinatura do solicitante. Digite no campo "Assunto" o seguinte texto: "Petição para Juntada no Processo nº
+            <span id="pdfProcessNumber2"></span>".
         </footer>
     </div>
 
     <script>
-        async function generatePDF() {
+        document.addEventListener("DOMContentLoaded", function () {
+            var element = document.getElementById('processNumber');
+            var maskOptions = {
+                mask: '0000000-00.2X00.8.26.X344',
+                definitions: {
+                    X: {
+                        mask: '0',
+                        displayChar: '0',
+                        placeholderChar: '0',
+                    },
+                },
+                lazy: false,
+                overwrite: 'shift',
+            };
+            var mask = IMask(element, maskOptions);
+        });
+
+        function validateAndGeneratePDF() {
+            const processNumber = document.getElementById('processNumber').value;
+            const name = document.getElementById('name').value;
+            const cpf = document.getElementById('cpf').value;
+            const content = document.getElementById('content').value;
+
+            /*  if (processNumber === '' || processNumber.includes('_')) {
+                  alert('Por favor, preencha o campo "Nº do Processo" corretamente.');
+                  document.getElementById('processNumber').focus();
+                  return;
+  
+              }
+  
+              if (name.length <= 10) {
+                  alert('Por favor, informe um nome válido.');
+                  document.getElementById('name').focus();
+                  return;
+              }
+  
+              if (cpf.length < 11) {
+                  alert('Por favor, informe um CPF ou CNPJ válido');
+                  document.getElementById('cpf').focus();
+                  return;
+              }
+  
+              if (content.length < 20) {
+                  alert('Sua manifestação está muito curta.');
+                  document.getElementById('content').focus();
+                  return;
+              }*/
+
+            generatePDF();
+        }
+
+        function generatePDF() {
             const processNumber = document.getElementById('processNumber').value;
             const name = document.getElementById('name').value;
             const cpf = document.getElementById('cpf').value;
@@ -141,6 +229,7 @@
             const dateStr = today.toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' });
 
             document.getElementById('pdfProcessNumber').innerText = processNumber;
+            document.getElementById('pdfProcessNumber2').innerText = processNumber;
             document.getElementById('pdfName').innerText = name;
             document.getElementById('pdfContentText').innerText = content;
             document.getElementById('pdfDate').innerText = dateStr;
@@ -151,15 +240,23 @@
             element.style.display = 'block';
 
             const opt = {
-                margin: 10,
+                margin: [10, 0, 25, 0], // top, right, bottom, left
                 filename: 'manifestacao.pdf',
                 image: { type: 'jpeg', quality: 0.98 },
-                html2canvas: { scale: 2 },
-                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+                html2canvas: { scale: 1, useCORS: true },
+                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+                pagebreak: { mode: ['auto', 'css', 'legacy'] }
             };
 
-            html2pdf().from(element).set(opt).save().then(() => {
-                element.style.display = 'none';
+            html2pdf().from(element).set(opt).toPdf().get('pdf').then(function (pdf) {
+                const totalPages = pdf.internal.getNumberOfPages();
+
+                for (let i = 1; i <= totalPages; i++) {
+                    pdf.setPage(i);
+                    pdf.text(`Página ${i} de ${totalPages}`, pdf.internal.pageSize.getWidth() / 2, pdf.internal.pageSize.getHeight() - 10, { align: 'justify' });
+                }
+            }).save().then(() => {
+                element.style.display = '';
             });
         }
     </script>
