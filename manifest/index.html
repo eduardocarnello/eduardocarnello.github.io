@@ -31,6 +31,11 @@
 
         }
 
+        .page-break {
+            page-break-inside: avoid;
+            height: auto;
+        }
+
         #manifestForm h1 {
             text-align: center;
             margin-bottom: 20px;
@@ -69,26 +74,28 @@
         }
 
         #pdfContent {
-            width: 210mm;
-            min-height: 285mm;
-            padding: 10mm 10mm 0mm 10mm;
+            width: 190mm;
+            min-height: 245mm;
+            padding: 0mm 10mm 10mm 10mm;
             font-family: Arial, sans-serif;
             font-size: 14pt;
-            box-sizing: border-box;
+            box-sizing: content-box;
             position: relative;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
+            display: contents;
         }
 
         .text-justify {
             text-align: justify;
-            page-break-inside: avoid;
+
         }
 
         .content {
             flex: 1;
             overflow: hidden;
+
+            line-break: auto;
+            break-inside: avoid-page;
+            line-break: normal;
         }
 
         footer {
@@ -100,6 +107,7 @@
             left: 10mm;
             right: 10mm;
             page-break-inside: avoid;
+            display: none;
         }
 
         @media (max-width: 600px) {
@@ -135,37 +143,28 @@
 
     <div id="pdfContent" style="display: none;">
         <div class="content">
-            <p class="text-justify" style="font-weight: bold; margin-bottom: 40px;">EXMO. SR. JUIZ DE DIREITO DO JUIZADO
+            <!--p class="text-justify" style="font-weight: bold; margin-bottom: 40px;">EXMO. SR. JUIZ DE DIREITO DO JUIZADO
                 ESPECIAL CÍVEL DA
-                COMARCA DE MARÍLIA/SP</p>
-            <p class="text-justify"><b>Processo nº:</b> <span id="pdfProcessNumber"></span></p>
+                COMARCA DE MARÍLIA/SP</p-->
+            <p class="text-justify" style="margin-top: 100px;"><b>Processo nº:</b> <span id="pdfProcessNumber"></span>
+            </p>
             <p class="text-justify" style="margin-bottom: 40px;"><b>Solicitante:</b> <span id="pdfName"></span></p>
             <p class="text-justify" style="margin-bottom: 40px;">A parte acima apresenta sua <b>MANIFESTAÇÃO</b>, nos
                 seguintes termos:</p>
+
             <p class="text-justify" style="margin-bottom: 40px;" id="pdfContentText"></p>
-            <p class="text-justify">Termos em que pede deferimento.</p>
-            <p class="text-justify">Marília, <span id="pdfDate"></span>.</p>
-            <p style="margin-bottom: 100px;">
             <div class="page-break">
-                <p style="text-align: center;">_________________________________________________</p>
-                <p style="text-align: center;"><span id="pdfSignatureName"></span></p>
-                <p style="text-align: center;" style="margin-bottom: 50px;"><span id="pdfSignatureCPF"></span></p>
+                <p class="text-justify">Termos em que pede deferimento.</p>
+                <p class="text-justify">Marília, <span id="pdfDate"></span>.</p>
+                <p style="margin-bottom: 100px;">
+
+                <p style="text-align: center; line-height: 0.2;">_________________________________________________</p>
+                <p style="text-align: center;line-height: 0.2;"><span id="pdfSignatureName"></span></p>
+                <p style="text-align: center; line-height: 0.2; margin-bottom: 10px; margin-block-end: 5px;;"><span
+                        id="pdfSignatureCPF"></span></p>
             </div>
         </div>
-        <footer>
-            _________________________________________________________________________________________________________________________
-            <br>
-            <br>
-            <b>ATENÇÃO: Esta manifestação somente terá validade se assinada pelo solicitante e juntada no processo.</b>
-            <br><br>
-            Para juntar esta manifestação no processo, entregue-a assinada no balcão do Juizado Especial Cível da
-            Comarca de Marília/SP.
-            O solicitante poderá enviar a manifestação por e-mail para que seja juntada no processo. Para isso, a
-            manifestação deverá ser assinada e encaminhada como anexo em formato .pdf ou .jpg para o e-mail
-            mariliajec@tjsp.jus.br, juntamente com um documento de identidade em formato .pdf ou .jpg que comprove a
-            assinatura do solicitante. Digite no campo "Assunto" o seguinte texto: "Petição para Juntada no Processo nº
-            <span id="pdfProcessNumber2"></span>".
-        </footer>
+
     </div>
 
     <script>
@@ -229,7 +228,7 @@
             const dateStr = today.toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' });
 
             document.getElementById('pdfProcessNumber').innerText = processNumber;
-            document.getElementById('pdfProcessNumber2').innerText = processNumber;
+            //document.getElementById('pdfProcessNumber2').innerText = processNumber;
             document.getElementById('pdfName').innerText = name;
             document.getElementById('pdfContentText').innerText = content;
             document.getElementById('pdfDate').innerText = dateStr;
@@ -240,21 +239,59 @@
             element.style.display = 'block';
 
             const opt = {
-                margin: [10, 0, 25, 0], // top, right, bottom, left
+                margin: [0, 0, 40, 0], // top, right, bottom, left
                 filename: 'manifestacao.pdf',
                 image: { type: 'jpeg', quality: 0.98 },
-                html2canvas: { scale: 1, useCORS: true },
+                html2canvas: { scale: 2, useCORS: true },
                 jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
-                pagebreak: { mode: ['auto', 'css', 'legacy'] }
+                //   pagebreak: { mode: ['avoid-all', 'css', 'legacy'] },
+                autoPaging: 'text', // Crucial for handling text flow across pages
+                //autoPaging: 'text', // Crucial for handling text flow across pages
+
             };
 
             html2pdf().from(element).set(opt).toPdf().get('pdf').then(function (pdf) {
                 const totalPages = pdf.internal.getNumberOfPages();
+                pdf.setPage(1)
+                pdf.setFont('sans-serif', 'bold');
+
+                pdf.text('AO JUÍZO DO JUIZADO ESPECIAL CÍVEL DA COMARCA DE MARÍLIA/SP ', pdf.internal.pageSize.getWidth() / 2, 20, { align: 'center' });
+
 
                 for (let i = 1; i <= totalPages; i++) {
                     pdf.setPage(i);
-                    pdf.text(`Página ${i} de ${totalPages}`, pdf.internal.pageSize.getWidth() / 2, pdf.internal.pageSize.getHeight() - 10, { align: 'justify' });
+                    pdf.setFontSize(8);
+                    const pageWidth = pdf.internal.pageSize.getWidth();
+                    const marginLeft = pageWidth * 0.95; // 2.5% margin
+                    const maxWidth = pageWidth * 0.95; // 95% width
+                    pdf.text(`Página ${i} de ${totalPages}`, marginLeft, pdf.internal.pageSize.getHeight() - 10, { maxWidth: maxWidth, align: 'right' });
                 }
+                pdf.setPage(totalPages)
+                pdf.setFontSize(8);
+                const pageWidth = pdf.internal.pageSize.getWidth();
+                const marginLeft = pageWidth * 0.025; // 2.5% margin
+                const marginLeft2 = pageWidth * 0.95; // 2.5% margin
+                const maxWidth = pageWidth * 0.95; // 95% width
+                const footerText1 = `_________________________________________________________________________________________________________________________`;
+                const footerText2 = `ATENÇÃO: Esta manifestação somente terá validade se assinada pelo solicitante e juntada no processo.</b>
+Para juntar esta manifestação no processo, entregue-a assinada no balcão do Juizado Especial Cível da
+Comarca de Marília/SP.
+O solicitante poderá enviar a manifestação por e-mail para que seja juntada no processo. Para isso, a
+manifestação deverá ser assinada e encaminhada como anexo em formato .pdf ou .jpg para o e-mail
+mariliajec@tjsp.jus.br, juntamente com um documento de identidade em formato .pdf ou .jpg que comprove a
+assinatura do solicitante. Digite no campo "Assunto" o seguinte texto: "Petição para Juntada no Processo nº)`;
+
+                const lines1 = pdf.splitTextToSize(footerText1, maxWidth);
+                const lines2 = pdf.splitTextToSize(footerText2, maxWidth);
+
+
+                pdf.text(lines1, marginLeft, pdf.internal.pageSize.getHeight() - 30, { align: 'left' });
+                pdf.text(lines2, marginLeft, pdf.internal.pageSize.getHeight() - 25, { maxWidth: maxWidth, align: 'justify' });
+
+
+
+
+
             }).save().then(() => {
                 element.style.display = '';
             });
