@@ -76,7 +76,7 @@
         #pdfContent {
             width: 190mm;
             min-height: 245mm;
-            padding: 0mm 10mm 10mm 10mm;
+            padding: 0mm 10mm 0mm 10mm;
             font-family: Arial, sans-serif;
             font-size: 14pt;
             box-sizing: content-box;
@@ -89,6 +89,13 @@
 
         }
 
+        .text-justify-content {
+            text-align: justify;
+            margin-bottom: 20px;
+            line-break: auto;
+            page-break-inside: avoid;
+        }
+
         .content {
             flex: 1;
             overflow: hidden;
@@ -98,7 +105,7 @@
             line-break: normal;
         }
 
-        footer {
+        .content footer {
             text-align: justify;
             font-size: 8pt;
             font-style: italic;
@@ -146,13 +153,13 @@
             <!--p class="text-justify" style="font-weight: bold; margin-bottom: 40px;">EXMO. SR. JUIZ DE DIREITO DO JUIZADO
                 ESPECIAL CÍVEL DA
                 COMARCA DE MARÍLIA/SP</p-->
-            <p class="text-justify" style="margin-top: 100px;"><b>Processo nº:</b> <span id="pdfProcessNumber"></span>
+            <p class="text-justify" style="margin-top: 00px;"><b>Processo nº:</b> <span id="pdfProcessNumber"></span>
             </p>
-            <p class="text-justify" style="margin-bottom: 40px;"><b>Solicitante:</b> <span id="pdfName"></span></p>
-            <p class="text-justify" style="margin-bottom: 40px;">A parte acima apresenta sua <b>MANIFESTAÇÃO</b>, nos
+            <p class="text-justify" style="margin-bottom: 0px;"><b>Solicitante:</b> <span id="pdfName"></span></p>
+            <p class="text-justify" style="margin-bottom: 0px;">A parte acima apresenta sua <b>MANIFESTAÇÃO</b>, nos
                 seguintes termos:</p>
 
-            <p class="text-justify" style="margin-bottom: 40px;" id="pdfContentText"></p>
+            <p class="text-justify-content" style="margin-bottom: 0px;" id="pdfContentText"></p>
             <div class="page-break">
                 <p class="text-justify">Termos em que pede deferimento.</p>
                 <p class="text-justify">Marília, <span id="pdfDate"></span>.</p>
@@ -224,13 +231,58 @@
             const name = document.getElementById('name').value;
             const cpf = document.getElementById('cpf').value;
             const content = document.getElementById('content').value;
+            const paragraphs = content.split('\n');
+            const newParagraphs = [];
+
+            paragraphs.forEach(paragraph => {
+                const words = paragraph.split(' ');
+                if (words.length > 60) {
+                    let currentParagraph = [];
+                    words.forEach((word, index) => {
+                        currentParagraph.push(word);
+                        if ((index + 1) % 60 === 0) {
+                            const paragraphText = currentParagraph.join(' ');
+                            const match = paragraphText.match(/.*?\./);
+                            if (match) {
+                                newParagraphs.push(match[0]);
+                                currentParagraph = [paragraphText.slice(match[0].length).trim()];
+                            } else {
+                                newParagraphs.push(paragraphText);
+                                currentParagraph = [];
+                            }
+                        }
+                    });
+                    if (currentParagraph.length > 0) {
+                        newParagraphs.push(currentParagraph.join(' '));
+                    }
+                } else {
+                    newParagraphs.push(paragraph);
+                }
+            });
+
+            // Transformar a array de newParagraphs em uma única string
+            const paragraphsValue = newParagraphs.join('\n');
+
+            // Definir o valor do elemento de texto com o conteúdo dos parágrafos
+            document.getElementById('content').value = paragraphsValue;
+
+            const contentContainer = document.createElement('div');
+
+            newParagraphs.forEach(paragraph => {
+                const p = document.createElement('p');
+                p.style.pageBreakInside = 'auto';
+                p.style.whiteSpace = 'pre-wrap';
+                p.textContent = paragraph;
+                contentContainer.appendChild(p);
+            });
             const today = new Date();
             const dateStr = today.toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' });
+
 
             document.getElementById('pdfProcessNumber').innerText = processNumber;
             //document.getElementById('pdfProcessNumber2').innerText = processNumber;
             document.getElementById('pdfName').innerText = name;
-            document.getElementById('pdfContentText').innerText = content;
+            document.getElementById('pdfContentText').innerHTML = contentContainer.innerHTML;
             document.getElementById('pdfDate').innerText = dateStr;
             document.getElementById('pdfSignatureName').innerText = name;
             document.getElementById('pdfSignatureCPF').innerText = cpf;
@@ -239,12 +291,13 @@
             element.style.display = 'block';
 
             const opt = {
-                margin: [0, 0, 40, 0], // top, right, bottom, left
+                margin: [40, 0, 50, 0], // top, right, bottom, left
+
                 filename: 'manifestacao.pdf',
                 image: { type: 'jpeg', quality: 0.98 },
                 html2canvas: { scale: 2, useCORS: true },
                 jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
-                //   pagebreak: { mode: ['avoid-all', 'css', 'legacy'] },
+                pagebreak: { mode: ['avoid-all', 'css', 'legacy'] },
                 autoPaging: 'text', // Crucial for handling text flow across pages
                 //autoPaging: 'text', // Crucial for handling text flow across pages
 
