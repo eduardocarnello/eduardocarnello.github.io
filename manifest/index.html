@@ -33,7 +33,8 @@
 
         .page-break {
             page-break-inside: avoid;
-            height: auto;
+            height: 220px;
+
         }
 
         #manifestForm h1 {
@@ -75,7 +76,7 @@
 
         #pdfContent {
             width: 190mm;
-            min-height: 245mm;
+            min-height: 225mm;
             padding: 0mm 10mm 0mm 10mm;
             font-family: Arial, sans-serif;
             font-size: 14pt;
@@ -92,8 +93,8 @@
         .text-justify-content {
             text-align: justify;
             margin-bottom: 20px;
-            line-break: auto;
-            page-break-inside: avoid;
+            break-inside: unset;
+
         }
 
         .content {
@@ -101,7 +102,7 @@
             overflow: hidden;
 
             line-break: auto;
-            break-inside: avoid-page;
+            break-inside: unset;
             line-break: normal;
         }
 
@@ -145,7 +146,10 @@
         <label for="content">Digite sua manifestação abaixo:</label>
         <textarea id="content" name="content" rows="10" required></textarea>
 
+
+
         <button type="button" onclick="validateAndGeneratePDF()">Gerar Manifestação</button>
+
     </form>
 
     <div id="pdfContent" style="display: none;">
@@ -153,9 +157,11 @@
             <!--p class="text-justify" style="font-weight: bold; margin-bottom: 40px;">EXMO. SR. JUIZ DE DIREITO DO JUIZADO
                 ESPECIAL CÍVEL DA
                 COMARCA DE MARÍLIA/SP</p-->
-            <p class="text-justify" style="margin-top: 00px;"><b>Processo nº:</b> <span id="pdfProcessNumber"></span>
+            <p class="text-justify" style="margin-top: 0px; margin-block-end: 0px;"><b>Processo nº:</b> <span
+                    id="pdfProcessNumber"></span>
             </p>
-            <p class="text-justify" style="margin-bottom: 0px;"><b>Solicitante:</b> <span id="pdfName"></span></p>
+            <p class="text-justify" style="margin-bottom: 40px; margin-block-start: 2px;"><b>Solicitante:</b> <span
+                    id="pdfName"></span></p>
             <p class="text-justify" style="margin-bottom: 0px;">A parte acima apresenta sua <b>MANIFESTAÇÃO</b>, nos
                 seguintes termos:</p>
 
@@ -193,10 +199,13 @@
         });
 
         function validateAndGeneratePDF() {
+            // Reset values at the beginning of the function
+            const remove = document.querySelectorAll('p#paragrafo');
+            remove.forEach(paragraph => paragraph.remove());
             const processNumber = document.getElementById('processNumber').value;
             const name = document.getElementById('name').value;
             const cpf = document.getElementById('cpf').value;
-            const content = document.getElementById('content').value;
+            var content = document.getElementById('content').value;
 
             /*  if (processNumber === '' || processNumber.includes('_')) {
                   alert('Por favor, preencha o campo "Nº do Processo" corretamente.');
@@ -227,33 +236,43 @@
         }
 
         function generatePDF() {
+            var newParagraphs = [];
+
+            // Para remover todos os elementos da array
+            newParagraphs.length = 0;
+            const contentContainer = document.createElement('div');
+
+            // Limpar o contentContainer antes de adicionar novos parágrafos
+            contentContainer.innerHTML = '';
+
             const processNumber = document.getElementById('processNumber').value;
             const name = document.getElementById('name').value;
             const cpf = document.getElementById('cpf').value;
-            const content = document.getElementById('content').value;
-            const paragraphs = content.split('\n');
-            const newParagraphs = [];
+            var content = document.getElementById('content').value;
+            var paragraphs = content.split('\n');
+            var newParagraphs = [];
+            const words = ''
+            var paragraphsValue = '';
 
             paragraphs.forEach(paragraph => {
                 const words = paragraph.split(' ');
-                if (words.length > 60) {
-                    let currentParagraph = [];
-                    words.forEach((word, index) => {
-                        currentParagraph.push(word);
-                        if ((index + 1) % 60 === 0) {
-                            const paragraphText = currentParagraph.join(' ');
-                            const match = paragraphText.match(/.*?\./);
-                            if (match) {
-                                newParagraphs.push(match[0]);
-                                currentParagraph = [paragraphText.slice(match[0].length).trim()];
-                            } else {
-                                newParagraphs.push(paragraphText);
-                                currentParagraph = [];
-                            }
+                currentParagraph = ''
+                currentParagraph.length = 0;
+                if (words.length > 100) {
+                    let startIndex = 0;
+                    while (startIndex < words.length) {
+                        let endIndex = Math.min(startIndex + 60, words.length);
+                        let currentParagraph = words.slice(startIndex, endIndex).join(' ');
+                        let remainingWords = words.slice(endIndex).join(' ');
+                        const match = remainingWords.match(/.*?\./);
+                        if (match) {
+                            currentParagraph += ' ' + match[0];
+                            newParagraphs.push(currentParagraph);
+                            startIndex += currentParagraph.split(' ').length;
+                        } else {
+                            newParagraphs.push(currentParagraph);
+                            startIndex += 100;
                         }
-                    });
-                    if (currentParagraph.length > 0) {
-                        newParagraphs.push(currentParagraph.join(' '));
                     }
                 } else {
                     newParagraphs.push(paragraph);
@@ -261,28 +280,34 @@
             });
 
             // Transformar a array de newParagraphs em uma única string
-            const paragraphsValue = newParagraphs.join('\n');
+            var paragraphsValue = newParagraphs.join('\n');
 
             // Definir o valor do elemento de texto com o conteúdo dos parágrafos
             document.getElementById('content').value = paragraphsValue;
 
-            const contentContainer = document.createElement('div');
+            // Limpar o contentContainer antes de adicionar novos parágrafos
+            contentContainer.innerHTML = '';
 
             newParagraphs.forEach(paragraph => {
                 const p = document.createElement('p');
                 p.style.pageBreakInside = 'auto';
                 p.style.whiteSpace = 'pre-wrap';
+                p.style.textAlign = 'justify';
+                p.style.textIndent = '6em'
                 p.textContent = paragraph;
+                p.id = 'paragrafo';
                 contentContainer.appendChild(p);
             });
+
             const today = new Date();
             const dateStr = today.toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' });
 
+            // Limpar o conteúdo anterior do PDF
+            document.getElementById('pdfContentText').innerHTML = '';
 
             document.getElementById('pdfProcessNumber').innerText = processNumber;
-            //document.getElementById('pdfProcessNumber2').innerText = processNumber;
             document.getElementById('pdfName').innerText = name;
-            document.getElementById('pdfContentText').innerHTML = contentContainer.innerHTML;
+            document.getElementById('pdfContentText').insertAdjacentHTML('afterend', contentContainer.innerHTML);
             document.getElementById('pdfDate').innerText = dateStr;
             document.getElementById('pdfSignatureName').innerText = name;
             document.getElementById('pdfSignatureCPF').innerText = cpf;
@@ -291,16 +316,13 @@
             element.style.display = 'block';
 
             const opt = {
-                margin: [40, 0, 50, 0], // top, right, bottom, left
-
+                margin: [25, 0, 35, 0], // top, right, bottom, left
                 filename: 'manifestacao.pdf',
                 image: { type: 'jpeg', quality: 0.98 },
                 html2canvas: { scale: 2, useCORS: true },
                 jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
                 pagebreak: { mode: ['avoid-all', 'css', 'legacy'] },
-                autoPaging: 'text', // Crucial for handling text flow across pages
-                //autoPaging: 'text', // Crucial for handling text flow across pages
-
+                //   autoPaging: 'text', // Crucial for handling text flow across pages
             };
 
             html2pdf().from(element).set(opt).toPdf().get('pdf').then(function (pdf) {
@@ -309,7 +331,6 @@
                 pdf.setFont('sans-serif', 'bold');
 
                 pdf.text('AO JUÍZO DO JUIZADO ESPECIAL CÍVEL DA COMARCA DE MARÍLIA/SP ', pdf.internal.pageSize.getWidth() / 2, 20, { align: 'center' });
-
 
                 for (let i = 1; i <= totalPages; i++) {
                     pdf.setPage(i);
@@ -323,7 +344,6 @@
                 pdf.setFontSize(8);
                 const pageWidth = pdf.internal.pageSize.getWidth();
                 const marginLeft = pageWidth * 0.025; // 2.5% margin
-                const marginLeft2 = pageWidth * 0.95; // 2.5% margin
                 const maxWidth = pageWidth * 0.95; // 95% width
                 const footerText1 = `_________________________________________________________________________________________________________________________`;
                 const footerText2 = `ATENÇÃO: Esta manifestação somente terá validade se assinada pelo solicitante e juntada no processo.</b>
@@ -337,19 +357,15 @@ assinatura do solicitante. Digite no campo "Assunto" o seguinte texto: "Petiçã
                 const lines1 = pdf.splitTextToSize(footerText1, maxWidth);
                 const lines2 = pdf.splitTextToSize(footerText2, maxWidth);
 
-
                 pdf.text(lines1, marginLeft, pdf.internal.pageSize.getHeight() - 30, { align: 'left' });
                 pdf.text(lines2, marginLeft, pdf.internal.pageSize.getHeight() - 25, { maxWidth: maxWidth, align: 'justify' });
 
-
-
-
-
             }).save().then(() => {
                 element.style.display = '';
+
+
             });
-        }
-    </script>
+        }</script>
 </body>
 
 </html>
