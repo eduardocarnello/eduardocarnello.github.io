@@ -12,7 +12,7 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 100vh;
+            min-height: 100vh;
             margin: 0;
             font-family: Arial, sans-serif;
             background-color: #f0f0f0;
@@ -49,6 +49,7 @@
         }
 
         #manifestForm input,
+        #manifestForm select,
         #manifestForm textarea {
             width: 100%;
             padding: 10px;
@@ -143,8 +144,58 @@
         <label for="cpf">CPF (Obrigatório):</label>
         <input type="text" id="cpf" name="cpf" required>
 
+        <label for="manifestationType">Tipo da Manifestação:</label>
+        <select id="manifestationType" name="manifestationType">
+            <option value="opcao1">Manifestação (Geral)</option>
+            <option value="opcao2">Emenda à Inicial</option>
+            <option value="opcao3">Atualização do Próprio Endereço</option>
+            <option value="opcao4">Indicação do Endereço da Parte Contrária</option>
+            <option value="opcao5">Manifestação sobre a Contestação (Réplica)</option>
+            <option value="opcao6">Indicação de Provas</option>
+            <option value="opcao7">Início do Cumprimento de Sentença</option>
+        </select>
+
+        <!-- Novo campo de entrada para o endereço -->
+        <div id="addressField" style="display: none;">
+            <div id="nameAddressField">
+                <label for="nameAddress">Nome da Parte (que irá ter o endereço indicado):</label>
+                <input type="text" id="nameAddress" name="nameAddress" required>
+            </div>
+            <div class="inline-section hidden endereco-section">
+                <label>CEP:</label>
+                <input type="text" class="cep" maxlength="9" placeholder="#####-###">
+            </div>
+            <div class="inline-section hidden endereco-completo-section">
+                <label>Rua:</label>
+                <input style="flex: auto; width: 275px;" type="text" class="rua" readonly>
+                <label class="labnumero">Nº:</label>
+                <input type="text" class="numero" maxlength="6">
+            </div>
+            <div class="inline-section hidden complemento-bairro-section">
+                <label>Complemento:</label>
+                <input type="text" class="complemento" style="flex: auto;">
+                <label class="labbairro">Bairro:</label>
+                <input type="text" class="bairro" readonly>
+            </div>
+            <div class="inline-section hidden cidade-estado-section">
+                <label>Cidade:</label>
+                <input type="text" class="cidade" readonly="" style="
+                                flex: auto;
+                                width: 335px;
+                            ">
+                <label class="labestado">Estado:</label>
+                <input type="text" class="estado" readonly="" style="
+                                width: 10px;
+                            ">
+            </div>
+            <!-- Parágrafo que será exibido -->
+
+        </div>
+
         <label for="content">Digite sua manifestação abaixo:</label>
         <textarea id="content" name="content" rows="10" required></textarea>
+
+
 
 
 
@@ -162,8 +213,11 @@
             </p>
             <p class="text-justify" style="margin-bottom: 40px; margin-block-start: 2px;"><b>Solicitante:</b> <span
                     id="pdfName"></span></p>
-            <p class="text-justify" style="margin-bottom: 0px;">A parte acima apresenta sua <b>MANIFESTAÇÃO</b>, nos
+            <p class="text-justify" style="margin-bottom: 0px;">A parte acima <span
+                    id="concorcanciaManifestation"></span> <b><span id="manifestationText"></span></b>, nos
                 seguintes termos:</p>
+            <p id="addressParagraph" style="display: none; justify-self: center;"></p>
+
 
             <p class="text-justify-content" style="margin-bottom: 0px;" id="pdfContentText"></p>
             <div class="page-break">
@@ -197,6 +251,117 @@
             };
             var mask = IMask(element, maskOptions);
         });
+        // Adiciona o evento change ao dropdown
+
+        const cepInput = document.querySelector(`.cep`);
+        if (cepInput) {
+            cepInput.addEventListener('input', function () {
+                const cep = this.value.replace(/\D/g, '');
+                if (cep.length === 8) {
+                    fetch(`https://viacep.com.br/ws/${cep}/json/`)
+                        .then(response => response.json())
+                        .then(data => {
+                            if (!data.erro) {
+                                document.querySelector(`.rua`).value = data.logradouro;
+                                document.querySelector(`.bairro`).value = data.bairro;
+                                document.querySelector(`.cidade`).value = data.localidade;
+                                document.querySelector(`.estado`).value = data.uf;
+                            } else {
+                                alert('CEP não encontrado.');
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Erro ao buscar o CEP:', error);
+                            alert('Erro ao buscar o CEP.');
+                        });
+                }
+            });
+
+            cepInput.addEventListener('input', function () {
+                this.value = this.value.replace(/\D/g, '').replace(/^(\d{5})(\d)/, '$1-$2');
+            });
+        }
+
+
+        // Adiciona o evento change ao dropdown
+        var manifestationText = document.getElementById('manifestationText');
+        var concorcanciaManifestation = document.getElementById('concorcanciaManifestation');
+        manifestationText.textContent = 'MANIFESTAÇÃO';
+        concorcanciaManifestation.textContent = 'apresenta';
+        document.getElementById('manifestationType').addEventListener('change', function () {
+            if (this.value === 'opcao1') {
+                concorcanciaManifestation.textContent = 'apresenta sua';
+                manifestationText.textContent = 'MANIFESTAÇÃO';
+                addressField.style.display = 'none';
+                addressParagraph.style.display = 'none';
+
+            } else if (this.value === 'opcao2') {
+                concorcanciaManifestation.textContent = 'apresenta sua';
+                manifestationText.textContent = 'EMENDA À INICIAL';
+                addressField.style.display = 'none';
+                addressParagraph.style.display = 'none';
+
+            } else if (this.value === 'opcao3') {
+                concorcanciaManifestation.textContent = 'requer a';
+                manifestationText.textContent = 'ATUALIZAÇÃO DO PRÓPRIO ENDEREÇO';
+                addressParagraph.style.display = 'block';
+                addressField.style.display = 'block';
+                nameAddressField.style.display = 'none';
+
+            } else if (this.value === 'opcao4') {
+                concorcanciaManifestation.textContent = 'vem indicar o';
+                manifestationText.textContent = 'ENDEREÇO DA PARTE CONTRÁRIA';
+                addressField.style.display = 'block';
+                addressParagraph.style.display = 'block';
+                nameAddressField.style.display = 'block';
+
+
+            } else if (this.value === 'opcao5') {
+                concorcanciaManifestation.textContent = 'vem apresentar ';
+                manifestationText.textContent = 'MANIFESTAÇÃO SOBRE A CONTESTAÇÃO';
+                addressField.style.display = 'none';
+
+            } else if (this.value === 'opcao6') {
+                concorcanciaManifestation.textContent = 'vem ';
+                manifestationText.textContent = 'INDICAR PROVAS';
+                addressField.style.display = 'none';
+
+            } else if (this.value === 'opcao7') {
+                manifestationText.textContent = 'REQUERIMENTO DE CUMPRIMENTO DE SENTENÇA';
+                content.value = `A parte credora solicita que seja certificado ` +
+                    `o trânsito em julgado da sentença proferida ` +
+                    `, renunciando a eventual prazo recursal. 
+
+Requer, ainda, que seja dado início à fase de cumprimento de sentença com a formação do respectivo incidente, que seja o valor de seu crédito atualizado pela Serventia nos termos da sentença e, após, seja(m) o(s) executado(s) intimado(s) para, no prazo de 15 (quinze) dias, efetuar(em) o pagamento do valor devido, sob pena de incidência de multa de 10% (dez por cento) e, após, de penhora de bens e/ou valores.
+
+Desde logo, caso não seja comprovado o pagamento nos autos, a parte credora requer que sejam penhorados bens e valores do(s) executado(s) suficientes para garantir a satisfação do crédito, seguindo-se a ordem de preferência da penhora prevista no art. 835 do CPC, postulando expressamente o uso dos sistemas para localização de valores e veículos, além da expedição de mandado de penhora e avaliação de bens livres.`
+
+
+            }
+
+
+            // manifestationText.textContent = this.selectedOptions[0].textContent;
+
+            // Atualiza o parágrafo quando os campos de endereço mudam
+            document.getElementById('nameAddress').addEventListener('input', updateAddressParagraph);
+            document.querySelectorAll('.cep, .rua, .numero, .complemento, .bairro, .cidade, .estado').forEach(function (input) {
+                input.addEventListener('input', updateAddressParagraph);
+            });
+
+            function updateAddressParagraph() {
+                var nameAddress = document.getElementById('nameAddress').value;
+                var rua = document.querySelector('.rua').value;
+                var numero = document.querySelector('.numero').value;
+                var complemento = document.querySelector('.complemento').value;
+                var bairro = document.querySelector('.bairro').value;
+                var cep = document.querySelector('.cep').value;
+                var cidade = document.querySelector('.cidade').value;
+                var estado = document.querySelector('.estado').value;
+
+                addressParagraph.innerHTML = `<b>${nameAddress}</b><br>${rua}, nº ${numero}, ${complemento}<br>${bairro}, ${cep}, ${cidade}/${estado}`;
+            }
+        });
+
 
         function validateAndGeneratePDF() {
             // Reset values at the beginning of the function
@@ -253,6 +418,8 @@
             var newParagraphs = [];
             const words = ''
             var paragraphsValue = '';
+            var manifestationText = document.getElementById('manifestationText');
+            var addressParagraph = document.getElementById('addressParagraph');
 
             paragraphs.forEach(paragraph => {
                 const words = paragraph.split(' ');
@@ -311,6 +478,8 @@
             document.getElementById('pdfDate').innerText = dateStr;
             document.getElementById('pdfSignatureName').innerText = name;
             document.getElementById('pdfSignatureCPF').innerText = cpf;
+            document.getElementById('manifestationText').innerText = manifestationText.textContent
+            //document.getElementById('addressParagraphSpan').innerHTML = addressParagraph.innerHTML;
 
             const element = document.getElementById('pdfContent');
             element.style.display = 'block';
