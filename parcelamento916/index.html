@@ -301,6 +301,12 @@
             padding: 5px;
             font-size: 1em;
         }
+
+        .small {
+            height: 1px;
+            padding: 5px;
+            border-radius: 0px !important;
+        }
     </style>
 
 </head>
@@ -367,9 +373,18 @@
         <div class="inline-section">
 
             <label for="data-atualizacao">Data p/ Atualização:</label>
-            <input type="text" id="data-atualizacao" name="data-atualizacao">
+            <input type="text" id="data-atualizacao">
 
         </div>
+        <div class="inline-section" style="margin-top: -12px; font-size: 8px;">
+            <label></label>
+            <input class="small" type="text" id="indice-inicial" placeholder="Índice Inicial" readonly>
+            <input class="small" type="text" id="indice-final" placeholder="Índice Inicial" readonly>
+
+
+
+        </div>
+
         <div class="inline-section" style="margin-left: 190px;">
             <div class="field-group">
                 <label for="valor-correcao">Valor da Correção:</label>
@@ -431,7 +446,48 @@
     <script src="https://unpkg.com/imask"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.2/html2pdf.bundle.min.js"></script>
     <script>
-        let indices = {};
+        document.getElementById('data-atualizacao').addEventListener('input', function (e) {
+            let value = e.target.value.replace(/\D/g, '');
+            if (value.length > 2) {
+                value = value.slice(0, 2) + '/' + value.slice(2);
+            }
+            if (value.length > 5) {
+                value = value.slice(0, 5) + '/' + value.slice(5, 9);
+            }
+            e.target.value = value;
+        });
+        document.getElementById('data-atualizacao').addEventListener('blur', function (e) {
+            let value = e.target.value.replace(/\D/g, '');
+            const dataAtual = new Date();
+            const mesAtual = String(dataAtual.getMonth() + 1).padStart(2, '0');
+            const anoAtual = dataAtual.getFullYear();
+
+            if (value.length > 2) {
+                value = value.slice(0, 2) + '/' + value.slice(2);
+            }
+            if (value.length > 5) {
+                value = value.slice(0, 5) + '/' + value.slice(5, 9);
+            }
+
+            if (value.length === 2) {
+                value += '/' + mesAtual + '/' + anoAtual;
+            } else if (value.length === 5) {
+                value += '/' + anoAtual;
+            }
+
+            e.target.value = value;
+
+
+            console.log(`valor do value até aqui: ${value}`);
+            document.getElementById('data-atualizacao').value = value;
+            document.getElementById('data-atualizacao').dispatchEvent(new Event('change'));
+
+
+            updateParcelas()
+
+
+        });
+        { };
 
         fetch('../etc/indices.json')
             .then(response => response.json())
@@ -445,6 +501,7 @@
 
 
         function atualizarDivida() {
+            console.log('data-atulização', document.getElementById('data-atualizacao').value);
             const dataAtualizacao = document.getElementById('data-atualizacao').value;
             const [day, mes, ano] = dataAtualizacao.split('/');
             const mesAnoAtualizacao = `${mes}/${ano}`;
@@ -454,6 +511,7 @@
             const anoAtual = dataAtual.getFullYear();
             const mesAnoAtual = `${mesAtual}/${anoAtual}`;
 
+            console.log(`dataAtualizacao: ${dataAtualizacao}`);
             var indiceInicial = indices[ano][0][mes];
             let indiceFinal = indices[anoAtual][0][mesAtual]
             // Verifique se indiceFinal é null ou undefined
@@ -509,6 +567,8 @@
             // Exibir o valor corrigido e o valor dos juros nos campos apropriados
             document.getElementById('valor_divida').value = valorCorrigido.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
             document.getElementById('juros').value = `${juros.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })} (${porcentagemJuros}%)`;
+            // Exibir o valor do índice inicial no campo índice inicial
+            document.getElementById('indice-inicial').value = `Índice inicial: ${indiceInicial} (${mesAnoAtualizacao})`;
 
 
 
