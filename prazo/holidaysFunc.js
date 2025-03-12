@@ -131,6 +131,8 @@ const sistDown = [ //Indisponibilidades simples (afeta apenas peticionamento fin
     { downDate: `10/02/2025`, description: "INDISPONIBILIDADE DOS SERVIÇOS DO PORTAL E-SAJ" },
     { downDate: `11/02/2025`, description: "INDISPONIBILIDADE DOS SERVIÇOS DO PORTAL E-SAJ" },
     { downDate: `19/02/2025`, description: "INDISPONIBILIDADE NO SERVIÇO DE PETICIONAMENTO ELETRÔNICO DO PORTAL E-SAJ" },
+    { downDate: `10/03/2025`, description: "INDISPONIBILIDADE DOS SERVIÇOS DO PORTAL E-SAJ" },
+
 
 
 
