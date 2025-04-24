@@ -296,8 +296,8 @@ function holidaysFunc(currentYear, expectedFinalYear, Easter) { //essa função 
             { holidayDate: `20/03/2024`, description: "Suspensão de Prazo - Comunicado Conjunto nº 293/2024 (DJE de 03/04/2024, Caderno Administrativo, pág. 4)" },
             { holidayDate: `21/03/2024`, description: "Suspensão de Prazo - Comunicado Conjunto nº 293/2024 (DJE de 03/04/2024, Caderno Administrativo, pág. 4)" },
             { holidayDate: `22/03/2024`, description: "Suspensão de Prazo - Comunicado Conjunto nº 293/2024 (DJE de 03/04/2024, Caderno Administrativo, pág. 4)" },
-
-
+            { holidayDate: `23/04/2025`, description: "INDISPONIBILIDADE SEVERA NO SERVIÇO DE PASTA DIGITAL DO E-SAJ" },
+            { holidayDate: `24/04/2025`, description: "INDISPONIBILIDADE SEVERA NO SERVIÇO DE PASTA DIGITAL DO E-SAJ" },
 
         );
         cityHolidays.push(
