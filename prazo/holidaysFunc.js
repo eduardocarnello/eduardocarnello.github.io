@@ -298,6 +298,11 @@ function holidaysFunc(currentYear, expectedFinalYear, Easter) { //essa função 
             { holidayDate: `21/03/2024`, description: "Suspensão de Prazo - Comunicado Conjunto nº 293/2024 (DJE de 03/04/2024, Caderno Administrativo, pág. 4)" },
             { holidayDate: `22/03/2024`, description: "Suspensão de Prazo - Comunicado Conjunto nº 293/2024 (DJE de 03/04/2024, Caderno Administrativo, pág. 4)" },
             { holidayDate: `24/04/2025`, description: "INDISPONIBILIDADE SEVERA NO SERVIÇO DE PASTA DIGITAL DO E-SAJ" },
+            { holidayDate: `12/05/2025`, description: "Suspensão de Prazo - Comunicado Conjunto nº 325/2025 - Treinamento Eproc (DJE de 06/05/2025, Caderno Administrativo, pág. 57)" },
+            { holidayDate: `13/05/2025`, description: "Suspensão de Prazo - Comunicado Conjunto nº 325/2025 - Treinamento Eproc (DJE de 06/05/2025, Caderno Administrativo, pág. 57)" },
+            { holidayDate: `14/05/2025`, description: "Suspensão de Prazo - Comunicado Conjunto nº 325/2025 - Treinamento Eproc (DJE de 06/05/2025, Caderno Administrativo, pág. 57)" },
+            { holidayDate: `15/05/2025`, description: "Suspensão de Prazo - Comunicado Conjunto nº 325/2025 - Treinamento Eproc (DJE de 06/05/2025, Caderno Administrativo, pág. 57)" },
+            { holidayDate: `16/05/2025`, description: "Suspensão de Prazo - Comunicado Conjunto nº 325/2025 - Treinamento Eproc (DJE de 06/05/2025, Caderno Administrativo, pág. 57)" },
 
         );
         cityHolidays.push(
