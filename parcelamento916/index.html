@@ -376,10 +376,10 @@
             <input type="text" id="data-atualizacao">
 
         </div>
-        <div class="inline-section" style="margin-top: -12px; font-size: 8px;">
+        <div id="indicesdiv" class="inline-section" style="margin-top: -12px; font-size: 8px;">
             <label></label>
             <input class="small" type="text" id="indice-inicial" placeholder="Índice Inicial" readonly>
-            <input class="small" type="text" id="indice-final" placeholder="Índice Inicial" readonly>
+            <input class="small" type="text" id="indice-final" placeholder="Índice Final" readonly>
 
 
 
@@ -507,22 +507,62 @@
             const mesAnoAtualizacao = `${mes}/${ano}`;
 
             const dataAtual = new Date();
-            var mesAtual = "02" //String(dataAtual.getMonth() + 1).padStart(2, '0');
-            const anoAtual = dataAtual.getFullYear();
-            const mesAnoAtual = `${mesAtual}/${anoAtual}`;
+            var mesAtual = String(dataAtual.getMonth() + 1).padStart(2, '0');
+            var anoAtual = dataAtual.getFullYear();
+            var mesAnoAtual = `${mesAtual}/${anoAtual}`;
 
             console.log(`dataAtualizacao: ${dataAtualizacao}`);
             var indiceInicial = indices[ano][0][mes];
             let indiceFinal = indices[anoAtual][0][mesAtual]
-            // Verifique se indiceFinal é null ou undefined
-            if (indiceFinal === undefined || indiceFinal === null) {
-                if (mesAtual === "01") {
-                    mesAtual = "12";
-                    anoAtual -= 1;
-                } else {
-                    mesAtual = String(parseInt(mesAtual) - 1).padStart(2, '0');
+            // Função para buscar o índice anterior com limite de tentativas
+            function buscarIndiceAnterior(ano, mes) {
+                let tentativas = 0; // Limite de tentativas para evitar loop infinito
+                const limiteTentativas = 12; // Máximo de 12 meses para busca
+
+                while (!indices[ano][0][mes] && tentativas < limiteTentativas) {
+                    if (mes === "01") {
+                        mes = "12";
+                        ano = String(parseInt(ano) - 1);
+                    } else {
+                        mes = String(parseInt(mes) - 1).padStart(2, '0');
+                    }
+                    tentativas++;
                 }
-                indiceFinal = indices[anoAtual][0][mesAtual];
+
+                if (tentativas >= limiteTentativas) {
+                    console.error('Não foi possível encontrar um índice válido.');
+                    return null; // Retorna null se não encontrar um índice válido
+                }
+                // Atualizar mesAtual e anoAtual com os valores encontrados
+                mesAtual = mes;
+                anoAtual = ano;
+                mesAnoAtual = `${mesAtual}/${anoAtual}) - (Índice de outro mês`;
+
+                // Gerar alerta em HTML
+                const alerta = document.createElement('div');
+                alerta.style.color = 'red';
+                alerta.style.marginTop = '-15px';
+                alerta.style.marginBottom = '5.2px';
+                alerta.style.fontSize = '8px';
+                alerta.style.textAlign = 'right'; // Alinha o texto à direita
+                alerta.textContent = `Atenção, não há índice para o mês atual. Utilizando índice de ${mesAtual}/${anoAtual}`;
+                const indiceFinalElement = document.getElementById('indicesdiv');
+                if (indiceFinalElement) {
+                    indiceFinalElement.insertAdjacentElement('afterend', alerta);
+                }
+
+
+                return indices[ano][0][mes];
+            }
+
+            // Verificar e buscar índice inicial caso não encontrado
+            if (!indiceInicial) {
+                indiceInicial = buscarIndiceAnterior(ano, mes);
+            }
+
+            // Verificar e buscar índice final caso não encontrado
+            if (!indiceFinal) {
+                indiceFinal = buscarIndiceAnterior(anoAtual, mesAtual);
             }
 
 
@@ -569,6 +609,7 @@
             document.getElementById('juros').value = `${juros.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })} (${porcentagemJuros}%)`;
             // Exibir o valor do índice inicial no campo índice inicial
             document.getElementById('indice-inicial').value = `Índice inicial: ${indiceInicial} (${mesAnoAtualizacao})`;
+            document.getElementById('indice-final').value = `Índice final: ${indiceFinal} (${mesAnoAtual})`;
 
 
 
