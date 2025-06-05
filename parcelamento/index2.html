@@ -4,14 +4,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pedido de Parcelamento (art. 916, do CPC)</title>
+    <title>Proposta de Acordo</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 
 <body>
     <div class="container">
         <div class="header">
-            Pedido de Parcelamento (art. 916, do CPC)
+            Proposta de Acordo
         </div>
         <div class="inline-section">
             <label>Nº do Processo:</label>
@@ -124,6 +124,12 @@
             <input type="number" id="valor_parcela_insert" step="0.01">
             <label>Número de Parcelas:</label>
             <input type="text" id="numero_parcelas" readonly>
+        </div>
+        <div class="inline-section">
+            <label>
+                <input type="checkbox" id="aplicar_juros">
+                Aplicar juros de 1% ao mês
+            </label>
         </div>
         <div class="inline-section hidden" id="ultima_parcela_section">
             <label>Informação da Última Parcela:</label>
