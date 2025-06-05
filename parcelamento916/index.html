@@ -275,6 +275,12 @@
 
         }
 
+        .no-break-paragraph {
+            page-break-inside: avoid;
+            break-inside: avoid;
+            /* Para compatibilidade com navegadores modernos */
+        }
+
         input[readonly] {
             background-color: #e9ecef;
             color: #6c757d;
@@ -332,7 +338,7 @@
                     <input type="text" class="cpf-cnpj" data-index="1" maxlength="">
                     <input type="hidden" class="cpf-cnpj-type" data-index="1" value="">
                 </div>
-                <div class="inline-section">
+                <div style="justify-content: flex-start;" class="inline-section">
                     <label>Atualizar Endereço?</label>
                     <input type="checkbox" class="atualizar-endereco" data-index="1">
                 </div>
@@ -967,7 +973,7 @@
                         <input type="text" class="cpf-cnpj" data-index="${executadoCount}">
                         <input type="hidden" class="cpf-cnpj-type" data-index="${executadoCount}" value="">
                     </div>
-                    <div class="inline-section">
+                    <div style="justify-content: flex-start;" class="inline-section">
                         <label>Atualizar Endereço?</label>
                         <input type="checkbox" class="atualizar-endereco" data-index="${executadoCount}">
                     </div>
@@ -1373,6 +1379,11 @@
                 const outrosPedidosElement = document.getElementById('outros_pedidos');
                 const novoValorEntradaElement = document.getElementById('novoValorEntrada');
                 const percentualElement = document.getElementById('percentualEntrada');
+                const indiceInicial = document.getElementById('indice-inicial').value;
+                const indiceFinal = document.getElementById('indice-final').value;
+                const dataAtualizacaoElement = document.getElementById('data-atualizacao').value;
+
+
 
                 const outrosPedidos = outrosPedidosElement.value;
 
@@ -1489,7 +1500,7 @@
                         <p style="margin-bottom: 30px;"></p>
                         <p style="text-align: center; font-weight: bold; margin-bottom: 30px; font-size: 18px;">PARCELAMENTO DO DÉBITO COM SUSPENSÃO DA EXECUÇÃO (ART. 916, DO CPC)</p>
                         <p></p>
-                        <p style="text-align: justify;"><b>Do reconhecimento da dívida: </b> ${executados.length > 1 ? 'Os' : 'O'} ${executados.length > 1 ? 'executados' : 'executado'} reconhece${concordanciaM} o débito em execução, no valor de <b>R$ ${valorDivida.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</b>, e propõe${concordanciaM} seu parcelamento nos moldes do art. 916, do CPC, para suspensão da execução.</p>
+                        <p style="text-align: justify;"><b>Do reconhecimento da dívida: </b> ${executados.length > 1 ? 'Os' : 'O'} ${executados.length > 1 ? 'executados' : 'executado'} reconhece${concordanciaM} o débito em execução, no valor atualizado até a presente data de <b>R$ ${valorDivida.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</b>, e propõe${concordanciaM} seu parcelamento nos moldes do art. 916, do CPC, para suspensão da execução.</p>
                         <p style="text-align: justify;"><b>Da entrada: </b> ${Number.isInteger(parseFloat(percentual)) ? parseInt(percentual) : percentual.replace('.', ',')}% do valor da dívida, no importe de <b> R$ ${valorEntrada.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</b>, a ser depositado judicialmente nesta data, conforme comprovante que acompanha esta petição.</p>
                         <p style="text-align: justify;">${textoParcelamento}</p>
                         <p style="text-align: justify;"><b>Da forma de pagamento e demais disposições:</b> Os pagamentos serão feitos por meio de depósito judicial, salvo outra forma a ser indicada pelo credor, devendo ${executados.length > 1 ? 'os' : 'o'} ${executados.length > 1 ? 'executados' : 'executado'} realizar${concordanciaRequer} os pagamentos das parcelas vincendas independentemente de nova intimação. Prorroga-se o pagamento da parcela para o dia útil seguinte em caso de feriado ou final de semana. <u>O descumprimento ou atraso importará no vencimento antecipado de todas as parcelas não pagas e imposição de multa de 10%, além do reinício da execução. A opção por este parcelamento importa em renúncia ao direito de opor de embargos em razão do reconhecimento do débito</u>.</p>
@@ -1498,6 +1509,11 @@
                         <p style="text-align: justify;"">Pede${concordanciaM} o deferimento.</p>
                         <p style="margin-bottom: 50px;">Marília, ${dataExtenso}.</p>
                         <div class="executado-signature">${assinaturasContent}</div>
+                        <p style="margin-bottom: 30px;"></p>
+                        <div class="no-break-paragraph">
+                        <p style="text-align: justify; font-size: 10px">Dados para a atualização da dívida:</p>
+                        <p style="text-align: justify; font-size: 10px">${indiceInicial} e ${indiceFinal}. Juros e 1% a.m. a partir de ${dataAtualizacaoElement}</p>
+                        </div>
                     </div>
                 `;
 
