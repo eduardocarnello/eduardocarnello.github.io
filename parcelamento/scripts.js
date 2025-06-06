@@ -123,9 +123,7 @@ document.addEventListener('DOMContentLoaded', function () {
             $('#resto').removeClass('hidden');
             updateParcelasFromValorParcela();
         });
-        $('#aplicar_juros').change(function () {
-            updateParcelas();
-        });
+        $('#aplicar_juros').change(updateParcelasFromValorParcela);
 
         $('#valor_entrada').change(function () {
             const valorDivida = parseFloat($('#valor_divida').val().replace('R$ ', '').replace(',', '.'));
@@ -195,16 +193,11 @@ document.addEventListener('DOMContentLoaded', function () {
 
 
 
-                const somaParcelas = valorParcela * (parcelas - 1);
-                const aplicarJurosElement = document.getElementById('aplicar_juros');
-                const aplicarJuros = aplicarJurosElement ? aplicarJurosElement.checked : false;
 
-                const valorBase = valorRestante / parcelas;
-                const valorParcelaComJuros = aplicarJuros ? valorBase * Math.pow(1.01, i) : valorBase;
-                const ultimaParcela = aplicarJuros
-                    ? (valorBase * Math.pow(1.01, parcelas - 1)) + (resto || 0)
-                    : valorParcela;
-                console.log('ultima', valorParcelaComJuros)
+                const somaParcelas = valorParcela * (parcelas - 1);
+
+                const ultimaParcela = valorRestante - somaParcelas;
+                console.log('ultima', ultimaParcela)
                 console.log('soma', somaParcelas)
                 console.log('valorRestante', valorRestante)
                 console.log('parcelas', parcelas)
@@ -413,15 +406,9 @@ document.addEventListener('DOMContentLoaded', function () {
             }
 
             // Adiciona a última parcela com o valor ajustado, somando o resto
+            const valorParcela = parseFloat($('#valor_parcela').val());
             const somaParcelas = valorParcela * (parcelas - 1);
-            //    const aplicarJurosElement = document.getElementById('aplicar_juros');
-            //   const aplicarJuros = aplicarJurosElement ? aplicarJurosElement.checked : false;
-
-            const valorBase = valorRestante / parcelas;
-            //   const valorParcelaComJuros = aplicarJuros ? valorBase * Math.pow(1.01, i) : valorBase;
-            const ultimaParcela = aplicarJuros
-                ? (valorBase * Math.pow(1.01, parcelas))
-                : valorParcela;
+            const ultimaParcela = valorRestante - somaParcelas;
             let dataParcela = new Date(dataPrimeiraParcela);
             dataParcela.setMonth(dataParcela.getMonth() + (parcelas - 1));
 
@@ -460,7 +447,6 @@ document.addEventListener('DOMContentLoaded', function () {
             if (valorEntrada === '' || valorEntrada === '0' || valorEntrada === null) {
                 valorEntrada = 0;
             }
-            const restoOption = $('input[name="resto_option"]:checked').val();
 
             const dataPrimeiraParcelaElement = document.getElementById('data_primeira_parcela');
             const valorParcelaElement = document.getElementById('valor_parcela');
@@ -505,8 +491,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 }
 
                 // Calcular o valor da parcela com juros de 1% ao mês, se aplicável
-                const valorBase = valorRestante / parcelas;
-                const valorParcelaComJuros = aplicarJuros ? valorBase * Math.pow(1.01, i) : valorBase;
+                const valorParcelaComJuros = aplicarJuros ? (valorRestante * Math.pow(1.01, i + 1)) / parcelas : valorParcela;
 
                 const row = document.createElement('tr');
 
@@ -530,34 +515,33 @@ document.addEventListener('DOMContentLoaded', function () {
 
             // Adiciona a última parcela com o valor ajustado, somando o resto
             const somaParcelas = valorParcela * (parcelas - 1);
-            // Calcule valorBase fora do bloco
-            const valorBase = valorRestante / parcelas;
+            const ultimaParcela = valorRestante - somaParcelas;
+            let dataParcela = new Date(dataPrimeiraParcela);
+            dataParcela.setMonth(dataParcela.getMonth() + (parcelas - 1));
 
-            if (restoOption === 'ultima_parcela') {
-                const valorBase = valorRestante / parcelas;
-                const ultimaParcelaComJuros = aplicarJuros
-                    ? (valorBase * Math.pow(1.01, parcelas - 1)) + (resto || 0)
-                    : valorBase + (resto || 0);
-
-                const row = document.createElement('tr');
-
-                const cellNumber = document.createElement('td');
-                cellNumber.textContent = parcelas;
-                cellNumber.style.padding = '0 5px';
-                row.appendChild(cellNumber);
-
-                const cellDate = document.createElement('td');
-                cellDate.textContent = formatDate(dataParcela);
-                cellDate.style.padding = '0 5px';
-                row.appendChild(cellDate);
-
-                const cellValue = document.createElement('td');
-                cellValue.textContent = `R$ ${ultimaParcelaComJuros.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-                cellValue.style.padding = '0 5px';
-                row.appendChild(cellValue);
-
-                table.appendChild(row);
+            // Ajusta a data para o próximo dia útil, se necessário
+            while (!isWeekday(dataParcela)) {
+                dataParcela.setDate(dataParcela.getDate() + 1);
             }
+
+            const row = document.createElement('tr');
+
+            const cellNumber = document.createElement('td');
+            cellNumber.textContent = parcelas;
+            cellNumber.style.padding = '0 5px'; // Espaço lateral entre as colunas
+            row.appendChild(cellNumber);
+
+            const cellDate = document.createElement('td');
+            cellDate.textContent = formatDate(dataParcela); // Formata a data corretamente
+            cellDate.style.padding = '0 5px'; // Espaço lateral entre as colunas
+            row.appendChild(cellDate);
+
+            const cellValue = document.createElement('td');
+            cellValue.textContent = `R$ ${ultimaParcela.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+            cellValue.style.padding = '0 5px'; // Espaço lateral entre as colunas
+            row.appendChild(cellValue);
+
+            table.appendChild(row);
 
             container.appendChild(table);
             datasParcelasElement.appendChild(container);
@@ -1084,11 +1068,9 @@ document.addEventListener('DOMContentLoaded', function () {
             const numeroProcesso = numeroProcessoElement.value;
             const valorDivida = parseFloat(valorDividaElement.value.replace('R$ ', '').replace(',', '.'));
             const valorEntrada =
-                (novoValorEntradaElement && novoValorEntradaElement.value)
+                novoValorEntradaElement && novoValorEntradaElement.value
                     ? parseFloat(novoValorEntradaElement.value)
-                    : (valorEntradaElement && valorEntradaElement.value)
-                        ? parseFloat(valorEntradaElement.value.replace('R$ ', '').replace(',', '.'))
-                        : 0;
+                    : parseFloat(valorEntradaElement.value.replace('R$ ', '').replace(',', '.'));
             const parcelas = parseInt(parcelasElement.value);
             const valorRestante = valorDivida - valorEntrada;
             const valorParcela = (valorRestante * Math.pow(1.01, parcelas)) / parcelas;
@@ -1174,40 +1156,36 @@ document.addEventListener('DOMContentLoaded', function () {
                 concordanciaRequer = 'em';
             }
             let textoParcelamento;
-            if (valorEntrada > 0) {
-                textoParcelamento = `<b> Do restante:</b> O restante, no valor de <b> R$ ${((valorDivida - valorEntrada) * Math.pow(1.01, 1)).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</b > será pago em <b> uma única parcela</b >, já acrescida de juros de 1 %, na data de <b> ${formatDate(dataPrimeiraParcela)}</b>.`;
+            if (parcelas === 1) {
+                textoParcelamento = `<b> Do restante:</b> O restante, no valor de <b> R$ ${((valorDivida - valorEntrada) * Math.pow(1.01, 1)).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</b> será pago em <b> uma única parcela</b>, já acrescida de juros de 1 %, na data de <b> ${formatDate(dataPrimeiraParcela)}</b >.`;
             } else {
-                textoParcelamento = `<b> Do parcelamento:</b> O valor de <b> R$ ${(valorDivida - valorEntrada).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</b> será parcelado em <b> ${parcelas} parcelas</b > mensais, com início dos pagamentos em <b> ${formatDate(dataPrimeiraParcela)}</b>, acrescidas de juros de 1 % ao mês, conforme segue:
+                textoParcelamento = `<b> Do parcelamento:</b> O restante, no valor de <b> R$ ${(valorDivida - valorEntrada).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</b> será parcelado em <b> ${parcelas} parcelas</b> mensais, com início dos pagamentos em <b> ${formatDate(dataPrimeiraParcela)}</b>, acrescidas de juros de 1 % ao mês, conforme segue:
                     <p>${datasParcelas}</p>`;;
             }
-            let entradaContent = '';
-            if (valorEntrada > 0) {
-                entradaContent = `<p style="text-align: justify;"><b>Da entrada: </b> ${Number.isInteger(parseFloat(percentual)) ? parseInt(percentual) : percentual.replace('.', ',')}% do valor da dívida, no importe de <b> R$ ${valorEntrada.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</b>, para pagamento na data de ...........</p>`;
-            }
 
 
 
 
-            executadosContent += `, já qualificad${concordancia} nos autos da ação em epígrafe, v${concordanciaCirc} m, respeitosamente, à presença de Vossa Excelência apresentar</p > `
+            executadosContent += `, já qualificad${concordancia} nos autos da ação em epígrafe, v${concordanciaCirc} m, respeitosamente, à presença de Vossa Excelência requerer o</p> `
 
             const peticaoContent = `
-                        <div style ="font-family: Arial, sans-serif; padding: 20px;">
+                        <div style = "font-family: Arial, sans-serif; padding: 20px;">
                         <p style="text-align: center; font-weight: bold; font-size: 20px;">EXMO. SR. JUIZ DE DIREITO DO JUIZADO ESPECIAL CÍVEL DE MARÍLIA/SP</p>
                         <p style="margin-bottom: 50px;"></p>
                         <p style="font-weight: bold; font-size: 16px; margin-bottom: 50px;">Processo nº ${numeroProcesso}</p>
                         <p></p>
                         ${executadosContent}
                         <p style="margin-bottom: 30px;"></p>
-                        <p style="text-align: center; font-weight: bold; margin-bottom: 30px; font-size: 18px;">PROPOSTA DE ACORDO</p>
+                        <p style="text-align: center; font-weight: bold; margin-bottom: 30px; font-size: 18px;">PARCELAMENTO DO DÉBITO COM SUSPENSÃO DA EXECUÇÃO (ART. 916, DO CPC)</p>
                         <p></p>
-                        <p style="text-align: justify;"><b>Para por fim à presente ação/suspender a execução, o devedor propõe o pagamento parcelado : </b> ${executados.length > 1 ? 'Os' : 'O'} ${executados.length > 1 ? 'executados' : 'executado'} reconhece${concordanciaM} o débito em execução, no valor de <b>R$ ${valorDivida.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</b>, e propõe${concordanciaM} seu parcelamento nos moldes do art. 916, do CPC, para suspensão da execução.</p>
-                        ${entradaContent}
+                        <p style="text-align: justify;"><b>Do reconhecimento da dívida: </b> ${executados.length > 1 ? 'Os' : 'O'} ${executados.length > 1 ? 'executados' : 'executado'} reconhece${concordanciaM} o débito em execução, no valor de <b>R$ ${valorDivida.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</b>, e propõe${concordanciaM} seu parcelamento nos moldes do art. 916, do CPC, para suspensão da execução.</p>
+                        <p style="text-align: justify;"><b>Da entrada: </b> ${Number.isInteger(parseFloat(percentual)) ? parseInt(percentual) : percentual.replace('.', ',')}% do valor da dívida, no importe de <b> R$ ${valorEntrada.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</b>, a ser depositado judicialmente nesta data, conforme comprovante que acompanha esta petição.</p>
                         <p style="text-align: justify;">${textoParcelamento}</p>
                         <p style="text-align: justify;"><b>Da forma de pagamento e demais disposições:</b> Os pagamentos serão feitos por meio de depósito judicial, salvo outra forma a ser indicada pelo credor, devendo ${executados.length > 1 ? 'os' : 'o'} ${executados.length > 1 ? 'executados' : 'executado'} realizar${concordanciaRequer} os pagamentos das parcelas vincendas independentemente de nova intimação. Prorroga-se o pagamento da parcela para o dia útil seguinte em caso de feriado ou final de semana. <u>O descumprimento ou atraso importará no vencimento antecipado de todas as parcelas não pagas e imposição de multa de 10%, além do reinício da execução. A opção por este parcelamento importa em renúncia ao direito de opor de embargos em razão do reconhecimento do débito</u>.</p>
                         <p style="text-align: justify;">Requer${concordanciaRequer} seja o exequente intimado para ciência da presente proposta e que seja a execução suspensa pelo prazo previsto para cumprimento do parcelamento.</p>
                         <p style="text-align: justify;">${outrosPedidos}</p>
                         <p style="text-align: justify;"">Pede${concordanciaM} o deferimento.</p>
-                        <p style ="margin-bottom: 50px;"> Marília, ${dataExtenso}.</p>
+                        <p style = "margin-bottom: 50px;" > Marília, ${dataExtenso}.</p>
                             <div class="executado-signature">${assinaturasContent}</div>
                     </div >
                         `;
@@ -1372,8 +1350,7 @@ document.addEventListener('DOMContentLoaded', function () {
             }
 
             // Calcular o valor da parcela com juros de 1% ao mês, se aplicável
-            const valorBase = valorRestante / parcelas;
-            const valorParcelaComJuros = aplicarJuros ? valorBase * Math.pow(1.01, i) : valorBase;
+            const valorParcelaComJuros = aplicarJuros ? (valorRestante * Math.pow(1.01, i + 1)) / parcelas : valorParcela;
 
             const row = document.createElement('tr');
 
@@ -1414,39 +1391,27 @@ document.addEventListener('DOMContentLoaded', function () {
         }
 
         if (restoOption === 'ultima_parcela') {
-            // Última parcela com juros, se aplicável
-
-            const valorBase = valorRestante / parcelas;
-            // ...existing code...
-            const ultimaParcelaComJuros = aplicarJuros
-                ? (valorBase * Math.pow(1.01, parcelas - 1)) + (resto || 0)
-                : valorParcela + (resto || 0);
-
+            // Add remainder to the last parcel
+            const ultimaParcela = valorParcela + resto;
             const row = document.createElement('tr');
 
             const cellNumber = document.createElement('td');
             cellNumber.textContent = parcelas;
-            cellNumber.style.padding = '0 5px';
+            cellNumber.style.padding = '0 5px'; // Espaço lateral entre as colunas
             row.appendChild(cellNumber);
 
             const cellDate = document.createElement('td');
-            cellDate.textContent = formatDate(dataParcela);
-            cellDate.style.padding = '0 5px';
+            cellDate.textContent = formatDate(dataParcela); // Formata a data corretamente
+            cellDate.style.padding = '0 5px'; // Espaço lateral entre as colunas
             row.appendChild(cellDate);
 
             const cellValue = document.createElement('td');
-            cellValue.textContent = `R$ ${ultimaParcelaComJuros.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-            cellValue.style.padding = '0 5px';
+            cellValue.textContent = `R$ ${ultimaParcela.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+            cellValue.style.padding = '0 5px'; // Espaço lateral entre as colunas
             row.appendChild(cellValue);
 
             table.appendChild(row);
-            // ...existing code...
         } else if (restoOption === 'nova_parcela') {
-            // Parcela extra para o resto, com juros se aplicável
-            const valorBase = valorRestante / parcelas;
-            const restoComJuros = aplicarJuros
-                ? resto * Math.pow(1.01, parcelas)
-                : resto;
             // Create a new parcel for the remainder
             const row = document.createElement('tr');
 
