@@ -124,6 +124,8 @@ document.addEventListener('DOMContentLoaded', function () {
             updateParcelasFromValorParcela();
         });
         $('#aplicar_juros').change(updateParcelasFromValorParcela);
+        $('#aplicar_juros').change(updateParcelas);
+
 
         $('#valor_entrada').change(function () {
             const valorDivida = parseFloat($('#valor_divida').val().replace('R$ ', '').replace(',', '.'));
@@ -192,11 +194,14 @@ document.addEventListener('DOMContentLoaded', function () {
 
 
 
-
-
                 const somaParcelas = valorParcela * (parcelas - 1);
+                var ultimaParcela = valorRestante - somaParcelas;
+                const aplicarJurosElement = document.getElementById('aplicar_juros');
+                const aplicarJuros = aplicarJurosElement ? aplicarJurosElement.checked : false;
+                if (aplicarJuros) {
+                    ultimaParcela = ultimaParcela * Math.pow(1.01, parcelas);
+                }
 
-                const ultimaParcela = valorRestante - somaParcelas;
                 console.log('ultima', ultimaParcela)
                 console.log('soma', somaParcelas)
                 console.log('valorRestante', valorRestante)
@@ -408,7 +413,12 @@ document.addEventListener('DOMContentLoaded', function () {
             // Adiciona a última parcela com o valor ajustado, somando o resto
             const valorParcela = parseFloat($('#valor_parcela').val());
             const somaParcelas = valorParcela * (parcelas - 1);
-            const ultimaParcela = valorRestante - somaParcelas;
+            var ultimaParcela = valorRestante - somaParcelas;
+            //aplicarJurosElement = document.getElementById('aplicar_juros');
+            //aplicarJuros = aplicarJurosElement ? aplicarJurosElement.checked : false;
+            if (aplicarJuros) {
+                ultimaParcela = ultimaParcela * Math.pow(1.01, parcelas);
+            }
             let dataParcela = new Date(dataPrimeiraParcela);
             dataParcela.setMonth(dataParcela.getMonth() + (parcelas - 1));
 
@@ -513,38 +523,49 @@ document.addEventListener('DOMContentLoaded', function () {
                 table.appendChild(row);
             }
 
-            // Adiciona a última parcela com o valor ajustado, somando o resto
-            const somaParcelas = valorParcela * (parcelas - 1);
-            const ultimaParcela = valorRestante - somaParcelas;
-            let dataParcela = new Date(dataPrimeiraParcela);
-            dataParcela.setMonth(dataParcela.getMonth() + (parcelas - 1));
+            //se tipo_parcelamento = por valor, ultimaParcela = valorRestante - somaParcelas
+            var somaParcelas = valorParcela * (parcelas - 1);
+            var ultimaParcela = valorRestante - somaParcelas;
+            const tipoParcelamento = $('#tipo_parcelamento').val();
+            if (tipoParcelamento === 'valor') {
+                somaParcelas = valorParcela * (parcelas - 1);
+                if (aplicarJuros) {
+                    ultimaParcela = ultimaParcela * Math.pow(1.01, parcelas);
+                }
 
-            // Ajusta a data para o próximo dia útil, se necessário
-            while (!isWeekday(dataParcela)) {
-                dataParcela.setDate(dataParcela.getDate() + 1);
+                //  const ultimaParcela = valorRestante - somaParcelas;
+
+                console.log('ultimaParcela daqui', ultimaParcela)
+                let dataParcela = new Date(dataPrimeiraParcela);
+                dataParcela.setMonth(dataParcela.getMonth() + (parcelas - 1));
+
+                // Ajusta a data para o próximo dia útil, se necessário
+                while (!isWeekday(dataParcela)) {
+                    dataParcela.setDate(dataParcela.getDate() + 1);
+                }
+
+                const row = document.createElement('tr');
+
+                const cellNumber = document.createElement('td');
+                cellNumber.textContent = parcelas;
+                cellNumber.style.padding = '0 5px'; // Espaço lateral entre as colunas
+                row.appendChild(cellNumber);
+
+                const cellDate = document.createElement('td');
+                cellDate.textContent = formatDate(dataParcela); // Formata a data corretamente
+                cellDate.style.padding = '0 5px'; // Espaço lateral entre as colunas
+                row.appendChild(cellDate);
+
+                const cellValue = document.createElement('td');
+                cellValue.textContent = `R$ ${ultimaParcela.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+                cellValue.style.padding = '0 5px'; // Espaço lateral entre as colunas
+                row.appendChild(cellValue);
+
+                table.appendChild(row);
+
+                container.appendChild(table);
+                datasParcelasElement.appendChild(container);
             }
-
-            const row = document.createElement('tr');
-
-            const cellNumber = document.createElement('td');
-            cellNumber.textContent = parcelas;
-            cellNumber.style.padding = '0 5px'; // Espaço lateral entre as colunas
-            row.appendChild(cellNumber);
-
-            const cellDate = document.createElement('td');
-            cellDate.textContent = formatDate(dataParcela); // Formata a data corretamente
-            cellDate.style.padding = '0 5px'; // Espaço lateral entre as colunas
-            row.appendChild(cellDate);
-
-            const cellValue = document.createElement('td');
-            cellValue.textContent = `R$ ${ultimaParcela.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-            cellValue.style.padding = '0 5px'; // Espaço lateral entre as colunas
-            row.appendChild(cellValue);
-
-            table.appendChild(row);
-
-            container.appendChild(table);
-            datasParcelasElement.appendChild(container);
         }
 
         function createTable() {
@@ -1392,22 +1413,30 @@ document.addEventListener('DOMContentLoaded', function () {
 
         if (restoOption === 'ultima_parcela') {
             // Add remainder to the last parcel
-            const ultimaParcela = valorParcela + resto;
+            let ultimaParcela = valorParcela + resto;
+            if (aplicarJuros) {
+                ultimaParcela = ultimaParcela * Math.pow(1.01, parcelas);
+            }
+            console.log('ultimaParcela', ultimaParcela);
+            console.log('resto', resto);
+            console.log('parcelas', parcelas);
+            console.log('aplicarJuros', aplicarJuros);
+
             const row = document.createElement('tr');
 
             const cellNumber = document.createElement('td');
             cellNumber.textContent = parcelas;
-            cellNumber.style.padding = '0 5px'; // Espaço lateral entre as colunas
+            cellNumber.style.padding = '0 5px';
             row.appendChild(cellNumber);
 
             const cellDate = document.createElement('td');
-            cellDate.textContent = formatDate(dataParcela); // Formata a data corretamente
-            cellDate.style.padding = '0 5px'; // Espaço lateral entre as colunas
+            cellDate.textContent = formatDate(dataParcela);
+            cellDate.style.padding = '0 5px';
             row.appendChild(cellDate);
 
             const cellValue = document.createElement('td');
             cellValue.textContent = `R$ ${ultimaParcela.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-            cellValue.style.padding = '0 5px'; // Espaço lateral entre as colunas
+            cellValue.style.padding = '0 5px';
             row.appendChild(cellValue);
 
             table.appendChild(row);
