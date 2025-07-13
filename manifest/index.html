@@ -26,9 +26,47 @@
             border-radius: 8px;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
             width: 100%;
-            max-width: 50%;
+            max-width: 70%;
             box-sizing: border-box;
 
+        }
+
+        .tooltip-icon {
+            color: #007bff;
+            font-weight: bold;
+            font-size: 0.75em;
+            position: relative;
+            vertical-align: top;
+            /* Alinha ao topo */
+            margin-top: 2px;
+            /* Pequeno ajuste opcional */
+            line-height: 1;
+            height: 1em;
+            display: inline-block;
+        }
+
+        .tooltip-text {
+            visibility: hidden;
+            width: 400px;
+            background-color: #007bff;
+            color: #fff;
+            text-align: left;
+            border-radius: 6px;
+            padding: 10px;
+            position: absolute;
+            z-index: 10;
+            bottom: 125%;
+            left: 50%;
+            transform: translateX(-50%);
+            opacity: 0;
+            transition: opacity 0.2s;
+            font-size: 0.6em;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+        }
+
+        .tooltip-icon:hover .tooltip-text {
+            visibility: visible;
+            opacity: 1;
         }
 
         .page-break {
@@ -37,15 +75,37 @@
 
         }
 
+        .button-group button {
+            width: auto !important;
+            flex: none;
+        }
+
+        .button-group .btn-clear {
+            width: 25% !important;
+            background-color: grey !important;
+        }
+
+        .button-group .btn-clear:hover {
+            background-color: rgb(255, 31, 31) !important;
+            color: #fff !important;
+        }
+
+        .button-group button:not(.btn-clear) {
+            width: 74% !important;
+        }
+
         #manifestForm h1 {
             text-align: center;
             margin-bottom: 20px;
+            font-size: 6vh;
+
         }
 
         #manifestForm label {
             display: block;
             margin-bottom: 5px;
             font-weight: bold;
+            font-size: 4vh;
         }
 
         #manifestForm input,
@@ -57,7 +117,7 @@
             border: 1px solid #ccc;
             border-radius: 4px;
             box-sizing: border-box;
-            font-size: 1em;
+            font-size: 3vh;
         }
 
         #manifestForm button {
@@ -99,7 +159,7 @@
         }
 
         .content {
-            flex: 1;
+            flex: 0;
             overflow: hidden;
 
             line-break: auto;
@@ -146,12 +206,13 @@
 
         <label for="manifestationType">Tipo da Manifestação:</label>
         <select id="manifestationType" name="manifestationType">
-            <option value="opcao1">Manifestação (Geral)</option>
+            <option value="opcao1">Manifestação (Genérica)</option>
             <option value="opcao2">Emenda à Inicial</option>
             <option value="opcao3">Atualização do Próprio Endereço</option>
             <option value="opcao4">Indicação do Endereço da Parte Contrária</option>
-            <option value="opcao8">Manifestação sobre a Contestação (Genérica)</option>
-            <option value="opcao5">Manifestação sobre a Contestação (Falada pela parte)</option>
+            <option value="opcao8">Manifestação sobre a Contestação (Genérica - SEM Provas)</option>
+            <option value="opcao9">Manifestação sobre a Contestação (Genérica - COM Provas)</option>
+            <option value="opcao5">Manifestação sobre a Contestação (Reduzida a Termo)</option>
             <option value="opcao6">Indicação de Provas</option>
             <option value="opcao7">Início do Cumprimento de Sentença</option>
         </select>
@@ -168,7 +229,7 @@
             </div>
             <div class="inline-section hidden endereco-completo-section">
                 <label>Rua:</label>
-                <input style="flex: auto; width: 275px;" type="text" class="rua" readonly>
+                <input style="flex: auto; width: 100%;" type="text" class="rua" readonly>
                 <label class="labnumero">Nº:</label>
                 <input type="text" class="numero" maxlength="6">
             </div>
@@ -193,14 +254,27 @@
 
         </div>
 
-        <label for="content">Digite sua manifestação abaixo:</label>
+        <label for="content" style="display: flex; align-items: center; gap: 8px;">
+            Digite a manifestação abaixo<span id="helpIcon" class="tooltip-icon"
+                style="display:none; cursor: pointer; position: relative;">
+                &#9432;
+                <span id="tooltipText" class="tooltip-text">Texto de ajuda</span>
+            </span>:
+
+        </label>
         <textarea id="content" name="content" rows="10" required></textarea>
+        <div id="extraFieldContainer" style="display: none;">
+            <label for="extraContent">Descreva as provas que deseja produzir:</label>
+            <textarea id="extraContent" name="extraContent" rows="5"></textarea>
+        </div>
 
 
 
 
-
-        <button type="button" onclick="validateAndGeneratePDF()">Gerar Manifestação</button>
+        <div class="button-group">
+            <button type="button" onclick="validateAndGeneratePDF()">Gerar Manifestação</button>
+            <button type="button" class="btn-clear" onclick="clearForm()">Limpar Tudo</button>
+        </div>
 
     </form>
 
@@ -214,6 +288,9 @@
             </p>
             <p class="text-justify" style="margin-bottom: 40px; margin-block-start: 2px;"><b>Solicitante:</b> <span
                     id="pdfName"></span></p>
+            <p class="text-justify" style="text-align: center; margin-bottom: 40px; margin-block-start: 2px;"><b>TERMO -
+                    MANIFESTAÇÃO DA
+                    PARTE</b> <span id="pdfName"></span></p>
             <p class="text-justify" style="margin-bottom: 0px;">A parte acima <span
                     id="concorcanciaManifestation"></span> <b><span id="manifestationText"></span></b>, nos
                 seguintes termos:</p>
@@ -236,6 +313,58 @@
     </div>
 
     <script>
+        var helpIcon = document.getElementById('helpIcon');
+        var tooltipText = document.getElementById('tooltipText');
+        helpIcon.style.display = 'inline';
+        tooltipText.textContent = 'Essa é uma manifestação genérica. Digite o que a parte pede.';
+
+        document.getElementById('manifestationType').addEventListener('change', function () {
+
+            if (this.value === 'opcao1') {
+                helpIcon.style.display = 'inline';
+                tooltipText.textContent = 'Essa é uma manifestação genérica. Digite o que a parte pede.';
+            }
+            else if (this.value === 'opcao2') {
+                helpIcon.style.display = 'inline';
+                tooltipText.textContent = 'Explique qual a razão da emenda e informe se estão sendo juntados documentos.';
+            } else if (this.value === 'opcao5') {
+                helpIcon.style.display = 'inline';
+                tooltipText.textContent = 'Digite no campo abaixo a réplica falada pela parte. Caso a réplica seja genérica, escolha o outro tipo.';
+            } else if (this.value === 'opcao8') {
+                helpIcon.style.display = 'inline';
+                tooltipText.textContent = 'Essa é a manifestação genérica sobre a contestação. Não é necessário acrescentar mais nada.';
+            }
+            else if (this.value === 'opcao9') {
+                helpIcon.style.display = 'inline';
+                tooltipText.textContent = 'Essa é a manifestação genérica sobre a contestação. Não é necessário acrescentar mais nada no campo da manifestação. Digite apenas as provas que a parte deseja produzir no campo próprio.';
+            }
+
+            else {
+                helpIcon.style.display = 'none';
+                tooltipText.textContent = '';
+            }
+
+            // ...restante do código...
+        });
+        function clearForm() {
+            if (confirm("Tem certeza que deseja limpar todos os campos?")) {
+                document.getElementById('manifestForm').reset();
+                // Limpa campos preenchidos dinamicamente
+                document.getElementById('content').value = '';
+                document.getElementById('pdfContentText').innerHTML = '';
+                document.getElementById('pdfProcessNumber').innerText = '';
+                document.getElementById('pdfName').innerText = '';
+                document.getElementById('pdfDate').innerText = '';
+                document.getElementById('pdfSignatureName').innerText = '';
+                document.getElementById('pdfSignatureCPF').innerText = '';
+                document.getElementById('manifestationText').innerText = 'MANIFESTAÇÃO';
+                document.getElementById('concorcanciaManifestation').innerText = 'apresenta';
+                document.getElementById('addressParagraph').innerText = '';
+                // Esconde campos de endereço se necessário
+                document.getElementById('addressField').style.display = 'none';
+                document.getElementById('addressParagraph').style.display = 'none';
+            }
+        }
         document.addEventListener("DOMContentLoaded", function () {
             var element = document.getElementById('processNumber');
             var maskOptions = {
@@ -289,18 +418,28 @@
         var concorcanciaManifestation = document.getElementById('concorcanciaManifestation');
         manifestationText.textContent = 'MANIFESTAÇÃO';
         concorcanciaManifestation.textContent = 'apresenta';
+        var extraFieldContainer = document.getElementById('extraFieldContainer');
+        var extraContent = document.getElementById('extraContent');
         document.getElementById('manifestationType').addEventListener('change', function () {
+            if (this.value === 'opcao9') {
+                extraFieldContainer.style.display = 'block';
+            } else {
+                extraFieldContainer.style.display = 'none';
+                if (extraContent) extraContent.value = '';
+            }
             if (this.value === 'opcao1') {
                 concorcanciaManifestation.textContent = 'apresenta sua';
                 manifestationText.textContent = 'MANIFESTAÇÃO';
                 addressField.style.display = 'none';
                 addressParagraph.style.display = 'none';
+                content.value = '';
 
             } else if (this.value === 'opcao2') {
                 concorcanciaManifestation.textContent = 'apresenta sua';
                 manifestationText.textContent = 'EMENDA À INICIAL';
                 addressField.style.display = 'none';
                 addressParagraph.style.display = 'none';
+                content.value = '';
 
             } else if (this.value === 'opcao3') {
                 concorcanciaManifestation.textContent = 'requer a';
@@ -308,6 +447,7 @@
                 addressParagraph.style.display = 'block';
                 addressField.style.display = 'block';
                 nameAddressField.style.display = 'none';
+                content.value = '';
 
             } else if (this.value === 'opcao4') {
                 concorcanciaManifestation.textContent = 'vem indicar o';
@@ -315,25 +455,59 @@
                 addressField.style.display = 'block';
                 addressParagraph.style.display = 'block';
                 nameAddressField.style.display = 'block';
+                content.value = '';
 
 
             } else if (this.value === 'opcao5') {
                 concorcanciaManifestation.textContent = 'vem apresentar ';
                 manifestationText.textContent = 'MANIFESTAÇÃO SOBRE A CONTESTAÇÃO';
                 addressField.style.display = 'none';
+                content.value = '';
 
             } else if (this.value === 'opcao6') {
                 concorcanciaManifestation.textContent = 'vem ';
                 manifestationText.textContent = 'INDICAR PROVAS';
                 addressField.style.display = 'none';
+                content.value = '';
 
-            } else if (this.value === 'opcao7') {
+            }
+            else if (this.value === 'opcao8') {
+                concorcanciaManifestation.textContent = 'vem ';
+                manifestationText.textContent = 'MANIFESTAÇÃO SOBRE A CONTESTAÇÃO';
+                addressField.style.display = 'none';
+                content.value = `Declara ter sido cientificado da possibilidade de constituição de advogado particular ou da nomeação de advogado pela Defensoria Pública, após triagem e caso atendidos os critérios daquela instituição, sentindo-se  seguro para apresentar sua réplica nos seguintes termos:                 
+Declara ter lido a(s) contestação(ões) juntadas aos autos, impugna os argumentos da(s) parte(s) requerida(s), reiterando tudo o que foi exposto em sede de inicial, requerendo que o MM. Juiz afaste qualquer preliminar suscitada, bem como a narrativa dos fatos feita pela(s) parte(s) adversa(s). 
+Declara que os fatos ocorreram da forma narrada na inicial e que a(s) parte(s) requerida(s) não logrou(ram) êxito em provar suas alegações. Por fim, pugna pela total procedência da ação, nos mesmos termos da inicial.
+Informa que <b>NÃO</b> possui mais provas a produzir, requerendo o julgamento antecipado do feito, com a consequente procedência da ação, nos termos da inicial.
+                `;
+
+
+
+            }
+            else if (this.value === 'opcao9') {
+                concorcanciaManifestation.textContent = 'vem ';
+                manifestationText.textContent = 'MANIFESTAÇÃO SOBRE A CONTESTAÇÃO';
+                addressField.style.display = 'none';
+                extraFieldContainer.style.display = 'block';
+
+                content.value = `Declara ter sido cientificado da possibilidade de constituição de advogado particular ou da nomeação de advogado pela Defensoria Pública, após triagem e caso atendidos os critérios daquela instituição, sentindo-se  seguro para apresentar sua réplica nos seguintes termos:                 
+Declara ter lido a(s) contestação(ões) juntadas aos autos, impugna os argumentos da(s) parte(s) requerida(s), reiterando tudo o que foi exposto em sede de inicial, requerendo que o MM. Juiz afaste qualquer preliminar suscitada, bem como a narrativa dos fatos feita pela(s) parte(s) adversa(s). 
+Declara que os fatos ocorreram da forma narrada na inicial e que a(s) parte(s) requerida(s) não logrou(ram) êxito em provar suas alegações. Por fim, pugna pela total procedência da ação, nos mesmos termos da inicial.
+Informa que <b> requer a produção das seguintes provas</b>:
+`
+
+
+
+
+            }
+
+            else if (this.value === 'opcao7') {
                 manifestationText.textContent = 'REQUERIMENTO DE CUMPRIMENTO DE SENTENÇA';
                 content.value = `A parte credora solicita que seja certificado ` +
                     `o trânsito em julgado da sentença proferida` +
                     `, renunciando a eventual prazo recursal. 
 
-Requer, ainda, que seja dado início à fase de cumprimento de sentença com a formação do respectivo incidente, que seja o valor de seu crédito atualizado pela Serventia nos termos da sentença e, após, seja(m) o(s) executado(s) intimado(s) para, no prazo de 15 (quinze) dias, efetuar(em) o pagamento do valor devido, sob pena de incidência de multa de 10% (dez por cento) e, após, de penhora de bens e/ou valores.
+Requer, ainda, o início da fase de cumprimento de sentença, com a distribuição desta petição como novo processo, vinculando-se ao processo de conhecimento como origem da presente demanda. Requer que seja o valor de seu crédito atualizado pela Serventia nos termos da sentença e, após, seja(m) o(s) executado(s) intimado(s) para, no prazo de 15 (quinze) dias, efetuar(em) o pagamento do valor devido, sob pena de incidência de multa de 10% (dez por cento) e, após, de penhora de bens e/ou valores.
 
 Desde logo, caso não seja comprovado o pagamento nos autos, a parte credora requer que sejam penhorados bens e valores do(s) executado(s) suficientes para garantir a satisfação do crédito, seguindo-se a ordem de preferência da penhora prevista no art. 835 do CPC, postulando expressamente o uso dos sistemas para localização de valores e veículos, além da expedição de mandado de penhora e avaliação de bens livres.`
 
@@ -372,6 +546,10 @@ Desde logo, caso não seja comprovado o pagamento nos autos, a parte credora req
             const name = document.getElementById('name').value;
             const cpf = document.getElementById('cpf').value;
             var content = document.getElementById('content').value;
+            var extraContentValue = '';
+            if (document.getElementById('extraFieldContainer').style.display === 'block') {
+                extraContentValue = document.getElementById('extraContent').value;
+            }
 
             /*  if (processNumber === '' || processNumber.includes('_')) {
                   alert('Por favor, preencha o campo "Nº do Processo" corretamente.');
@@ -415,6 +593,10 @@ Desde logo, caso não seja comprovado o pagamento nos autos, a parte credora req
             const name = document.getElementById('name').value;
             const cpf = document.getElementById('cpf').value;
             var content = document.getElementById('content').value;
+            var extraContentValue = '';
+            if (document.getElementById('extraFieldContainer').style.display === 'block') {
+                extraContentValue = document.getElementById('extraContent').value;
+            }
             var paragraphs = content.split('\n');
             var newParagraphs = [];
             const words = ''
@@ -452,6 +634,16 @@ Desde logo, caso não seja comprovado o pagamento nos autos, a parte credora req
 
             // Definir o valor do elemento de texto com o conteúdo dos parágrafos
             document.getElementById('content').value = paragraphsValue;
+            if (extraContentValue.trim() !== '') {
+                const p = document.createElement('p');
+                p.style.pageBreakInside = 'auto';
+                p.style.whiteSpace = 'pre-wrap';
+                p.style.textAlign = 'justify';
+                p.style.textIndent = '6em';
+                p.innerHTML = extraContentValue;
+                p.id = 'paragrafo';
+                contentContainer.appendChild(p);
+            }
 
             // Limpar o contentContainer antes de adicionar novos parágrafos
             contentContainer.innerHTML = '';
@@ -462,10 +654,21 @@ Desde logo, caso não seja comprovado o pagamento nos autos, a parte credora req
                 p.style.whiteSpace = 'pre-wrap';
                 p.style.textAlign = 'justify';
                 p.style.textIndent = '6em'
-                p.textContent = paragraph;
+                p.innerHTML = paragraph;
                 p.id = 'paragrafo';
                 contentContainer.appendChild(p);
             });
+            // Para adicionar o campo extra de provas
+            if (extraContentValue.trim() !== '') {
+                const p = document.createElement('p');
+                p.style.pageBreakInside = 'auto';
+                p.style.whiteSpace = 'pre-wrap';
+                p.style.textAlign = 'justify';
+                p.style.textIndent = '6em';
+                p.innerHTML = `${extraContentValue}`;
+                p.id = 'paragrafo';
+                contentContainer.appendChild(p);
+            }
 
             const today = new Date();
             const dateStr = today.toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' });
@@ -500,6 +703,7 @@ Desde logo, caso não seja comprovado o pagamento nos autos, a parte credora req
                 pdf.setPage(1)
                 pdf.setFont('sans-serif', 'bold');
 
+
                 pdf.text('AO JUÍZO DO JUIZADO ESPECIAL CÍVEL DA COMARCA DE MARÍLIA/SP ', pdf.internal.pageSize.getWidth() / 2, 20, { align: 'center' });
 
                 for (let i = 1; i <= totalPages; i++) {
@@ -515,14 +719,16 @@ Desde logo, caso não seja comprovado o pagamento nos autos, a parte credora req
                 const pageWidth = pdf.internal.pageSize.getWidth();
                 const marginLeft = pageWidth * 0.025; // 2.5% margin
                 const maxWidth = pageWidth * 0.95; // 95% width
-                const footerText1 = `_________________________________________________________________________________________________________________________`;
-                const footerText2 = `ATENÇÃO: Esta manifestação somente terá validade se assinada pelo solicitante e juntada no processo.</b>
+                const footerText1 = '';
+                //`_________________________________________________________________________________________________________________________`;
+                const footerText2 = ''
+                /*`ATENÇÃO: Esta manifestação somente terá validade se assinada pelo solicitante e juntada no processo.</b>
 Para juntar esta manifestação no processo, entregue-a assinada no balcão do Juizado Especial Cível da
 Comarca de Marília/SP.
 O solicitante poderá enviar a manifestação por e-mail para que seja juntada no processo. Para isso, a
 manifestação deverá ser assinada e encaminhada como anexo em formato .pdf ou .jpg para o e-mail
 mariliajec@tjsp.jus.br, juntamente com um documento de identidade em formato .pdf ou .jpg que comprove a
-assinatura do solicitante. Digite no campo "Assunto" o seguinte texto: "Petição para Juntada no Processo nº)`;
+assinatura do solicitante. Digite no campo "Assunto" o seguinte texto: "Petição para Juntada no Processo nº)`;*/
 
                 const lines1 = pdf.splitTextToSize(footerText1, maxWidth);
                 const lines2 = pdf.splitTextToSize(footerText2, maxWidth);
@@ -530,10 +736,10 @@ assinatura do solicitante. Digite no campo "Assunto" o seguinte texto: "Petiçã
                 pdf.text(lines1, marginLeft, pdf.internal.pageSize.getHeight() - 30, { align: 'left' });
                 pdf.text(lines2, marginLeft, pdf.internal.pageSize.getHeight() - 25, { maxWidth: maxWidth, align: 'justify' });
 
-            }).save().then(() => {
+            }).output('blob').then(function (blob) {
+                const url = URL.createObjectURL(blob);
+                window.open(url, '_blank'); // Abre o PDF em uma nova aba                setTimeout(() => URL.revokeObjectURL(url), 10000); // Limpa o objeto após 10s
                 element.style.display = '';
-
-
             });
         }</script>
 </body>
