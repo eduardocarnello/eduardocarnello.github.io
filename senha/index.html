@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Imprimir Senha</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.2/html2pdf.bundle.min.js"></script>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+            font-size: 1.7em;
+        }
+
+        #senhaForm {
+            background-color: #fff;
+            padding: 2%;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            max-width: 400px;
+            width: 100%;
+        }
+
+        label {
+            font-weight: bold;
+            margin-bottom: 10px;
+            display: block;
+        }
+
+        input {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 1em;
+        }
+
+        button {
+            width: 100%;
+            padding: 10px;
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1em;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        #pdfContent {
+            display: none;
+            font-size: 1.2em;
+        }
+    </style>
+</head>
+
+<body>
+    <form id="senhaForm">
+
+        <label for="senha">Nº do Processo:</label>
+        <input type="text" id="processo" name="processo" required>
+        <label for="senha">Chave de Acesso:</label>
+        <input type="text" id="senha" name="senha" required>
+        <button type="button" onclick="generatePDF()">Imprimir</button>
+    </form>
+
+    <div id="pdfContent">
+        <!--p id="pdfCabecalho">Cabeçalho do PDF (edite aqui)</p2-->
+
+        <p><b>Nº do Processo:</b> <span id="pdfProcesso"></span></p>
+        <p><b>Chave de Acesso:</b> <span id="pdfSenha"></span></p>
+        <p style="text-align: justify; font-size: 18px;" id="pdfTextoAdicional">Texto adicional que você pode editar
+            aqui.</p>
+    </div>
+
+    <script>
+        function generatePDF() {
+            const senha = document.getElementById('senha').value;
+            if (!senha) {
+                alert('Por favor, digite a senha.');
+                return;
+            }
+            const processo = document.getElementById('processo').value;
+            if (!senha) {
+                alert('Por favor, digite o número do processo.');
+                return;
+            }
+
+            /*  document.getElementById('pdfCabecalho').textContent = `Poder Judiciário
+  JUSTIÇA ESTADUAL
+  Tribunal de Justiça do Estado de São Paulo
+  Juizado Especial Cível de Marília
+  Rua Lourival Freire, 120, Fragata, CEP 17519-902, Marília/SP
+  `;*/
+            document.getElementById('pdfProcesso').textContent = processo;
+            document.getElementById('pdfSenha').textContent = senha;
+            // Edite o texto abaixo conforme desejar
+            document.getElementById('pdfTextoAdicional').innerHTML = `
+    <p>Esta chave é de uso pessoal e intransferível para a consulta do conteúdo integral do processo na página do sistema eproc do site do Tribunal de Justiça do Estado de São Paulo na internet (https://tjsp.jus.br/eproc).</p>
+    <p><b>Para acessar a íntegra do processo:</b></p>
+    <p>- Acesse o https://tjsp.jus.br/eproc;</p>
+        <p>- Clique na opção "1º Grau"</p>
+        <p>- Menu "Consulta Unificada"</p>
+         <p>- Clique em "Consulta avançada EPROC"</p>
+         <p>- informe o número do processo <b>${processo}</b> e a chave <b>${senha}</b>.</p>
+    <p>O acesso aos autos digitais via sistema é considerado vista pessoal.</p>
+    `;
+
+            const element = document.getElementById('pdfContent');
+            element.style.display = 'block';
+
+            const opt = {
+                margin: 10,
+                filename: 'senha.pdf',
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2, useCORS: true },
+                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+            };
+
+            html2pdf().from(element).set(opt).save().then(() => {
+                element.style.display = 'none';
+            });
+        }
+    </script>
+</body>
+
+</html>
