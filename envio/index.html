@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Imprimir Chave Documento</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.2/html2pdf.bundle.min.js"></script>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 85vh;
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+            font-size: 1.6em;
+        }
+
+        #envioForm {
+            background-color: #fff;
+            padding: 2%;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            max-width: 55%;
+            width: 100%;
+        }
+
+        label {
+            font-weight: bold;
+            margin-bottom: 10px;
+            display: block;
+        }
+
+        input {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 1em;
+        }
+
+        button {
+            width: 100%;
+            padding: 10px;
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1em;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        #pdfContent {
+            display: none;
+            font-size: 1.2em;
+        }
+
+        /* --- Accordion (Instruções) --- */
+        #toggleInstrucoes {
+            background: linear-gradient(90deg, #007bff 60%, #0056b3 100%);
+            color: #fff;
+            border: none;
+            border-radius: 8px 8px 0 0;
+            font-weight: bold;
+            letter-spacing: 1px;
+            transition: background 0.3s;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.07);
+        }
+
+        #toggleInstrucoes:focus {
+            outline: 2px solid #0056b3;
+        }
+
+        #instrucoesDiv {
+            background: #e9f2fb;
+            border: 2px solid #007bff;
+            border-top: none;
+            border-radius: 0 0 8px 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+            padding: 18px 16px 12px 16px;
+            margin-bottom: 24px;
+            animation: fadeInAccordion 0.3s;
+        }
+
+        @keyframes fadeInAccordion {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <form id="envioForm">
+        <button type="button" id="toggleInstrucoes" style="width:100%;margin-bottom:10px;">
+            Exibir instruções
+        </button>
+        <div id="instrucoesDiv" style="display:none; margin-bottom: 20px; color: #333; font-size: 0.7em;">
+            <!-- Edite este texto conforme desejar -->
+            <b>Instruções:</b> Insira o número do processo no campo "Nº do Processo" abaixo.
+            <p>Para gerar a <b>Chave Documento</b> <a
+                    href="https://eproc1g.tjsp.jus.br/eproc/controlador.php?acao=processo_consultar&acao_origem=acesso_usuario_documento_listar_chave&hash=4791f72a92985d4fcb645aa716cb9a1f"
+                    target="_blank">clique
+                    aqui</a> (ou digite "gerar chave de documentos" no menu lateral do eproc).
+            </p>
+            <p>Na tela que abrir (veja abaixo), digite o número do processo e clique em "Consultar"</p>
+            <img src="tela1.png" alt="Guia ilustrativo" style="max-width: 100%; height: auto;">
+
+            <p>1) Informe a data de validade (geralmente 2 dias),
+                <br>2) Assinale "Sim" na opção "Enviar Resposta"
+                <br>3) Assinale "Sim" na opção "Permitir múltipla respsota".
+                <br>4) Selecione um dos eventos na tabela
+                (geralmente a inicial ou última
+                decisão/despacho)
+                <br>5) Clique em "Gerar Chave de acesso aos documentos"
+            </p>
+            <img src="tela2.png" alt="Guia ilustrativo" style="max-width: 100%; height: auto;">
+
+            <p>Agora, copie a "Chave" no campo do formulário abaixo</p>
+            <img src="tela3.png" alt="Guia ilustrativo" style="max-width: 100%; height: auto;">
+        </div>
+        <label for="processo">Cole aqui o número do Processo:</label>
+        <input type="text" id="processo" name="processo" required>
+        <label for="senha">Cole aqui a "Chave Documento":</label>
+        <input type="text" id="senha" name="senha" required>
+        <label for="validade">Data de validade (coloque a data de validade que foi inserida no eproc):</label>
+        <input type="date" id="validade" name="validade" required>
+        <button type="button" onclick="generatePDF()">Imprimir</button>
+    </form>
+
+    <div id="pdfContent">
+        <p id="pdfCabecalho" style="text-align: center;    font-weight: bold;
+    font-size: 14pt;
+    text-align: center;
+    font-family: 'Times New Roman', Georgia, Times, serif;
+    margin: 0 auto;
+    width: 100%;">Cabeçalho do PDF (edite aqui)</p>
+        <p id="pdfCabecalho-end" style="
+    font-size: 10pt;
+    font-family: 'Times New Roman', Georgia, Times, serif;
+    text-align: center;
+    vertical-align: text-top;
+    padding: 1px;
+    width: 100%;">Cabeçalho do PDF (edite aqui)</p>
+
+        <p style=" font-size: 14pt;"><b>Nº do Processo:</b> <span id="pdfProcesso"></span></p>
+        <p style=" font-size: 14pt;"><b>Chave Documento:</b> <span id="pdfSenha"></span></p>
+        <p style="text-align: justify; font-size: 18px;" id="pdfTextoAdicional">Texto adicional que você pode editar
+            aqui.</p>
+    </div>
+
+    <script>
+        // Função para adicionar dias úteis
+        function addBusinessDays(date, days) {
+            let count = 0;
+            let result = new Date(date);
+            while (count < days) {
+                result.setDate(result.getDate() + 1);
+                // 0 = domingo, 6 = sábado
+                if (result.getDay() !== 0 && result.getDay() !== 6) {
+                    count++;
+                }
+            }
+            return result;
+        }
+        // Ao carregar a página, preenche o campo com dois dias úteis à frente
+        window.addEventListener('DOMContentLoaded', function () {
+            const input = document.getElementById('validade');
+            const hoje = new Date();
+            const doisUteis = addBusinessDays(hoje, 2);
+            // Formata para yyyy-mm-dd
+            const yyyy = doisUteis.getFullYear();
+            const mm = String(doisUteis.getMonth() + 1).padStart(2, '0');
+            const dd = String(doisUteis.getDate()).padStart(2, '0');
+            input.value = `${yyyy}-${mm}-${dd}`;
+        });
+
+        // Ao focar, já abre o calendário (caso o navegador suporte)
+        document.getElementById('validade').addEventListener('focus', function () {
+            if (this.showPicker) this.showPicker();
+        });
+        document.getElementById('toggleInstrucoes').onclick = function () {
+            var div = document.getElementById('instrucoesDiv');
+            if (div.style.display === 'none') {
+                div.style.display = 'block';
+                this.textContent = 'Ocultar instruções';
+            } else {
+                div.style.display = 'none';
+                this.textContent = 'Exibir instruções';
+            }
+        };
+        function generatePDF() {
+            const senha = document.getElementById('senha').value;
+            if (!senha) {
+                alert('Por favor, digite a senha.');
+                return;
+            }
+            const processo = document.getElementById('processo').value;
+            if (!senha) {
+                alert('Por favor, digite o número do processo.');
+                return;
+            }
+            const validadeInput = document.getElementById('validade').value;
+            const [ano, mes, dia] = validadeInput.split('-');
+            const validadeFormatada = `${dia}/${mes}/${ano}`;
+            if (!validadeInput) {
+                alert('Por favor, selecione a data de validade.');
+                return;
+            }
+
+            document.getElementById('pdfCabecalho').innerHTML = `    <img src="tj.jpg" alt="Logo TJSP" style="max-width:90px; display:block; margin:0 auto 0px auto;">
+Poder Judiciário
+  <br>JUSTIÇA ESTADUAL
+  <br>Tribunal de Justiça do Estado de São Paulo
+  <br>Juizado Especial Cível de Marília`
+            document.getElementById('pdfCabecalho-end').innerHTML = `Rua Lourival Freire, 120, Fragata, CEP 17519-902, Marília/SP
+  `;
+            document.getElementById('pdfProcesso').textContent = processo;
+            document.getElementById('pdfSenha').textContent = senha;
+            // Edite o texto abaixo conforme desejar
+            document.getElementById('pdfTextoAdicional').innerHTML = `
+    <p>A Chave Documento é de uso pessoal e intransferível para <b>envio de documentos e arquivos</b> diretamente ao processo eletrônico. A responsabilidade pelo conteúdo dos arquivos enviados é integralmente da parte que faz o envio, submetendo-se às penas da Lei caso haja abuso, uso indevido da funcionalidade ou envio de arquivos maliciosos (Resolução nº 963/2025).</p>
+    <p>A presente chave possui validade limitada, expirando seu uso em ${validadeFormatada} </p>
+        <b>Para enviar documentos e arquivos diretamente no processo:</b></p>
+    <p>- Acesse o site https://tjsp.jus.br/eproc;</p>
+        <p>- Clique na opção "1º Grau"</p>
+        <p>- No menu "Consulta Pública", selecione a opção "<b>Consulta Documento pela Chave</b>"</p>
+         <p>- Informe o número do processo <b>${processo}</b> e a Chave Documento <b>${senha}</b> nos seus respectivos campos e clique em Consultar.</p>
+         <p>- Será aberto um campo para adicionar os arquivos e documentos que deseja enviar.</p>
+        <p>- Clique em "Adicionar arquivo", selecione os arquivos do seu celular/computador e, após, clique no botão "Responder".</p>
+        <p>- A página será recarregada e uma mensagem com fundo amarelo aparecerá informando que a resposta foi enviada e que gerou um evento no processo. Confirme acessando o processo com sua chave de acesso (senha).</p>
+    <p><b>Atenção:</b> Não use estes caracteres no nome dos arquivos: &#92; / : * ? " &lt; &gt;
+    <p>São suportados apenas arquivos de até 10MB e nos seguintes formatos: PDF, JPEG, JPG, PNG, JFIF, MP3, WMA, WAV, OGG, WMV, MPEG, MPG, MP4, WEBM.</p>
+    `;
+
+            const element = document.getElementById('pdfContent');
+            element.style.display = 'block';
+
+            const opt = {
+                margin: 10,
+                filename: 'senha.pdf',
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2, useCORS: true },
+                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+            };
+
+            html2pdf().from(element).set(opt).save().then(() => {
+                element.style.display = 'none';
+            });
+        }
+    </script>
+</body>
+
+</html>
