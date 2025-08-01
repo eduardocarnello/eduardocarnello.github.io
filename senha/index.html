@@ -75,10 +75,22 @@
     </form>
 
     <div id="pdfContent">
-        <!--p id="pdfCabecalho">Cabeçalho do PDF (edite aqui)</p2-->
+        <p id="pdfCabecalho" style="text-align: center;    font-weight: bold;
+            font-size: 14pt;
+            text-align: center;
+            font-family: 'Times New Roman', Georgia, Times, serif;
+            margin: 0 auto;
+            width: 100%;">Cabeçalho do PDF (edite aqui)</p>
+        <p id="pdfCabecalho-end" style="
+            font-size: 10pt;
+            font-family: 'Times New Roman', Georgia, Times, serif;
+            text-align: center;
+            vertical-align: text-top;
+            padding: 1px;
+            width: 100%;">Cabeçalho do PDF (edite aqui)</p>
 
-        <p><b>Nº do Processo:</b> <span id="pdfProcesso"></span></p>
-        <p><b>Chave de Acesso:</b> <span id="pdfSenha"></span></p>
+        <p style=" font-size: 14pt;"><b>Nº do Processo:</b> <span id="pdfProcesso"></span></p>
+        <p style=" font-size: 14pt;"><b>Chave de Acesso:</b> <span id="pdfSenha"></span></p>
         <p style="text-align: justify; font-size: 18px;" id="pdfTextoAdicional">Texto adicional que você pode editar
             aqui.</p>
     </div>
@@ -96,12 +108,13 @@
                 return;
             }
 
-            /*  document.getElementById('pdfCabecalho').textContent = `Poder Judiciário
-  JUSTIÇA ESTADUAL
-  Tribunal de Justiça do Estado de São Paulo
-  Juizado Especial Cível de Marília
-  Rua Lourival Freire, 120, Fragata, CEP 17519-902, Marília/SP
-  `;*/
+            document.getElementById('pdfCabecalho').innerHTML = `    <img src="../envio/tj.jpg" alt="Logo TJSP" style="max-width:90px; display:block; margin:0 auto 0px auto;">
+Poder Judiciário
+  <br>JUSTIÇA ESTADUAL
+  <br>Tribunal de Justiça do Estado de São Paulo
+  <br>Juizado Especial Cível de Marília`
+            document.getElementById('pdfCabecalho-end').innerHTML = `Rua Lourival Freire, 120, Fragata, CEP 17519-902, Marília/SP
+  `;
             document.getElementById('pdfProcesso').textContent = processo;
             document.getElementById('pdfSenha').textContent = senha;
             // Edite o texto abaixo conforme desejar
