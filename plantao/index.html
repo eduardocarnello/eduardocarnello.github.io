@@ -1,0 +1,642 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerador de Termo de Plantão Judiciário</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+
+        .document-preview {
+            font-family: 'Times New Roman', Times, serif;
+            line-height: 1.2;
+        }
+
+        .document-preview h2 {
+            text-align: center;
+            font-weight: bold;
+            text-transform: uppercase;
+            margin-bottom: 2rem;
+            margin-top: 1rem;
+        }
+
+        .document-preview p {
+            text-align: justify;
+            text-indent: 4em;
+            margin-bottom: 1.5rem;
+        }
+
+        .document-preview .signature {
+            text-align: center;
+            margin-top: 3rem;
+            font-weight: bold;
+        }
+
+        .document-preview .signature-line {
+            border-top: 1px solid black;
+            width: 300px;
+            margin: 0 auto;
+        }
+
+        #document-container {
+            position: relative;
+            z-index: 1;
+            /* Ensures text is on top of the watermark's z-index */
+        }
+
+        .watermark {
+            position: absolute;
+            top: 45%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: -1;
+            /* Puts the watermark behind the text */
+            opacity: 0.1;
+            width: 550px;
+            pointer-events: none;
+            /* Prevents the image from interfering with text selection */
+        }
+
+        .watermark img {
+            width: 100%;
+            height: auto;
+        }
+
+        p.font-bold.text-sm.leading-tight,
+        p.text-sm.leading-tight {
+            text-align: center;
+            text-indent: 0;
+            margin-bottom: 0;
+        }
+
+        @media print {
+            body * {
+                visibility: hidden;
+            }
+
+            div#form-container {
+                display: none;
+            }
+
+            #document-container,
+            #document-container * {
+                visibility: visible !important;
+            }
+
+            #document-container {
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 100%;
+            }
+
+            .document-preview p,
+            .document-preview h2,
+            .document-preview table {
+                font-size: 12pt;
+            }
+
+            .no-print {
+                display: none;
+            }
+        }
+    </style>
+</head>
+
+<body class="bg-gray-100 text-gray-800">
+
+    <div class="container mx-auto p-4 md:p-8">
+        <div class="bg-white rounded-2xl shadow-2xl overflow-hidden">
+            <div class="p-6 bg-gray-800 text-white">
+                <h1 class="text-2xl md:text-3xl font-bold">Gerador de Termo de Plantão Judiciário</h1>
+                <p class="text-gray-300 mt-1">Preencha os campos abaixo para gerar o documento.</p>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 p-6 md:p-8">
+                <!-- Coluna do Formulário -->
+                <div id="form-container">
+                    <h2 class="text-xl font-bold mb-6 border-b pb-2 border-gray-300 text-gray-700">Dados do Termo</h2>
+
+                    <!-- Dados Gerais -->
+                    <div class="space-y-4 bg-gray-50 p-4 rounded-lg mb-6">
+                        <h3 class="font-semibold text-lg text-gray-600">Dados Gerais</h3>
+                        <div>
+                            <label for="circunscricao" class="block text-sm font-medium text-gray-700">Circunscrição
+                                Judiciária</label>
+                            <input type="text" id="circunscricao" oninput="updatePreview()"
+                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                                value="31ª Circunscrição Judiciária">
+                        </div>
+                        <h3 class="font-semibold text-lg text-gray-600 pt-4">Termo de Abertura</h3>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div>
+                                <label for="hora_abertura" class="block text-sm font-medium text-gray-700">Horário de
+                                    Abertura</label>
+                                <input type="time" id="hora_abertura" oninput="updatePreview()"
+                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                                    value="09:00">
+                            </div>
+                            <div>
+                                <label for="data_abertura" class="block text-sm font-medium text-gray-700">Data de
+                                    Abertura</label>
+                                <input type="date" id="data_abertura" onchange="updatePreview()"
+                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Participantes -->
+                    <div class="space-y-4 bg-gray-50 p-4 rounded-lg mb-6">
+                        <h3 class="font-semibold text-lg text-gray-600">Participantes</h3>
+                        <div class="grid grid-cols-3 gap-4">
+                            <div class="col-span-1">
+                                <label for="juiz_pronome"
+                                    class="block text-sm font-medium text-gray-700">Tratamento</label>
+                                <select id="juiz_pronome" onchange="updatePreview()"
+                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                                    <option>Dr.</option>
+                                    <option>Dra.</option>
+                                </select>
+                            </div>
+                            <div class="col-span-2">
+                                <label for="juiz" class="block text-sm font-medium text-gray-700">Juiz(a) de
+                                    Direito</label>
+                                <input type="text" id="juiz" oninput="updatePreview()"
+                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                                    placeholder="NOME COMPLETO" value="PEDRO SIQUEIRA DE PRETTO">
+                            </div>
+                        </div>
+                        <div>
+                            <label for="comarca_juiz" class="block text-sm font-medium text-gray-700">Vara e Comarca do
+                                Juiz(a)</label>
+                            <input type="text" id="comarca_juiz" oninput="updatePreview()"
+                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                                placeholder="Ex: Juizado Especial Cível da Comarca de Marília, SP"
+                                value="Juizado Especial Cível da Comarca de Marília, SP">
+                        </div>
+                        <div class="grid grid-cols-3 gap-4">
+                            <div class="col-span-1">
+                                <label for="promotor_pronome"
+                                    class="block text-sm font-medium text-gray-700">Tratamento</label>
+                                <select id="promotor_pronome" onchange="updatePreview()"
+                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                                    <option>Dr.</option>
+                                    <option>Dra.</option>
+                                </select>
+                            </div>
+                            <div class="col-span-2">
+                                <label for="promotor" class="block text-sm font-medium text-gray-700">Representante do
+                                    Ministério Público</label>
+                                <input type="text" id="promotor" oninput="updatePreview()"
+                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                                    placeholder="NOME COMPLETO">
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label for="oficial_promotoria_cargo"
+                                    class="block text-sm font-medium text-gray-700">Cargo Promotoria</label>
+                                <select id="oficial_promotoria_cargo" onchange="updatePreview()"
+                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                                    <option>Oficial de Promotoria</option>
+                                    <option>Analista de Promotoria</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label for="oficial_promotoria_nome"
+                                    class="block text-sm font-medium text-gray-700">Nome</label>
+                                <input type="text" id="oficial_promotoria_nome" oninput="updatePreview()"
+                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                                    placeholder="Ex: NOME COMPLETO">
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-3 gap-4">
+                            <div class="col-span-1">
+                                <label for="defensor_pronome"
+                                    class="block text-sm font-medium text-gray-700">Tratamento</label>
+                                <select id="defensor_pronome" onchange="updatePreview()"
+                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                                    <option>Dr.</option>
+                                    <option>Dra.</option>
+                                </select>
+                            </div>
+                            <div class="col-span-2">
+                                <label for="defensor" class="block text-sm font-medium text-gray-700">Defensor(a)
+                                    Público(a)</label>
+                                <input type="text" id="defensor" oninput="updatePreview()"
+                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                                    placeholder="NOME COMPLETO">
+                            </div>
+                        </div>
+                        <div>
+                            <label for="oficial_maior" class="block text-sm font-medium text-gray-700">Oficial Maior
+                                (Digitador)</label>
+                            <input type="text" id="oficial_maior" oninput="updatePreview()"
+                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                                placeholder="Ex: NOME COMPLETO" value="EDUARDO CARNELLO JATOBÁ">
+                        </div>
+                        <div>
+                            <label for="oficiais_justica" class="block text-sm font-medium text-gray-700">Oficiais de
+                                Justiça (separados por vírgula)</label>
+                            <input type="text" id="oficiais_justica" oninput="updatePreview()"
+                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                                placeholder="Ex: NOME 1, NOME 2">
+                        </div>
+                        <div>
+                            <label for="escreventes" class="block text-sm font-medium text-gray-700">Escreventes
+                                (separados por vírgula)</label>
+                            <input type="text" id="escreventes" oninput="updatePreview()"
+                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                                placeholder="Ex: NOME 1, NOME 2, NOME 3">
+                        </div>
+                        <div>
+                            <label for="assistente_judiciario"
+                                class="block text-sm font-medium text-gray-700">Assistente Judiciário</label>
+                            <input type="text" id="assistente_judiciario" oninput="updatePreview()"
+                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                                placeholder="Ex: NOME COMPLETO">
+                        </div>
+                        <div class="space-y-2 border-t pt-4 mt-4">
+                            <p class="text-sm font-medium text-gray-700">Pessoal do Distribuidor Judicial</p>
+                            <!-- Person 1 -->
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label for="distribuidor_cargo_1"
+                                        class="block text-sm font-medium text-gray-700">Cargo (Pessoa 1)</label>
+                                    <select id="distribuidor_cargo_1" onchange="updatePreview()"
+                                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                                        <option>Supervisor de Serviço do Distribuidor Judicial</option>
+                                        <option>Escrevente do Distribuidor Judicial</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label for="distribuidor_nome_1"
+                                        class="block text-sm font-medium text-gray-700">Nome (Pessoa 1)</label>
+                                    <input type="text" id="distribuidor_nome_1" oninput="updatePreview()"
+                                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                                        placeholder="Ex: NOME COMPLETO">
+                                </div>
+                            </div>
+                            <!-- Person 2 -->
+                            <div>
+                                <label for="distribuidor_nome_2" class="block text-sm font-medium text-gray-700">Nome
+                                    (Pessoa 2 - Escrevente)</label>
+                                <input type="text" id="distribuidor_nome_2" oninput="updatePreview()"
+                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                                    placeholder="Ex: NOME COMPLETO">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Processos -->
+                    <div class="space-y-4 bg-gray-50 p-4 rounded-lg mb-6">
+                        <h3 class="font-semibold text-lg text-gray-600">Tabela de Processos</h3>
+                        <div id="processos-container" class="space-y-3">
+                        </div>
+                        <button onclick="addProcesso()"
+                            class="mt-2 w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                            Adicionar Processo
+                        </button>
+                    </div>
+
+                    <!-- Termo de Encerramento -->
+                    <div class="space-y-4 bg-gray-50 p-4 rounded-lg">
+                        <h3 class="font-semibold text-lg text-gray-600">Termo de Encerramento</h3>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div>
+                                <label for="hora_encerramento" class="block text-sm font-medium text-gray-700">Horário
+                                    de Encerramento</label>
+                                <input type="time" id="hora_encerramento" oninput="updatePreview()"
+                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                                    value="13:00">
+                            </div>
+                            <div>
+                                <label for="data_encerramento" class="block text-sm font-medium text-gray-700">Data de
+                                    Encerramento</label>
+                                <input type="date" id="data_encerramento" onchange="updatePreview()"
+                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                            </div>
+                        </div>
+                        <div class="mt-4">
+                            <label for="encerramento_ocorrencia"
+                                class="block text-sm font-medium text-gray-700">Situação do Encerramento</label>
+                            <select id="encerramento_ocorrencia" onchange="updatePreview()"
+                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                                <option>Com ocorrência</option>
+                                <option>Sem ocorrência</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Coluna do Documento -->
+                <div class="border-2 border-dashed border-gray-300 rounded-lg p-4 lg:p-6 h-full min-h-[800px]">
+                    <div class="flex justify-end mb-4 no-print">
+                        <button onclick="window.print()"
+                            class="py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-gray-600 hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500">
+                            Imprimir Documento
+                        </button>
+                    </div>
+                    <div id="document-container" class="bg-white p-8 document-preview">
+                        <div class="watermark">
+                            <img src="https://upload.wikimedia.org/wikipedia/commons/2/2a/Bras%C3%A3o_do_estado_de_S%C3%A3o_Paulo.svg"
+                                alt="Marca d'água TJSP">
+                        </div>
+                        <div class="text-center mb-12">
+                            <p class="font-bold text-sm leading-tight">PODER JUDICIÁRIO</p>
+                            <p class="text-sm leading-tight">São Paulo</p>
+                            <p class="text-sm leading-tight">PLANTÃO JUDICIÁRIO - <span
+                                    id="preview-circunscricao_comarca"> [Circunscrição]</span>
+                        </div>
+
+                        <h2 style="text-decoration: underline;">Termo de Abertura</h2>
+                        <p>
+                            Às <span id="preview-hora_abertura" class="font-bold">[hora]</span> horas do dia <span
+                                id="preview-dia_abertura" class="font-bold">[dia por extenso]</span> (<span
+                                id="preview-dia_num_abertura" class="font-bold">[dia]</span>) de <span
+                                id="preview-mes_abertura" class="font-bold">[mês por extenso]</span> (<span
+                                id="preview-mes_num_abertura" class="font-bold">[mês]</span>) do ano de <span
+                                id="preview-ano_abertura" class="font-bold">[ano por extenso]</span> (<span
+                                id="preview-ano_num_abertura" class="font-bold">[ano]</span>), de forma remota nos
+                            termos do Provimento Conjunto nº 54/2022, foi realizado o Plantão Judiciário da <span
+                                id="preview-circunscricao_abertura" class="font-bold">[Circunscrição Judiciária]</span>,
+                            nos termos do art. 1.130, inciso I, Capítulo X, das NSCGJ. Foi procedida a abertura do
+                            Plantão Judiciário pelo(a) <span id="preview-juiz" class="font-bold">[Juiz(a) de
+                                Direito]</span>, MM. Juiz(a) de Direito do(a) <span id="preview-comarca_juiz"
+                                class="font-bold">[Vara e Comarca do Juiz(a)]</span>, do qual fizeram parte o
+                            representante do Ministério Público, <span id="preview-promotor"
+                                class="font-bold">[Representante do Ministério Público]</span>, <span
+                                id="preview-oficial_promotoria_completo" class="font-bold">[Info Oficial
+                                Promotoria]</span>, o(a) Defensor(a) Público(a), <span id="preview-defensor"
+                                class="font-bold">[Defensor(a) Público(a)]</span>, o(a) Oficial Maior <span
+                                id="preview-oficial_maior_nome" class="font-bold">[Oficial Maior (Digitador)]</span>, os
+                            Oficiais de Justiça <span id="preview-oficiais_justica" class="font-bold">[Oficiais de
+                                Justiça]</span>, os Escreventes Técnicos Judiciário <span id="preview-escreventes"
+                                class="font-bold">[Escreventes]</span>, o(a) assistente judiciário <span
+                                id="preview-assistente_judiciario" class="font-bold">[Assistente Judiciário]</span>,
+                            <span id="preview-distribuidor_completo" class="font-bold">[Info Distribuidor]</span>. Para
+                            Constar, lavrei o presente termo que lido e achado conforme, vai
+                            devidamente assinado. Eu, <span id="preview-oficial_maior_digitador"
+                                class="font-bold">[Oficial Maior (Digitador)]</span>, Oficial Maior, digitei e subscrevi
+                            digitalmente.
+                        </p>
+                        <div class="signature">
+                            <span id="preview-juiz_assinatura_abertura" class="font-bold">[Juiz(a) de Direito]</span>
+                            <p class="text-sm">Juiz(a) de Direito</p>
+                        </div>
+
+                        <div id="preview-processos-table-container" class="my-8"></div>
+
+                        <h2>Termo de Encerramento</h2>
+                        <p>
+                            Às <span id="preview-hora_encerramento" class="font-bold">[hora]</span> horas do dia <span
+                                id="preview-dia_encerramento" class="font-bold">[dia por extenso]</span> (<span
+                                id="preview-dia_num_encerramento" class="font-bold">[dia]</span>) de <span
+                                id="preview-mes_encerramento" class="font-bold">[mês por extenso]</span> (<span
+                                id="preview-mes_num_encerramento" class="font-bold">[mês]</span>) do ano de <span
+                                id="preview-ano_encerramento" class="font-bold">[ano por extenso]</span> (<span
+                                id="preview-ano_num_encerramento" class="font-bold">[ano]</span>), foi procedido pelo(a)
+                            <span id="preview-juiz_encerramento" class="font-bold">[Juiz(a) de Direito]</span>, MM.
+                            Juiz(a) de Direito do(a) <span id="preview-comarca_juiz_encerramento"
+                                class="font-bold">[Vara e Comarca do Juiz(a)]</span>, o encerramento do Plantão
+                            Judiciário da <span id="preview-circunscricao_encerramento" class="font-bold">[Circunscrição
+                                Judiciária]</span>, <span id="preview-ocorrencia">[situação]</span>. Para Constar,
+                            lavrei o presente termo que
+                            lido e achado conforme, vai devidamente assinado. Eu, <span
+                                id="preview-oficial_maior_encerramento" class="font-bold">[Oficial Maior
+                                (Digitador)]</span>, Oficial Maior, digitei e subscrevi digitalmente.
+                        </p>
+                        <div class="signature">
+                            <span id="preview-juiz_assinatura_encerramento" class="font-bold">[Juiz(a) de
+                                Direito]</span>
+                            <p class="text-sm">Juiz(a) de Direito</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function updatePreview() {
+            // Dados Gerais
+            const circunscricao = document.getElementById('circunscricao').value || '[Circunscrição Judiciária]';
+            document.getElementById('preview-circunscricao_comarca').textContent = `${circunscricao.toUpperCase()}`;
+            document.getElementById('preview-circunscricao_abertura').textContent = circunscricao;
+            document.getElementById('preview-circunscricao_encerramento').textContent = circunscricao;
+
+            // Termo de Abertura
+            document.getElementById('preview-hora_abertura').textContent = document.getElementById('hora_abertura').value || '[hora]';
+
+            const dataAbertura = new Date(document.getElementById('data_abertura').value + 'T00:00:00');
+            if (window.extenso && !isNaN(dataAbertura.getTime())) {
+                const dia = dataAbertura.getDate();
+                const mes = dataAbertura.getMonth();
+                const ano = dataAbertura.getFullYear();
+                const meses = ["janeiro", "fevereiro", "março", "abril", "maio", "junho", "julho", "agosto", "setembro", "outubro", "novembro", "dezembro"];
+                document.getElementById('preview-dia_abertura').textContent = extenso(dia, { mode: 'number' });
+                document.getElementById('preview-dia_num_abertura').textContent = String(dia).padStart(2, '0');
+                document.getElementById('preview-mes_abertura').textContent = meses[mes];
+                document.getElementById('preview-mes_num_abertura').textContent = String(mes + 1).padStart(2, '0');
+                document.getElementById('preview-ano_abertura').textContent = extenso(ano, { mode: 'number' });
+                document.getElementById('preview-ano_num_abertura').textContent = ano;
+            } else {
+                document.getElementById('preview-dia_abertura').textContent = '[dia por extenso]';
+                document.getElementById('preview-dia_num_abertura').textContent = '[dia]';
+                document.getElementById('preview-mes_abertura').textContent = '[mês por extenso]';
+                document.getElementById('preview-mes_num_abertura').textContent = '[mês]';
+                document.getElementById('preview-ano_abertura').textContent = '[ano por extenso]';
+                document.getElementById('preview-ano_num_abertura').textContent = '[ano]';
+            }
+
+            // Nomes com Tratamento
+            const pronomeJuiz = document.getElementById('juiz_pronome').value;
+            const nomeJuiz = document.getElementById('juiz').value;
+            const juizDisplay = nomeJuiz ? `${pronomeJuiz} ${nomeJuiz}` : '[Juiz(a) de Direito]';
+            document.getElementById('preview-juiz').textContent = juizDisplay;
+            document.getElementById('preview-juiz_assinatura_abertura').textContent = juizDisplay;
+            document.getElementById('preview-juiz_encerramento').textContent = juizDisplay;
+            document.getElementById('preview-juiz_assinatura_encerramento').textContent = juizDisplay;
+
+            const pronomePromotor = document.getElementById('promotor_pronome').value;
+            const nomePromotor = document.getElementById('promotor').value;
+            const promotorDisplay = nomePromotor ? `${pronomePromotor} ${nomePromotor}` : '[Representante do Ministério Público]';
+            document.getElementById('preview-promotor').textContent = promotorDisplay;
+
+            const pronomeDefensor = document.getElementById('defensor_pronome').value;
+            const nomeDefensor = document.getElementById('defensor').value;
+            const defensorDisplay = nomeDefensor ? `${pronomeDefensor} ${nomeDefensor}` : '[Defensor(a) Público(a)]';
+            document.getElementById('preview-defensor').textContent = defensorDisplay;
+
+            // Cargos com Nomes
+            const cargoOficialPromotoria = document.getElementById('oficial_promotoria_cargo').value;
+            const nomeOficialPromotoria = document.getElementById('oficial_promotoria_nome').value;
+            const oficialPromotoriaDisplay = nomeOficialPromotoria ? `o(a) ${cargoOficialPromotoria} ${nomeOficialPromotoria}` : `o(a) ${cargoOficialPromotoria}`;
+            document.getElementById('preview-oficial_promotoria_completo').textContent = oficialPromotoriaDisplay;
+
+            const cargo1 = document.getElementById('distribuidor_cargo_1').value;
+            const nome1 = document.getElementById('distribuidor_nome_1').value.trim();
+            const nome2 = document.getElementById('distribuidor_nome_2').value.trim();
+            const cargo2 = "Escrevente do Distribuidor Judicial";
+            let distribuidorText = "";
+
+            if (nome1 && nome2) {
+                if (cargo1 === cargo2) {
+                    distribuidorText = `e os Escreventes do Distribuidor Judicial ${nome1} e ${nome2}`;
+                } else {
+                    distribuidorText = `e o(a) ${cargo1} ${nome1}, e o(a) ${cargo2} ${nome2}`;
+                }
+            } else if (nome1) {
+                distribuidorText = `e o(a) ${cargo1} ${nome1}`;
+            } else if (nome2) {
+                distribuidorText = `e o(a) ${cargo2} ${nome2}`;
+            }
+            document.getElementById('preview-distribuidor_completo').textContent = distribuidorText;
+
+
+            const comarca = document.getElementById('comarca_juiz').value || '[Vara e Comarca do Juiz(a)]';
+            document.getElementById('preview-comarca_juiz').textContent = comarca;
+            document.getElementById('preview-comarca_juiz_encerramento').textContent = comarca;
+
+            const oficialMaior = document.getElementById('oficial_maior').value || '[Oficial Maior (Digitador)]';
+            document.getElementById('preview-oficial_maior_nome').textContent = oficialMaior;
+            document.getElementById('preview-oficial_maior_digitador').textContent = oficialMaior;
+            document.getElementById('preview-oficial_maior_encerramento').textContent = oficialMaior;
+
+            const fieldsToUpdate = {
+                'oficiais_justica': 'preview-oficiais_justica',
+                'escreventes': 'preview-escreventes',
+                'assistente_judiciario': 'preview-assistente_judiciario',
+            };
+
+            for (const inputId in fieldsToUpdate) {
+                const previewId = fieldsToUpdate[inputId];
+                const inputElement = document.getElementById(inputId);
+                const previewElement = document.getElementById(previewId);
+                previewElement.textContent = inputElement.value || `[${inputElement.placeholder}]`;
+            }
+
+            // Termo de Encerramento
+            document.getElementById('preview-hora_encerramento').textContent = document.getElementById('hora_encerramento').value || '[hora]';
+            const dataEncerramento = new Date(document.getElementById('data_encerramento').value + 'T00:00:00');
+            if (window.extenso && !isNaN(dataEncerramento.getTime())) {
+                const dia = dataEncerramento.getDate();
+                const mes = dataEncerramento.getMonth();
+                const ano = dataEncerramento.getFullYear();
+                const meses = ["janeiro", "fevereiro", "março", "abril", "maio", "junho", "julho", "agosto", "setembro", "outubro", "novembro", "dezembro"];
+                document.getElementById('preview-dia_encerramento').textContent = extenso(dia, { mode: 'number' });
+                document.getElementById('preview-dia_num_encerramento').textContent = String(dia).padStart(2, '0');
+                document.getElementById('preview-mes_encerramento').textContent = meses[mes];
+                document.getElementById('preview-mes_num_encerramento').textContent = String(mes + 1).padStart(2, '0');
+                document.getElementById('preview-ano_encerramento').textContent = extenso(ano, { mode: 'number' });
+                document.getElementById('preview-ano_num_encerramento').textContent = ano;
+            } else {
+                document.getElementById('preview-dia_encerramento').textContent = '[dia por extenso]';
+                document.getElementById('preview-dia_num_encerramento').textContent = '[dia]';
+                document.getElementById('preview-mes_encerramento').textContent = '[mês por extenso]';
+                document.getElementById('preview-mes_num_encerramento').textContent = '[mês]';
+                document.getElementById('preview-ano_encerramento').textContent = '[ano por extenso]';
+                document.getElementById('preview-ano_num_encerramento').textContent = '[ano]';
+            }
+
+            const ocorrencia = document.getElementById('encerramento_ocorrencia').value;
+            const ocorrenciaTexto = (ocorrencia === 'Com ocorrência')
+                ? 'com ocorrência, sendo o retorno dos mandados expedidos, que serão verificados no dia seguinte para regularização'
+                : 'sem ocorrência';
+            document.getElementById('preview-ocorrencia').textContent = ocorrenciaTexto;
+
+            updateProcessosTable();
+        }
+
+        let processoCount = 0;
+        function addProcesso() {
+            processoCount++;
+            const container = document.getElementById('processos-container');
+            const newProcessoDiv = document.createElement('div');
+            newProcessoDiv.id = `processo-${processoCount}`;
+            newProcessoDiv.className = 'p-3 border rounded-md bg-white grid grid-cols-1 sm:grid-cols-2 gap-3 relative';
+            newProcessoDiv.innerHTML = `
+                <button onclick="removeProcesso(${processoCount})" class="absolute top-2 right-2 text-red-500 hover:text-red-700 font-bold no-print">X</button>
+                <input type="text" placeholder="Processo" class="processo-input-processo sm:col-span-2 w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" oninput="updatePreview()">
+                <input type="date" placeholder="Data" class="processo-input-data w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" oninput="updatePreview()">
+                <input type="text" placeholder="Natureza da Ação" class="processo-input-natureza w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" oninput="updatePreview()">
+                <input type="text" placeholder="Autor" class="processo-input-autor w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" oninput="updatePreview()">
+                <input type="text" placeholder="Réu" class="processo-input-reu w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" oninput="updatePreview()">
+            `;
+            container.appendChild(newProcessoDiv);
+            updatePreview();
+        }
+
+        function removeProcesso(id) {
+            const processoDiv = document.getElementById(`processo-${id}`);
+            if (processoDiv) {
+                processoDiv.remove();
+                updatePreview();
+            }
+        }
+
+        function updateProcessosTable() {
+            const container = document.getElementById('preview-processos-table-container');
+            const processos = document.querySelectorAll('#processos-container > div');
+            if (processos.length === 0) {
+                container.innerHTML = ''; return;
+            }
+            let tableHTML = `
+                <table class="w-full border-collapse border border-gray-400 text-sm">
+                    <thead>
+                        <tr class="bg-gray-200">
+                            <th class="border border-gray-300 p-2">PROCESSO</th>
+                            <th class="border border-gray-300 p-2">DATA</th>
+                            <th class="border border-gray-300 p-2">NATUREZA DA AÇÃO</th>
+                            <th class="border border-gray-300 p-2">AUTOR</th>
+                            <th class="border border-gray-300 p-2">RÉU</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+            processos.forEach(proc => {
+                const processo = proc.querySelector('.processo-input-processo').value;
+                let data = proc.querySelector('.processo-input-data').value;
+                if (data) {
+                    const [year, month, day] = data.split('-');
+                    data = `${day}/${month}/${year}`;
+                }
+                const natureza = proc.querySelector('.processo-input-natureza').value;
+                const autor = proc.querySelector('.processo-input-autor').value;
+                const reu = proc.querySelector('.processo-input-reu').value;
+                tableHTML += `
+                    <tr>
+                        <td class="border border-gray-300 p-2">${processo}</td>
+                        <td class="border border-gray-300 p-2">${data}</td>
+                        <td class="border border-gray-300 p-2">${natureza}</td>
+                        <td class="border border-gray-300 p-2">${autor}</td>
+                        <td class="border border-gray-300 p-2">${reu}</td>
+                    </tr>
+                `;
+            });
+            tableHTML += '</tbody></table>';
+            container.innerHTML = tableHTML;
+        }
+
+        window.onload = () => {
+            const script = document.createElement('script');
+            script.src = 'https://cdn.jsdelivr.net/npm/extenso';
+            script.onload = () => {
+                const today = new Date().toISOString().split('T')[0];
+                document.getElementById('data_abertura').value = today;
+                document.getElementById('data_encerramento').value = today;
+                updatePreview();
+                addProcesso();
+                addProcesso();
+            };
+            document.head.appendChild(script);
+        };
+    </script>
+</body>
+
+</html>
