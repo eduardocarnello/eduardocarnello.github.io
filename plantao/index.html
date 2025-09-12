@@ -12,16 +12,40 @@
             font-family: 'Inter', sans-serif;
         }
 
+        .font-verdana {
+            font-family: Verdana, Geneva, sans-serif;
+        }
+
         .document-preview {
             font-family: 'Times New Roman', Times, serif;
             line-height: 1.2;
+        }
+
+        div#document-container {
+            padding: 0 2rem;
+        }
+
+        div#preview-processos-table-container {
+            width: 105%;
+
+            margin-left: -20px;
+        }
+
+        th.border.border-gray-300.p-2 {
+            padding: 0;
+            font-size: 12px;
+        }
+
+        td.border.border-gray-300.p-2 {
+            padding: 0.2rem;
+            font-size: 12px;
         }
 
         .document-preview h2 {
             text-align: center;
             font-weight: bold;
             text-transform: uppercase;
-            margin-bottom: 2rem;
+            margin-bottom: 0.5rem;
             margin-top: 1rem;
         }
 
@@ -35,6 +59,10 @@
             text-align: center;
             margin-top: 3rem;
             font-weight: bold;
+        }
+
+        .text-center.mb-12 {
+            margin-bottom: 10px;
         }
 
         .document-preview .signature-line {
@@ -370,12 +398,12 @@
                     </div>
                     <div id="document-container" class="bg-white p-8 document-preview">
                         <div class="watermark">
-                            <img src="https://upload.wikimedia.org/wikipedia/commons/2/2a/Bras%C3%A3o_do_estado_de_S%C3%A3o_Paulo.svg"
-                                alt="Marca d'água TJSP">
+                            <img src="tj.jpg" alt="Marca d'água TJSP">
                         </div>
                         <div class="text-center mb-12">
-                            <p class="font-bold text-sm leading-tight">PODER JUDICIÁRIO</p>
-                            <p class="text-sm leading-tight">São Paulo</p>
+                            <p class="font-bold text-sm leading-tight font-verdana">PODER JUDICIÁRIO</p>
+                            <p class="text-sm leading-tight font-verdana">São Paulo</p>
+                            <p></p>
                             <p class="text-sm leading-tight">PLANTÃO JUDICIÁRIO - <span
                                     id="preview-circunscricao_comarca"> [Circunscrição]</span>
                         </div>
@@ -383,11 +411,11 @@
                         <h2 style="text-decoration: underline;">Termo de Abertura</h2>
                         <p>
                             Às <span id="preview-hora_abertura" class="font-bold">[hora]</span> horas do dia <span
-                                id="preview-dia_abertura" class="font-bold">[dia por extenso]</span> (<span
+                                id="preview-dia_extenso_abertura" class="font-bold">[dia por extenso]</span> (<span
                                 id="preview-dia_num_abertura" class="font-bold">[dia]</span>) de <span
-                                id="preview-mes_abertura" class="font-bold">[mês por extenso]</span> (<span
+                                id="preview-mes_extenso_abertura" class="font-bold">[mês por extenso]</span> (<span
                                 id="preview-mes_num_abertura" class="font-bold">[mês]</span>) do ano de <span
-                                id="preview-ano_abertura" class="font-bold">[ano por extenso]</span> (<span
+                                id="preview-ano_extenso_abertura" class="font-bold">[ano por extenso]</span> (<span
                                 id="preview-ano_num_abertura" class="font-bold">[ano]</span>), de forma remota nos
                             termos do Provimento Conjunto nº 54/2022, foi realizado o Plantão Judiciário da <span
                                 id="preview-circunscricao_abertura" class="font-bold">[Circunscrição Judiciária]</span>,
@@ -412,8 +440,9 @@
                             digitalmente.
                         </p>
                         <div class="signature">
-                            <span id="preview-juiz_assinatura_abertura" class="font-bold">[Juiz(a) de Direito]</span>
-                            <p class="text-sm">Juiz(a) de Direito</p>
+                            <span id="preview-juiz_assinatura_abertura" class="font-bold"
+                                style="text-align: center;">[Juiz(a) de Direito]</span>
+                            <p class="text-sm" style="text-align: center; text-indent: 0;">Juiz(a) de Direito</p>
                         </div>
 
                         <div id="preview-processos-table-container" class="my-8"></div>
@@ -421,12 +450,13 @@
                         <h2>Termo de Encerramento</h2>
                         <p>
                             Às <span id="preview-hora_encerramento" class="font-bold">[hora]</span> horas do dia <span
-                                id="preview-dia_encerramento" class="font-bold">[dia por extenso]</span> (<span
+                                id="preview-dia_extenso_encerramento" class="font-bold">[dia por extenso]</span> (<span
                                 id="preview-dia_num_encerramento" class="font-bold">[dia]</span>) de <span
-                                id="preview-mes_encerramento" class="font-bold">[mês por extenso]</span> (<span
+                                id="preview-mes_extenso_encerramento" class="font-bold">[mês por extenso]</span> (<span
                                 id="preview-mes_num_encerramento" class="font-bold">[mês]</span>) do ano de <span
-                                id="preview-ano_encerramento" class="font-bold">[ano por extenso]</span> (<span
-                                id="preview-ano_num_encerramento" class="font-bold">[ano]</span>), foi procedido pelo(a)
+                                id="preview-ano_extenso_encerramento" class="font-bold">[ano por extenso]</span> (<span
+                                id="preview-ano_num_encerramento" class="font-bold">[ano]</span>), foi procedido
+                            pelo(a)
                             <span id="preview-juiz_encerramento" class="font-bold">[Juiz(a) de Direito]</span>, MM.
                             Juiz(a) de Direito do(a) <span id="preview-comarca_juiz_encerramento"
                                 class="font-bold">[Vara e Comarca do Juiz(a)]</span>, o encerramento do Plantão
@@ -440,7 +470,7 @@
                         <div class="signature">
                             <span id="preview-juiz_assinatura_encerramento" class="font-bold">[Juiz(a) de
                                 Direito]</span>
-                            <p class="text-sm">Juiz(a) de Direito</p>
+                            <p class="text-sm" style="text-align: center; text-indent: 0;">Juiz(a) de Direito</p>
                         </div>
                     </div>
                 </div>
@@ -465,18 +495,19 @@
                 const mes = dataAbertura.getMonth();
                 const ano = dataAbertura.getFullYear();
                 const meses = ["janeiro", "fevereiro", "março", "abril", "maio", "junho", "julho", "agosto", "setembro", "outubro", "novembro", "dezembro"];
-                document.getElementById('preview-dia_abertura').textContent = extenso(dia, { mode: 'number' });
-                document.getElementById('preview-dia_num_abertura').textContent = String(dia).padStart(2, '0');
-                document.getElementById('preview-mes_abertura').textContent = meses[mes];
-                document.getElementById('preview-mes_num_abertura').textContent = String(mes + 1).padStart(2, '0');
-                document.getElementById('preview-ano_abertura').textContent = extenso(ano, { mode: 'number' });
+
+                document.getElementById('preview-dia_extenso_abertura').textContent = window.extenso(dia, { number: { gender: 'm' } });
+                document.getElementById('preview-dia_num_abertura').textContent = dia;
+                document.getElementById('preview-mes_extenso_abertura').textContent = meses[mes];
+                document.getElementById('preview-mes_num_abertura').textContent = mes + 1;
+                document.getElementById('preview-ano_extenso_abertura').textContent = window.extenso(ano);
                 document.getElementById('preview-ano_num_abertura').textContent = ano;
             } else {
-                document.getElementById('preview-dia_abertura').textContent = '[dia por extenso]';
+                document.getElementById('preview-dia_extenso_abertura').textContent = '[dia por extenso]';
                 document.getElementById('preview-dia_num_abertura').textContent = '[dia]';
-                document.getElementById('preview-mes_abertura').textContent = '[mês por extenso]';
+                document.getElementById('preview-mes_extenso_abertura').textContent = '[mês por extenso]';
                 document.getElementById('preview-mes_num_abertura').textContent = '[mês]';
-                document.getElementById('preview-ano_abertura').textContent = '[ano por extenso]';
+                document.getElementById('preview-ano_extenso_abertura').textContent = '[ano por extenso]';
                 document.getElementById('preview-ano_num_abertura').textContent = '[ano]';
             }
 
@@ -555,18 +586,19 @@
                 const mes = dataEncerramento.getMonth();
                 const ano = dataEncerramento.getFullYear();
                 const meses = ["janeiro", "fevereiro", "março", "abril", "maio", "junho", "julho", "agosto", "setembro", "outubro", "novembro", "dezembro"];
-                document.getElementById('preview-dia_encerramento').textContent = extenso(dia, { mode: 'number' });
-                document.getElementById('preview-dia_num_encerramento').textContent = String(dia).padStart(2, '0');
-                document.getElementById('preview-mes_encerramento').textContent = meses[mes];
-                document.getElementById('preview-mes_num_encerramento').textContent = String(mes + 1).padStart(2, '0');
-                document.getElementById('preview-ano_encerramento').textContent = extenso(ano, { mode: 'number' });
+
+                document.getElementById('preview-dia_extenso_encerramento').textContent = window.extenso(dia, { number: { gender: 'm' } });
+                document.getElementById('preview-dia_num_encerramento').textContent = dia;
+                document.getElementById('preview-mes_extenso_encerramento').textContent = meses[mes];
+                document.getElementById('preview-mes_num_encerramento').textContent = mes + 1;
+                document.getElementById('preview-ano_extenso_encerramento').textContent = window.extenso(ano);
                 document.getElementById('preview-ano_num_encerramento').textContent = ano;
             } else {
-                document.getElementById('preview-dia_encerramento').textContent = '[dia por extenso]';
+                document.getElementById('preview-dia_extenso_encerramento').textContent = '[dia por extenso]';
                 document.getElementById('preview-dia_num_encerramento').textContent = '[dia]';
-                document.getElementById('preview-mes_encerramento').textContent = '[mês por extenso]';
+                document.getElementById('preview-mes_extenso_encerramento').textContent = '[mês por extenso]';
                 document.getElementById('preview-mes_num_encerramento').textContent = '[mês]';
-                document.getElementById('preview-ano_encerramento').textContent = '[ano por extenso]';
+                document.getElementById('preview-ano_extenso_encerramento').textContent = '[ano por extenso]';
                 document.getElementById('preview-ano_num_encerramento').textContent = '[ano]';
             }
 
@@ -769,25 +801,39 @@
 
         window.onload = () => {
             const script = document.createElement('script');
-            // ...existing code...
+            script.src = 'https://cdn.jsdelivr.net/npm/numero-por-extenso@2.0.1/dist/numero-por-extenso.browser.min.js';
             script.onload = () => {
+                // Esta função será chamada após o script ser carregado
+                initializePage();
+            };
+            document.head.appendChild(script);
+        };
+
+        function initializePage() {
+            const savedData = localStorage.getItem('plantaoFormData');
+            if (savedData && confirm('Foram encontrados dados salvos. Deseja carregá-los?')) {
+                loadData(); // loadData já chama populateForm e updatePreview
+            } else {
+                // Define a data de hoje como padrão se não carregar dados salvos
                 const today = new Date().toISOString().split('T')[0];
                 document.getElementById('data_abertura').value = today;
                 document.getElementById('data_encerramento').value = today;
 
-                if (localStorage.getItem('plantaoFormData')) {
-                    if (confirm('Foram encontrados dados salvos. Deseja carregá-los?')) {
-                        loadData();
-                    } else {
-                        addProcesso();
-                        addProcesso();
-                    }
-                } else {
-                    addProcesso();
-                    addProcesso();
-                }
-
+                addProcesso();
+                addProcesso();
                 updatePreview();
+            }
+        }
+        window.onload = () => {
+            const script = document.createElement('script');
+            script.src = 'https://cdn.jsdelivr.net/npm/extenso';
+            script.onload = () => {
+                const today = new Date().toISOString().split('T')[0];
+                document.getElementById('data_abertura').value = today;
+                document.getElementById('data_encerramento').value = today;
+                updatePreview();
+                addProcesso();
+                addProcesso();
             };
             document.head.appendChild(script);
         };
