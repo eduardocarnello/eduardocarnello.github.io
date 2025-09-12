@@ -122,6 +122,32 @@
                 <div id="form-container">
                     <h2 class="text-xl font-bold mb-6 border-b pb-2 border-gray-300 text-gray-700">Dados do Termo</h2>
 
+                    <div class="space-y-2 mb-6 no-print">
+                        <p class="text-sm font-medium text-gray-600">Salvar no Navegador:</p>
+                        <div class="flex space-x-2">
+                            <button onclick="saveData()"
+                                class="w-full py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">Salvar
+                                Progresso</button>
+                            <button onclick="loadData()"
+                                class="w-full py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">Carregar
+                                Dados</button>
+                            <button onclick="clearData()"
+                                class="w-full py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">Limpar
+                                Dados</button>
+                        </div>
+                        <p class="text-sm font-medium text-gray-600 pt-2">Transferir entre Computadores:</p>
+                        <div class="flex space-x-2">
+                            <button onclick="exportData()"
+                                class="w-full py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500">Exportar
+                                para Arquivo</button>
+                            <button onclick="document.getElementById('import-file').click()"
+                                class="w-full py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-teal-600 hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500">Importar
+                                de Arquivo</button>
+                            <input type="file" id="import-file" onchange="importData(event)" accept=".json"
+                                class="hidden">
+                        </div>
+                    </div>
+
                     <!-- Dados Gerais -->
                     <div class="space-y-4 bg-gray-50 p-4 rounded-lg mb-6">
                         <h3 class="font-semibold text-lg text-gray-600">Dados Gerais</h3>
@@ -623,16 +649,145 @@
             container.innerHTML = tableHTML;
         }
 
+        function getFormDataAsObject() {
+            const formData = {};
+            const inputs = document.querySelectorAll('#form-container input, #form-container select');
+            inputs.forEach(input => {
+                if (input.id && input.type !== 'file') {
+                    formData[input.id] = input.value;
+                }
+            });
+
+            formData.processos = [];
+            const processos = document.querySelectorAll('#processos-container > div');
+            processos.forEach(proc => {
+                const processoData = {
+                    processo: proc.querySelector('.processo-input-processo').value,
+                    data: proc.querySelector('.processo-input-data').value,
+                    natureza: proc.querySelector('.processo-input-natureza').value,
+                    autor: proc.querySelector('.processo-input-autor').value,
+                    reu: proc.querySelector('.processo-input-reu').value,
+                };
+                formData.processos.push(processoData);
+            });
+            return formData;
+        }
+
+        function populateFormFromObject(formData) {
+            if (!formData) return;
+
+            // Limpa processos existentes antes de carregar
+            document.getElementById('processos-container').innerHTML = '';
+            processoCount = 0;
+
+            // Carrega dados dos inputs e selects
+            const inputs = document.querySelectorAll('#form-container input, #form-container select');
+            inputs.forEach(input => {
+                if (input.id && formData[input.id]) {
+                    input.value = formData[input.id];
+                }
+            });
+
+            // Carrega processos
+            if (formData.processos) {
+                formData.processos.forEach(procData => {
+                    addProcesso();
+                    const newProcDiv = document.getElementById(`processo-${processoCount}`);
+                    if (newProcDiv) {
+                        newProcDiv.querySelector('.processo-input-processo').value = procData.processo || '';
+                        newProcDiv.querySelector('.processo-input-data').value = procData.data || '';
+                        newProcDiv.querySelector('.processo-input-natureza').value = procData.natureza || '';
+                        newProcDiv.querySelector('.processo-input-autor').value = procData.autor || '';
+                        newProcDiv.querySelector('.processo-input-reu').value = procData.reu || '';
+                    }
+                });
+            }
+
+            updatePreview();
+        }
+
+        function saveData() {
+            const formData = getFormDataAsObject();
+            localStorage.setItem('plantaoFormData', JSON.stringify(formData));
+            alert('Progresso salvo com sucesso no navegador!');
+        }
+
+        function loadData() {
+            const savedData = localStorage.getItem('plantaoFormData');
+            if (!savedData) {
+                alert('Nenhum dado salvo foi encontrado no navegador.');
+                return;
+            }
+            const formData = JSON.parse(savedData);
+            populateFormFromObject(formData);
+            alert('Dados carregados com sucesso!');
+        }
+
+        function exportData() {
+            const formData = getFormDataAsObject();
+            const dataStr = JSON.stringify(formData, null, 2);
+            const dataBlob = new Blob([dataStr], { type: 'application/json' });
+            const url = URL.createObjectURL(dataBlob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = 'dados-plantao.json';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+            alert('Arquivo de dados gerado para download.');
+        }
+
+        function importData(event) {
+            const file = event.target.files[0];
+            if (!file) {
+                return;
+            }
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                try {
+                    const formData = JSON.parse(e.target.result);
+                    populateFormFromObject(formData);
+                    alert('Dados importados do arquivo com sucesso!');
+                } catch (error) {
+                    alert('Erro ao ler o arquivo. Verifique se é um arquivo JSON válido.');
+                    console.error("Erro ao importar:", error);
+                }
+            };
+            reader.readAsText(file);
+            // Limpa o valor do input para permitir importar o mesmo arquivo novamente
+            event.target.value = '';
+        }
+
+        function clearData() {
+            if (confirm('Tem certeza que deseja limpar os dados salvos? Esta ação não pode ser desfeita.')) {
+                localStorage.removeItem('plantaoFormData');
+                alert('Dados salvos foram limpos.');
+                window.location.reload();
+            }
+        }
+
         window.onload = () => {
             const script = document.createElement('script');
-            script.src = 'https://cdn.jsdelivr.net/npm/extenso';
+            // ...existing code...
             script.onload = () => {
                 const today = new Date().toISOString().split('T')[0];
                 document.getElementById('data_abertura').value = today;
                 document.getElementById('data_encerramento').value = today;
+
+                if (localStorage.getItem('plantaoFormData')) {
+                    if (confirm('Foram encontrados dados salvos. Deseja carregá-los?')) {
+                        loadData();
+                    } else {
+                        addProcesso();
+                        addProcesso();
+                    }
+                } else {
+                    addProcesso();
+                    addProcesso();
+                }
+
                 updatePreview();
-                addProcesso();
-                addProcesso();
             };
             document.head.appendChild(script);
         };
