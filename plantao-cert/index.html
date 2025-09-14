@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerador de Certidões de Plantão Judiciário</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+
+        .document-preview {
+            font-family: 'Times New Roman', Times, serif;
+            line-height: 1.5;
+            font-size: 12pt;
+        }
+
+        .document-preview h2,
+        .cert-title {
+            text-align: center;
+            font-weight: bold;
+            text-transform: uppercase;
+            margin-bottom: 2rem;
+            margin-top: 1rem;
+            letter-spacing: 0.2em;
+        }
+
+        .document-preview p {
+            text-align: justify;
+            text-indent: 4em;
+            margin-bottom: 1.5rem;
+        }
+
+        .document-preview .signature {
+            text-align: center;
+            margin-top: 4rem;
+        }
+
+        p.header-text {
+            text-align: center;
+            text-indent: 0;
+            margin-bottom: 0;
+            line-height: 1.2;
+            font-weight: bold;
+        }
+
+        @media print {
+            .no-print {
+                display: none;
+            }
+
+            body,
+            .container,
+            .lg\:grid-cols-2,
+            .border-2,
+            #document-container {
+                padding: 0 !important;
+                margin: 0 !important;
+                border: none !important;
+                box-shadow: none !important;
+            }
+
+            .print-container {
+                display: block;
+            }
+
+            #document-container {
+                position: static;
+            }
+        }
+    </style>
+</head>
+
+<body class="bg-gray-100 text-gray-800">
+
+    <div class="container mx-auto p-4 md:p-8">
+        <div class="bg-white rounded-2xl shadow-2xl overflow-hidden">
+            <div class="p-6 bg-gray-800 text-white no-print">
+                <h1 class="text-2xl md:text-3xl font-bold">Gerador de Certidões de Plantão</h1>
+                <p class="text-gray-300 mt-1">Selecione o tipo de certidão e preencha os campos.</p>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 p-6 md:p-8 print-container">
+                <!-- Coluna do Formulário -->
+                <div id="form-container" class="no-print">
+                    <h2 class="text-xl font-bold mb-4 border-b pb-2">Dados da Certidão</h2>
+
+                    <!-- Seletor Principal -->
+                    <div class="mb-6">
+                        <label for="tipo_certidao" class="block text-sm font-medium text-gray-700 font-bold">1. Tipo de
+                            Certidão</label>
+                        <select id="tipo_certidao" onchange="toggleFields()"
+                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm bg-indigo-50 text-indigo-800 font-semibold">
+                            <option value="juiz">Juiz(a)</option>
+                            <option value="promotor">Promotor(a) de Justiça</option>
+                            <option value="defensor">Defensor(a) Público(a)</option>
+                            <option value="analista_mp">Analista/Oficial do MP</option>
+                        </select>
+                    </div>
+
+                    <!-- Dados Comuns -->
+                    <div class="space-y-4 bg-gray-50 p-4 rounded-lg mb-6">
+                        <h3 class="font-semibold text-lg text-gray-600">2. Dados do Participante do Plantão</h3>
+                        <div>
+                            <label for="participante_nome" class="block text-sm font-medium text-gray-700">Nome
+                                Completo</label>
+                            <input type="text" id="participante_nome" oninput="updatePreview()"
+                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
+                                placeholder="FULANO DE TAL">
+                        </div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label for="participante_genero"
+                                    class="block text-sm font-medium text-gray-700">Gênero</label>
+                                <select id="participante_genero" onchange="updatePreview()"
+                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
+                                    <option value="m">Masculino</option>
+                                    <option value="f">Feminino</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label for="participante_tratamento"
+                                    class="block text-sm font-medium text-gray-700">Pronome de Tratamento</label>
+                                <select id="participante_tratamento" onchange="updatePreview()"
+                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
+                                    <option>Dr.</option>
+                                    <option>Dra.</option>
+                                    <option>Sr.</option>
+                                    <option>Sra.</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div>
+                            <label for="plantao_datas" class="block text-sm font-medium text-gray-700">Dia(s) do Plantão
+                                (ex: 17 de abril de 2025)</label>
+                            <input type="text" id="plantao_datas" oninput="updatePreview()"
+                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
+                                placeholder="17 e 18 de abril de 2025">
+                        </div>
+                    </div>
+
+                    <!-- Campos Condicionais -->
+                    <div id="conditional-fields" class="space-y-4 bg-gray-50 p-4 rounded-lg mb-6">
+                        <div id="field_juiz" class="conditional">
+                            <label for="juiz_vara_comarca" class="block text-sm font-medium text-gray-700">Vara e
+                                Comarca do(a) Juiz(a)</label>
+                            <input type="text" id="juiz_vara_comarca" oninput="updatePreview()"
+                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
+                                value="Juizado Especial Cível da Comarca de Marília, SP">
+                        </div>
+                        <div id="field_promotor" class="conditional hidden">
+                            <div class="grid grid-cols-3 gap-4">
+                                <div class="col-span-1">
+                                    <label for="promotor_numero" class="block text-sm font-medium text-gray-700">Nº
+                                        Promotor</label>
+                                    <input type="number" id="promotor_numero" oninput="updatePreview()"
+                                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm" value="1">
+                                </div>
+                                <div class="col-span-2">
+                                    <label for="promotor_comarca"
+                                        class="block text-sm font-medium text-gray-700">Comarca do Promotor</label>
+                                    <input type="text" id="promotor_comarca" oninput="updatePreview()"
+                                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
+                                        value="Garça, SP">
+                                </div>
+                            </div>
+                        </div>
+                        <div id="field_defensor" class="conditional hidden">
+                            <label for="defensor_comarca" class="block text-sm font-medium text-gray-700">Comarca do(a)
+                                Defensor(a)</label>
+                            <input type="text" id="defensor_comarca" oninput="updatePreview()"
+                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
+                                value="Marília, Estado de São Paulo">
+                        </div>
+                        <div id="field_analista_mp" class="conditional hidden">
+                            <label for="analista_cargo" class="block text-sm font-medium text-gray-700">Cargo
+                                Específico</label>
+                            <select id="analista_cargo" onchange="updatePreview()"
+                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
+                                <option>Analista de Promotoria/Assistente Jurídico</option>
+                                <option>Oficial de Promotoria</option>
+                            </select>
+                            <label for="analista_comarca"
+                                class="block text-sm font-medium text-gray-700 mt-2">Comarca</label>
+                            <input type="text" id="analista_comarca" oninput="updatePreview()"
+                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm" value="Marília">
+                        </div>
+                    </div>
+
+                    <!-- Dados do Certificante -->
+                    <div class="space-y-4 bg-gray-50 p-4 rounded-lg">
+                        <h3 class="font-semibold text-lg text-gray-600">3. Dados do Certificante e Emissão</h3>
+                        <div>
+                            <label for="certificante_nome" class="block text-sm font-medium text-gray-700">Nome do
+                                Certificante</label>
+                            <input type="text" id="certificante_nome" oninput="updatePreview()"
+                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
+                                value="EDUARDO CARNELLO JATOBÁ">
+                        </div>
+                        <div>
+                            <label for="certificante_cargo" class="block text-sm font-medium text-gray-700">Cargo do
+                                Certificante</label>
+                            <input type="text" id="certificante_cargo" oninput="updatePreview()"
+                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm" value="Oficial Maior">
+                        </div>
+                        <div>
+                            <label for="certificante_oficio" class="block text-sm font-medium text-gray-700">Ofício do
+                                Certificante</label>
+                            <input type="text" id="certificante_oficio" oninput="updatePreview()"
+                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
+                                value="do Ofício do Juizado Especial Cível da Comarca de Marília, Estado de São Paulo">
+                        </div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label for="emissao_data" class="block text-sm font-medium text-gray-700">Data de
+                                    Emissão</label>
+                                <input type="date" id="emissao_data" onchange="updatePreview()"
+                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
+                            </div>
+                            <div>
+                                <label for="emissao_comarca" class="block text-sm font-medium text-gray-700">Comarca de
+                                    Emissão</label>
+                                <input type="text" id="emissao_comarca" oninput="updatePreview()"
+                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm" value="Marília">
+                            </div>
+                        </div>
+                        <div>
+                            <label for="circunscricao_geral"
+                                class="block text-sm font-medium text-gray-700">Circunscrição Judiciária</label>
+                            <input type="text" id="circunscricao_geral" oninput="updatePreview()"
+                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
+                                value="31ª Circunscrição Judiciária">
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- Coluna do Documento -->
+                <div class="border-2 border-dashed border-gray-300 rounded-lg p-4 lg:p-6 h-full min-h-[800px]">
+                    <div class="flex justify-end mb-4 no-print">
+                        <button onclick="window.print()"
+                            class="py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-gray-600 hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500">
+                            Imprimir Certidão
+                        </button>
+                    </div>
+                    <div id="document-container" class="bg-white p-8 document-preview">
+                        <div class="text-center mb-10">
+                            <p class="header-text">PODER JUDICIÁRIO</p>
+                            <p class="header-text">SÃO PAULO</p>
+                            <p class="header-text" id="preview-header-vara">VARA DO JUIZADO ESPECIAL CÍVEL DA COMARCA DE
+                                MARÍLIA</p>
+                        </div>
+
+                        <h2 class="cert-title">C E R T I D Ã O</h2>
+
+                        <p>
+                            <span id="preview-certificante_nome" class="font-bold"></span>, <span
+                                id="preview-certificante_cargo"></span>, <span id="preview-certificante_oficio"></span>,
+                            na forma da lei, etc.
+                        </p>
+                        <p>
+                            <span class="font-bold">C E R T I F I C A</span> que, atendendo a pedido formulado por
+                            pessoa interessada, revendo o Livro de Registro de Feitos destinado ao <span
+                                class="font-bold">PLANTÃO JUDICIÁRIO</span>, dele verificou-se que <span
+                                id="preview-body"></span>. <span class="font-bold">NADA MAIS</span>. O referido é
+                            verdade e dou fé.
+                        </p>
+                        <p>
+                            Dado e passado nesta cidade e Comarca de <span id="preview-emissao_comarca"
+                                class="font-bold"></span>, aos <span id="preview-emissao_dia_extenso"
+                                class="font-bold"></span> (<span id="preview-emissao_dia_num" class="font-bold"></span>)
+                            dias do mês de <span id="preview-emissao_mes_extenso" class="font-bold"></span> (<span
+                                id="preview-emissao_mes_num" class="font-bold"></span>) do ano de <span
+                                id="preview-emissao_ano_extenso" class="font-bold"></span> (<span
+                                id="preview-emissao_ano_num" class="font-bold"></span>). Eu, <span
+                                id="preview-certificante_nome_final" class="font-bold"></span>, <span
+                                id="preview-certificante_cargo_final" class="font-bold"></span>, digitei, conferi e
+                            assinei digitalmente.
+                        </p>
+
+                        <div class="signature">
+                            <span id="preview-assinatura" class="font-bold"></span>
+                            <br>
+                            <span id="preview-assinatura_cargo"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function toggleFields() {
+            const selectedType = document.getElementById('tipo_certidao').value;
+            document.querySelectorAll('.conditional').forEach(field => {
+                field.classList.add('hidden');
+            });
+            const fieldToShow = document.getElementById(`field_${selectedType}`);
+            if (fieldToShow) {
+                fieldToShow.classList.remove('hidden');
+            }
+            // Ajuste automático do pronome de tratamento
+            const tratamentoSelect = document.getElementById('participante_tratamento');
+            if (selectedType === 'analista_mp') {
+                tratamentoSelect.value = 'Sra.';
+            } else {
+                tratamentoSelect.value = 'Dr.';
+            }
+            updatePreview();
+        }
+
+        function updatePreview() {
+            const selectedType = document.getElementById('tipo_certidao').value;
+            const bodySpan = document.getElementById('preview-body');
+
+            // Common data
+            const nome = document.getElementById('participante_nome').value || 'FULANO(A) DE TAL';
+            const genero = document.getElementById('participante_genero').value;
+            const tratamento = document.getElementById('participante_tratamento').value;
+            const datas = document.getElementById('plantao_datas').value;
+            const circunscricao = document.getElementById('circunscricao_geral').value;
+
+            // Determina a preposição e artigo com base nas datas e gênero
+            const preposicao = datas.toLowerCase().includes(' e ') ? 'nos dias' : 'no dia';
+            const artigo = (genero === 'f') ? 'a Senhora' : 'o Senhor';
+            const excelentissimo = (genero === 'f') ? 'a Excelentíssima Senhora' : 'o Excelentíssimo Senhor';
+
+            let bodyText = '';
+
+            switch (selectedType) {
+                case 'juiz':
+                    const varaJuiz = document.getElementById('juiz_vara_comarca').value;
+                    bodyText = `${preposicao} <span class="font-bold">${datas}</span>, ${excelentissimo} <span class="font-bold">${tratamento} ${nome}</span>, MM. Juiz(a) de Direito do(a) <span class="font-bold">${varaJuiz}</span>, participou do <span class="font-bold">PLANTÃO JUDICIÁRIO ORDINÁRIO</span> desta <span class="font-bold">${circunscricao}</span>, realizado de maneira remota conforme disciplinado no Comunicado Conjunto nº 249/2020`;
+                    break;
+                case 'promotor':
+                    const numPromotor = document.getElementById('promotor_numero').value;
+                    const comarcaPromotor = document.getElementById('promotor_comarca').value;
+                    bodyText = `${preposicao} <span class="font-bold">${datas}</span>, ${excelentissimo} <span class="font-bold">${tratamento} ${nome}</span>, <span class="font-bold">${numPromotor}º Promotor de Justiça da Comarca de ${comarcaPromotor}</span>, participou do <span class="font-bold">PLANTÃO JUDICIÁRIO ORDINÁRIO</span> desta <span class="font-bold">${circunscricao}</span>, realizado de maneira remota conforme disciplinado no Comunicado Conjunto nº 249/2020`;
+                    break;
+                case 'defensor':
+                    const comarcaDefensor = document.getElementById('defensor_comarca').value;
+                    bodyText = `${preposicao} <span class="font-bold">${datas}</span>, ${artigo} <span class="font-bold">${tratamento} ${nome}</span>, Defensor(a) Público(a) desta <span class="font-bold">Comarca de ${comarcaDefensor}</span>, participou do <span class="font-bold">PLANTÃO JUDICIÁRIO ORDINÁRIO</span> desta <span class="font-bold">${circunscricao}</span>, realizado de maneira remota conforme disciplinado no Provimento Conjunto nº 54/2022`;
+                    break;
+                case 'analista_mp':
+                    const cargoAnalista = document.getElementById('analista_cargo').value;
+                    const comarcaAnalista = document.getElementById('analista_comarca').value;
+                    bodyText = `${preposicao} <span class="font-bold">${datas}</span>, a <span class="font-bold">${cargoAnalista} do Ministério Público da Comarca de ${comarcaAnalista}</span>, <span class="font-bold">${tratamento} ${nome}</span>, participou do <span class="font-bold">PLANTÃO JUDICIÁRIO</span> desta <span class="font-bold">${circunscricao}</span>, realizado de maneira remota conforme disciplinado no Provimento Conjunto nº 54/2022`;
+                    break;
+            }
+            bodySpan.innerHTML = bodyText;
+
+            // Certificante and Emission Data
+            const certificanteNome = document.getElementById('certificante_nome').value;
+            const certificanteCargo = document.getElementById('certificante_cargo').value;
+            document.getElementById('preview-certificante_nome').textContent = certificanteNome;
+            document.getElementById('preview-certificante_nome_final').textContent = certificanteNome;
+            document.getElementById('preview-assinatura').textContent = certificanteNome;
+            document.getElementById('preview-certificante_cargo').textContent = certificanteCargo;
+            document.getElementById('preview-certificante_cargo_final').textContent = certificanteCargo;
+            document.getElementById('preview-assinatura_cargo').textContent = certificanteCargo;
+            document.getElementById('preview-certificante_oficio').textContent = document.getElementById('certificante_oficio').value;
+
+            const emissaoComarca = document.getElementById('emissao_comarca').value;
+            document.getElementById('preview-emissao_comarca').textContent = emissaoComarca;
+
+            const dataEmissaoInput = document.getElementById('emissao_data').value;
+            if (dataEmissaoInput && window.numero) {
+                const dataEmissao = new Date(dataEmissaoInput + 'T00:00:00Z');
+                const dia = dataEmissao.getUTCDate();
+                const mes = dataEmissao.getUTCMonth();
+                const ano = dataEmissao.getUTCFullYear();
+                const meses = ["janeiro", "fevereiro", "março", "abril", "maio", "junho", "julho", "agosto", "setembro", "outubro", "novembro", "dezembro"];
+
+                document.getElementById('preview-emissao_dia_extenso').textContent = numero.porExtenso(dia);
+                document.getElementById('preview-emissao_dia_num').textContent = String(dia).padStart(2, '0');
+                document.getElementById('preview-emissao_mes_extenso').textContent = meses[mes];
+                document.getElementById('preview-emissao_mes_num').textContent = String(mes + 1).padStart(2, '0');
+                document.getElementById('preview-emissao_ano_extenso').textContent = numero.porExtenso(ano);
+                document.getElementById('preview-emissao_ano_num').textContent = ano;
+            } else {
+                document.getElementById('preview-emissao_dia_extenso').textContent = '[...]';
+                document.getElementById('preview-emissao_dia_num').textContent = '00';
+                document.getElementById('preview-emissao_mes_extenso').textContent = '[...]';
+                document.getElementById('preview-emissao_mes_num').textContent = '00';
+                document.getElementById('preview-emissao_ano_extenso').textContent = '[...]';
+                document.getElementById('preview-emissao_ano_num').textContent = '0000';
+            }
+        }
+
+        window.onload = () => {
+            const script = document.createElement('script');
+            script.src = 'https://cdn.jsdelivr.net/npm/numero-por-extenso@2.0.1/dist/numero-por-extenso.browser.min.js';
+            script.onload = () => {
+                const today = new Date().toISOString().split('T')[0];
+                document.getElementById('emissao_data').value = today;
+                toggleFields(); // Initial call to set up the form
+            };
+            document.head.appendChild(script);
+        };
+    </script>
+</body>
+
+</html>
