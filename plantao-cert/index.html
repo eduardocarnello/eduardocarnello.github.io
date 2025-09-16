@@ -12,63 +12,111 @@
             font-family: 'Inter', sans-serif;
         }
 
+        /* Estilos para a pré-visualização do documento, imitando o PDF */
         .document-preview {
             font-family: 'Times New Roman', Times, serif;
-            line-height: 1.5;
+            line-height: 1.6;
             font-size: 12pt;
+            color: #000;
+            background: white;
+            padding: 2.5cm 2cm;
+            /* Margens A4 simuladas */
+            max-width: 21cm;
+            min-height: 29.7cm;
+            margin: auto;
+            display: flex;
+            flex-direction: column;
         }
 
-        .document-preview h2,
-        .cert-title {
+        .document-preview .header-logo {
+            display: block;
+            margin: 0 auto 1.5rem auto;
+            width: 80px;
+        }
+
+        .document-preview .header-text {
+            text-align: center;
+            text-indent: 0;
+            margin-bottom: 0.25rem;
+            line-height: 1.2;
+            font-weight: bold;
+            font-size: 11pt;
+        }
+
+        .document-preview .cert-title {
             text-align: center;
             font-weight: bold;
             text-transform: uppercase;
-            margin-bottom: 2rem;
-            margin-top: 1rem;
+            margin-top: 3rem;
+            margin-bottom: 3rem;
             letter-spacing: 0.2em;
+        }
+
+        /* Estrutura para o layout de texto flutuante */
+        .body-container::after {
+            content: "";
+            display: table;
+            clear: both;
+        }
+
+        .certifier-info-float {
+            float: left;
+            width: 38%;
+            margin-right: 1.5em;
+            text-align: justify;
+            line-height: 1.4;
         }
 
         .document-preview p {
             text-align: justify;
-            text-indent: 4em;
             margin-bottom: 1.5rem;
+        }
+
+        .final-paragraph {
+            text-indent: 4em;
         }
 
         .document-preview .signature {
             text-align: center;
             margin-top: 4rem;
+            line-height: 1.4;
         }
 
-        p.header-text {
+        .document-preview .footer {
+            margin-top: auto;
+            /* Empurra o rodapé para o final */
             text-align: center;
-            text-indent: 0;
-            margin-bottom: 0;
-            line-height: 1.2;
-            font-weight: bold;
+            font-size: 9pt;
+            border-top: 1px solid #ccc;
+            padding-top: 0.5rem;
         }
 
+        /* Estilos de Impressão */
         @media print {
             .no-print {
-                display: none;
+                display: none !important;
             }
 
-            body,
+            body {
+                margin: 0;
+                background: #fff;
+            }
+
             .container,
             .lg\:grid-cols-2,
-            .border-2,
-            #document-container {
+            .border-2 {
                 padding: 0 !important;
                 margin: 0 !important;
                 border: none !important;
                 box-shadow: none !important;
             }
 
-            .print-container {
-                display: block;
-            }
-
-            #document-container {
-                position: static;
+            .document-preview {
+                max-width: 100%;
+                min-height: 0;
+                box-shadow: none !important;
+                border: none !important;
+                padding: 0;
             }
         }
     </style>
@@ -83,7 +131,7 @@
                 <p class="text-gray-300 mt-1">Selecione o tipo de certidão e preencha os campos.</p>
             </div>
 
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 p-6 md:p-8 print-container">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 p-6 md:p-8">
                 <!-- Coluna do Formulário -->
                 <div id="form-container" class="no-print">
                     <h2 class="text-xl font-bold mb-4 border-b pb-2">Dados da Certidão</h2>
@@ -235,7 +283,6 @@
                                 value="31ª Circunscrição Judiciária">
                         </div>
                     </div>
-
                 </div>
 
                 <!-- Coluna do Documento -->
@@ -246,46 +293,61 @@
                             Imprimir Certidão
                         </button>
                     </div>
-                    <div id="document-container" class="bg-white p-8 document-preview">
-                        <div class="text-center mb-10">
+
+                    <div id="document-container" class="document-preview">
+                        <!-- Cabeçalho do Documento -->
+                        <header>
+                            <img src="https://www.cnj.jus.br/wp-content/uploads/2011/02/brasao_pjud.png"
+                                alt="Brasão do Poder Judiciário" class="header-logo">
                             <p class="header-text">PODER JUDICIÁRIO</p>
                             <p class="header-text">SÃO PAULO</p>
                             <p class="header-text" id="preview-header-vara">VARA DO JUIZADO ESPECIAL CÍVEL DA COMARCA DE
                                 MARÍLIA</p>
-                        </div>
+                        </header>
 
                         <h2 class="cert-title">C E R T I D Ã O</h2>
 
-                        <p>
-                            <span id="preview-certificante_nome" class="font-bold"></span>, <span
-                                id="preview-certificante_cargo"></span>, <span id="preview-certificante_oficio"></span>,
-                            na forma da lei, etc.
-                        </p>
-                        <p>
-                            <span class="font-bold">C E R T I F I C A</span> que, atendendo a pedido formulado por
-                            pessoa interessada, revendo o Livro de Registro de Feitos destinado ao <span
-                                class="font-bold">PLANTÃO JUDICIÁRIO</span>, dele verificou-se que <span
-                                id="preview-body"></span>. <span class="font-bold">NADA MAIS</span>. O referido é
-                            verdade e dou fé.
-                        </p>
-                        <p>
-                            Dado e passado nesta cidade e Comarca de <span id="preview-emissao_comarca"
-                                class="font-bold"></span>, aos <span id="preview-emissao_dia_extenso"
-                                class="font-bold"></span> (<span id="preview-emissao_dia_num" class="font-bold"></span>)
-                            dias do mês de <span id="preview-emissao_mes_extenso" class="font-bold"></span> (<span
-                                id="preview-emissao_mes_num" class="font-bold"></span>) do ano de <span
-                                id="preview-emissao_ano_extenso" class="font-bold"></span> (<span
-                                id="preview-emissao_ano_num" class="font-bold"></span>). Eu, <span
-                                id="preview-certificante_nome_final" class="font-bold"></span>, <span
-                                id="preview-certificante_cargo_final" class="font-bold"></span>, digitei, conferi e
-                            assinei digitalmente.
-                        </p>
+                        <!-- Corpo da Certidão -->
+                        <main>
+                            <div class="body-container">
+                                <div class="certifier-info-float">
+                                    <span id="preview-certificante_nome" class="font-bold"></span>, <span
+                                        id="preview-certificante_cargo"></span>, <span
+                                        id="preview-certificante_oficio"></span>, na forma da lei, etc.
+                                </div>
+                                <p>
+                                    <span class="font-bold">CERTIFICA</span> que, atendendo a pedido formulado por
+                                    pessoa interessada, revendo o Livro de Registro de Feitos destinado ao <span
+                                        class="font-bold">PLANTÃO JUDICIÁRIO</span>, dele verificou-se que <span
+                                        id="preview-body"></span>. <span class="font-bold">NADA MAIS</span>. O referido
+                                    é verdade e dou fé.
+                                </p>
+                            </div>
+                            <p class="final-paragraph">
+                                Dado e passado nesta cidade e Comarca de <span id="preview-emissao_comarca"
+                                    class="font-bold"></span>, aos <span id="preview-emissao_dia_extenso"
+                                    class="font-bold"></span> (<span id="preview-emissao_dia_num"
+                                    class="font-bold"></span>) dias do mês de <span id="preview-emissao_mes_extenso"
+                                    class="font-bold"></span> (<span id="preview-emissao_mes_num"
+                                    class="font-bold"></span>) do ano de <span id="preview-emissao_ano_extenso"
+                                    class="font-bold"></span> (<span id="preview-emissao_ano_num"
+                                    class="font-bold"></span>). Eu, <span id="preview-certificante_nome_final"
+                                    class="font-bold"></span>, <span id="preview-certificante_cargo_final"
+                                    class="font-bold"></span>, digitei, conferi e assinei digitalmente.
+                            </p>
+                        </main>
 
                         <div class="signature">
                             <span id="preview-assinatura" class="font-bold"></span>
                             <br>
                             <span id="preview-assinatura_cargo"></span>
                         </div>
+
+                        <footer class="footer">
+                            Rua Lourival Freire, 110 - Vila Fragata - Marília, SP - CEP 17519-902
+                            <br>
+                            Fone: (14) 3311-1114 - e-mail: mariliajec@tjsp.jus.br
+                        </footer>
                     </div>
                 </div>
             </div>
@@ -304,10 +366,12 @@
             }
             // Ajuste automático do pronome de tratamento
             const tratamentoSelect = document.getElementById('participante_tratamento');
+            const generoSelect = document.getElementById('participante_genero');
+
             if (selectedType === 'analista_mp') {
-                tratamentoSelect.value = 'Sra.';
+                tratamentoSelect.value = (generoSelect.value === 'f') ? 'Sra.' : 'Sr.';
             } else {
-                tratamentoSelect.value = 'Dr.';
+                tratamentoSelect.value = (generoSelect.value === 'f') ? 'Dra.' : 'Dr.';
             }
             updatePreview();
         }
@@ -317,7 +381,7 @@
             const bodySpan = document.getElementById('preview-body');
 
             // Common data
-            const nome = document.getElementById('participante_nome').value || 'FULANO(A) DE TAL';
+            const nome = document.getElementById('participante_nome').value.toUpperCase() || 'FULANO(A) DE TAL';
             const genero = document.getElementById('participante_genero').value;
             const tratamento = document.getElementById('participante_tratamento').value;
             const datas = document.getElementById('plantao_datas').value;
@@ -347,31 +411,33 @@
                 case 'analista_mp':
                     const cargoAnalista = document.getElementById('analista_cargo').value;
                     const comarcaAnalista = document.getElementById('analista_comarca').value;
-                    bodyText = `${preposicao} <span class="font-bold">${datas}</span>, a <span class="font-bold">${cargoAnalista} do Ministério Público da Comarca de ${comarcaAnalista}</span>, <span class="font-bold">${tratamento} ${nome}</span>, participou do <span class="font-bold">PLANTÃO JUDICIÁRIO</span> desta <span class="font-bold">${circunscricao}</span>, realizado de maneira remota conforme disciplinado no Provimento Conjunto nº 54/2022`;
+                    const artigoAnalista = (genero === 'f') ? 'a' : 'o';
+                    bodyText = `${preposicao} <span class="font-bold">${datas}</span>, ${artigoAnalista} <span class="font-bold">${cargoAnalista} do Ministério Público da Comarca de ${comarcaAnalista}</span>, <span class="font-bold">${tratamento} ${nome}</span>, participou do <span class="font-bold">PLANTÃO JUDICIÁRIO</span> desta <span class="font-bold">${circunscricao}</span>, realizado de maneira remota conforme disciplinado no Provimento Conjunto nº 54/2022`;
                     break;
             }
             bodySpan.innerHTML = bodyText;
 
             // Certificante and Emission Data
-            const certificanteNome = document.getElementById('certificante_nome').value;
+            const certificanteNome = document.getElementById('certificante_nome').value.toUpperCase();
             const certificanteCargo = document.getElementById('certificante_cargo').value;
+            const certificanteOficio = document.getElementById('certificante_oficio').value;
             document.getElementById('preview-certificante_nome').textContent = certificanteNome;
-            document.getElementById('preview-certificante_nome_final').textContent = certificanteNome;
+            document.getElementById('preview-certificante_nome_final').textContent = document.getElementById('certificante_nome').value;
             document.getElementById('preview-assinatura').textContent = certificanteNome;
             document.getElementById('preview-certificante_cargo').textContent = certificanteCargo;
             document.getElementById('preview-certificante_cargo_final').textContent = certificanteCargo;
             document.getElementById('preview-assinatura_cargo').textContent = certificanteCargo;
-            document.getElementById('preview-certificante_oficio').textContent = document.getElementById('certificante_oficio').value;
+            document.getElementById('preview-certificante_oficio').textContent = certificanteOficio;
 
             const emissaoComarca = document.getElementById('emissao_comarca').value;
             document.getElementById('preview-emissao_comarca').textContent = emissaoComarca;
 
             const dataEmissaoInput = document.getElementById('emissao_data').value;
             if (dataEmissaoInput && window.numero) {
-                const dataEmissao = new Date(dataEmissaoInput + 'T00:00:00Z');
-                const dia = dataEmissao.getUTCDate();
-                const mes = dataEmissao.getUTCMonth();
-                const ano = dataEmissao.getUTCFullYear();
+                const dataEmissao = new Date(dataEmissaoInput + 'T12:00:00'); // Use timezone neutral
+                const dia = dataEmissao.getDate();
+                const mes = dataEmissao.getMonth();
+                const ano = dataEmissao.getFullYear();
                 const meses = ["janeiro", "fevereiro", "março", "abril", "maio", "junho", "julho", "agosto", "setembro", "outubro", "novembro", "dezembro"];
 
                 document.getElementById('preview-emissao_dia_extenso').textContent = numero.porExtenso(dia);
@@ -388,6 +454,8 @@
                 document.getElementById('preview-emissao_ano_extenso').textContent = '[...]';
                 document.getElementById('preview-emissao_ano_num').textContent = '0000';
             }
+            // Uppercase inputs
+            document.getElementById('participante_nome').addEventListener('input', function (e) { e.target.value = e.target.value.toUpperCase(); });
         }
 
         window.onload = () => {
@@ -399,6 +467,9 @@
                 toggleFields(); // Initial call to set up the form
             };
             document.head.appendChild(script);
+
+            // Adiciona listener para o campo de gênero para atualizar o pronome
+            document.getElementById('participante_genero').addEventListener('change', toggleFields);
         };
     </script>
 </body>

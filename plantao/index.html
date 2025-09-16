@@ -79,7 +79,7 @@
 
         .watermark {
             position: absolute;
-            top: 45%;
+            top: 444px;
             left: 50%;
             transform: translate(-50%, -50%);
             z-index: -1;
@@ -287,12 +287,25 @@
                                     placeholder="NOME COMPLETO">
                             </div>
                         </div>
-                        <div>
-                            <label for="oficial_maior" class="block text-sm font-medium text-gray-700">Oficial Maior
-                                (Digitador)</label>
-                            <input type="text" id="oficial_maior" oninput="updatePreview()"
-                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-                                placeholder="Ex: NOME COMPLETO" value="EDUARDO CARNELLO JATOBÁ">
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label for="oficial_maior_cargo" class="block text-sm font-medium text-gray-700">Cargo
+                                    (Digitador)</label>
+                                <select id="oficial_maior_cargo" onchange="updatePreview()"
+                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                                    <option>Chefe de Seção Judiciário</option>
+                                    <option selected>Oficial Maior</option>
+                                    <option>Coordenador</option>
+                                    <option>Supervisor</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label for="oficial_maior_nome" class="block text-sm font-medium text-gray-700">Nome
+                                    (Digitador)</label>
+                                <input type="text" id="oficial_maior_nome" oninput="updatePreview()"
+                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                                    placeholder="Ex: NOME COMPLETO" value="EDUARDO CARNELLO JATOBÁ">
+                            </div>
                         </div>
                         <div>
                             <label for="oficiais_justica" class="block text-sm font-medium text-gray-700">Oficiais de
@@ -427,16 +440,17 @@
                                 class="font-bold">[Representante do Ministério Público]</span>, <span
                                 id="preview-oficial_promotoria_completo" class="font-bold">[Info Oficial
                                 Promotoria]</span>, o(a) Defensor(a) Público(a), <span id="preview-defensor"
-                                class="font-bold">[Defensor(a) Público(a)]</span>, o(a) Oficial Maior <span
-                                id="preview-oficial_maior_nome" class="font-bold">[Oficial Maior (Digitador)]</span>, os
+                                class="font-bold">[Defensor(a) Público(a)]</span>, o(a) <span
+                                id="preview-oficial_maior_cargo">Oficial Maior</span> <span
+                                id="preview-oficial_maior_nome" class="font-bold">[Nome do Digitador]</span>, os
                             Oficiais de Justiça <span id="preview-oficiais_justica" class="font-bold">[Oficiais de
                                 Justiça]</span>, os Escreventes Técnicos Judiciário <span id="preview-escreventes"
                                 class="font-bold">[Escreventes]</span>, o(a) assistente judiciário <span
                                 id="preview-assistente_judiciario" class="font-bold">[Assistente Judiciário]</span>,
                             <span id="preview-distribuidor_completo" class="font-bold">[Info Distribuidor]</span>. Para
                             Constar, lavrei o presente termo que lido e achado conforme, vai
-                            devidamente assinado. Eu, <span id="preview-oficial_maior_digitador"
-                                class="font-bold">[Oficial Maior (Digitador)]</span>, Oficial Maior, digitei e subscrevi
+                            devidamente assinado. Eu, <span id="preview-oficial_maior_digitador" class="font-bold">[Nome
+                                do Digitador]</span>, digitei e subscrevi
                             digitalmente.
                         </p>
                         <div class="signature">
@@ -464,8 +478,9 @@
                                 Judiciária]</span>, <span id="preview-ocorrencia">[situação]</span>. Para Constar,
                             lavrei o presente termo que
                             lido e achado conforme, vai devidamente assinado. Eu, <span
-                                id="preview-oficial_maior_encerramento" class="font-bold">[Oficial Maior
-                                (Digitador)]</span>, Oficial Maior, digitei e subscrevi digitalmente.
+                                id="preview-oficial_maior_encerramento" class="font-bold">[Nome do Digitador]</span>,
+                            <span id="preview-oficial_maior_cargo_encerramento">Oficial Maior</span>, digitei e
+                            subscrevi digitalmente.
                         </p>
                         <div class="signature">
                             <span id="preview-juiz_assinatura_encerramento" class="font-bold">[Juiz(a) de
@@ -560,10 +575,14 @@
             document.getElementById('preview-comarca_juiz').textContent = comarca;
             document.getElementById('preview-comarca_juiz_encerramento').textContent = comarca;
 
-            const oficialMaior = document.getElementById('oficial_maior').value || '[Oficial Maior (Digitador)]';
-            document.getElementById('preview-oficial_maior_nome').textContent = oficialMaior;
-            document.getElementById('preview-oficial_maior_digitador').textContent = oficialMaior;
-            document.getElementById('preview-oficial_maior_encerramento').textContent = oficialMaior;
+            const oficialMaiorCargo = document.getElementById('oficial_maior_cargo').value;
+            const oficialMaiorNome = document.getElementById('oficial_maior_nome').value || '[Nome do Digitador]';
+            document.getElementById('preview-oficial_maior_cargo').textContent = oficialMaiorCargo;
+            document.getElementById('preview-oficial_maior_nome').textContent = oficialMaiorNome;
+            document.getElementById('preview-oficial_maior_digitador').textContent = oficialMaiorNome;
+            document.getElementById('preview-oficial_maior_encerramento').textContent = oficialMaiorNome;
+            document.getElementById('preview-oficial_maior_cargo_encerramento').textContent = oficialMaiorCargo;
+
 
             const fieldsToUpdate = {
                 'oficiais_justica': 'preview-oficiais_justica',
@@ -618,16 +637,41 @@
             const newProcessoDiv = document.createElement('div');
             newProcessoDiv.id = `processo-${processoCount}`;
             newProcessoDiv.className = 'p-3 border rounded-md bg-white grid grid-cols-1 sm:grid-cols-2 gap-3 relative';
+
+            const today = new Date().toISOString().split('T')[0];
+
             newProcessoDiv.innerHTML = `
                 <button onclick="removeProcesso(${processoCount})" class="absolute top-2 right-2 text-red-500 hover:text-red-700 font-bold no-print">X</button>
                 <input type="text" placeholder="Processo" class="processo-input-processo sm:col-span-2 w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" oninput="updatePreview()">
-                <input type="date" placeholder="Data" class="processo-input-data w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" oninput="updatePreview()">
-                <input type="text" placeholder="Natureza da Ação" class="processo-input-natureza w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" oninput="updatePreview()">
-                <input type="text" placeholder="Autor" class="processo-input-autor w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" oninput="updatePreview()">
+                <input type="date" placeholder="Data" class="processo-input-data w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" value="${today}" oninput="updatePreview()">
+                
+                <div class="sm:col-span-1">
+                    <select class="processo-input-natureza-select w-full rounded-md border-gray-300 shadow-sm" onchange="toggleNaturezaInput(this, ${processoCount}); updatePreview();">
+                        <option>Comunicado de Mandado de Prisão</option>
+                        <option>Auto de Prisão em Flagrante</option>
+                        <option>Auto de Apreensão em Flagrante</option>
+                        <option>Medidas Protetivas de Urgência</option>
+                        <option>Petição Cível</option>
+                        <option value="Outro">Outro (digitar)</option>
+                    </select>
+                    <input type="text" placeholder="Natureza da Ação" class="processo-input-natureza-outro mt-2 w-full rounded-md border-gray-300 shadow-sm hidden" oninput="updatePreview()">
+                </div>
+
+                <input type="text" placeholder="Autor" class="processo-input-autor w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" value="Justiça Pública" oninput="updatePreview()">
                 <input type="text" placeholder="Réu" class="processo-input-reu w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" oninput="updatePreview()">
             `;
             container.appendChild(newProcessoDiv);
             updatePreview();
+        }
+
+        function toggleNaturezaInput(selectElement, processoId) {
+            const container = document.getElementById(`processo-${processoId}`);
+            const outroInput = container.querySelector('.processo-input-natureza-outro');
+            if (selectElement.value === 'Outro') {
+                outroInput.classList.remove('hidden');
+            } else {
+                outroInput.classList.add('hidden');
+            }
         }
 
         function removeProcesso(id) {
@@ -664,7 +708,13 @@
                     const [year, month, day] = data.split('-');
                     data = `${day}/${month}/${year}`;
                 }
-                const natureza = proc.querySelector('.processo-input-natureza').value;
+
+                const naturezaSelect = proc.querySelector('.processo-input-natureza-select');
+                let natureza = naturezaSelect.value;
+                if (natureza === 'Outro') {
+                    natureza = proc.querySelector('.processo-input-natureza-outro').value;
+                }
+
                 const autor = proc.querySelector('.processo-input-autor').value;
                 const reu = proc.querySelector('.processo-input-reu').value;
                 tableHTML += `
@@ -696,7 +746,8 @@
                 const processoData = {
                     processo: proc.querySelector('.processo-input-processo').value,
                     data: proc.querySelector('.processo-input-data').value,
-                    natureza: proc.querySelector('.processo-input-natureza').value,
+                    naturezaSelect: proc.querySelector('.processo-input-natureza-select').value,
+                    naturezaOutro: proc.querySelector('.processo-input-natureza-outro').value,
                     autor: proc.querySelector('.processo-input-autor').value,
                     reu: proc.querySelector('.processo-input-reu').value,
                 };
@@ -728,7 +779,19 @@
                     if (newProcDiv) {
                         newProcDiv.querySelector('.processo-input-processo').value = procData.processo || '';
                         newProcDiv.querySelector('.processo-input-data').value = procData.data || '';
-                        newProcDiv.querySelector('.processo-input-natureza').value = procData.natureza || '';
+
+                        const naturezaSelect = newProcDiv.querySelector('.processo-input-natureza-select');
+                        naturezaSelect.value = procData.naturezaSelect || 'Comunicado de Mandado de Prisão';
+
+                        const naturezaOutroInput = newProcDiv.querySelector('.processo-input-natureza-outro');
+                        naturezaOutroInput.value = procData.naturezaOutro || '';
+
+                        if (naturezaSelect.value === 'Outro') {
+                            naturezaOutroInput.classList.remove('hidden');
+                        } else {
+                            naturezaOutroInput.classList.add('hidden');
+                        }
+
                         newProcDiv.querySelector('.processo-input-autor').value = procData.autor || '';
                         newProcDiv.querySelector('.processo-input-reu').value = procData.reu || '';
                     }
