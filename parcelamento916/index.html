@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pedido de Parcelamento (com Firebase)</title>
+    <title>Pedido de Parcelamento</title>
     <link rel="stylesheet" href="https://code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css">
     <style>
         /* Estilos gerais */
@@ -408,8 +408,14 @@
                             firebase.initializeApp(firebaseConfig);
                         }
                         db = firebase.firestore();
+                        // AJUSTE PARA TENTAR CONTORNAR FIREWALL
+                        db.settings({
+                            experimentalForceLongPolling: true,
+                            merge: true
+                        });
 
                         console.log("Firebase inicializado. Tentando login anônimo...");
+
                         firebase.auth().signInAnonymously()
                             .then(() => {
                                 console.log("Login anônimo bem-sucedido. Sincronizando dados...");
@@ -592,7 +598,134 @@
                     table.appendChild(tbody);
                     dom.datasParcelasContainer.appendChild(table);
                 },
-                // Sua lógica de validação de formulário e generatePDF aqui
+                isValidCPF: (cpf) => {
+                    cpf = cpf.replace(/[^\d]+/g, '');
+                    if (cpf.length !== 11 || /^(\d)\1+$/.test(cpf)) return false;
+                    let soma = 0;
+                    let resto;
+                    for (let i = 1; i <= 9; i++) soma += parseInt(cpf.substring(i - 1, i)) * (11 - i);
+                    resto = (soma * 10) % 11;
+                    if ((resto === 10) || (resto === 11)) resto = 0;
+                    if (resto !== parseInt(cpf.substring(9, 10))) return false;
+                    soma = 0;
+                    for (let i = 1; i <= 10; i++) soma += parseInt(cpf.substring(i - 1, i)) * (12 - i);
+                    resto = (soma * 10) % 11;
+                    if ((resto === 10) || (resto === 11)) resto = 0;
+                    if (resto !== parseInt(cpf.substring(10, 11))) return false;
+                    return true;
+                },
+                isValidCNPJ: (cnpj) => {
+                    cnpj = cnpj.replace(/[^\d]+/g, '');
+                    if (cnpj.length !== 14 || /^(\d)\1+$/.test(cnpj)) return false;
+                    let tamanho = cnpj.length - 2;
+                    let numeros = cnpj.substring(0, tamanho);
+                    let digitos = cnpj.substring(tamanho);
+                    let soma = 0;
+                    let pos = tamanho - 7;
+                    for (let i = tamanho; i >= 1; i--) {
+                        soma += numeros.charAt(tamanho - i) * pos--;
+                        if (pos < 2) pos = 9;
+                    }
+                    let resultado = soma % 11 < 2 ? 0 : 11 - soma % 11;
+                    if (resultado != digitos.charAt(0)) return false;
+                    tamanho = tamanho + 1;
+                    numeros = cnpj.substring(0, tamanho);
+                    soma = 0;
+                    pos = tamanho - 7;
+                    for (let i = tamanho; i >= 1; i--) {
+                        soma += numeros.charAt(tamanho - i) * pos--;
+                        if (pos < 2) pos = 9;
+                    }
+                    resultado = soma % 11 < 2 ? 0 : 11 - soma % 11;
+                    if (resultado != digitos.charAt(1)) return false;
+                    return true;
+                },
+                generatePDF: () => {
+                    const numeroProcesso = dom.numeroProcesso.value;
+                    const valorDivida = dom.valorDivida.value;
+                    const valorEntrada = dom.valorEntrada.value;
+                    const valorRestanteNum = logic.obterValorNumerico(dom.valorRestante.value);
+                    const valorRestante = dom.valorRestante.value;
+                    const parcelas = parseInt(dom.parcelasSelect.value);
+                    const outrosPedidos = dom.outrosPedidos.value;
+                    const dataPrimeiraParcela = logic.parseDate(dom.dataPrimeiraParcela.value);
+
+                    let executadosText = '';
+                    const executadoElements = document.querySelectorAll('.executado-section');
+                    executadoElements.forEach((executado, index) => {
+                        const nome = executado.querySelector('.nome-executado').value;
+                        const cpfCnpj = executado.querySelector('.cpf-cnpj').value;
+                        executadosText += `<b>Executado ${index + 1}:</b> ${nome}, inscrito no CPF/CNPJ sob o nº ${cpfCnpj}.<br>`;
+                    });
+
+                    // --- Início da Lógica da Tabela de Parcelas para o PDF ---
+                    let parcelasTableHtml = '';
+                    if (!isNaN(dataPrimeiraParcela.getTime()) && parcelas > 0) {
+                        parcelasTableHtml = `
+                            <p>O restante, no valor de <b>${valorRestante}</b>, será pago em <b>${parcelas}</b> parcelas mensais, conforme tabela abaixo, todas acrescidas de correção monetária e de juros de 1% (um por cento) ao mês:</p>
+                            <table style="width: 100%; border-collapse: collapse; text-align: center; font-size: 11pt; margin-top: 15px; margin-bottom: 15px;">
+                                <thead style="background-color: #f2f2f2;">
+                                    <tr>
+                                        <th style="border: 1px solid #ddd; padding: 8px;">Parcela</th>
+                                        <th style="border: 1px solid #ddd; padding: 8px;">Data de Vencimento</th>
+                                        <th style="border: 1px solid #ddd; padding: 8px;">Valor (com juros de 1% a.m.)</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                        `;
+
+                        for (let i = 0; i < parcelas; i++) {
+                            let dataParcela = new Date(dataPrimeiraParcela);
+                            dataParcela.setMonth(dataPrimeiraParcela.getMonth() + i);
+                            // Ajusta para o próximo dia útil se cair no fim de semana
+                            while (dataParcela.getDay() === 0 || dataParcela.getDay() === 6) {
+                                dataParcela.setDate(dataParcela.getDate() + 1);
+                            }
+                            const valorParcelaComJuros = (valorRestanteNum / parcelas) * Math.pow(1.01, i + 1);
+                            parcelasTableHtml += `
+                                <tr>
+                                    <td style="border: 1px solid #ddd; padding: 8px;">${i + 1}</td>
+                                    <td style="border: 1px solid #ddd; padding: 8px;">${logic.formatDate(dataParcela)}</td>
+                                    <td style="border: 1px solid #ddd; padding: 8px;">${logic.formatCurrency(valorParcelaComJuros)}</td>
+                                </tr>
+                            `;
+                        }
+
+                        parcelasTableHtml += `
+                                </tbody>
+                            </table>
+                        `;
+                    }
+                    // --- Fim da Lógica da Tabela ---
+
+                    const content = `
+                        <div style="font-family: 'Times New Roman', Times, serif; font-size: 12pt; line-height: 1.5; text-align: justify;">
+                            <p style="text-align: justify;"><b>AO JUIZADO ESPECIAL CÍVEL DE MARÍLIA/SP</b></p>
+                            <br><br>
+                            <p><b>Processo nº ${numeroProcesso}</b></p>
+                            <br><br>
+                            <p>${executadosText}</p>
+                            <p>Vem, respeitosamente, à presença de Vossa Excelência, nos autos da Ação de Execução de Título Extrajudicial em epígrafe, requerer o parcelamento do débito, nos termos do artigo 916 do Código de Processo Civil.</p>
+                            <p>O valor atualizado do débito é de <b>${valorDivida}</b>.</p>
+                            <p>O executado reconhece o crédito do exequente e comprova o depósito de <b>${valorEntrada}</b>, correspondente a 30% (trinta por cento) do valor da execução, acrescido de custas e de honorários de advogado.</p>
+                            ${parcelasTableHtml}
+                            <p>${outrosPedidos}</p>
+                            <br>
+                            <p>Termos em que,<br>Pede deferimento.</p>
+                            <br>
+                            <p style="text-align: center;">Marília, ${new Date().toLocaleDateString('pt-BR')}.</p>
+                        </div>
+                    `;
+
+                    const options = {
+                        margin: [30, 20, 30, 20],
+                        filename: `peticao_${numeroProcesso.replace(/\D/g, '')}.pdf`,
+                        html2canvas: { scale: 2 },
+                        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+                    };
+
+                    html2pdf().from(content).set(options).save();
+                }
             };
 
             // --- INICIALIZAÇÃO E EVENT LISTENERS ---
@@ -679,8 +812,101 @@
                     });
 
                     dom.gerarPdfButton.addEventListener('click', () => {
-                        // Sua lógica de validação aqui antes de chamar generatePDF
-                        // if(logic.validateForm()) { logic.generatePDF(); }
+                        const numeroProcessoElement = document.getElementById('numero_processo');
+                        const numeroProcesso = numeroProcessoElement.value.trim();
+                        const maskPlaceholder = '_______-__.20__.8.26.0344';
+
+                        if (numeroProcesso === '' || numeroProcesso === maskPlaceholder || numeroProcesso.includes('_')) {
+                            alert('Por favor, preencha o campo "Nº do Processo" corretamente.');
+                            numeroProcessoElement.focus();
+                            return;
+
+                        }
+
+                        const valorDividaElement = document.getElementById('valor_divida');
+                        const valorDivida = logic.obterValorNumerico(valorDividaElement.value);
+                        if (isNaN(valorDivida) || valorDivida <= 0) {
+                            alert('Por favor, preencha o campo "Valor da Dívida" corretamente.');
+                            valorDividaElement.focus();
+                            return;
+                        }
+
+                        const parcelasElement = document.getElementById('parcelas');
+                        const parcelas = parseInt(parcelasElement.value);
+                        if (isNaN(parcelas) || parcelas < 1) {
+                            alert('Por favor, selecione o número de parcelas.');
+                            parcelasElement.focus();
+                            return;
+                        }
+
+                        const nomeExecutadoElements = document.querySelectorAll('.nome-executado');
+                        for (let i = 0; i < nomeExecutadoElements.length; i++) {
+                            const nomeExecutado = nomeExecutadoElements[i].value.trim();
+                            if (nomeExecutado === '' || nomeExecutado.length < 10) {
+                                alert('Por favor, preencha o campo "Nome do Executado" corretamente.');
+                                nomeExecutadoElements[i].focus();
+                                return;
+                            }
+                        }
+
+                        const cpfCnpjElements = document.querySelectorAll('.cpf-cnpj');
+                        for (let i = 0; i < cpfCnpjElements.length; i++) {
+                            const cpfCnpj = cpfCnpjElements[i].value.trim();
+                            const cpfCnpjType = document.querySelector(`.cpf-cnpj-type[data-index="${i + 1}"]`).value;
+                            if (cpfCnpj === '' || cpfCnpj.length < 14 || cpfCnpj.includes('_') ||
+                                (cpfCnpjType === 'CPF' && !logic.isValidCPF(cpfCnpj)) ||
+                                (cpfCnpjType === 'CNPJ' && !logic.isValidCNPJ(cpfCnpj))) {
+                                alert('Por favor, preencha o campo "CPF/CNPJ" corretamente.');
+                                cpfCnpjElements[i].focus();
+                                return;
+                            }
+                        }
+
+                        const atualizarEnderecoElements = document.querySelectorAll('.atualizar-endereco');
+                        for (let i = 0; i < atualizarEnderecoElements.length; i++) {
+                            if (atualizarEnderecoElements[i].checked) {
+                                const index = atualizarEnderecoElements[i].dataset.index;
+                                const cep = document.querySelector(`.cep[data-index="${index}"]`).value.trim();
+                                const rua = document.querySelector(`.rua[data-index="${index}"]`).value.trim();
+                                const numero = document.querySelector(`.numero[data-index="${index}"]`).value.trim();
+                                const bairro = document.querySelector(`.bairro[data-index="${index}"]`).value.trim();
+                                const cidade = document.querySelector(`.cidade[data-index="${index}"]`).value.trim();
+                                const estado = document.querySelector(`.estado[data-index="${index}"]`).value.trim();
+
+                                if (cep === '' || cep.length < 9 || cep.includes('_')) {
+                                    alert('Por favor, preencha o campo "CEP" corretamente.');
+                                    document.querySelector(`.cep[data-index="${index}"]`).focus();
+                                    return;
+                                }
+                                if (rua === '') {
+                                    alert('Por favor, preencha o campo "Rua" corretamente.');
+                                    document.querySelector(`.rua[data-index="${index}"]`).focus();
+                                    return;
+                                }
+                                if (numero === '') {
+                                    alert('Por favor, preencha o campo "Nº" corretamente.');
+                                    document.querySelector(`.numero[data-index="${index}"]`).focus();
+                                    return;
+                                }
+                                if (bairro === '') {
+                                    alert('Por favor, preencha o campo "Bairro" corretamente.');
+                                    document.querySelector(`.bairro[data-index="${index}"]`).focus();
+                                    return;
+                                }
+                                if (cidade === '') {
+                                    alert('Por favor, preencha o campo "Cidade" corretamente.');
+                                    document.querySelector(`.cidade[data-index="${index}"]`).focus();
+                                    return;
+                                }
+                                if (estado === '') {
+                                    alert('Por favor, preencha o campo "Estado" corretamente.');
+                                    document.querySelector(`.estado[data-index="${index}"]`).focus();
+                                    return;
+                                }
+                            }
+                        }
+
+                        logic.generatePDF();
                         ui.updateFeedback("Gerando PDF... (Lógica a ser implementada)", "info");
                     });
                 },
