@@ -285,7 +285,7 @@ function holidaysFunc(currentYear, expectedFinalYear, Easter) { //essa função 
             { holidayDate: `12/10/${i}`, description: "Nossa Senhora Aparecida, Padroeira do Brasil" },
             { holidayDate: `02/11/${i}`, description: "Finados" },
             { holidayDate: `15/11/${i}`, description: "Proclamação da República" },
-            { holidayDate: i == 2020 ? `30/10/${i}` : `28/10/${i}`, description: i == 2020 ? "Dia do Servidor Público (PROVIMENTO CSM Nº 2581/2020)" : 'Dia do Servidor Público' }, //neste caso, como houve transferência do Dia do Servidor Público em 2020 para outra data, é levado em consideração tal transferência
+            { holidayDate: i == 2020 ? `30/10/${i}` : i == 2025 ? `27/08/${i}` : `28/10/${i}`, description: i == 2020 ? "Dia do Servidor Público (PROVIMENTO CSM Nº 2581/2020)" : i == 2025 ? "Dia do Servidor Público (PROVIMENTO CSM Nº 2804/2025)" : 'Dia do Servidor Público' }, //neste caso, como houve transferência do Dia do Servidor Público em 2020 e 2025 para outras datas, é levado em consideração tal transferência
             { holidayDate: i == 2022 ? `09/12/${i}` : `08/12/${i}`, description: i == 2022 ? "Dia da Justiça 2022 (PROVIMENTO CSM Nº 2677/2022)" : 'Dia da Justiça' },
             { holidayDate: i >= 2023 ? `20/11/${i}` : ``, description: i >= 2023 ? "Consciência Negra" : '' },
             { holidayDate: `25/12/${i}`, description: "Natal" },
