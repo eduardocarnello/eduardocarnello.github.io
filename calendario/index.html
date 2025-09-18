@@ -97,6 +97,7 @@
                 severa: { label: 'Indisponibilidade Severa', colorClass: 'bg-red-600', textColor: 'text-white', colorValue: 'red', borderClass: 'border-2 border-black-500' },
                 feriado: { label: 'Feriado', colorClass: 'bg-teal-200', textColor: 'text-red-600', colorValue: '#99f6e4', borderClass: 'border-2 border-red-600' },
                 recesso: { label: 'Recesso / Suspensão RITJSP', colorClass: 'bg-gray-400', textColor: 'text-white', colorValue: '#9ca3af' },
+                recesso: { label: 'Hoje', colorClass: 'bg-blue-600', textColor: 'text-white', colorValue: '#9ca3af' },
             };
 
             // --- FONTES DE DADOS DE EVENTOS ---
@@ -300,6 +301,53 @@
             // --- CARREGAMENTO E PROCESSAMENTO DE TODOS OS EVENTOS ---
             const initialEvents = [
 
+                // Exemplo de Férias (vários dias)
+                /*
+                {
+                    startDate: '13/10/2025',
+                    endDate: '27/10/2025',
+                    type: 'ferias',
+                    description: 'Férias do Dr. Exemplo'
+                },
+
+                // Exemplo de Licença-Prêmio (vários dias)
+                {
+                    startDate: '01/12/2025',
+                    endDate: '15/12/2025',
+                    type: 'licenca',
+                    description: 'Licença-prêmio da Sra. Exemplo'
+                },
+
+                // Exemplo de Falta Compensada (um dia)
+                // Para eventos de um único dia, o campo 'endDate' não é necessário.
+                {
+                    startDate: '29/09/2025',
+                    type: 'falta',
+                    description: 'Compensação de horas'
+                },
+
+                // Exemplo de Substituição de Magistrado (com campo de detalhes)
+                {
+                    startDate: '03/11/2025',
+                    endDate: '07/11/2025',
+                    type: 'substituicao',
+                    description: 'Substituição na 1ª Vara Cível',
+                    details: 'Dra. Ana Maria' // Campo específico para este tipo de evento
+                },
+
+                // Exemplo de evento do tipo "Outro" (um dia)
+                {
+                    startDate: '22/09/2025',
+                    type: 'outro',
+                    description: 'Reunião geral do setor'
+                }*/
+
+                {
+                    startDate: '26/09/2025',
+                    type: 'substituicao',
+                    description: 'Acumulação (DEJESP 18/09/2025)',
+                    details: 'Dr. José Augusto Franca Junior ' // Campo específico para este tipo de evento
+                },
             ];
 
             const amendmentEvents = amendment.map(e => ({ startDate: e.holidayDate, description: e.description, type: 'suspensao' }));
