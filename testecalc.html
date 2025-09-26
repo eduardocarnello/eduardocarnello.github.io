@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculadora de Atualização de Débito Judicial</title>
+    <!-- Tailwind CSS para estilização -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Bibliotecas para geração de PDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <!-- Google Fonts para uma melhor tipografia -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+
+        /* Estilos para a área de impressão, para garantir boa aparência no PDF */
+        #printable-area {
+            font-family: 'Inter', sans-serif;
+            color: #111827;
+            /* Cor do texto (gray-900) */
+        }
+
+        /* Estilo para o spinner de carregamento */
+        .loader {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #3498db;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            animation: spin 1s linear infinite;
+            display: inline-block;
+            margin-right: 10px;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+    </style>
+</head>
+
+<body class="bg-gray-100 min-h-screen flex items-center justify-center p-4">
+
+    <div class="w-full max-w-4xl mx-auto bg-white rounded-2xl shadow-lg p-6 md:p-8">
+
+        <header class="text-center mb-8">
+            <h1 class="text-2xl md:text-3xl font-bold text-gray-800">Calculadora de Atualização de Débito Judicial</h1>
+            <p class="text-gray-500 mt-2">Insira os valores da condenação para calcular a atualização monetária e juros.
+            </p>
+        </header>
+
+        <main>
+            <!-- Seção para o número do processo -->
+            <div class="mb-6">
+                <label for="process-number" class="block text-sm font-medium text-gray-700 mb-2">Número do
+                    Processo</label>
+                <input type="text" id="process-number" name="process-number"
+                    class="w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
+                    placeholder="Ex: 0001234-56.2024.8.26.0001">
+            </div>
+
+            <!-- Container para as linhas de cálculo -->
+            <div id="calculation-rows" class="space-y-4">
+                <!-- Linha de exemplo, será clonada -->
+                <div
+                    class="calculation-row grid grid-cols-1 md:grid-cols-12 gap-4 items-end p-4 border border-gray-200 rounded-lg">
+                    <div class="md:col-span-3">
+                        <label class="block text-sm font-medium text-gray-700">Descrição</label>
+                        <select class="description-select w-full mt-1 p-2 border border-gray-300 rounded-lg shadow-sm">
+                            <option value="Dano Material">Dano Material</option>
+                            <option value="Dano Moral">Dano Moral</option>
+                            <option value="Restituição">Restituição</option>
+                            <option value="Multa">Multa</option>
+                        </select>
+                    </div>
+                    <div class="md:col-span-2">
+                        <label class="block text-sm font-medium text-gray-700">Valor (R$)</label>
+                        <input type="number" step="0.01"
+                            class="value-input w-full mt-1 p-2 border border-gray-300 rounded-lg shadow-sm"
+                            placeholder="1000,00">
+                    </div>
+                    <div class="md:col-span-3">
+                        <label class="block text-sm font-medium text-gray-700">Data Inicial (Correção)</label>
+                        <input type="date"
+                            class="correction-date-input w-full mt-1 p-2 border border-gray-300 rounded-lg shadow-sm">
+                    </div>
+                    <div class="md:col-span-3">
+                        <label class="block text-sm font-medium text-gray-700">Data Inicial (Juros)</label>
+                        <input type="date"
+                            class="interest-date-input w-full mt-1 p-2 border border-gray-300 rounded-lg shadow-sm">
+                    </div>
+                    <div class="md:col-span-1">
+                        <button
+                            class="remove-row-btn w-full bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-3 rounded-lg transition-colors duration-200"
+                            title="Remover Linha">&times;</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Botão para adicionar mais linhas -->
+            <div class="mt-6 flex justify-start">
+                <button id="add-row-btn"
+                    class="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded-lg shadow-md transition-transform transform hover:scale-105">+
+                    Adicionar Linha</button>
+            </div>
+
+            <hr class="my-8 border-gray-200">
+
+            <!-- Botões de Ação -->
+            <div class="flex flex-col md:flex-row gap-4 justify-end">
+                <button id="calculate-btn" disabled
+                    class="bg-indigo-400 cursor-not-allowed text-white font-bold py-3 px-6 rounded-lg shadow-lg flex items-center justify-center">
+                    <span class="loader"></span> Carregando dados...
+                </button>
+                <button id="print-btn" disabled
+                    class="bg-gray-400 cursor-not-allowed text-white font-bold py-3 px-6 rounded-lg shadow-lg">Imprimir
+                    em PDF</button>
+            </div>
+
+            <!-- Seção de Resultados -->
+            <div id="results-container" class="mt-10 p-6 bg-gray-50 rounded-lg border border-gray-200 hidden">
+                <!-- Esta parte será usada para gerar o PDF -->
+            </div>
+
+        </main>
+    </div>
+
+    <!-- Div oculta que será usada para formatar a impressão -->
+    <div id="printable-area" class="w-full max-w-4xl p-8 bg-white" style="position: absolute; left: -9999px;">
+        <!-- Cabeçalho do PDF -->
+        <div class="text-center mb-8">
+            <h2 class="text-2xl font-bold text-gray-800">Demonstrativo de Cálculo de Débito Judicial</h2>
+            <p class="text-gray-600 mt-1">Cálculo realizado em: <span id="print-date"></span></p>
+        </div>
+        <p class="mb-4"><strong>Processo nº:</strong> <span id="print-process-number"></span></p>
+        <hr class="my-4">
+        <!-- Conteúdo do cálculo para o PDF -->
+        <div id="print-results-content"></div>
+    </div>
+
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const addRowBtn = document.getElementById('add-row-btn');
+            const calculateBtn = document.getElementById('calculate-btn');
+            const printBtn = document.getElementById('print-btn');
+            const rowsContainer = document.getElementById('calculation-rows');
+            const resultsContainer = document.getElementById('results-container');
+
+            let ipcaIndexData = {};
+            let ipcaPercentageData = {};
+            let selicData = {};
+            let lastIpcaIndexKey = null;
+
+            // Função para buscar dados da API do Banco Central do Brasil
+            const fetchEconomicData = async () => {
+                // O erro anterior está relacionado à instabilidade de proxies CORS públicos.
+                // Estou trocando para uma nova alternativa na esperança de que seja mais estável.
+                const PROXY_URL = 'https://cors.sh/';
+
+                const today = new Date();
+                const tenYearsAgo = new Date(today.getFullYear() - 10, today.getMonth(), today.getDate());
+                const formatDateForApi = (date) => `${String(date.getDate()).padStart(2, '0')}/${String(date.getMonth() + 1).padStart(2, '0')}/${date.getFullYear()}`;
+
+                const startDate = formatDateForApi(tenYearsAgo);
+                const endDate = formatDateForApi(today);
+
+                // Códigos das séries no SGS (Sistema Gerenciador de Séries Temporais) do BCB
+                const IPCA_INDEX_CODE = 1737; // IPCA - Índice de preços ao consumidor-amplo (número-índice)
+                const IPCA_PERCENT_CODE = 433; // IPCA mensal (variação %) - necessário para o cálculo de juros
+                const SELIC_CODE = 4390;      // Selic acumulada no mês
+
+                const buildProxiedUrl = (code) => {
+                    const originalUrl = `https://api.bcb.gov.br/dados/serie/bcdata.sgs.${code}/dados?formato=json&dataInicial=${startDate}&dataFinal=${endDate}`;
+                    // Este proxy anexa a URL de destino diretamente, sem precisar de codificação.
+                    return `${PROXY_URL}${originalUrl}`;
+                };
+
+                const ipcaIndexUrl = buildProxiedUrl(IPCA_INDEX_CODE);
+                const ipcaPercentUrl = buildProxiedUrl(IPCA_PERCENT_CODE);
+                const selicUrl = buildProxiedUrl(SELIC_CODE);
+
+                try {
+                    const [ipcaIndexResponse, ipcaPercentResponse, selicResponse] = await Promise.all([
+                        fetch(ipcaIndexUrl),
+                        fetch(ipcaPercentUrl),
+                        fetch(selicUrl)
+                    ]);
+
+                    if (!ipcaIndexResponse.ok || !ipcaPercentResponse.ok || !selicResponse.ok) {
+                        throw new Error('Falha ao buscar dados do Banco Central.');
+                    }
+
+                    const ipcaIndexJson = await ipcaIndexResponse.json();
+                    const ipcaPercentJson = await ipcaPercentResponse.json();
+                    const selicJson = await selicResponse.json();
+
+                    // Processa os dados para o formato { "YYYY-MM": valor }
+                    const processData = (jsonData) => {
+                        const dataMap = {};
+                        let lastKey = null;
+                        jsonData.forEach(item => {
+                            if (item.valor === null || item.valor === "") return;
+                            const [day, month, year] = item.data.split('/');
+                            const key = `${year}-${month}`;
+                            dataMap[key] = parseFloat(item.valor);
+                            lastKey = key;
+                        });
+                        return { dataMap, lastKey };
+                    };
+
+                    const ipcaIndexResult = processData(ipcaIndexJson);
+                    ipcaIndexData = ipcaIndexResult.dataMap;
+                    lastIpcaIndexKey = ipcaIndexResult.lastKey; // Guarda a chave do último índice disponível
+
+                    ipcaPercentageData = processData(ipcaPercentJson).dataMap;
+                    selicData = processData(selicJson).dataMap;
+
+                    // Habilita o botão de cálculo
+                    calculateBtn.disabled = false;
+                    calculateBtn.innerHTML = 'Calcular Valor Atualizado';
+                    calculateBtn.classList.remove('bg-indigo-400', 'cursor-not-allowed');
+                    calculateBtn.classList.add('bg-indigo-600', 'hover:bg-indigo-700');
+
+                } catch (error) {
+                    console.error('Erro ao buscar dados econômicos:', error);
+                    calculateBtn.innerHTML = 'Erro ao carregar dados';
+                    calculateBtn.classList.remove('bg-indigo-400');
+                    calculateBtn.classList.add('bg-red-600');
+                    alert('Não foi possível carregar os índices econômicos do Banco Central. Por favor, tente recarregar a página.');
+                }
+            };
+
+            const formatCurrency = (value) => value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+
+            const addRow = () => {
+                const firstRow = rowsContainer.querySelector('.calculation-row');
+                const newRow = firstRow.cloneNode(true);
+                newRow.querySelector('.value-input').value = '';
+                newRow.querySelector('.correction-date-input').value = '';
+                newRow.querySelector('.interest-date-input').value = '';
+                rowsContainer.appendChild(newRow);
+            };
+
+            const removeRow = (event) => {
+                if (event.target.classList.contains('remove-row-btn')) {
+                    if (rowsContainer.children.length > 1) {
+                        event.target.closest('.calculation-row').remove();
+                    } else {
+                        alert('Pelo menos uma linha de cálculo é necessária.');
+                    }
+                }
+            };
+
+            const calculate = () => {
+                let totalUpdatedValue = 0;
+                let resultsHTML = '<h3 class="text-xl font-bold text-gray-800 mb-4">Resumo do Cálculo</h3>';
+                resultsHTML += `<p class="text-sm text-gray-500 mb-4">Utilizando como índice final o último IPCA divulgado (${lastIpcaIndexKey}).</p>`;
+                resultsHTML += '<div class="space-y-6">';
+
+                const rows = rowsContainer.querySelectorAll('.calculation-row');
+                const endDate = new Date();
+
+                rows.forEach((row, index) => {
+                    const description = row.querySelector('.description-select').value;
+                    const originalValue = parseFloat(row.querySelector('.value-input').value) || 0;
+                    const correctionDate = new Date(row.querySelector('.correction-date-input').value + 'T00:00:00');
+                    const interestDate = new Date(row.querySelector('.interest-date-input').value + 'T00:00:00');
+
+                    if (originalValue === 0 || isNaN(correctionDate.getTime()) || isNaN(interestDate.getTime())) {
+                        return;
+                    }
+
+                    // 1. Cálculo da Correção Monetária (pela divisão de índices)
+                    const initialKey = `${correctionDate.getFullYear()}-${String(correctionDate.getMonth() + 1).padStart(2, '0')}`;
+                    const initialIndex = ipcaIndexData[initialKey];
+                    const finalIndex = ipcaIndexData[lastIpcaIndexKey];
+
+                    let correctedValue = originalValue;
+                    let correctionFactor = 1;
+
+                    if (initialIndex && finalIndex && initialIndex > 0) {
+                        correctionFactor = finalIndex / initialIndex;
+                        correctedValue = originalValue * correctionFactor;
+                    }
+                    const totalCorrection = correctedValue - originalValue;
+
+
+                    // 2. Cálculo dos Juros de Mora (SELIC)
+                    let interestValue = 0;
+                    let currentInterestDate = new Date(interestDate);
+                    let baseForInterest = originalValue;
+                    while (currentInterestDate < endDate) {
+                        const key = `${currentInterestDate.getFullYear()}-${String(currentInterestDate.getMonth() + 1).padStart(2, '0')}`;
+
+                        // O capital base para juros precisa ser corrigido mês a mês
+                        const correctionRatePercent = ipcaPercentageData[key] || 0;
+                        baseForInterest *= (1 + correctionRatePercent / 100);
+
+                        const selicRate = selicData[key] || 0;
+                        interestValue += baseForInterest * (selicRate / 100);
+
+                        currentInterestDate.setMonth(currentInterestDate.getMonth() + 1);
+                    }
+
+                    const finalValueForRow = correctedValue + interestValue;
+                    totalUpdatedValue += finalValueForRow;
+
+                    resultsHTML += `
+                        <div class="p-4 border rounded-lg bg-white">
+                            <p class="font-semibold text-lg text-indigo-700">${index + 1}. ${description}</p>
+                            <div class="grid grid-cols-2 md:grid-cols-4 gap-x-4 gap-y-2 mt-2 text-sm">
+                                <!-- Linha 1: Valores monetários -->
+                                <div><span class="font-medium text-gray-600">Valor Original:</span><br>${formatCurrency(originalValue)}</div>
+                                <div><span class="font-medium text-gray-600">Correção (IPCA):</span><br>${formatCurrency(totalCorrection)}</div>
+                                <div><span class="font-medium text-gray-600">Juros de Mora (SELIC):</span><br>${formatCurrency(interestValue)}</div>
+                                <div class="font-bold"><span class="font-medium text-gray-600">Subtotal:</span><br>${formatCurrency(finalValueForRow)}</div>
+                                
+                                <!-- Linha 2: Índices e Fator (somente leitura) -->
+                                <div class="col-span-full border-t pt-2 mt-2 grid grid-cols-2 md:grid-cols-3 gap-x-4">
+                                     <div><span class="font-medium text-gray-500">Índice IPCA Inicial:</span><br>${(initialIndex || 0).toFixed(6).replace('.', ',')}</div>
+                                     <div><span class="font-medium text-gray-500">Índice IPCA Final:</span><br>${(finalIndex || 0).toFixed(6).replace('.', ',')}</div>
+                                     <div><span class="font-medium text-gray-500">Fator de Correção:</span><br>${correctionFactor.toFixed(8).replace('.', ',')}</div>
+                                </div>
+                            </div>
+                        </div>`;
+                });
+
+                resultsHTML += `</div>`;
+                resultsHTML += `
+                    <div class="mt-8 pt-4 border-t-2 border-indigo-500 text-right">
+                        <p class="text-lg text-gray-600">Valor Total da Condenação Atualizada:</p>
+                        <p class="text-3xl font-bold text-indigo-700">${formatCurrency(totalUpdatedValue)}</p>
+                    </div>`;
+
+                resultsContainer.innerHTML = resultsHTML;
+                resultsContainer.classList.remove('hidden');
+
+                printBtn.disabled = false;
+                printBtn.classList.remove('bg-gray-400', 'cursor-not-allowed');
+                printBtn.classList.add('bg-green-600', 'hover:bg-green-700');
+            };
+
+            const printPDF = () => {
+                const { jsPDF } = window.jspdf;
+                const processNumber = document.getElementById('process-number').value || 'Não informado';
+                const printDate = new Date().toLocaleDateString('pt-BR');
+
+                document.getElementById('print-date').innerText = printDate;
+                document.getElementById('print-process-number').innerText = processNumber;
+                document.getElementById('print-results-content').innerHTML = resultsContainer.innerHTML;
+
+                const printableArea = document.getElementById('printable-area');
+
+                html2canvas(printableArea, { scale: 2 }).then(canvas => {
+                    const imgData = canvas.toDataURL('image/png');
+                    const pdf = new jsPDF('p', 'mm', 'a4');
+                    const pdfWidth = pdf.internal.pageSize.getWidth();
+                    const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+
+                    pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+                    pdf.save(`Calculo_Processo_${processNumber.replace(/[^0-9]/g, '')}.pdf`);
+                });
+            };
+
+            // Event Listeners
+            addRowBtn.addEventListener('click', addRow);
+            rowsContainer.addEventListener('click', removeRow);
+            calculateBtn.addEventListener('click', calculate);
+            printBtn.addEventListener('click', printPDF);
+
+            // Inicia a busca dos dados ao carregar a página
+            fetchEconomicData();
+        });
+    </script>
+</body>
+
+</html>
