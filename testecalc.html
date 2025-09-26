@@ -158,68 +158,53 @@
             const rowsContainer = document.getElementById('calculation-rows');
             const resultsContainer = document.getElementById('results-container');
 
-            let ipcaIndexData = {};
-            let ipcaPercentageData = {};
+            let ipcaData = {};
             let selicData = {};
-            let lastIpcaIndexKey = null;
 
+            // Função para buscar dados da API do Banco Central do Brasil
             const fetchEconomicData = async () => {
-                // Usando um proxy CORS para evitar problemas de firewall/rede.
-                // O método JSONP anterior estava sendo bloqueado.
-                const PROXY_URL = 'https://corsproxy.io/?';
                 const today = new Date();
-                const historyStartDate = new Date(today.getFullYear() - 20, today.getMonth(), today.getDate());
+                const fiveYearsAgo = new Date(today.getFullYear() - 5, today.getMonth(), today.getDate());
                 const formatDateForApi = (date) => `${String(date.getDate()).padStart(2, '0')}/${String(date.getMonth() + 1).padStart(2, '0')}/${date.getFullYear()}`;
 
-                const startDate = formatDateForApi(historyStartDate);
+                const startDate = formatDateForApi(fiveYearsAgo);
                 const endDate = formatDateForApi(today);
 
-                const IPCA_INDEX_CODE = 1737;
-                const IPCA_PERCENT_CODE = 433;
-                const SELIC_CODE = 1178;
+                // Códigos das séries no SGS (Sistema Gerenciador de Séries Temporais) do BCB
+                const IPCA_CODE = 433;    // IPCA mensal
+                const SELIC_CODE = 4390; // Selic acumulada no mês
 
-                const buildProxiedUrl = (code) => {
-                    const originalUrl = `https://api.bcb.gov.br/dados/serie/bcdata.sgs.${code}/dados?formato=json&dataInicial=${startDate}&dataFinal=${endDate}`;
-                    // A URL original precisa ser codificada para ser passada ao proxy.
-                    return `${PROXY_URL}${encodeURIComponent(originalUrl)}`;
-                };
+                const ipcaUrl = `https://api.bcb.gov.br/dados/serie/bcdata.sgs.${IPCA_CODE}/dados?formato=json&dataInicial=${startDate}&dataFinal=${endDate}`;
+                const selicUrl = `https://api.bcb.gov.br/dados/serie/bcdata.sgs.${SELIC_CODE}/dados?formato=json&dataInicial=${startDate}&dataFinal=${endDate}`;
 
                 try {
-                    const [ipcaIndexResponse, ipcaPercentResponse, selicResponse] = await Promise.all([
-                        fetch(buildProxiedUrl(IPCA_INDEX_CODE)),
-                        fetch(buildProxiedUrl(IPCA_PERCENT_CODE)),
-                        fetch(buildProxiedUrl(SELIC_CODE))
+                    const [ipcaResponse, selicResponse] = await Promise.all([
+                        fetch(ipcaUrl),
+                        fetch(selicUrl)
                     ]);
 
-                    if (!ipcaIndexResponse.ok || !ipcaPercentResponse.ok || !selicResponse.ok) {
-                        throw new Error('Falha na resposta da rede ao buscar dados do Banco Central.');
+                    if (!ipcaResponse.ok || !selicResponse.ok) {
+                        throw new Error('Falha ao buscar dados do Banco Central.');
                     }
 
-                    const ipcaIndexJson = await ipcaIndexResponse.json();
-                    const ipcaPercentJson = await ipcaPercentResponse.json();
+                    const ipcaJson = await ipcaResponse.json();
                     const selicJson = await selicResponse.json();
 
+                    // Processa os dados para o formato { "YYYY-MM": valor }
                     const processData = (jsonData) => {
                         const dataMap = {};
-                        let lastKey = null;
-                        if (!Array.isArray(jsonData)) return { dataMap, lastKey };
                         jsonData.forEach(item => {
-                            if (item.valor === null || item.valor === "") return;
                             const [day, month, year] = item.data.split('/');
                             const key = `${year}-${month}`;
                             dataMap[key] = parseFloat(item.valor);
-                            lastKey = key;
                         });
-                        return { dataMap, lastKey };
+                        return dataMap;
                     };
 
-                    const ipcaIndexResult = processData(ipcaIndexJson);
-                    ipcaIndexData = ipcaIndexResult.dataMap;
-                    lastIpcaIndexKey = ipcaIndexResult.lastKey;
+                    ipcaData = processData(ipcaJson);
+                    selicData = processData(selicJson);
 
-                    ipcaPercentageData = processData(ipcaPercentJson).dataMap;
-                    selicData = processData(selicJson).dataMap;
-
+                    // Habilita o botão de cálculo
                     calculateBtn.disabled = false;
                     calculateBtn.innerHTML = 'Calcular Valor Atualizado';
                     calculateBtn.classList.remove('bg-indigo-400', 'cursor-not-allowed');
@@ -230,13 +215,14 @@
                     calculateBtn.innerHTML = 'Erro ao carregar dados';
                     calculateBtn.classList.remove('bg-indigo-400');
                     calculateBtn.classList.add('bg-red-600');
-                    resultsContainer.innerHTML = `<p class="text-center text-red-600"><strong>Falha ao carregar os índices econômicos.</strong><br>Por favor, verifique sua conexão com a internet e tente recarregar a página.</p>`;
-                    resultsContainer.classList.remove('hidden');
+                    alert('Não foi possível carregar os índices econômicos do Banco Central. Por favor, tente recarregar a página.');
                 }
             };
 
+            // Função para formatar números como moeda brasileira
             const formatCurrency = (value) => value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 
+            // Adicionar uma nova linha de cálculo
             const addRow = () => {
                 const firstRow = rowsContainer.querySelector('.calculation-row');
                 const newRow = firstRow.cloneNode(true);
@@ -246,6 +232,7 @@
                 rowsContainer.appendChild(newRow);
             };
 
+            // Remover uma linha de cálculo
             const removeRow = (event) => {
                 if (event.target.classList.contains('remove-row-btn')) {
                     if (rowsContainer.children.length > 1) {
@@ -256,10 +243,10 @@
                 }
             };
 
+            // Função principal de cálculo
             const calculate = () => {
                 let totalUpdatedValue = 0;
                 let resultsHTML = '<h3 class="text-xl font-bold text-gray-800 mb-4">Resumo do Cálculo</h3>';
-                resultsHTML += `<p class="text-sm text-gray-500 mb-4">Utilizando como índice final o último IPCA divulgado (${lastIpcaIndexKey}).</p>`;
                 resultsHTML += '<div class="space-y-6">';
 
                 const rows = rowsContainer.querySelectorAll('.calculation-row');
@@ -275,35 +262,42 @@
                         return;
                     }
 
-                    // 1. Cálculo da Correção Monetária (pela divisão de índices)
-                    const initialKey = `${correctionDate.getFullYear()}-${String(correctionDate.getMonth() + 1).padStart(2, '0')}`;
-                    const initialIndex = ipcaIndexData[initialKey];
-                    const finalIndex = ipcaIndexData[lastIpcaIndexKey];
+                    // 1. Cálculo da Correção Monetária (IPCA)
+                    let currentCorrectionDate = new Date(correctionDate);
+                    let initialIpcaRate = 'N/A';
+                    let finalIpcaRate = 'N/A';
+                    let isFirstCorrectionLoop = true;
+                    let ipcaFactor = 1;
 
-                    let correctedValue = originalValue;
-                    let correctionFactor = 1;
+                    while (currentCorrectionDate < endDate) {
+                        const key = `${currentCorrectionDate.getFullYear()}-${String(currentCorrectionDate.getMonth() + 1).padStart(2, '0')}`;
+                        const rate = ipcaData[key] || 0;
 
-                    if (initialIndex && finalIndex && initialIndex > 0) {
-                        correctionFactor = finalIndex / initialIndex;
-                        correctedValue = originalValue * correctionFactor;
+                        if (isFirstCorrectionLoop) {
+                            initialIpcaRate = rate;
+                            isFirstCorrectionLoop = false;
+                        }
+                        finalIpcaRate = rate;
+
+                        ipcaFactor *= (1 + rate / 100);
+                        currentCorrectionDate.setMonth(currentCorrectionDate.getMonth() + 1);
                     }
+                    const correctedValue = originalValue * ipcaFactor;
                     const totalCorrection = correctedValue - originalValue;
+                    const ipcaAccumulatedPercent = (ipcaFactor - 1) * 100;
 
 
                     // 2. Cálculo dos Juros de Mora (SELIC)
                     let interestValue = 0;
                     let currentInterestDate = new Date(interestDate);
-
+                    let baseForInterest = originalValue;
                     while (currentInterestDate < endDate) {
-                        const monthKey = `${currentInterestDate.getFullYear()}-${String(currentInterestDate.getMonth() + 1).padStart(2, '0')}`;
+                        const key = `${currentInterestDate.getFullYear()}-${String(currentInterestDate.getMonth() + 1).padStart(2, '0')}`;
 
-                        const monthIndex = ipcaIndexData[monthKey];
-                        let baseForInterest = originalValue;
-                        if (initialIndex && monthIndex && initialIndex > 0) {
-                            baseForInterest = originalValue * (monthIndex / initialIndex);
-                        }
+                        const correctionRate = ipcaData[key] || 0;
+                        baseForInterest *= (1 + correctionRate / 100);
 
-                        const selicRate = selicData[monthKey] || 0;
+                        const selicRate = selicData[key] || 0;
                         interestValue += baseForInterest * (selicRate / 100);
 
                         currentInterestDate.setMonth(currentInterestDate.getMonth() + 1);
@@ -322,11 +316,11 @@
                                 <div><span class="font-medium text-gray-600">Juros de Mora (SELIC):</span><br>${formatCurrency(interestValue)}</div>
                                 <div class="font-bold"><span class="font-medium text-gray-600">Subtotal:</span><br>${formatCurrency(finalValueForRow)}</div>
                                 
-                                <!-- Linha 2: Índices e Fator (somente leitura) -->
+                                <!-- Linha 2: Índices e Percentuais (somente leitura) -->
                                 <div class="col-span-full border-t pt-2 mt-2 grid grid-cols-2 md:grid-cols-3 gap-x-4">
-                                     <div><span class="font-medium text-gray-500">Índice IPCA Inicial:</span><br>${(initialIndex || 0).toFixed(6).replace('.', ',')}</div>
-                                     <div><span class="font-medium text-gray-500">Índice IPCA Final:</span><br>${(finalIndex || 0).toFixed(6).replace('.', ',')}</div>
-                                     <div><span class="font-medium text-gray-500">Fator de Correção:</span><br>${correctionFactor.toFixed(8).replace('.', ',')}</div>
+                                     <div><span class="font-medium text-gray-500">IPCA Inicial (%):</span><br>${initialIpcaRate.toString().replace('.', ',')}</div>
+                                     <div><span class="font-medium text-gray-500">IPCA Final (%):</span><br>${finalIpcaRate.toString().replace('.', ',')}</div>
+                                     <div><span class="font-medium text-gray-500">IPCA Acumulado (%):</span><br>${ipcaAccumulatedPercent.toFixed(4).replace('.', ',')}</div>
                                 </div>
                             </div>
                         </div>`;
