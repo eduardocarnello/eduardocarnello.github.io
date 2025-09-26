@@ -163,53 +163,46 @@
             let selicData = {};
             let lastIpcaIndexKey = null;
 
-            // Função para buscar dados da API do Banco Central do Brasil
             const fetchEconomicData = async () => {
-                // O erro anterior está relacionado à instabilidade de proxies CORS públicos.
-                // Estou trocando para uma nova alternativa na esperança de que seja mais estável.
-                const PROXY_URL = 'https://cors.sh/';
-
+                // Usando um proxy CORS para evitar problemas de firewall/rede.
+                // O método JSONP anterior estava sendo bloqueado.
+                const PROXY_URL = 'https://corsproxy.io/?';
                 const today = new Date();
-                const tenYearsAgo = new Date(today.getFullYear() - 10, today.getMonth(), today.getDate());
+                const historyStartDate = new Date(today.getFullYear() - 20, today.getMonth(), today.getDate());
                 const formatDateForApi = (date) => `${String(date.getDate()).padStart(2, '0')}/${String(date.getMonth() + 1).padStart(2, '0')}/${date.getFullYear()}`;
 
-                const startDate = formatDateForApi(tenYearsAgo);
+                const startDate = formatDateForApi(historyStartDate);
                 const endDate = formatDateForApi(today);
 
-                // Códigos das séries no SGS (Sistema Gerenciador de Séries Temporais) do BCB
-                const IPCA_INDEX_CODE = 1737; // IPCA - Índice de preços ao consumidor-amplo (número-índice)
-                const IPCA_PERCENT_CODE = 433; // IPCA mensal (variação %) - necessário para o cálculo de juros
-                const SELIC_CODE = 4390;      // Selic acumulada no mês
+                const IPCA_INDEX_CODE = 1737;
+                const IPCA_PERCENT_CODE = 433;
+                const SELIC_CODE = 1178;
 
                 const buildProxiedUrl = (code) => {
                     const originalUrl = `https://api.bcb.gov.br/dados/serie/bcdata.sgs.${code}/dados?formato=json&dataInicial=${startDate}&dataFinal=${endDate}`;
-                    // Este proxy anexa a URL de destino diretamente, sem precisar de codificação.
-                    return `${PROXY_URL}${originalUrl}`;
+                    // A URL original precisa ser codificada para ser passada ao proxy.
+                    return `${PROXY_URL}${encodeURIComponent(originalUrl)}`;
                 };
-
-                const ipcaIndexUrl = buildProxiedUrl(IPCA_INDEX_CODE);
-                const ipcaPercentUrl = buildProxiedUrl(IPCA_PERCENT_CODE);
-                const selicUrl = buildProxiedUrl(SELIC_CODE);
 
                 try {
                     const [ipcaIndexResponse, ipcaPercentResponse, selicResponse] = await Promise.all([
-                        fetch(ipcaIndexUrl),
-                        fetch(ipcaPercentUrl),
-                        fetch(selicUrl)
+                        fetch(buildProxiedUrl(IPCA_INDEX_CODE)),
+                        fetch(buildProxiedUrl(IPCA_PERCENT_CODE)),
+                        fetch(buildProxiedUrl(SELIC_CODE))
                     ]);
 
                     if (!ipcaIndexResponse.ok || !ipcaPercentResponse.ok || !selicResponse.ok) {
-                        throw new Error('Falha ao buscar dados do Banco Central.');
+                        throw new Error('Falha na resposta da rede ao buscar dados do Banco Central.');
                     }
 
                     const ipcaIndexJson = await ipcaIndexResponse.json();
                     const ipcaPercentJson = await ipcaPercentResponse.json();
                     const selicJson = await selicResponse.json();
 
-                    // Processa os dados para o formato { "YYYY-MM": valor }
                     const processData = (jsonData) => {
                         const dataMap = {};
                         let lastKey = null;
+                        if (!Array.isArray(jsonData)) return { dataMap, lastKey };
                         jsonData.forEach(item => {
                             if (item.valor === null || item.valor === "") return;
                             const [day, month, year] = item.data.split('/');
@@ -222,12 +215,11 @@
 
                     const ipcaIndexResult = processData(ipcaIndexJson);
                     ipcaIndexData = ipcaIndexResult.dataMap;
-                    lastIpcaIndexKey = ipcaIndexResult.lastKey; // Guarda a chave do último índice disponível
+                    lastIpcaIndexKey = ipcaIndexResult.lastKey;
 
                     ipcaPercentageData = processData(ipcaPercentJson).dataMap;
                     selicData = processData(selicJson).dataMap;
 
-                    // Habilita o botão de cálculo
                     calculateBtn.disabled = false;
                     calculateBtn.innerHTML = 'Calcular Valor Atualizado';
                     calculateBtn.classList.remove('bg-indigo-400', 'cursor-not-allowed');
@@ -238,7 +230,8 @@
                     calculateBtn.innerHTML = 'Erro ao carregar dados';
                     calculateBtn.classList.remove('bg-indigo-400');
                     calculateBtn.classList.add('bg-red-600');
-                    alert('Não foi possível carregar os índices econômicos do Banco Central. Por favor, tente recarregar a página.');
+                    resultsContainer.innerHTML = `<p class="text-center text-red-600"><strong>Falha ao carregar os índices econômicos.</strong><br>Por favor, verifique sua conexão com a internet e tente recarregar a página.</p>`;
+                    resultsContainer.classList.remove('hidden');
                 }
             };
 
@@ -300,15 +293,17 @@
                     // 2. Cálculo dos Juros de Mora (SELIC)
                     let interestValue = 0;
                     let currentInterestDate = new Date(interestDate);
-                    let baseForInterest = originalValue;
+
                     while (currentInterestDate < endDate) {
-                        const key = `${currentInterestDate.getFullYear()}-${String(currentInterestDate.getMonth() + 1).padStart(2, '0')}`;
+                        const monthKey = `${currentInterestDate.getFullYear()}-${String(currentInterestDate.getMonth() + 1).padStart(2, '0')}`;
 
-                        // O capital base para juros precisa ser corrigido mês a mês
-                        const correctionRatePercent = ipcaPercentageData[key] || 0;
-                        baseForInterest *= (1 + correctionRatePercent / 100);
+                        const monthIndex = ipcaIndexData[monthKey];
+                        let baseForInterest = originalValue;
+                        if (initialIndex && monthIndex && initialIndex > 0) {
+                            baseForInterest = originalValue * (monthIndex / initialIndex);
+                        }
 
-                        const selicRate = selicData[key] || 0;
+                        const selicRate = selicData[monthKey] || 0;
                         interestValue += baseForInterest * (selicRate / 100);
 
                         currentInterestDate.setMonth(currentInterestDate.getMonth() + 1);
