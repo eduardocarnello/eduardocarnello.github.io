@@ -4,55 +4,81 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gerar Manifestação</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.2/html2pdf.bundle.min.js"></script>
-    <script src="https://unpkg.com/imask"></script>
+    <title>Gerador de Documentos Jurídicos</title>
+    <!-- Tailwind CSS para estilização -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Bibliotecas para geração de PDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+    <!-- Google Fonts para uma melhor tipografia -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         body {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            margin: 0;
-            font-family: Arial, sans-serif;
-            background-color: #f0f0f0;
-            font-size: 1.7em;
-
+            font-family: 'Inter', sans-serif;
         }
 
-        #manifestForm {
-            background-color: #fff;
-            padding: 2%;
-            border-radius: 8px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-            width: 100%;
-            max-width: 70%;
-            box-sizing: border-box;
+        /* Estilos para a área de impressão, para garantir boa aparência no PDF */
+        #printable-area,
+        #petition-area {
+            font-family: 'Times New Roman', Times, serif;
+            /* Fonte padrão para documentos legais */
+            color: #111827;
+        }
 
+        p.border-t.border-gray-800.w-3\/4.mx-auto {
+            padding-top: 0;
+            margin-top: 0;
+            line-height: normal;
+        }
+
+        #petition-area {
+            line-height: 2;
+            text-align: justify;
+            font-size: 12pt;
+        }
+
+        /* Estilo para o spinner de carregamento */
+        .loader {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #3498db;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            animation: spin 1s linear infinite;
+            display: inline-block;
+            margin-right: 10px;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        .tooltip-container {
+            position: relative;
+            display: inline-block;
         }
 
         .tooltip-icon {
-            color: #007bff;
-            font-weight: bold;
-            font-size: 0.75em;
-            position: relative;
-            vertical-align: top;
-            /* Alinha ao topo */
-            margin-top: 2px;
-            /* Pequeno ajuste opcional */
-            line-height: 1;
-            height: 1em;
-            display: inline-block;
+            cursor: pointer;
+            color: #3b82f6;
         }
 
         .tooltip-text {
             visibility: hidden;
-            width: 400px;
-            background-color: #007bff;
+            width: 250px;
+            background-color: #1f2937;
             color: #fff;
             text-align: left;
             border-radius: 6px;
-            padding: 10px;
+            padding: 8px;
             position: absolute;
             z-index: 10;
             bottom: 125%;
@@ -60,688 +86,1906 @@
             transform: translateX(-50%);
             opacity: 0;
             transition: opacity 0.2s;
-            font-size: 0.6em;
+            font-size: 0.8rem;
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
         }
 
-        .tooltip-icon:hover .tooltip-text {
+        .tooltip-container:hover .tooltip-text {
             visibility: visible;
             opacity: 1;
-        }
-
-        .page-break {
-            page-break-inside: avoid;
-            height: 220px;
-
-        }
-
-        .button-group button {
-            width: auto !important;
-            flex: none;
-        }
-
-        .button-group .btn-clear {
-            width: 25% !important;
-            background-color: grey !important;
-        }
-
-        .button-group .btn-clear:hover {
-            background-color: rgb(255, 31, 31) !important;
-            color: #fff !important;
-        }
-
-        .button-group button:not(.btn-clear) {
-            width: 74% !important;
-        }
-
-        #manifestForm h1 {
-            text-align: center;
-            margin-bottom: 20px;
-            font-size: 6vh;
-
-        }
-
-        #manifestForm label {
-            display: block;
-            margin-bottom: 5px;
-            font-weight: bold;
-            font-size: 4vh;
-        }
-
-        #manifestForm input,
-        #manifestForm select,
-        #manifestForm textarea {
-            width: 100%;
-            padding: 10px;
-            margin-bottom: 15px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            box-sizing: border-box;
-            font-size: 3vh;
-        }
-
-        #manifestForm button {
-            width: 100%;
-            padding: 10px;
-            background-color: #007bff;
-            color: #fff;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 1em;
-        }
-
-        #manifestForm button:hover {
-            background-color: #0056b3;
-        }
-
-        #pdfContent {
-            width: 190mm;
-            min-height: 225mm;
-            padding: 0mm 10mm 0mm 10mm;
-            font-family: Arial, sans-serif;
-            font-size: 14pt;
-            box-sizing: content-box;
-            position: relative;
-            display: contents;
-        }
-
-        .text-justify {
-            text-align: justify;
-
-        }
-
-        .text-justify-content {
-            text-align: justify;
-            margin-bottom: 20px;
-            break-inside: unset;
-
-        }
-
-        .content {
-            flex: 0;
-            overflow: hidden;
-
-            line-break: auto;
-            break-inside: unset;
-            line-break: normal;
-        }
-
-        .content footer {
-            text-align: justify;
-            font-size: 8pt;
-            font-style: italic;
-            position: absolute;
-            bottom: 5mm;
-            left: 10mm;
-            right: 10mm;
-            page-break-inside: avoid;
-            display: none;
-        }
-
-        @media (max-width: 600px) {
-            #manifestForm {
-                width: 95%;
-                padding: 5%;
-            }
-
-            #manifestForm button {
-                font-size: 14px;
-            }
         }
     </style>
 </head>
 
-<body>
-    <form id="manifestForm">
-        <h1>Formulário de Manifestação</h1>
-        <label for="processNumber">Nº do processo (Obrigatório):</label>
-        <input type="text" id="processNumber" name="processNumber" required>
+<body class="bg-gray-100 min-h-screen flex items-center justify-center p-4">
 
-        <label for="name">Nome da Parte (Obrigatório):</label>
-        <input type="text" id="name" name="name" required>
+    <div class="w-full max-w-4xl mx-auto bg-white rounded-2xl shadow-lg p-6 md:p-8">
 
-        <label for="cpf">CPF (Obrigatório):</label>
-        <input type="text" id="cpf" name="cpf" required>
+        <header class="text-center mb-8">
+            <h1 id="main-title" class="text-2xl md:text-3xl font-bold text-gray-800">Gerador de Documentos Jurídicos
+            </h1>
+            <p id="main-subtitle" class="text-gray-500 mt-2">Selecione o tipo de documento que deseja gerar.</p>
+        </header>
 
-        <label for="manifestationType">Tipo da Manifestação:</label>
-        <select id="manifestationType" name="manifestationType">
-            <option value="opcao1">Manifestação (Genérica)</option>
-            <option value="opcao2">Emenda à Inicial</option>
-            <option value="opcao3">Atualização do Próprio Endereço</option>
-            <option value="opcao4">Indicação do Endereço da Parte Contrária</option>
-            <option value="opcao8">Manifestação sobre a Contestação (Genérica - SEM Provas)</option>
-            <option value="opcao9">Manifestação sobre a Contestação (Genérica - COM Provas)</option>
-            <option value="opcao5">Manifestação sobre a Contestação (Reduzida a Termo)</option>
-            <option value="opcao6">Indicação de Provas</option>
-            <option value="opcao7">Início do Cumprimento de Sentença</option>
-        </select>
-
-        <!-- Novo campo de entrada para o endereço -->
-        <div id="addressField" style="display: none;">
-            <div id="nameAddressField">
-                <label for="nameAddress">Nome da Parte (que irá ter o endereço indicado):</label>
-                <input type="text" id="nameAddress" name="nameAddress" required>
+        <main>
+            <!-- SELETOR PRINCIPAL DE APLICAÇÃO -->
+            <div class="mb-8">
+                <label for="main-app-type" class="block text-sm font-medium text-gray-700 mb-2">Ferramenta</label>
+                <select id="main-app-type"
+                    class="w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 bg-white">
+                    <option value="manifestation">Gerador de Petições/Manifestações</option>
+                    <option value="calculator">Calculadora Judicial</option>
+                </select>
             </div>
-            <div class="inline-section hidden endereco-section">
-                <label>CEP:</label>
-                <input type="text" class="cep" maxlength="9" placeholder="#####-###">
+
+
+            <!-- ############################################ -->
+            <!-- ### CONTAINER DA CALCULADORA JUDICIAL ### -->
+            <!-- ############################################ -->
+            <div id="calculator-app-container" class="hidden">
+                <!-- Seção de parâmetros gerais do cálculo -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                    <div>
+                        <label for="process-number-calc" class="block text-sm font-medium text-gray-700 mb-2">Número do
+                            Processo
+                            (Padrão CNJ)</label>
+                        <input type="text" id="process-number-calc" name="process-number-calc"
+                            class="w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
+                            placeholder="Apenas números" maxlength="25">
+                    </div>
+                    <div>
+                        <label for="calculation-type" class="block text-sm font-medium text-gray-700 mb-2">Tipo de
+                            Cálculo</label>
+                        <select id="calculation-type"
+                            class="w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 bg-white">
+                            <option value="condemnation">Atualização da Condenação</option>
+                            <option value="agreement">Atualização por Descumprimento de Acordo</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="final-date" class="block text-sm font-medium text-gray-700 mb-2">Data Final
+                            (Opcional)</label>
+                        <input type="text" id="final-date"
+                            class="date-input w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
+                            placeholder="Padrão: Hoje">
+                    </div>
+                </div>
+
+
+                <!-- Container para Atualização da Condenação -->
+                <div id="condemnation-container">
+                    <!-- Container para as linhas de cálculo -->
+                    <div id="calculation-rows" class="space-y-4">
+                        <!-- Linha de exemplo, será clonada -->
+                        <div
+                            class="calculation-row grid grid-cols-1 md:grid-cols-12 gap-4 items-end p-4 border border-gray-200 rounded-lg">
+                            <div class="md:col-span-3">
+                                <label class="block text-sm font-medium text-gray-700">Descrição</label>
+                                <select
+                                    class="description-select w-full mt-1 p-2 border border-gray-300 rounded-lg shadow-sm">
+                                    <option value="Dano Material">Dano Material</option>
+                                    <option value="Dano Moral">Dano Moral</option>
+                                    <option value="Restituição">Restituição</option>
+                                    <option value="Multa">Multa</option>
+                                    <option value="Última Atualização">Última Atualização</option>
+                                    <option value="Dedução/Pagamento Parcial">Dedução/Pagamento Parcial</option>
+                                    <option value="Outro">Outro</option>
+                                </select>
+                                <input type="text"
+                                    class="other-description-input w-full mt-2 p-2 border border-gray-300 rounded-lg shadow-sm hidden"
+                                    placeholder="Digite a descrição">
+                            </div>
+                            <div class="md:col-span-2">
+                                <label class="block text-sm font-medium text-gray-700">Valor (R$)</label>
+                                <input type="text"
+                                    class="value-input w-full mt-1 p-2 border border-gray-300 rounded-lg shadow-sm"
+                                    placeholder="1.000,00">
+                            </div>
+                            <div class="md:col-span-3">
+                                <label class="block text-sm font-medium text-gray-700">Data Inicial (Correção)</label>
+                                <input type="text"
+                                    class="date-input correction-date-input w-full mt-1 p-2 border border-gray-300 rounded-lg shadow-sm"
+                                    placeholder="DD/MM/AAAA">
+                            </div>
+                            <div class="md:col-span-3">
+                                <label class="block text-sm font-medium text-gray-700">Data Inicial (Juros)</label>
+                                <input type="text"
+                                    class="date-input interest-date-input w-full mt-1 p-2 border border-gray-300 rounded-lg shadow-sm"
+                                    placeholder="DD/MM/AAAA">
+                            </div>
+                            <div class="md:col-span-1">
+                                <button
+                                    class="remove-row-btn w-full bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-3 rounded-lg transition-colors duration-200"
+                                    title="Remover Linha">&times;</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Botão para adicionar mais linhas -->
+                    <div class="mt-6 flex justify-start">
+                        <button id="add-row-btn"
+                            class="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded-lg shadow-md transition-transform transform hover:scale-105">+
+                            Adicionar Linha</button>
+                    </div>
+
+                </div>
+
+                <!-- Container para Descumprimento de Acordo -->
+                <div id="agreement-container" class="hidden">
+                    <div class="p-4 border border-gray-200 rounded-lg space-y-4">
+                        <div>
+                            <label for="agreement-type-calc" class="block text-sm font-medium text-gray-700">Tipo de
+                                Descumprimento</label>
+                            <select id="agreement-type-calc" required
+                                class="w-full mt-1 p-2 border border-gray-300 rounded-lg shadow-sm bg-white">
+                                <option value="conhecimento">Acordo Descumprido em Processo de Conhecimento</option>
+                                <option value="execucao">Acordo Descumprido em Execução/Cumprimento de Sentença</option>
+                            </select>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 items-end">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">Nº de Parcelas Totais</label>
+                                <input id="agreement-total-installments" type="number"
+                                    class="w-full mt-1 p-2 border border-gray-300 rounded-lg shadow-sm"
+                                    placeholder="Ex: 10">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">Nº de Parcelas Pagas</label>
+                                <input id="agreement-paid-installments" type="number"
+                                    class="w-full mt-1 p-2 border border-gray-300 rounded-lg shadow-sm"
+                                    placeholder="Ex: 3">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">Valor da Parcela (R$)</label>
+                                <input id="agreement-installment-value" type="text"
+                                    class="value-input w-full mt-1 p-2 border border-gray-300 rounded-lg shadow-sm"
+                                    placeholder="500,00">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">Data Início do Acordo</label>
+                                <input id="agreement-start-date" type="text"
+                                    class="date-input w-full mt-1 p-2 border border-gray-300 rounded-lg shadow-sm"
+                                    placeholder="DD/MM/AAAA">
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Multa pelo Descumprimento</label>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 items-start">
+                                <select id="agreement-penalty"
+                                    class="w-full mt-1 p-2 border border-gray-300 rounded-lg shadow-sm bg-white">
+                                    <option value="0">Sem multa</option>
+                                    <option value="5">5%</option>
+                                    <option value="10">10%</option>
+                                    <option value="15">15%</option>
+                                    <option value="20">20%</option>
+                                    <option value="25">25%</option>
+                                    <option value="30">30%</option>
+                                    <option value="50">50%</option>
+                                    <option value="100">100%</option>
+                                </select>
+                                <div class="mt-1 space-y-1">
+                                    <label class="flex items-center text-sm">
+                                        <input type="radio" name="penalty-base" value="remaining"
+                                            class="h-4 w-4 text-indigo-600 border-gray-300" checked>
+                                        <span class="ml-2 text-gray-700">Aplicar sobre saldo remanescente
+                                            atualizado</span>
+                                    </label>
+                                    <label class="flex items-center text-sm">
+                                        <input type="radio" name="penalty-base" value="total"
+                                            class="h-4 w-4 text-indigo-600 border-gray-300">
+                                        <span class="ml-2 text-gray-700">Aplicar sobre o valor original do acordo</span>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="border-t pt-4 mt-4">
+                            <label class="block text-sm font-medium text-gray-700">Dedução/Pagamento Parcial (Opcional -
+                                Use SOMENTE para outros pagamentos que NÃO sejam as parcelas adimplidas)</label>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 items-end mt-1">
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-600">Valor a Deduzir (R$)</label>
+                                    <input id="agreement-deduction-value" type="text"
+                                        class="value-input w-full mt-1 p-2 border border-gray-300 rounded-lg shadow-sm"
+                                        placeholder="Ex: 200,00">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-600">Data do Pagamento</label>
+                                    <input id="agreement-deduction-date" type="text"
+                                        class="date-input w-full mt-1 p-2 border border-gray-300 rounded-lg shadow-sm"
+                                        placeholder="DD/MM/AAAA">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <hr class="my-8 border-gray-200">
+
+                <!-- Opções Finais e Petição -->
+                <div id="final-options-container">
+                    <!-- Opções para ATUALIZAÇÃO DA CONDENAÇÃO -->
+                    <div id="condemnation-options" class="space-y-4">
+                        <div class="flex items-center justify-end">
+                            <label for="add-fine-checkbox"
+                                class="flex items-center cursor-pointer p-2 rounded-lg hover:bg-gray-100">
+                                <input type="checkbox" id="add-fine-checkbox"
+                                    class="h-5 w-5 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500">
+                                <span class="ml-3 text-base font-medium text-gray-800">Inserir multa do art. 523
+                                    (10%)?</span>
+                            </label>
+                        </div>
+                        <div class="flex items-center justify-end">
+                            <label for="compliance-request-checkbox"
+                                class="flex items-center cursor-pointer p-2 rounded-lg hover:bg-gray-100">
+                                <input type="checkbox" id="compliance-request-checkbox"
+                                    class="h-5 w-5 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500">
+                                <span class="ml-3 text-base font-medium text-gray-800">Incluir Petição de Cumprimento de
+                                    Sentença</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Opções para DESCUMPRIMENTO DE ACORDO (a petição é obrigatória) -->
+                    <div id="agreement-petition-option" class="hidden flex items-center justify-end">
+                        <label class="flex items-center p-2 rounded-lg bg-gray-100">
+                            <input type="checkbox" id="agreement-petition-checkbox" checked disabled
+                                class="h-5 w-5 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500">
+                            <span class="ml-3 text-base font-medium text-gray-800">Incluir Petição por Descumprimento de
+                                Acordo</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Seção de Exequentes e Penhora (oculta por padrão) -->
+                <div id="petition-options-container" class="hidden mt-6 p-4 border-t border-dashed space-y-6">
+                    <div>
+                        <h3 class="text-lg font-semibold text-gray-800 mb-4">Dados do(s) Exequente(s)</h3>
+                        <div id="exequentes-list" class="space-y-3">
+                            <div class="exequente-item flex items-center gap-3">
+                                <input type="text"
+                                    class="exequente-name-input flex-grow p-2 border border-gray-300 rounded-lg shadow-sm"
+                                    placeholder="Nome completo do Exequente" required>
+                            </div>
+                        </div>
+                        <button id="add-exequente-btn"
+                            class="mt-3 bg-gray-200 hover:bg-gray-300 text-gray-700 text-sm font-semibold py-1 px-3 rounded-lg">+
+                            Adicionar outro exequente</button>
+                    </div>
+
+                    <!-- Pedido de Intimação (Apenas para Acordo) -->
+                    <div id="intimation-request-container" class="hidden">
+                        <h3 class="text-lg font-semibold text-gray-800 mb-2">Pedido de Intimação</h3>
+                        <div class="flex items-center gap-4 p-2 bg-gray-50 rounded-lg">
+                            <label class="flex items-center cursor-pointer">
+                                <input type="checkbox" id="include-intimation-checkbox"
+                                    class="h-5 w-5 text-indigo-600 border-gray-300 rounded">
+                                <span class="ml-3 font-medium text-gray-800">Incluir pedido de intimação para
+                                    pagamento?</span>
+                            </label>
+                            <div id="intimation-deadline-wrapper" class="hidden">
+                                <label for="intimation-deadline" class="sr-only">Prazo:</label>
+                                <select id="intimation-deadline"
+                                    class="p-2 border border-gray-300 rounded-lg shadow-sm bg-white">
+                                    <option value="5">5 dias</option>
+                                    <option value="10">10 dias</option>
+                                    <option value="15" selected>15 dias</option>
+                                    <option value="20">20 dias</option>
+                                    <option value="30">30 dias</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="penhora-container">
+                        <h3 class="text-lg font-semibold text-gray-800 mb-4">Pedidos de Penhora</h3>
+                        <div class="space-y-3">
+                            <div>
+                                <label class="flex items-center cursor-pointer">
+                                    <input type="checkbox" id="penhora-contas"
+                                        class="h-5 w-5 text-indigo-600 border-gray-300 rounded" checked>
+                                    <span class="ml-3 font-medium text-gray-800">Penhora de Valores em Contas</span>
+                                </label>
+                            </div>
+                            <div>
+                                <label class="flex items-center cursor-pointer">
+                                    <input type="checkbox" id="penhora-veiculos"
+                                        class="h-5 w-5 text-indigo-600 border-gray-300 rounded" checked>
+                                    <span class="ml-3 font-medium text-gray-800">Pesquisa, Bloqueio e Penhora de
+                                        Veículos</span>
+                                </label>
+                            </div>
+                            <div>
+                                <label class="flex items-center cursor-pointer">
+                                    <input type="checkbox" id="penhora-mandado"
+                                        class="h-5 w-5 text-indigo-600 border-gray-300 rounded" checked>
+                                    <span class="ml-3 font-medium text-gray-800">Expedição de Mandado de Penhora e
+                                        Avaliação</span>
+                                </label>
+                            </div>
+                            <div>
+                                <label class="flex items-center cursor-pointer">
+                                    <input type="checkbox" id="penhora-outros-check"
+                                        class="h-5 w-5 text-indigo-600 border-gray-300 rounded">
+                                    <span class="ml-3 font-medium text-gray-800">Outro(s) Pedido(s)</span>
+                                </label>
+                            </div>
+                            <textarea id="penhora-outros-text"
+                                class="hidden w-full mt-2 p-2 border border-gray-300 rounded-lg font-normal" rows="3"
+                                placeholder="Especifique outros pedidos aqui..."></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Botões de Ação -->
+                <div class="flex flex-col md:flex-row gap-4 justify-end mt-8">
+                    <button id="calculate-btn" disabled
+                        class="bg-indigo-400 cursor-not-allowed text-white font-bold py-3 px-6 rounded-lg shadow-lg flex items-center justify-center">
+                        <span class="loader"></span> Carregando dados...
+                    </button>
+                    <button id="preview-btn" disabled
+                        class="bg-gray-400 cursor-not-allowed text-white font-bold py-3 px-6 rounded-lg shadow-lg">Prévia
+                        do
+                        PDF</button>
+
+                    <!-- Container para os botões de PDF -->
+                    <div id="pdf-buttons-container" class="flex flex-col md:flex-row gap-4">
+                        <button id="print-btn"
+                            class="bg-gray-400 cursor-not-allowed text-white font-bold py-3 px-6 rounded-lg shadow-lg"
+                            disabled>Gerar PDF</button>
+                        <button id="print-combined-btn"
+                            class="hidden bg-gray-400 cursor-not-allowed text-white font-bold py-3 px-6 rounded-lg shadow-lg"
+                            disabled>PDF Completo</button>
+                        <button id="print-petition-btn"
+                            class="hidden bg-gray-400 cursor-not-allowed text-white font-bold py-3 px-6 rounded-lg shadow-lg"
+                            disabled>PDF Petição</button>
+                        <button id="print-calc-btn"
+                            class="hidden bg-gray-400 cursor-not-allowed text-white font-bold py-3 px-6 rounded-lg shadow-lg"
+                            disabled>PDF Cálculo</button>
+                    </div>
+
+                </div>
+
+                <!-- Seção de Resultados -->
+                <div id="results-container-calc" class="mt-10 p-6 bg-gray-50 rounded-lg border border-gray-200 hidden">
+                    <!-- Resultados do cálculo serão injetados aqui -->
+                </div>
             </div>
-            <div class="inline-section hidden endereco-completo-section">
-                <label>Rua:</label>
-                <input style="flex: auto; width: 100%;" type="text" class="rua" readonly>
-                <label class="labnumero">Nº:</label>
-                <input type="text" class="numero" maxlength="6">
+
+            <!-- ############################################ -->
+            <!-- ### CONTAINER DO GERADOR DE MANIFESTAÇÕES ### -->
+            <!-- ############################################ -->
+            <div id="manifestation-app-container">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                    <div>
+                        <label for="process-number-manifest" class="block text-sm font-medium text-gray-700 mb-2">Nº do
+                            processo (Obrigatório)</label>
+                        <input type="text" id="process-number-manifest"
+                            class="w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
+                            placeholder="Apenas números" maxlength="25">
+                    </div>
+                    <div>
+                        <label for="manifestation-type" class="block text-sm font-medium text-gray-700 mb-2">Tipo da
+                            Manifestação</label>
+                        <select id="manifestation-type"
+                            class="w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 bg-white">
+                            <option value="opcao1">Manifestação (Genérica)</option>
+                            <option value="opcao2">Emenda à Inicial</option>
+                            <option value="opcao3">Atualização do Próprio Endereço</option>
+                            <option value="opcao4">Indicação do Endereço da Parte Contrária</option>
+                            <option value="opcao8">Manifestação sobre a Contestação (Genérica - SEM Provas)</option>
+                            <option value="opcao9">Manifestação sobre a Contestação (Genérica - COM Provas)</option>
+                            <option value="opcao5">Manifestação sobre a Contestação (Reduzida a Termo)</option>
+                            <option value="opcao6">Indicação de Provas</option>
+                        </select>
+                    </div>
+                </div>
+                <div id="manifest-parties-list" class="space-y-4 mb-4">
+                    <div class="manifest-party-item grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Nome da Parte
+                                (Obrigatório)</label>
+                            <input type="text"
+                                class="manifest-name w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">CPF/CNPJ (Obrigatório)</label>
+                            <input type="text"
+                                class="manifest-cpf w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
+                        </div>
+                    </div>
+                </div>
+                <div class="flex justify-start mb-6">
+                    <button id="add-manifest-party-btn"
+                        class="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded-lg shadow-md">+
+                        Adicionar Parte</button>
+                </div>
+
+
+                <!-- Seção de Endereço -->
+                <div id="address-section" class="hidden space-y-4 mb-6">
+                    <div id="name-address-field">
+                        <label for="name-address" class="block text-sm font-medium text-gray-700">Nome da Parte (que
+                            terá o endereço indicado)</label>
+                        <input type="text" id="name-address"
+                            class="w-full p-3 border border-gray-300 rounded-lg shadow-sm">
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                        <div class="md:col-span-1">
+                            <label for="cep" class="block text-sm font-medium text-gray-700">CEP</label>
+                            <input type="text" id="cep" class="w-full p-3 border border-gray-300 rounded-lg shadow-sm"
+                                maxlength="9" placeholder="#####-###">
+                        </div>
+                        <div class="md:col-span-3">
+                            <label for="rua" class="block text-sm font-medium text-gray-700">Rua</label>
+                            <input type="text" id="rua"
+                                class="w-full p-3 border border-gray-300 rounded-lg shadow-sm bg-gray-100" readonly>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div>
+                            <label for="numero" class="block text-sm font-medium text-gray-700">Nº</label>
+                            <input type="text" id="numero"
+                                class="w-full p-3 border border-gray-300 rounded-lg shadow-sm">
+                        </div>
+                        <div class="md:col-span-2">
+                            <label for="complemento" class="block text-sm font-medium text-gray-700">Complemento</label>
+                            <input type="text" id="complemento"
+                                class="w-full p-3 border border-gray-300 rounded-lg shadow-sm">
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div class="md:col-span-1">
+                            <label for="bairro" class="block text-sm font-medium text-gray-700">Bairro</label>
+                            <input type="text" id="bairro"
+                                class="w-full p-3 border border-gray-300 rounded-lg shadow-sm bg-gray-100" readonly>
+                        </div>
+                        <div>
+                            <label for="cidade" class="block text-sm font-medium text-gray-700">Cidade</label>
+                            <input type="text" id="cidade"
+                                class="w-full p-3 border border-gray-300 rounded-lg shadow-sm bg-gray-100" readonly>
+                        </div>
+                        <div>
+                            <label for="estado" class="block text-sm font-medium text-gray-700">Estado</label>
+                            <input type="text" id="estado"
+                                class="w-full p-3 border border-gray-300 rounded-lg shadow-sm bg-gray-100" readonly>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mb-6">
+                    <label for="manifest-content" class="flex items-center text-sm font-medium text-gray-700 mb-2">
+                        Digite a manifestação abaixo
+                        <span id="manifest-tooltip" class="tooltip-container ml-2">
+                            <span class="tooltip-icon">&#9432;</span>
+                            <span id="manifest-tooltip-text" class="tooltip-text">Texto de ajuda</span>
+                        </span>
+                    </label>
+                    <textarea id="manifest-content" rows="10"
+                        class="w-full p-3 border border-gray-300 rounded-lg shadow-sm"></textarea>
+                </div>
+
+                <div id="extra-content-container" class="hidden mb-6">
+                    <label for="extra-content" class="block text-sm font-medium text-gray-700 mb-2">Descreva as provas
+                        que deseja produzir:</label>
+                    <textarea id="extra-content" rows="5"
+                        class="w-full p-3 border border-gray-300 rounded-lg shadow-sm"></textarea>
+                </div>
+
+                <!-- Seção de Testemunhas -->
+                <div id="witness-section" class="hidden space-y-4 mb-6">
+                    <h3 class="text-lg font-semibold text-gray-800 mb-4">Rol de Testemunhas (Máximo 3)</h3>
+                    <div id="witness-list" class="space-y-6">
+                        <!-- Template da testemunha será clonado aqui -->
+                    </div>
+                    <div class="flex justify-start">
+                        <button id="add-witness-btn"
+                            class="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded-lg shadow-md">+
+                            Arrolar Testemunha</button>
+                    </div>
+                </div>
+
+                <div class="flex gap-4 justify-end mt-8">
+                    <button id="clear-manifest-btn" type="button"
+                        class="bg-gray-500 hover:bg-red-600 text-white font-bold py-3 px-6 rounded-lg shadow-lg">Limpar</button>
+                    <button id="preview-manifest-btn" type="button"
+                        class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg shadow-lg">Prévia
+                        do PDF</button>
+                    <button id="generate-manifest-btn" type="button"
+                        class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-6 rounded-lg shadow-lg">Gerar
+                        Manifestação</button>
+                </div>
             </div>
-            <div class="inline-section hidden complemento-bairro-section">
-                <label>Complemento:</label>
-                <input type="text" class="complemento" style="flex: auto;">
-                <label class="labbairro">Bairro:</label>
-                <input type="text" class="bairro" readonly>
+
+            <div id="results-container" class="mt-10 p-6 bg-gray-50 rounded-lg border border-gray-200 hidden">
+                <!-- Resultados do cálculo serão injetados aqui -->
             </div>
-            <div class="inline-section hidden cidade-estado-section">
-                <label>Cidade:</label>
-                <input type="text" class="cidade" readonly="" style="
-                                flex: auto;
-                                width: 335px;
-                            ">
-                <label class="labestado">Estado:</label>
-                <input type="text" class="estado" readonly="" style="
-                                width: 10px;
-                            ">
-            </div>
-            <!-- Parágrafo que será exibido -->
-
-        </div>
-
-        <label for="content" style="display: flex; align-items: center; gap: 8px;">
-            Digite a manifestação abaixo<span id="helpIcon" class="tooltip-icon"
-                style="display:none; cursor: pointer; position: relative;">
-                &#9432;
-                <span id="tooltipText" class="tooltip-text">Texto de ajuda</span>
-            </span>:
-
-        </label>
-        <textarea id="content" name="content" rows="10" required></textarea>
-        <div id="extraFieldContainer" style="display: none;">
-            <label for="extraContent">Descreva as provas que deseja produzir:</label>
-            <textarea id="extraContent" name="extraContent" rows="5"></textarea>
-        </div>
-
-
-
-
-        <div class="button-group">
-            <button type="button" onclick="validateAndGeneratePDF()">Gerar Manifestação</button>
-            <button type="button" class="btn-clear" onclick="clearForm()">Limpar Tudo</button>
-        </div>
-
-    </form>
-
-    <div id="pdfContent" style="display: none;">
-        <div class="content">
-            <!--p class="text-justify" style="font-weight: bold; margin-bottom: 40px;">EXMO. SR. JUIZ DE DIREITO DO JUIZADO
-                ESPECIAL CÍVEL DA
-                COMARCA DE MARÍLIA/SP</p-->
-            <p class="text-justify" style="margin-top: 0px; margin-block-end: 0px;"><b>Processo nº:</b> <span
-                    id="pdfProcessNumber"></span>
-            </p>
-            <p class="text-justify" style="margin-bottom: 40px; margin-block-start: 2px;"><b>Solicitante:</b> <span
-                    id="pdfName"></span></p>
-            <p class="text-justify" style="text-align: center; margin-bottom: 40px; margin-block-start: 2px;"><b>TERMO -
-                    MANIFESTAÇÃO DA
-                    PARTE</b> <span id="pdfName"></span></p>
-            <p class="text-justify" style="margin-bottom: 0px;">A parte acima <span
-                    id="concorcanciaManifestation"></span> <b><span id="manifestationText"></span></b>, nos
-                seguintes termos:</p>
-            <p id="addressParagraph" style="display: none; justify-self: center;"></p>
-
-
-            <p class="text-justify-content" style="margin-bottom: 0px;" id="pdfContentText"></p>
-            <div class="page-break">
-                <p class="text-justify">Termos em que pede deferimento.</p>
-                <p class="text-justify">Marília, <span id="pdfDate"></span>.</p>
-                <p style="margin-bottom: 100px;">
-
-                <p style="text-align: center; line-height: 0.2;">_________________________________________________</p>
-                <p style="text-align: center;line-height: 0.2;"><span id="pdfSignatureName"></span></p>
-                <p style="text-align: center; line-height: 0.2; margin-bottom: 10px; margin-block-end: 5px;;"><span
-                        id="pdfSignatureCPF"></span></p>
-            </div>
-        </div>
-
+        </main>
     </div>
 
+    <!-- Modal de Pré-visualização -->
+    <div id="preview-modal"
+        class="hidden fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center p-4 z-50">
+        <div class="bg-gray-200 rounded-lg shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto p-6 relative">
+            <button id="close-preview-btn"
+                class="absolute top-3 right-3 text-3xl font-bold text-gray-500 hover:text-gray-800 leading-none">&times;</button>
+            <div id="preview-content" class="space-y-8">
+                <!-- Conteúdo da prévia será injetado aqui -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Div oculta para renderizar a petição para o PDF -->
+    <div style="position: absolute; left: -9999px; width: 210mm;">
+        <div id="petition-area" class="w-full p-8 bg-white"></div>
+    </div>
+
+
     <script>
-        var helpIcon = document.getElementById('helpIcon');
-        var tooltipText = document.getElementById('tooltipText');
-        helpIcon.style.display = 'inline';
-        tooltipText.textContent = 'Essa é uma manifestação genérica. Digite o que a parte pede.';
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- REFERÊNCIAS GERAIS ---
+            const mainAppSelect = document.getElementById('main-app-type');
+            const mainTitle = document.getElementById('main-title');
+            const mainSubtitle = document.getElementById('main-subtitle');
+            const calcAppContainer = document.getElementById('calculator-app-container');
+            const manifestAppContainer = document.getElementById('manifestation-app-container');
 
-        document.getElementById('manifestationType').addEventListener('change', function () {
+            // --- REFERÊNCIAS DA CALCULADORA ---
+            const addRowBtn = document.getElementById('add-row-btn');
+            const calculateBtn = document.getElementById('calculate-btn');
+            const printBtn = document.getElementById('print-btn');
+            const printCombinedBtn = document.getElementById('print-combined-btn');
+            const printPetitionBtn = document.getElementById('print-petition-btn');
+            const printCalcBtn = document.getElementById('print-calc-btn');
+            const previewBtn = document.getElementById('preview-btn');
+            const rowsContainer = document.getElementById('calculation-rows');
+            const resultsContainer = document.getElementById('results-container-calc');
+            const processNumberInputCalc = document.getElementById('process-number-calc');
+            const addFineCheckbox = document.getElementById('add-fine-checkbox');
+            const complianceRequestCheckbox = document.getElementById('compliance-request-checkbox');
+            const petitionOptionsContainer = document.getElementById('petition-options-container');
+            const exequentesList = document.getElementById('exequentes-list');
+            const addExequenteBtn = document.getElementById('add-exequente-btn');
+            const penhoraOutrosCheck = document.getElementById('penhora-outros-check');
+            const penhoraOutrosText = document.getElementById('penhora-outros-text');
+            const previewModal = document.getElementById('preview-modal');
+            const closePreviewBtn = document.getElementById('close-preview-btn');
+            const previewContent = document.getElementById('preview-content');
+            const calculationTypeSelect = document.getElementById('calculation-type');
+            const condemnationContainer = document.getElementById('condemnation-container');
+            const agreementContainer = document.getElementById('agreement-container');
+            const condemnationOptions = document.getElementById('condemnation-options');
+            const agreementPetitionOption = document.getElementById('agreement-petition-option');
+            const intimationRequestContainer = document.getElementById('intimation-request-container');
+            const includeIntimationCheckbox = document.getElementById('include-intimation-checkbox');
+            const intimationDeadlineWrapper = document.getElementById('intimation-deadline-wrapper');
 
-            if (this.value === 'opcao1') {
-                helpIcon.style.display = 'inline';
-                tooltipText.textContent = 'Essa é uma manifestação genérica. Digite o que a parte pede.';
-            }
-            else if (this.value === 'opcao2') {
-                helpIcon.style.display = 'inline';
-                tooltipText.textContent = 'Explique qual a razão da emenda e informe se estão sendo juntados documentos.';
-            } else if (this.value === 'opcao5') {
-                helpIcon.style.display = 'inline';
-                tooltipText.textContent = 'Digite no campo abaixo a réplica falada pela parte. Caso a réplica seja genérica, escolha o outro tipo.';
-            } else if (this.value === 'opcao8') {
-                helpIcon.style.display = 'inline';
-                tooltipText.textContent = 'Essa é a manifestação genérica sobre a contestação. Não é necessário acrescentar mais nada.';
-            }
-            else if (this.value === 'opcao9') {
-                helpIcon.style.display = 'inline';
-                tooltipText.textContent = 'Essa é a manifestação genérica sobre a contestação. Não é necessário acrescentar mais nada no campo da manifestação. Digite apenas as provas que a parte deseja produzir no campo próprio.';
-            }
+            // --- REFERÊNCIAS DO GERADOR DE MANIFESTAÇÕES ---
+            const processNumberManifest = document.getElementById('process-number-manifest');
+            const manifestPartiesList = document.getElementById('manifest-parties-list');
+            const addManifestPartyBtn = document.getElementById('add-manifest-party-btn');
+            const manifestationType = document.getElementById('manifestation-type');
+            const addressSection = document.getElementById('address-section');
+            const nameAddressField = document.getElementById('name-address-field');
+            const manifestContent = document.getElementById('manifest-content');
+            const extraContentContainer = document.getElementById('extra-content-container');
+            const extraContent = document.getElementById('extra-content');
+            const clearManifestBtn = document.getElementById('clear-manifest-btn');
+            const generateManifestBtn = document.getElementById('generate-manifest-btn');
+            const previewManifestBtn = document.getElementById('preview-manifest-btn');
+            const manifestTooltip = document.getElementById('manifest-tooltip');
+            const manifestTooltipText = document.getElementById('manifest-tooltip-text');
+            const cepInput = document.getElementById('cep');
+            const witnessSection = document.getElementById('witness-section');
+            const witnessList = document.getElementById('witness-list');
+            const addWitnessBtn = document.getElementById('add-witness-btn');
 
-            else {
-                helpIcon.style.display = 'none';
-                tooltipText.textContent = '';
-            }
 
-            // ...restante do código...
-        });
-        function clearForm() {
-            if (confirm("Tem certeza que deseja limpar todos os campos?")) {
-                document.getElementById('manifestForm').reset();
-                // Limpa campos preenchidos dinamicamente
-                document.getElementById('content').value = '';
-                document.getElementById('pdfContentText').innerHTML = '';
-                document.getElementById('pdfProcessNumber').innerText = '';
-                document.getElementById('pdfName').innerText = '';
-                document.getElementById('pdfDate').innerText = '';
-                document.getElementById('pdfSignatureName').innerText = '';
-                document.getElementById('pdfSignatureCPF').innerText = '';
-                document.getElementById('manifestationText').innerText = 'MANIFESTAÇÃO';
-                document.getElementById('concorcanciaManifestation').innerText = 'apresenta';
-                document.getElementById('addressParagraph').innerText = '';
-                // Esconde campos de endereço se necessário
-                document.getElementById('addressField').style.display = 'none';
-                document.getElementById('addressParagraph').style.display = 'none';
-            }
-        }
-        document.addEventListener("DOMContentLoaded", function () {
-            var element = document.getElementById('processNumber');
-            var maskOptions = {
-                mask: '0000000-00.2X00.8.26.X344',
-                definitions: {
-                    X: {
-                        mask: '0',
-                        displayChar: '0',
-                        placeholderChar: '0',
-                    },
-                },
-                lazy: false,
-                overwrite: 'shift',
+            // --- DADOS ECONÔMICOS ---
+            let ipcaData = {};
+            let ipca15Data = {};
+            let monthlySelicData = {};
+            let lastCalculationData = null;
+
+            // --- FUNÇÃO GERAL DE RENDERIZAÇÃO DE PDF ---
+            const renderParagraph = (pdf, html, options) => {
+                let { currentY, margin, maxWidth, lineSpacing, paraSpacing, indent } = options;
+
+                const checkPageBreak = (neededHeight) => {
+                    if (currentY + neededHeight > pdf.internal.pageSize.getHeight() - margin) {
+                        pdf.addPage();
+                        currentY = margin;
+                    }
+                };
+
+                checkPageBreak(lineSpacing * 2);
+
+                const words = [];
+                html.split(/<strong>(.*?)<\/strong>/g).forEach((part, i) => {
+                    if (part) {
+                        const isBold = i % 2 === 1;
+                        part.trim().split(/\s+/).filter(Boolean).forEach(word => words.push({ text: word, isBold }));
+                    }
+                });
+
+                const processedWords = [];
+                for (let i = 0; i < words.length; i++) {
+                    const currentWord = words[i];
+                    if (i + 1 < words.length && /^[.,;:]/.test(words[i + 1].text)) {
+                        currentWord.text += words[i + 1].text;
+                        i++;
+                    }
+                    processedWords.push(currentWord);
+                }
+
+                const lines = [];
+                let currentLine = [];
+                let currentLineWidth = 0;
+                const spaceWidth = pdf.getStringUnitWidth(' ') * 12 / pdf.internal.scaleFactor;
+                const indentWidth = pdf.getStringUnitWidth(' '.repeat(15)) * 12 / pdf.internal.scaleFactor;
+
+                for (const word of processedWords) {
+                    pdf.setFont('times', word.isBold ? 'bold' : 'normal');
+                    const wordWidth = pdf.getStringUnitWidth(word.text) * 12 / pdf.internal.scaleFactor;
+
+                    let effectiveMaxWidth = maxWidth;
+                    if (lines.length === 0 && indent) {
+                        effectiveMaxWidth -= indentWidth;
+                    }
+
+                    if (currentLineWidth + (currentLine.length > 0 ? spaceWidth : 0) + wordWidth > effectiveMaxWidth) {
+                        lines.push(currentLine);
+                        currentLine = [word];
+                        currentLineWidth = wordWidth;
+                    } else {
+                        currentLine.push(word);
+                        currentLineWidth += (currentLine.length > 0 ? spaceWidth : 0) + wordWidth;
+                    }
+                }
+                if (currentLine.length > 0) lines.push(currentLine);
+
+                lines.forEach((line, lineIndex) => {
+                    checkPageBreak(lineSpacing);
+                    const isLastLineOfPara = lineIndex === lines.length - 1;
+
+                    let wordsWidth = 0;
+                    line.forEach(word => {
+                        pdf.setFont('times', word.isBold ? 'bold' : 'normal');
+                        wordsWidth += pdf.getStringUnitWidth(word.text) * 12 / pdf.internal.scaleFactor;
+                    });
+
+                    let currentX = margin;
+                    let spacing = spaceWidth;
+
+                    if (!isLastLineOfPara && line.length > 1) {
+                        let availableWidth = maxWidth;
+                        if (lineIndex === 0 && indent) {
+                            availableWidth -= indentWidth;
+                        }
+                        spacing = (availableWidth - wordsWidth) / (line.length - 1);
+                    }
+
+                    if (lineIndex === 0 && indent) {
+                        currentX += indentWidth;
+                    }
+
+                    line.forEach(word => {
+                        pdf.setFont('times', word.isBold ? 'bold' : 'normal');
+                        pdf.text(word.text, currentX, currentY);
+                        currentX += pdf.getStringUnitWidth(word.text) * 12 / pdf.internal.scaleFactor + spacing;
+                    });
+
+                    currentY += lineSpacing;
+                });
+
+                return currentY + paraSpacing;
             };
-            var mask = IMask(element, maskOptions);
-        });
-        // Adiciona o evento change ao dropdown
 
-        const cepInput = document.querySelector(`.cep`);
-        if (cepInput) {
+            // --- FUNÇÕES DE SETUP E UI ---
+
+            const toggleMainView = () => {
+                const selectedApp = mainAppSelect.value;
+                if (selectedApp === 'calculator') {
+                    calcAppContainer.classList.remove('hidden');
+                    manifestAppContainer.classList.add('hidden');
+                    mainTitle.textContent = 'Calculadora de Atualização de Débito Judicial';
+                    mainSubtitle.textContent = 'Selecione o tipo de cálculo e insira os dados para a atualização monetária.';
+                } else { // manifestation
+                    calcAppContainer.classList.add('hidden');
+                    manifestAppContainer.classList.remove('hidden');
+                    mainTitle.textContent = 'Gerador de Petições/Manifestações';
+                    mainSubtitle.textContent = 'Preencha os campos para gerar seu documento em PDF.';
+                }
+            };
+
+            const fetchEconomicData = async () => {
+                const today = new Date();
+                const fiveYearsAgo = new Date(today.getFullYear() - 5, today.getMonth(), today.getDate());
+                const formatDateForApi = (date) => `${String(date.getDate()).padStart(2, '0')}/${String(date.getMonth() + 1).padStart(2, '0')}/${date.getFullYear()}`;
+                const startDate = formatDateForApi(fiveYearsAgo);
+                const endDate = formatDateForApi(today);
+
+                const IPCA_CODE = 433, IPCA15_CODE = 7478, SELIC_DAILY_CODE = 11;
+                const ipcaUrl = `https://api.bcb.gov.br/dados/serie/bcdata.sgs.${IPCA_CODE}/dados?formato=json&dataInicial=${startDate}&dataFinal=${endDate}`;
+                const ipca15Url = `https://api.bcb.gov.br/dados/serie/bcdata.sgs.${IPCA15_CODE}/dados?formato=json&dataInicial=${startDate}&dataFinal=${endDate}`;
+                const selicUrl = `https://api.bcb.gov.br/dados/serie/bcdata.sgs.${SELIC_DAILY_CODE}/dados?formato=json&dataInicial=${startDate}&dataFinal=${endDate}`;
+
+                try {
+                    const [ipcaResponse, ipca15Response, selicResponse] = await Promise.all([fetch(ipcaUrl), fetch(ipca15Url), fetch(selicUrl)]);
+                    if (!ipcaResponse.ok || !ipca15Response.ok || !selicResponse.ok) throw new Error('Falha ao buscar dados do Banco Central.');
+
+                    const [ipcaJson, ipca15Json, selicJson] = await Promise.all([ipcaResponse.json(), ipca15Response.json(), selicResponse.json()]);
+
+                    const processMonthlyData = (jsonData) => jsonData.reduce((acc, item) => {
+                        const [day, month, year] = item.data.split('/');
+                        acc[`${year}-${month}`] = parseFloat(item.valor);
+                        return acc;
+                    }, {});
+
+                    const processDailySelic = (dailyData) => {
+                        const monthlyFactors = dailyData.reduce((acc, item) => {
+                            const [day, month, year] = item.data.split('/');
+                            const key = `${year}-${month}`;
+                            acc[key] = (acc[key] || 1) * (1 + parseFloat(item.valor) / 100);
+                            return acc;
+                        }, {});
+                        return Object.entries(monthlyFactors).reduce((acc, [key, factor]) => {
+                            acc[key] = (factor - 1) * 100;
+                            return acc;
+                        }, {});
+                    };
+
+                    ipcaData = processMonthlyData(ipcaJson);
+                    ipca15Data = processMonthlyData(ipca15Json);
+                    monthlySelicData = processDailySelic(selicJson);
+
+                    calculateBtn.disabled = false;
+                    calculateBtn.innerHTML = 'Calcular Valor Atualizado';
+                    calculateBtn.className = calculateBtn.className.replace('bg-indigo-400 cursor-not-allowed', 'bg-indigo-600 hover:bg-indigo-700');
+                } catch (error) {
+                    console.error('Erro ao buscar dados econômicos:', error);
+                    calculateBtn.innerHTML = 'Erro ao carregar dados';
+                    calculateBtn.className = calculateBtn.className.replace('bg-indigo-400', 'bg-red-600');
+                    alert('Não foi possível carregar os índices econômicos. Por favor, tente recarregar a página.');
+                }
+            };
+
+            const toggleCalculationView = () => {
+                const type = calculationTypeSelect.value;
+                if (type === 'condemnation') {
+                    condemnationContainer.classList.remove('hidden');
+                    agreementContainer.classList.add('hidden');
+                    condemnationOptions.classList.remove('hidden');
+                    agreementPetitionOption.classList.add('hidden');
+                    intimationRequestContainer.classList.add('hidden');
+                    petitionOptionsContainer.classList.toggle('hidden', !complianceRequestCheckbox.checked);
+                } else { // agreement
+                    condemnationContainer.classList.add('hidden');
+                    agreementContainer.classList.remove('hidden');
+                    condemnationOptions.classList.add('hidden');
+                    agreementPetitionOption.classList.remove('hidden');
+                    intimationRequestContainer.classList.remove('hidden');
+                    petitionOptionsContainer.classList.remove('hidden'); // Petição é obrigatória aqui
+                }
+                resultsContainer.classList.add('hidden');
+            };
+
+            const formatCurrency = (value) => value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+
+            const addRow = () => {
+                const newRow = rowsContainer.querySelector('.calculation-row').cloneNode(true);
+                newRow.querySelectorAll('input[type="text"], input[type="number"]').forEach(input => input.value = '');
+                const select = newRow.querySelector('.description-select');
+                select.selectedIndex = 0;
+                newRow.querySelector('.other-description-input').classList.add('hidden');
+                rowsContainer.appendChild(newRow);
+                addInputBehaviors(newRow);
+            };
+
+            const removeRow = (e) => {
+                if (e.target.classList.contains('remove-row-btn')) {
+                    if (rowsContainer.children.length > 1) {
+                        e.target.closest('.calculation-row').remove();
+                    } else {
+                        alert('Pelo menos uma linha de cálculo é necessária.');
+                    }
+                }
+            };
+
+            const formatCNJOnInput = (e) => {
+                let v = e.target.value.replace(/\D/g, "");
+                v = v.replace(/(\d{7})(\d)/, "$1-$2").replace(/(\d{7}-\d{2})(\d)/, "$1.$2")
+                    .replace(/(\d{7}-\d{2}\.\d{4})(\d)/, "$1.$2").replace(/(\d{7}-\d{2}\.\d{4}\.\d{1})(\d)/, "$1.$2")
+                    .replace(/(\d{7}-\d{2}\.\d{4}\.\d{1}\.\d{2})(\d)/, "$1.$2");
+                e.target.value = v;
+            };
+
+            const formatDateOnInput = (e) => {
+                let v = e.target.value.replace(/\D/g, "").slice(0, 8);
+                v = v.replace(/(\d{2})(\d)/, "$1/$2").replace(/(\d{2})\/(\d{2})(\d)/, "$1/$2/$3");
+                e.target.value = v;
+            };
+
+            const autocompleteDateOnBlur = (e) => {
+                let value = e.target.value;
+                if (!value) return;
+                const parts = value.split('/');
+                if (parts.length === 3 && parts[2].length === 4) return;
+                const today = new Date();
+                const day = parts[0] || '';
+                let month = parts[1] || '';
+                let year = parts[2] || '';
+                if (day && !month) {
+                    month = String(today.getMonth() + 1).padStart(2, '0');
+                    year = today.getFullYear();
+                } else if (day && month && !year) {
+                    year = today.getFullYear();
+                }
+                if (year.length > 0 && year.length < 4) {
+                    year = parseInt(year, 10) < 50 ? '20' + year.padStart(2, '0') : '19' + year.padStart(2, '0');
+                }
+                e.target.value = `${day.padStart(2, '0')}/${month.padStart(2, '0')}/${year}`;
+            };
+
+            const formatValueOnBlur = (e) => {
+                const input = e.target;
+                let value = input.value;
+                if (!value) return;
+
+                value = value.replace(/[^\d,]/g, '').replace(',', '.');
+
+                const number = parseFloat(value);
+
+                if (!isNaN(number)) {
+                    input.value = number.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+                } else {
+                    input.value = '';
+                }
+            };
+
+            const formatCpfCnpjOnInput = (e) => {
+                let value = e.target.value.replace(/\D/g, '');
+                if (value.length > 14) {
+                    value = value.substring(0, 14);
+                }
+
+                if (value.length <= 11) {
+                    // CPF
+                    value = value.replace(/(\d{3})(\d)/, '$1.$2');
+                    value = value.replace(/(\d{3})(\d)/, '$1.$2');
+                    value = value.replace(/(\d{3})(\d{1,2})$/, '$1-$2');
+                } else {
+                    // CNPJ
+                    value = value.replace(/^(\d{2})(\d)/, '$1.$2');
+                    value = value.replace(/^(\d{2})\.(\d{3})(\d)/, '$1.$2.$3');
+                    value = value.replace(/\.(\d{3})(\d)/, '.$1/$2');
+                    value = value.replace(/(\d{4})(\d)/, '$1-$2');
+                }
+                e.target.value = value;
+            };
+
+            const addInputBehaviors = (container) => {
+                container.querySelectorAll('.date-input').forEach(input => {
+                    input.removeEventListener('input', formatDateOnInput);
+                    input.removeEventListener('blur', autocompleteDateOnBlur);
+                    input.addEventListener('input', formatDateOnInput);
+                    input.addEventListener('blur', autocompleteDateOnBlur);
+                });
+                container.querySelectorAll('.value-input').forEach(input => {
+                    input.removeEventListener('blur', formatValueOnBlur);
+                    input.addEventListener('blur', formatValueOnBlur);
+                });
+            };
+
+            // --- LÓGICA DE CÁLCULO ---
+
+            const parseDate = (dateStr) => {
+                if (!dateStr || dateStr.length < 10) return null;
+                const [day, month, year] = dateStr.split('/');
+                return new Date(`${year}-${month}-${day}T12:00:00Z`);
+            };
+
+            const getFinalCalcDate = () => {
+                const finalDateStr = document.getElementById('final-date').value;
+                const parsedFinalDate = parseDate(finalDateStr);
+                return parsedFinalDate instanceof Date && !isNaN(parsedFinalDate) ? parsedFinalDate : new Date();
+            };
+
+            const performCondemnationCalculation = () => {
+                const finalCalcDate = getFinalCalcDate();
+                const calculationResult = {
+                    type: 'condemnation',
+                    processNumber: processNumberInputCalc.value || 'Não informado',
+                    rows: [],
+                    summary: {},
+                    finalCalcDate: finalCalcDate
+                };
+
+                let positiveRows = [];
+                let deductionRows = [];
+
+                document.querySelectorAll('.calculation-row').forEach(row => {
+                    const descriptionSelect = row.querySelector('.description-select');
+                    let description = descriptionSelect.value;
+                    if (description === 'Outro') {
+                        description = row.querySelector('.other-description-input').value.trim() || 'Outro (não especificado)';
+                    }
+
+                    const rawValue = row.querySelector('.value-input').value;
+                    const originalValue = parseFloat(rawValue.replace(/\./g, '').replace(',', '.')) || 0;
+                    const correctionDate = parseDate(row.querySelector('.correction-date-input').value);
+                    const interestDate = parseDate(row.querySelector('.interest-date-input').value);
+
+                    if (originalValue === 0 || !correctionDate) return;
+
+                    let correctedValue = originalValue;
+                    for (let d = new Date(correctionDate); d < finalCalcDate; d.setMonth(d.getMonth() + 1)) {
+                        const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+                        correctedValue *= (1 + (ipcaData[key] || 0) / 100);
+                    }
+                    const totalCorrection = correctedValue - originalValue;
+
+                    let totalInterest = 0;
+                    if (descriptionSelect.value !== 'Dedução/Pagamento Parcial' && interestDate) {
+                        let baseForInterest = originalValue;
+                        for (let d = new Date(correctionDate); d < interestDate && d < finalCalcDate; d.setMonth(d.getMonth() + 1)) {
+                            const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+                            baseForInterest *= (1 + (ipcaData[key] || 0) / 100);
+                        }
+
+                        for (let d = new Date(interestDate); d < finalCalcDate; d.setMonth(d.getMonth() + 1)) {
+                            const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+                            let monthlyRate = (monthlySelicData[key] || 0) - (ipca15Data[key] || 0);
+                            monthlyRate = Math.max(0, monthlyRate) / 100;
+                            if (d.getFullYear() === finalCalcDate.getFullYear() && d.getMonth() === finalCalcDate.getMonth()) {
+                                monthlyRate *= finalCalcDate.getDate() / new Date(d.getFullYear(), d.getMonth() + 1, 0).getDate();
+                            }
+                            totalInterest += baseForInterest * monthlyRate;
+                        }
+                    }
+
+                    const finalValueForRow = originalValue + totalCorrection + totalInterest;
+                    const rowData = { description, originalValue, totalCorrection, totalInterest, finalValueForRow };
+
+                    if (descriptionSelect.value === 'Dedução/Pagamento Parcial') {
+                        deductionRows.push(rowData);
+                    } else {
+                        positiveRows.push(rowData);
+                    }
+                });
+
+                calculationResult.rows = [...positiveRows, ...deductionRows];
+
+                const positiveSubtotal = positiveRows.reduce((acc, row) => acc + row.finalValueForRow, 0);
+                const totalDeductions = deductionRows.reduce((acc, row) => acc + row.finalValueForRow, 0);
+
+                const subtotal = positiveSubtotal - totalDeductions;
+                const addFine = addFineCheckbox.checked;
+                const fineValue = addFine ? subtotal * 0.10 : 0;
+                const grandTotal = subtotal + fineValue;
+
+                calculationResult.summary = { subtotal, addFine, fineValue, grandTotal, totalDeductions, positiveSubtotal };
+
+                return (calculationResult.rows.length === 0) ? null : calculationResult;
+            };
+
+            const performAgreementCalculation = () => {
+                const totalInstallments = parseInt(document.getElementById('agreement-total-installments').value) || 0;
+                const paidInstallments = parseInt(document.getElementById('agreement-paid-installments').value) || 0;
+                const rawInstallmentValue = document.getElementById('agreement-installment-value').value;
+                const installmentValue = parseFloat(rawInstallmentValue.replace(/\./g, '').replace(',', '.')) || 0;
+                const startDate = parseDate(document.getElementById('agreement-start-date').value);
+                const penaltyPercent = parseFloat(document.getElementById('agreement-penalty').value) || 0;
+                const penaltyBaseType = document.querySelector('input[name="penalty-base"]:checked').value;
+
+
+                if (totalInstallments <= 0 || installmentValue <= 0 || !startDate) {
+                    alert('Preencha todos os campos do acordo: parcelas totais, valor da parcela e data de início.');
+                    return null;
+                }
+
+                const finalCalcDate = getFinalCalcDate();
+                const installmentsDetails = [];
+
+                const updateValue = (value, dateFrom, dateTo) => {
+                    let updated = value;
+                    for (let d = new Date(dateFrom); d < dateTo; d.setMonth(d.getMonth() + 1)) {
+                        const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+                        updated *= (1 + (ipcaData[key] || 0) / 100); // Apenas correção IPCA
+                    }
+                    return updated;
+                };
+
+                for (let i = 0; i < totalInstallments; i++) {
+                    const installmentDate = new Date(startDate);
+                    installmentDate.setMonth(startDate.getMonth() + i);
+                    const updatedInstallment = updateValue(installmentValue, installmentDate, finalCalcDate);
+
+                    installmentsDetails.push({
+                        number: i + 1,
+                        originalDate: installmentDate,
+                        originalValue: installmentValue,
+                        updatedValue: updatedInstallment,
+                        status: i < paidInstallments ? 'Paga' : 'Não Paga'
+                    });
+                }
+
+                const totalUpdatedValue = installmentsDetails.reduce((sum, inst) => sum + inst.updatedValue, 0);
+                const paidUpdatedValue = installmentsDetails.filter(inst => inst.status === 'Paga').reduce((sum, inst) => sum + inst.updatedValue, 0);
+                const updatedDebt = totalUpdatedValue - paidUpdatedValue;
+                const totalOriginalDebt = totalInstallments * installmentValue;
+
+                let penaltyBaseValue = 0;
+                if (penaltyBaseType === 'remaining') {
+                    penaltyBaseValue = updatedDebt;
+                } else { // 'total'
+                    penaltyBaseValue = totalOriginalDebt;
+                }
+                const penaltyValue = penaltyBaseValue * (penaltyPercent / 100);
+
+                const rawDeductionValue = document.getElementById('agreement-deduction-value').value;
+                const deductionValue = parseFloat(rawDeductionValue.replace(/\./g, '').replace(',', '.')) || 0;
+                const deductionDate = parseDate(document.getElementById('agreement-deduction-date').value);
+                let updatedDeductionValue = 0;
+                if (deductionValue > 0 && deductionDate) {
+                    updatedDeductionValue = updateValue(deductionValue, deductionDate, finalCalcDate);
+                }
+
+                const grandTotal = updatedDebt + penaltyValue - updatedDeductionValue;
+
+                return {
+                    type: 'agreement',
+                    processNumber: processNumberInputCalc.value || 'Não informado',
+                    finalCalcDate: finalCalcDate,
+                    installments: installmentsDetails,
+                    summary: {
+                        totalOriginal: totalOriginalDebt,
+                        paidOriginal: paidInstallments * installmentValue,
+                        remainingOriginal: totalOriginalDebt - (paidInstallments * installmentValue),
+                        totalUpdated: totalUpdatedValue,
+                        paidUpdated: paidUpdatedValue,
+                        updatedDebt: updatedDebt,
+                        penaltyValue: penaltyValue,
+                        grandTotal: grandTotal,
+                        penaltyPercent: penaltyPercent,
+                        paidInstallments: paidInstallments,
+                        penaltyBaseType: penaltyBaseType,
+                        penaltyBaseValue: penaltyBaseValue,
+                        updatedDeductionValue: updatedDeductionValue,
+                        deductionValue: deductionValue
+                    }
+                };
+            };
+
+            const handleCalculateClick = () => {
+                const type = calculationTypeSelect.value;
+                let data = null;
+                if (type === 'condemnation') {
+                    data = performCondemnationCalculation();
+                } else { // agreement
+                    data = performAgreementCalculation();
+                }
+
+                if (data) {
+                    lastCalculationData = data;
+                    displayResults(data);
+                }
+            };
+
+            // --- FUNÇÕES DE EXIBIÇÃO ---
+
+            const displayResults = (data) => {
+                let resultsHTML = '';
+                if (data.type === 'condemnation') {
+                    resultsHTML = getCondemnationResultsHTML(data);
+                } else {
+                    resultsHTML = getAgreementResultsHTML(data);
+                }
+
+                resultsContainer.innerHTML = resultsHTML;
+                resultsContainer.classList.remove('hidden');
+
+                const hasResults = data.summary.grandTotal > 0;
+
+                const styleButton = (btn, enabled, colorClass = 'bg-green-600 hover:bg-green-700') => {
+                    btn.disabled = !enabled;
+                    if (enabled) {
+                        btn.classList.remove('bg-gray-400', 'cursor-not-allowed');
+                        btn.classList.add(...colorClass.split(' '));
+                    } else {
+                        btn.classList.add('bg-gray-400', 'cursor-not-allowed');
+                        btn.classList.remove(...colorClass.split(' '));
+                    }
+                };
+
+                styleButton(previewBtn, hasResults, 'bg-blue-600 hover:bg-blue-700');
+
+                const isPetitionIncluded = (data.type === 'condemnation' && complianceRequestCheckbox.checked) || data.type === 'agreement';
+
+                printBtn.classList.add('hidden');
+                printCombinedBtn.classList.add('hidden');
+                printPetitionBtn.classList.add('hidden');
+                printCalcBtn.classList.add('hidden');
+
+                if (isPetitionIncluded) {
+                    printCombinedBtn.classList.remove('hidden');
+                    printPetitionBtn.classList.remove('hidden');
+                    printCalcBtn.classList.remove('hidden');
+                    styleButton(printCombinedBtn, hasResults);
+                    styleButton(printPetitionBtn, hasResults);
+                    styleButton(printCalcBtn, hasResults);
+                } else {
+                    printBtn.classList.remove('hidden');
+                    styleButton(printBtn, hasResults);
+                }
+            };
+
+
+            const getCondemnationResultsHTML = (data) => {
+                let html = '<h3 class="text-xl font-bold text-gray-800 mb-4">Resumo do Cálculo de Condenação</h3><div class="space-y-6">';
+                data.rows.forEach((row, index) => {
+                    const isDeduction = data.summary.totalDeductions > 0 && row.description.includes('Dedução');
+                    html += `<div class="p-4 border rounded-lg bg-white"><p class="font-semibold text-lg ${isDeduction ? 'text-red-600' : 'text-indigo-700'}">${index + 1}. ${row.description}</p><div class="grid grid-cols-2 md:grid-cols-4 gap-x-4 gap-y-2 mt-2 text-sm"><div><span class="font-medium text-gray-600">Valor Original:</span><br>${formatCurrency(row.originalValue)}</div><div><span class="font-medium text-gray-600">Correção (IPCA):</span><br>${formatCurrency(row.totalCorrection)}</div><div><span class="font-medium text-gray-600">Juros de Mora:</span><br>${formatCurrency(row.totalInterest)}</div><div class="font-bold"><span class="font-medium text-gray-600">Subtotal:</span><br>${formatCurrency(row.finalValueForRow)}</div></div></div>`;
+                });
+                html += `</div>`;
+
+                const fineRowHtml = data.summary.addFine ? `<div class="flex justify-between items-center mt-2"><p class="text-lg font-semibold text-gray-700">Multa do art. 523 (10%):</p><p class="text-xl font-semibold text-red-600">${formatCurrency(data.summary.fineValue)}</p></div>` : '';
+                const deductionRowHtml = data.summary.totalDeductions > 0 ? `<div class="flex justify-between items-center"><p class="text-lg text-gray-600">(-) Total Deduzido:</p><p class="text-xl font-bold text-green-600">${formatCurrency(data.summary.totalDeductions)}</p></div>` : '';
+
+                html += `<div class="mt-8 pt-4 border-t-2 border-indigo-500 text-right space-y-2">
+                    <div class="flex justify-between items-center"><p class="text-lg text-gray-600">Subtotal da Condenação:</p><p class="text-2xl font-bold text-indigo-700">${formatCurrency(data.summary.positiveSubtotal)}</p></div>
+                    ${deductionRowHtml}
+                    ${fineRowHtml}
+                    <div class="flex justify-between items-center pt-4 border-t mt-2"><p class="text-lg font-bold text-gray-800">Valor Total do Débito:</p><p class="text-3xl font-bold text-indigo-700">${formatCurrency(data.summary.grandTotal)}</p></div>
+                </div>`;
+                return html;
+            }
+
+            const getAgreementResultsHTML = (data) => {
+                const s = data.summary;
+                const installments = data.installments;
+                let penaltyHelperText = '';
+                if (s.penaltyBaseType === 'remaining') {
+                    penaltyHelperText = `(Multa sobre o saldo devedor atualizado de ${formatCurrency(s.penaltyBaseValue)})`;
+                } else { // 'total'
+                    penaltyHelperText = `(Multa sobre o valor original do acordo de ${formatCurrency(s.penaltyBaseValue)})`;
+                }
+
+                const createTableHTML = (title, items, colorClass, headColorClass) => {
+                    if (items.length === 0) return '';
+                    let tableHTML = `<h4 class="text-lg font-semibold text-gray-700 mt-4">${title}</h4>
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full bg-white border">
+                            <thead class="${headColorClass} text-white">
+                                <tr>
+                                    <th class="py-2 px-4 border-b text-left font-semibold">Parcela</th>
+                                    <th class="py-2 px-4 border-b text-left font-semibold">Vencimento</th>
+                                    <th class="py-2 px-4 border-b text-right font-semibold">Valor Original</th>
+                                    <th class="py-2 px-4 border-b text-right font-semibold">Valor Atualizado</th>
+                                </tr>
+                            </thead>
+                            <tbody>`;
+                    items.forEach(item => {
+                        tableHTML += `<tr>
+                            <td class="py-2 px-4 border-b">${item.number}</td>
+                            <td class="py-2 px-4 border-b">${item.originalDate.toLocaleDateString('pt-BR')}</td>
+                            <td class="py-2 px-4 border-b text-right">${formatCurrency(item.originalValue)}</td>
+                            <td class="py-2 px-4 border-b text-right ${colorClass}">${formatCurrency(item.updatedValue)}</td>
+                        </tr>`;
+                    });
+                    tableHTML += `</tbody></table></div>`;
+                    return tableHTML;
+                };
+
+                const deductionRowHtml = s.updatedDeductionValue > 0 ? `<div class="flex justify-between p-2 rounded-lg"><span class="font-medium text-gray-600">(-) Dedução Adicional (Atualizada):</span><span class="text-green-600">${formatCurrency(s.updatedDeductionValue)}</span></div>` : '';
+
+
+                const paidInstallments = installments.filter(i => i.status === 'Paga');
+                const unpaidInstallments = installments.filter(i => i.status !== 'Paga');
+
+                return `
+                    <h3 class="text-xl font-bold text-gray-800 mb-4">Resumo do Descumprimento de Acordo</h3>
+                    
+                    ${createTableHTML('Detalhamento das Parcelas Pagas', paidInstallments, 'text-green-600', 'bg-green-700')}
+                    ${createTableHTML('Detalhamento das Parcelas Vencidas e Não Pagas', unpaidInstallments, 'text-red-600', 'bg-red-700')}
+
+                    <div class="mt-8 pt-4 border-t-2 border-gray-300 space-y-4 text-base">
+                        <div class="p-2 rounded-lg bg-gray-50">
+                            <div class="flex justify-between">
+                                <span class="font-medium text-gray-600">Valor Total do Acordo (Atualizado):</span>
+                                <span>${formatCurrency(s.totalUpdated)}</span>
+                            </div>
+                        </div>
+
+                        <div class="p-2 rounded-lg">
+                            <div class="flex justify-between">
+                                <span class="font-medium text-gray-600">(-) Valor Pago (${s.paidInstallments} parcelas) (Atualizado):</span>
+                                <span class="text-green-600">${formatCurrency(s.paidUpdated)}</span>
+                            </div>
+                        </div>
+
+                        <hr class="my-2"/>
+
+                        <div class="flex justify-between p-2 rounded-lg">
+                            <span class="font-medium text-gray-800">(=) Saldo Devedor (Atualizado):</span>
+                            <span class="font-bold">${formatCurrency(s.updatedDebt)}</span>
+                        </div>
+                        
+                        ${deductionRowHtml}
+
+                        <div class="flex justify-between p-2 rounded-lg">
+                            <span class="font-medium text-gray-600">(+) Multa por Descumprimento (${s.penaltyPercent}%):</span>
+                            <span class="text-red-600">${formatCurrency(s.penaltyValue)}</span>
+                        </div>
+                        <div class="text-right text-sm text-gray-500 -mt-3">
+                            <span>${penaltyHelperText}</span>
+                        </div>
+
+
+                        <div class="flex justify-between p-3 rounded-lg bg-indigo-100 mt-4 border-t-2 border-indigo-500">
+                            <span class="text-lg font-bold text-gray-800">Valor Total do Débito:</span>
+                            <span class="text-2xl font-bold text-indigo-700">${formatCurrency(s.grandTotal)}</span>
+                        </div>
+                    </div>
+                `;
+            }
+
+            // --- GERAÇÃO DE PDF E PETIÇÃO ---
+
+            const generatePetitionHTML = (data) => {
+                const isPetitionIncluded = (data.type === 'condemnation' && complianceRequestCheckbox.checked) || data.type === 'agreement';
+                if (!isPetitionIncluded) {
+                    return null;
+                }
+
+                const exequenteInputs = exequentesList.querySelectorAll('.exequente-name-input');
+                const allExequentes = Array.from(exequenteInputs).map(input => input.value.trim().toUpperCase()).filter(Boolean);
+
+                if (allExequentes.length === 0) {
+                    alert('Por favor, informe o nome de pelo menos um exequente para gerar a petição.');
+                    exequenteInputs[0].focus();
+                    return null;
+                }
+
+                let exequentesText = allExequentes.length === 1 ? `<strong>${allExequentes[0]}</strong>, já qualificado(a) nos autos`
+                    : allExequentes.join(', ').replace(/,([^,]*)$/, ' e$1') + ', já qualificados nos autos';
+
+                let mainParagraphs = '';
+                if (data.type === 'condemnation') {
+                    mainParagraphs = `
+                        <p style="text-indent: 4em;">${exequentesText}, vem, respeitosamente, à presença de Vossa Excelência, requerer o <strong>CUMPRIMENTO DE SENTENÇA</strong> em face do(a)(s) executado(a)(s), também já qualificado(a)(s), tendo em vista o trânsito em julgado da r. sentença.</p>
+                        <p style="text-indent: 4em;">Diante do exposto, requer a intimação do(a)(s) executado(a)(s) para que, no prazo legal, efetue o pagamento devido, no importe de <strong>${formatCurrency(data.summary.subtotal)}</strong>, conforme cálculo anexo. Não ocorrendo o pagamento, requer que o débito seja acrescido da multa de 10%, prevista no art. 523, §1º do CPC, totalizando a quantia de <strong>${formatCurrency(data.summary.subtotal * 1.10)}</strong>.</p>
+                    `;
+                } else { // agreement
+                    const agreementType = document.getElementById('agreement-type-calc').value;
+                    const actionText = agreementType === 'conhecimento' ? 'requerer o <strong>CUMPRIMENTO DE SENTENÇA</strong>' : 'informar o descumprimento do acordo e requerer o <strong>PROSSEGUIMENTO DA EXECUÇÃO</strong>';
+                    const multaText = data.summary.penaltyPercent > 0 ? 'já com o acréscimo da multa' : '';
+                    let intimationText = '';
+                    if (includeIntimationCheckbox.checked) {
+                        const deadline = document.getElementById('intimation-deadline').value;
+                        intimationText = `Diante do exposto, requer a intimação do(a)(s) executado(a)(s) para que, no prazo de <strong>${deadline}</strong> dias, efetue o pagamento do valor remanescente, sob pena de reinício da execução e penhora de bens.`;
+                    }
+
+                    mainParagraphs = `
+                        <p style="text-indent: 4em;">${exequentesText}, vem, respeitosamente, à presença de Vossa Excelência, informar o descumprimento do acordo homologado nos autos e, ato contínuo, ${actionText}.</p>
+                        <p style="text-indent: 4em;">Conforme se demonstra pelo cálculo anexo, o débito atualizado remanescente, ${multaText}, perfaz o montante de <strong>${formatCurrency(data.summary.grandTotal)}</strong>. ${intimationText}</p>
+                    `;
+                }
+
+                const requests = [];
+                if (document.getElementById('penhora-contas').checked) requests.push('a pesquisa e bloqueio de valores em contas bancárias via SISBAJUD;');
+                if (document.getElementById('penhora-veiculos').checked) requests.push('a pesquisa, bloqueio e penhora de veículos via RENAJUD;');
+                if (document.getElementById('penhora-mandado').checked) requests.push('a expedição de mandado de penhora e avaliação de bens;');
+                const outrosTextValue = penhoraOutrosText.value.trim();
+                if (penhoraOutrosCheck.checked && outrosTextValue) requests.push(outrosTextValue);
+
+                let penhoraRequestsHTML = '';
+                if (requests.length > 0) {
+                    let penhoraHeader = 'Caso não haja o pagamento voluntário, requer o prosseguimento da execução com as seguintes medidas:';
+                    if (data.type === 'agreement' && !includeIntimationCheckbox.checked) {
+                        penhoraHeader = 'Requer a realização das seguintes medidas para constrição e penhora:';
+                    }
+                    penhoraRequestsHTML = `
+                        <p style="text-indent: 4em;">${penhoraHeader}</p>
+                        <div style="padding-left: 40px;">
+                            ${requests.map((req, index) => `<p>${toRoman(index + 1)}. ${req}</p>`).join('')}
+                        </div>
+                    `;
+                }
+
+                const printDate = data.finalCalcDate.toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' });
+                const signaturesHTML = allExequentes.map(name => `<div style="text-align: center; margin-top: 40px;"><p style="border-top: 1px solid black; width: 75%; margin: 0 auto; padding-top: 5px;">${name}</p></div>`).join('');
+
+                return `
+                    <div style="font-family: 'Times New Roman', Times, serif; font-size: 12pt; line-height: 2; text-align: justify;">
+                        <p style="text-align: center; font-weight: bold;">EXCELENTÍSSIMO(A) SENHOR(A) DOUTOR(A) JUIZ(A) DE DIREITO DO JUIZADO ESPECIAL CÍVEL DA COMARCA DE MARÍLIA - SP</p>
+                        <p style="margin-top: 2cm;"><strong>Processo nº: ${data.processNumber}</strong></p>
+                        <div style="margin-top: 1cm;">
+                            ${mainParagraphs}
+                        </div>
+                        ${penhoraRequestsHTML}
+                        <p style="margin-top: 2cm;">Nestes termos, pede deferimento.</p>
+                        <p style="margin-top: 2cm; text-align: right;">Marília, ${printDate}.</p>
+                        <div style="margin-top: 4cm;">${signaturesHTML}</div>
+                    </div>
+                `;
+            };
+
+            const showPreview = () => {
+                if (!lastCalculationData) {
+                    alert('Calcule os valores primeiro.');
+                    return;
+                }
+                let finalHTML = '';
+                const petitionHTML = generatePetitionHTML(lastCalculationData);
+                if (petitionHTML) {
+                    finalHTML += `<h2 class="text-xl font-bold text-center mb-4">Página 1: Petição</h2><div class="p-8 border shadow-lg bg-white mx-auto" style="width: 210mm;">${petitionHTML}</div>`;
+                }
+
+                const calculationHTML = resultsContainer.innerHTML;
+                finalHTML += `<h2 class="text-xl font-bold text-center mt-8 mb-4">Página 2: Demonstrativo de Cálculo</h2><div class="p-8 border shadow-lg bg-white mx-auto" style="width: 210mm;"><h2 class="text-2xl font-bold text-gray-800 text-center">Demonstrativo de Cálculo de Débito Judicial</h2><p class="text-center text-gray-600 mt-1">Cálculo realizado em: ${lastCalculationData.finalCalcDate.toLocaleDateString('pt-BR')}</p><p class="my-4"><strong>Processo nº:</strong> ${lastCalculationData.processNumber}</p><hr class="my-4"/>${calculationHTML}</div>`;
+
+                previewContent.innerHTML = finalHTML;
+                previewModal.classList.remove('hidden');
+            };
+
+            const prePrintValidation = (isForManifestation = false) => {
+                if (isForManifestation) {
+                    if (!processNumberManifest.value || !document.querySelector('.manifest-name').value || !document.querySelector('.manifest-cpf').value) {
+                        alert("Por favor, preencha todos os campos obrigatórios: Nº do Processo, Nome da Parte e CPF.");
+                        return false;
+                    }
+                } else {
+                    if (!lastCalculationData) {
+                        alert('Por favor, calcule os valores antes de gerar o PDF.');
+                        return false;
+                    }
+                    const isPetitionIncluded = (lastCalculationData.type === 'condemnation' && complianceRequestCheckbox.checked) || lastCalculationData.type === 'agreement';
+                    if (isPetitionIncluded) {
+                        const exequenteInputs = exequentesList.querySelectorAll('.exequente-name-input');
+                        const allExequentes = Array.from(exequenteInputs).map(input => input.value.trim()).filter(Boolean);
+                        if (allExequentes.length === 0) {
+                            alert('Por favor, informe o nome de pelo menos um exequente para gerar a petição.');
+                            exequentesList.querySelector('.exequente-name-input').focus();
+                            return false;
+                        }
+                        const penhoraChecks = [
+                            document.getElementById('penhora-contas').checked,
+                            document.getElementById('penhora-veiculos').checked,
+                            document.getElementById('penhora-mandado').checked,
+                            document.getElementById('penhora-outros-check').checked,
+                        ];
+                        if (!penhoraChecks.some(c => c)) {
+                            alert('Selecione pelo menos um pedido de penhora ao incluir uma petição.');
+                            return false;
+                        }
+                    }
+                }
+                return true;
+            };
+
+            const generateCalculationOnlyPDF = async () => {
+                if (!prePrintValidation()) return;
+                const { jsPDF } = window.jspdf;
+                const pdf = new jsPDF('p', 'mm', 'a4');
+                if (lastCalculationData.type === 'condemnation') {
+                    generateCondemnationCalcPage(pdf, lastCalculationData);
+                } else {
+                    generateAgreementCalcPage(pdf, lastCalculationData);
+                }
+                pdf.save(`Calculo_${lastCalculationData.processNumber.replace(/\D/g, '')}.pdf`);
+            };
+
+            const generatePetitionOnlyPDF = async () => {
+                if (!prePrintValidation()) return;
+                const { jsPDF } = window.jspdf;
+                const pdf = new jsPDF('p', 'mm', 'a4');
+                addPetitionToPdf(pdf, lastCalculationData);
+                pdf.save(`Peticao_${lastCalculationData.processNumber.replace(/\D/g, '')}.pdf`);
+            };
+
+            const generateCombinedPDF = async () => {
+                if (!prePrintValidation()) return;
+                const { jsPDF } = window.jspdf;
+                const pdf = new jsPDF('p', 'mm', 'a4');
+                addPetitionToPdf(pdf, lastCalculationData);
+                pdf.addPage();
+                if (lastCalculationData.type === 'condemnation') {
+                    generateCondemnationCalcPage(pdf, lastCalculationData);
+                } else {
+                    generateAgreementCalcPage(pdf, lastCalculationData);
+                }
+                pdf.save(`Completo_${lastCalculationData.processNumber.replace(/\D/g, '')}.pdf`);
+            };
+
+            const generateCondemnationCalcPage = (pdf, data) => {
+                pdf.setFontSize(16);
+                pdf.setFont('helvetica', 'bold');
+                pdf.text('Demonstrativo de Cálculo de Débito Judicial', pdf.internal.pageSize.getWidth() / 2, 20, { align: 'center' });
+                pdf.setFontSize(10);
+                pdf.setFont('helvetica', 'normal');
+                pdf.text(`Cálculo realizado em: ${data.finalCalcDate.toLocaleDateString('pt-BR')}`, pdf.internal.pageSize.getWidth() / 2, 27, { align: 'center' });
+                pdf.text(`Processo nº: ${data.processNumber}`, 15, 40);
+
+                const head = [['Descrição', 'Valor Original', 'Correção (IPCA)', 'Juros de Mora', 'Subtotal']];
+                const body = data.rows.map(row => [
+                    row.description,
+                    { content: formatCurrency(row.originalValue), styles: { halign: 'right' } },
+                    { content: formatCurrency(row.totalCorrection), styles: { halign: 'right' } },
+                    { content: formatCurrency(row.totalInterest), styles: { halign: 'right' } },
+                    { content: formatCurrency(row.finalValueForRow), styles: { halign: 'right' } }
+                ]);
+
+                pdf.autoTable({
+                    startY: 50, head: head, body: body,
+                    headStyles: { fillColor: [75, 85, 99] },
+                    columnStyles: { 0: { cellWidth: 50 } },
+                });
+
+                const finalY = pdf.lastAutoTable.finalY;
+                let summaryY = finalY + 15;
+                pdf.setFontSize(10);
+                pdf.setFont('helvetica', 'normal');
+                pdf.text('Subtotal da Condenação:', 15, summaryY);
+                pdf.text(formatCurrency(data.summary.positiveSubtotal), 195, summaryY, { align: 'right' });
+
+                if (data.summary.totalDeductions > 0) {
+                    summaryY += 7;
+                    pdf.text('(-) Total Deduzido:', 15, summaryY);
+                    pdf.text(formatCurrency(data.summary.totalDeductions), 195, summaryY, { align: 'right' });
+                }
+
+                if (data.summary.addFine) {
+                    summaryY += 7;
+                    pdf.text('Multa do art. 523 (10%):', 15, summaryY);
+                    pdf.text(formatCurrency(data.summary.fineValue), 195, summaryY, { align: 'right' });
+                }
+
+                summaryY += 7;
+                pdf.setDrawColor(0);
+                pdf.line(15, summaryY, 195, summaryY);
+                summaryY += 5;
+
+                pdf.setFont('helvetica', 'bold');
+                pdf.text('Valor Total do Débito:', 15, summaryY);
+                pdf.text(formatCurrency(data.summary.grandTotal), 195, summaryY, { align: 'right' });
+            };
+
+            const generateAgreementCalcPage = (pdf, data) => {
+                const s = data.summary;
+                const installments = data.installments;
+                pdf.setFontSize(16);
+                pdf.setFont('helvetica', 'bold');
+                pdf.text('Demonstrativo de Descumprimento de Acordo', pdf.internal.pageSize.getWidth() / 2, 20, { align: 'center' });
+                pdf.setFontSize(10);
+                pdf.setFont('helvetica', 'normal');
+                pdf.text(`Cálculo realizado em: ${data.finalCalcDate.toLocaleDateString('pt-BR')}`, pdf.internal.pageSize.getWidth() / 2, 27, { align: 'center' });
+                pdf.text(`Processo nº: ${data.processNumber}`, 15, 40);
+
+                let startY = 50;
+
+                const paidInstallments = installments.filter(i => i.status === 'Paga');
+                if (paidInstallments.length > 0) {
+                    pdf.setFontSize(12);
+                    pdf.setFont('helvetica', 'bold');
+                    pdf.text('Detalhamento das Parcelas Pagas', 15, startY);
+                    startY += 7;
+                    pdf.autoTable({
+                        startY: startY,
+                        head: [['Parcela', 'Vencimento', 'Valor Original', 'Valor Atualizado']],
+                        body: paidInstallments.map(i => [
+                            i.number,
+                            i.originalDate.toLocaleDateString('pt-BR'),
+                            { content: formatCurrency(i.originalValue), styles: { halign: 'right' } },
+                            { content: formatCurrency(i.updatedValue), styles: { halign: 'right' } }
+                        ]),
+                        theme: 'grid', headStyles: { fillColor: [22, 163, 74], textColor: [255, 255, 255] }
+                    });
+                    startY = pdf.lastAutoTable.finalY + 10;
+                }
+
+                const unpaidInstallments = installments.filter(i => i.status !== 'Paga');
+                if (unpaidInstallments.length > 0) {
+                    pdf.setFontSize(12);
+                    pdf.setFont('helvetica', 'bold');
+                    pdf.text('Detalhamento das Parcelas Vencidas e Não Pagas', 15, startY);
+                    startY += 7;
+                    pdf.autoTable({
+                        startY: startY,
+                        head: [['Parcela', 'Vencimento', 'Valor Original', 'Valor Atualizado']],
+                        body: unpaidInstallments.map(i => [
+                            i.number,
+                            i.originalDate.toLocaleDateString('pt-BR'),
+                            { content: formatCurrency(i.originalValue), styles: { halign: 'right' } },
+                            { content: formatCurrency(i.updatedValue), styles: { halign: 'right' } }
+                        ]),
+                        theme: 'grid', headStyles: { fillColor: [220, 38, 38], textColor: [255, 255, 255] }
+                    });
+                    startY = pdf.lastAutoTable.finalY + 10;
+                }
+
+                pdf.setFontSize(12);
+                pdf.setFont('helvetica', 'bold');
+                pdf.text('Resumo Final', 15, startY);
+                startY += 7;
+
+                const summaryBody = [
+                    ['Valor Total do Acordo (Atualizado)', { content: formatCurrency(s.totalUpdated), styles: { halign: 'right' } }],
+                    [`(-) Valor Pago (${s.paidInstallments} parcelas) (Atualizado)`, { content: formatCurrency(s.paidUpdated), styles: { halign: 'right' } }],
+                    ['(=) Saldo Devedor (Atualizado)', { content: formatCurrency(s.updatedDebt), styles: { halign: 'right', fontStyle: 'bold' } }]
+                ];
+
+                if (s.updatedDeductionValue > 0) {
+                    summaryBody.push([`(-) Dedução Adicional (Atualizada)`, { content: formatCurrency(s.updatedDeductionValue), styles: { halign: 'right' } }]);
+                }
+
+                summaryBody.push([`(+) Multa por Descumprimento (${s.penaltyPercent}%)`, { content: formatCurrency(s.penaltyValue), styles: { halign: 'right', textColor: [220, 53, 69] } }]);
+
+                pdf.autoTable({
+                    startY: startY,
+                    head: [['Descrição', 'Valor']],
+                    body: summaryBody,
+                    theme: 'striped'
+                });
+
+                let finalY = pdf.lastAutoTable.finalY;
+
+                let penaltyHelperText = '';
+                if (s.penaltyBaseType === 'remaining') {
+                    penaltyHelperText = `* Multa calculada sobre o saldo devedor atualizado de ${formatCurrency(s.penaltyBaseValue)}`;
+                } else { // 'total'
+                    penaltyHelperText = `* Multa calculada sobre o valor original do acordo de ${formatCurrency(s.penaltyBaseValue)}`;
+                }
+                pdf.setFontSize(8);
+                pdf.setFont('helvetica', 'italic');
+                pdf.text(penaltyHelperText, 15, finalY + 5);
+
+                finalY += 12;
+                pdf.setFontSize(12);
+                pdf.setFont('helvetica', 'bold');
+                pdf.text('Valor Total do Débito:', 15, finalY);
+                pdf.text(formatCurrency(s.grandTotal), 195, finalY, { align: 'right' });
+            };
+
+            const toRoman = (num) => {
+                const map = { 1: 'I', 2: 'II', 3: 'III', 4: 'IV', 5: 'V', 6: 'VI', 7: 'VII', 8: 'VIII', 9: 'IX', 10: 'X' };
+                return map[num] || num;
+            };
+
+            const addPetitionToPdf = (pdf, data) => {
+                const margin = 20;
+                const maxWidth = pdf.internal.pageSize.getWidth() - margin * 2;
+                let currentY = margin;
+                const lineSpacing = 8;
+                const paraSpacing = 5;
+                const baseFontSize = 12;
+
+                pdf.setFont('times', 'normal');
+                pdf.setFontSize(baseFontSize);
+
+                const exequenteInputs = exequentesList.querySelectorAll('.exequente-name-input');
+                const allExequentes = Array.from(exequenteInputs).map(input => input.value.trim().toUpperCase()).filter(Boolean);
+                let exequentesText = allExequentes.length === 1 ? `<strong>${allExequentes[0]}</strong>, já qualificado(a) nos autos`
+                    : allExequentes.join(', ').replace(/,([^,]*)$/, ' e$1') + ', já qualificados nos autos';
+
+                // --- Início da Renderização ---
+
+                pdf.setFont('times', 'bold');
+                const header = "EXCELENTÍSSIMO(A) SENHOR(A) DOUTOR(A) JUIZ(A) DE DIREITO DO JUIZADO ESPECIAL CÍVEL DA COMARCA DE MARÍLIA - SP";
+                const headerLines = pdf.splitTextToSize(header, maxWidth);
+                pdf.text(headerLines, pdf.internal.pageSize.getWidth() / 2, currentY, { align: 'center' });
+                currentY += headerLines.length * lineSpacing + paraSpacing * 4;
+
+                pdf.setFont('times', 'normal');
+                currentY = renderParagraph(pdf, `<strong>Processo nº: ${data.processNumber}</strong>`, { currentY, margin, maxWidth, lineSpacing: 8, paraSpacing: 5, indent: false });
+                currentY += paraSpacing;
+
+                // --- Conteúdo Dinâmico da Petição ---
+                if (data.type === 'condemnation') {
+                    const para1HTML = `${exequentesText}, vem, respeitosamente, à presença de Vossa Excelência, requerer o <strong>CUMPRIMENTO DE SENTENÇA</strong> em face do(a)(s) executado(a)(s), também já qualificado(a)(s), tendo em vista o trânsito em julgado da r. sentença.`;
+                    currentY = renderParagraph(pdf, para1HTML, { currentY, margin, maxWidth, lineSpacing: 8, paraSpacing: 5, indent: true });
+
+                    const para2HTML = `Diante do exposto, requer a intimação do(a)(s) executado(a)(s) para que, no prazo legal, efetue o pagamento devido, no importe de <strong>${formatCurrency(data.summary.subtotal)}</strong>, conforme cálculo anexo. Não ocorrendo o pagamento, requer que o débito seja acrescido da multa de 10%, prevista no art. 523, §1º do CPC, totalizando a quantia de <strong>${formatCurrency(data.summary.subtotal * 1.10)}</strong>.`;
+                    currentY = renderParagraph(pdf, para2HTML, { currentY, margin, maxWidth, lineSpacing: 8, paraSpacing: 5, indent: true });
+                } else { // agreement
+                    const agreementType = document.getElementById('agreement-type-calc').value;
+                    const actionText = agreementType === 'conhecimento' ? 'requerer o <strong>CUMPRIMENTO DE SENTENÇA</strong>' : 'informar o descumprimento do acordo e requerer o <strong>PROSSEGUIMENTO DA EXECUÇÃO</strong>';
+                    const multaText = data.summary.penaltyPercent > 0 ? 'já com o acréscimo da multa' : '';
+                    let intimationText = '';
+                    if (includeIntimationCheckbox.checked) {
+                        const deadline = document.getElementById('intimation-deadline').value;
+                        intimationText = `Diante do exposto, requer a intimação do(a)(s) executado(a)(s) para que, no prazo de <strong>${deadline}</strong> dias, efetue o pagamento do valor remanescente, sob pena de reinício da execução e penhora de bens.`;
+                    }
+
+                    currentY = renderParagraph(pdf, `${exequentesText}, vem, respeitosamente, à presença de Vossa Excelência, informar o descumprimento do acordo homologado nos autos e, ato contínuo, ${actionText}.`, { currentY, margin, maxWidth, lineSpacing: 8, paraSpacing: 5, indent: true });
+                    currentY = renderParagraph(pdf, `Conforme se demonstra pelo cálculo anexo, o débito atualizado remanescente, ${multaText}, perfaz o montante de <strong>${formatCurrency(data.summary.grandTotal)}</strong>. ${intimationText}`, { currentY, margin, maxWidth, lineSpacing: 8, paraSpacing: 5, indent: true });
+                }
+
+                // --- Pedidos de Penhora (Comum a todas as petições) ---
+                const requests = [];
+                if (document.getElementById('penhora-contas').checked) requests.push('a pesquisa e bloqueio de valores em contas bancárias via SISBAJUD;');
+                if (document.getElementById('penhora-veiculos').checked) requests.push('a pesquisa, bloqueio e penhora de veículos via RENAJUD;');
+                if (document.getElementById('penhora-mandado').checked) requests.push('a expedição de mandado de penhora e avaliação de bens;');
+                const outrosTextValue = penhoraOutrosText.value.trim();
+                if (penhoraOutrosCheck.checked && outrosTextValue) requests.push(outrosTextValue);
+
+                if (requests.length > 0) {
+                    let penhoraHeader = 'Caso não haja o pagamento voluntário, requer o prosseguimento da execução com as seguintes medidas:';
+                    if (data.type === 'agreement' && !document.getElementById('include-intimation-checkbox').checked) {
+                        penhoraHeader = 'Requer a realização das seguintes medidas para constrição e penhora:';
+                    }
+                    currentY = renderParagraph(pdf, penhoraHeader, { currentY, margin, maxWidth, lineSpacing: 8, paraSpacing: 5, indent: true });
+
+                    requests.forEach((req, index) => {
+                        const itemText = `${toRoman(index + 1)}. ${req}`;
+                        const lines = pdf.splitTextToSize(itemText, maxWidth - 10); // Wraps text with indent
+                        pdf.text(lines, margin + 10, currentY);
+                        currentY += lines.length * lineSpacing;
+                    });
+                    currentY += paraSpacing;
+                }
+
+                // --- Final da Petição (Comum a todas) ---
+                currentY += paraSpacing;
+                currentY = renderParagraph(pdf, "Nestes termos, pede deferimento.", { currentY, margin, maxWidth, lineSpacing: 8, paraSpacing: 10, indent: false });
+
+                currentY += paraSpacing * 2;
+                const printDate = data.finalCalcDate.toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' });
+                pdf.text(`Marília, ${printDate}.`, pdf.internal.pageSize.getWidth() - margin, currentY, { align: 'right' });
+                currentY += paraSpacing * 4;
+
+                allExequentes.forEach(name => {
+                    const signatureX = pdf.internal.pageSize.getWidth() / 2;
+                    pdf.line(signatureX - 40, currentY, signatureX + 40, currentY);
+                    currentY += 5;
+                    pdf.text(name, signatureX, currentY, { align: 'center' });
+                    currentY += paraSpacing * 2;
+                });
+            };
+
+            // --- LISTENERS E LÓGICAS DA MANIFESTAÇÃO ---
+
+            const updateManifestationView = () => {
+                const selectedOption = manifestationType.value;
+
+                // Resets
+                addressSection.classList.add('hidden');
+                extraContentContainer.classList.add('hidden');
+                nameAddressField.style.display = 'block';
+                manifestContent.value = '';
+                extraContent.value = '';
+                manifestTooltip.style.display = 'none';
+                witnessSection.classList.add('hidden');
+
+                const tooltips = {
+                    'opcao1': 'Essa é uma manifestação genérica. Digite o que a parte pede.',
+                    'opcao2': 'Explique qual a razão da emenda e informe se estão sendo juntados documentos.',
+                    'opcao5': 'Digite no campo abaixo a réplica falada pela parte. Caso a réplica seja genérica, escolha o outro tipo.',
+                    'opcao8': 'Essa é a manifestação genérica sobre a contestação. Não é necessário acrescentar mais nada.',
+                    'opcao9': 'Essa é a manifestação genérica sobre a contestação. Não é necessário acrescentar mais nada no campo da manifestação. Digite apenas as provas que a parte deseja produzir no campo próprio.'
+                };
+
+                if (tooltips[selectedOption]) {
+                    manifestTooltip.style.display = 'inline-block';
+                    manifestTooltipText.textContent = tooltips[selectedOption];
+                }
+
+                if (selectedOption === 'opcao3' || selectedOption === 'opcao4') {
+                    addressSection.classList.remove('hidden');
+                    if (selectedOption === 'opcao3') {
+                        nameAddressField.style.display = 'none';
+                    }
+                }
+
+                if (selectedOption === 'opcao6' || selectedOption === 'opcao9') {
+                    witnessSection.classList.remove('hidden');
+                }
+
+
+                if (selectedOption === 'opcao8') {
+                    manifestContent.value = `Declara ter sido cientificado da possibilidade de constituição de advogado particular ou da nomeação de advogado pela Defensoria Pública, após triagem e caso atendidos os critérios daquela instituição, sentindo-se  seguro para apresentar sua réplica nos seguintes termos: \n\nDeclara ter lido a(s) contestação(ões) juntadas aos autos, impugna os argumentos da(s) parte(s) requerida(s), reiterando tudo o que foi exposto em sede de inicial, requerendo que o MM. Juiz afaste qualquer preliminar suscitada, bem como a narrativa dos fatos feita pela(s) parte(s) adversa(s).\n\nDeclara que os fatos ocorreram da forma narrada na inicial e que a(s) parte(s) requerida(s) não logrou(ram) êxito em provar suas alegações. Por fim, pugna pela total procedência da ação, nos mesmos termos da inicial.\n\nInforma que <strong>NÃO</strong> possui mais provas a produzir, requerendo o julgamento antecipado do feito, com a consequente procedência da ação, nos termos da inicial.`;
+                }
+
+                if (selectedOption === 'opcao9') {
+                    extraContentContainer.classList.remove('hidden');
+                    manifestContent.value = `Declara ter sido cientificado da possibilidade de constituição de advogado particular ou da nomeação de advogado pela Defensoria Pública, após triagem e caso atendidos os critérios daquela instituição, sentindo-se  seguro para apresentar sua réplica nos seguintes termos: \n\nDeclara ter lido a(s) contestação(ões) juntadas aos autos, impugna os argumentos da(s) parte(s) requerida(s), reiterando tudo o que foi exposto em sede de inicial, requerendo que o MM. Juiz afaste qualquer preliminar suscitada, bem como a narrativa dos fatos feita pela(s) parte(s) adversa(s).\n\nDeclara que os fatos ocorreram da forma narrada na inicial e que a(s) parte(s) requerida(s) não logrou(ram) êxito em provar suas alegações. Por fim, pugna pela total procedência da ação, nos mesmos termos da inicial.\n\nInforma que <strong> requer a produção das seguintes provas</strong>:`;
+                }
+            };
+
+            const clearManifestationForm = () => {
+                if (confirm("Tem certeza que deseja limpar todos os campos?")) {
+                    processNumberManifest.value = '';
+                    manifestPartiesList.innerHTML = `
+                        <div class="manifest-party-item grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Nome da Parte (Obrigatório)</label>
+                                <input type="text" class="manifest-name w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">CPF/CNPJ (Obrigatório)</label>
+                                <input type="text" class="manifest-cpf w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
+                            </div>
+                        </div>`;
+                    addInputBehaviors(manifestPartiesList); // Re-apply behaviors to the new inputs
+                    manifestationType.selectedIndex = 0;
+                    manifestContent.value = '';
+                    extraContent.value = '';
+                    document.getElementById('name-address').value = '';
+                    cepInput.value = '';
+                    document.getElementById('rua').value = '';
+                    document.getElementById('numero').value = '';
+                    document.getElementById('complemento').value = '';
+                    document.getElementById('bairro').value = '';
+                    document.getElementById('cidade').value = '';
+                    document.getElementById('estado').value = '';
+                    witnessList.innerHTML = '';
+                    updateManifestationView();
+                }
+            };
+
+            const generateManifestationPDF = () => {
+                if (!prePrintValidation(true)) return;
+
+                const { jsPDF } = window.jspdf;
+                const pdf = new jsPDF('p', 'mm', 'a4');
+                addManifestationToPdf(pdf); // Re-using the logic from preview
+                pdf.save(`Manifestacao_${processNumberManifest.value.replace(/\D/g, '')}.pdf`);
+            };
+
+            const showManifestationPreview = () => {
+                if (!prePrintValidation(true)) return;
+                const previewHTML = generateManifestationPreviewHTML();
+                previewContent.innerHTML = `<h2 class="text-xl font-bold text-center mb-4">Prévia da Manifestação</h2><div class="p-8 border shadow-lg bg-white mx-auto" style="width: 210mm;">${previewHTML}</div>`;
+                previewModal.classList.remove('hidden');
+            };
+
+            const generateManifestationPreviewHTML = () => {
+                const selectedOptionText = manifestationType.options[manifestationType.selectedIndex].text.replace(/\s*\(.*?\)\s*/g, '').toUpperCase();
+                let concordancia = 'apresenta sua';
+                if (['opcao3', 'opcao4', 'opcao6', 'opcao8', 'opcao9'].includes(manifestationType.value)) { concordancia = 'vem'; }
+                if (manifestationType.value === 'opcao5') { concordancia = 'vem apresentar'; }
+
+                const partyNames = Array.from(document.querySelectorAll('.manifest-name')).map(input => input.value.trim().toUpperCase()).filter(Boolean);
+                const partyText = partyNames.length === 1 ? `<strong>${partyNames[0]}</strong>, já qualificado(a) nos autos`
+                    : partyNames.join(', ').replace(/,([^,]*)$/, ' e$1') + ', já qualificados nos autos';
+
+                let addressHTML = '';
+                if (!addressSection.classList.contains('hidden')) {
+                    addressHTML = `<p style="text-indent: 4em;"><strong>${(document.getElementById('name-address').value || partyNames[0]).toUpperCase()}</strong><br>${document.getElementById('rua').value}, nº ${document.getElementById('numero').value}, ${document.getElementById('complemento').value}<br>${document.getElementById('bairro').value}, ${cepInput.value}, ${document.getElementById('cidade').value}/${document.getElementById('estado').value}</p>`;
+                }
+
+                const contentParagraphs = manifestContent.value.split('\n').filter(p => p.trim() !== '').map(p => `<p style="text-indent: 4em;">${p}</p>`).join('');
+                let extraContentHTML = '';
+                if (!extraContentContainer.classList.contains('hidden') && extraContent.value) {
+                    extraContentHTML = extraContent.value.split('\n').filter(p => p.trim() !== '').map(p => `<p style="text-indent: 4em;">${p}</p>`).join('');
+                }
+
+                const today = new Date();
+                const dateStr = today.toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' });
+                const signaturesHTML = partyNames.map(name => `<div style="text-align: center; margin-top: 40px;"><p style="border-top: 1px solid black; width: 75%; margin: 0 auto; padding-top: 5px;">${name}</p></div>`).join('');
+
+                return `
+                    <div style="font-family: 'Times New Roman', Times, serif; font-size: 12pt; line-height: 2; text-align: justify;">
+                        <p style="text-align: center; font-weight: bold;">AO JUÍZO DO JUIZADO ESPECIAL CÍVEL DA COMARCA DE MARÍLIA/SP</p>
+                        <p style="margin-top: 2cm;"><strong>Processo nº: ${processNumberManifest.value}</strong></p>
+                        <p><strong>Solicitante(s): ${partyNames.join(', ')}</strong></p>
+                        <p style="text-align: center; font-weight: bold; margin-top: 1cm;">TERMO - ${selectedOptionText}</p>
+                        <p style="text-indent: 4em; margin-top: 1cm;">A(s) parte(s) acima qualificada(s), ${concordancia} <strong>${selectedOptionText}</strong>, nos seguintes termos:</p>
+                        ${addressHTML}
+                        ${contentParagraphs}
+                        ${extraContentHTML}
+                        <p style="margin-top: 2cm;">Nestes termos, pede deferimento.</p>
+                        <p style="margin-top: 2cm; text-align: right;">Marília, ${dateStr}.</p>
+                        <div style="margin-top: 4cm;">${signaturesHTML}</div>
+                    </div>
+                `;
+            };
+
+
+            // --- EVENT LISTENERS ---
+            mainAppSelect.addEventListener('change', toggleMainView);
+
+            // -- Listeners da Calculadora
+            calculationTypeSelect.addEventListener('change', toggleCalculationView);
+            complianceRequestCheckbox.addEventListener('change', () => petitionOptionsContainer.classList.toggle('hidden', !complianceRequestCheckbox.checked));
+
+            includeIntimationCheckbox.addEventListener('change', () => {
+                intimationDeadlineWrapper.classList.toggle('hidden', !includeIntimationCheckbox.checked);
+            });
+
+            condemnationContainer.addEventListener('change', (e) => {
+                if (e.target.classList.contains('description-select')) {
+                    const row = e.target.closest('.calculation-row');
+                    const otherInput = row.querySelector('.other-description-input');
+                    const interestDateInput = row.querySelector('.interest-date-input');
+                    const isDeduction = e.target.value === 'Dedução/Pagamento Parcial';
+
+                    otherInput.classList.toggle('hidden', e.target.value !== 'Outro');
+
+                    interestDateInput.disabled = isDeduction;
+                    if (isDeduction) {
+                        interestDateInput.value = '';
+                        interestDateInput.placeholder = 'N/A';
+                    } else {
+                        interestDateInput.placeholder = 'DD/MM/AAAA';
+                    }
+                }
+            });
+
+            addExequenteBtn.addEventListener('click', () => {
+                const newItem = document.createElement('div');
+                newItem.className = 'exequente-item flex items-center gap-3';
+                newItem.innerHTML = `<input type="text" class="exequente-name-input flex-grow p-2 border border-gray-300 rounded-lg shadow-sm" placeholder="Nome completo do Exequente"><button class="remove-exequente-btn bg-red-500 hover:bg-red-600 text-white font-bold px-3 py-1 rounded-lg">&times;</button>`;
+                exequentesList.appendChild(newItem);
+            });
+            exequentesList.addEventListener('click', (e) => { if (e.target.classList.contains('remove-exequente-btn')) e.target.parentElement.remove() });
+            penhoraOutrosCheck.addEventListener('change', () => penhoraOutrosText.classList.toggle('hidden'));
+            addRowBtn.addEventListener('click', addRow);
+            rowsContainer.addEventListener('click', removeRow);
+            calculateBtn.addEventListener('click', handleCalculateClick);
+            addFineCheckbox.addEventListener('change', () => { if (lastCalculationData && lastCalculationData.type === 'condemnation') handleCalculateClick(); });
+
+            agreementContainer.addEventListener('change', (e) => {
+                if (e.target.name === 'penalty-base' && lastCalculationData && lastCalculationData.type === 'agreement') {
+                    handleCalculateClick();
+                }
+            });
+
+            printBtn.addEventListener('click', generateCalculationOnlyPDF);
+            printCombinedBtn.addEventListener('click', generateCombinedPDF);
+            printPetitionBtn.addEventListener('click', generatePetitionOnlyPDF);
+            printCalcBtn.addEventListener('click', generateCalculationOnlyPDF);
+            previewBtn.addEventListener('click', showPreview);
+            closePreviewBtn.addEventListener('click', () => previewModal.classList.add('hidden'));
+            previewModal.addEventListener('click', (e) => { if (e.target === previewModal) previewModal.classList.add('hidden'); });
+            processNumberInputCalc.addEventListener('input', formatCNJOnInput);
+
+            // -- Listeners do Gerador de Manifestação
+            processNumberManifest.addEventListener('input', formatCNJOnInput);
+
+            manifestPartiesList.addEventListener('input', (e) => {
+                if (e.target.classList.contains('manifest-cpf')) {
+                    formatCpfCnpjOnInput(e);
+                }
+            });
+
+            manifestationType.addEventListener('change', updateManifestationView);
+            generateManifestBtn.addEventListener('click', generateManifestationPDF);
+            clearManifestBtn.addEventListener('click', clearManifestationForm);
+            previewManifestBtn.addEventListener('click', showManifestationPreview);
             cepInput.addEventListener('input', function () {
+                this.value = this.value.replace(/\D/g, '').replace(/^(\d{5})(\d)/, '$1-$2');
                 const cep = this.value.replace(/\D/g, '');
                 if (cep.length === 8) {
                     fetch(`https://viacep.com.br/ws/${cep}/json/`)
                         .then(response => response.json())
                         .then(data => {
                             if (!data.erro) {
-                                document.querySelector(`.rua`).value = data.logradouro;
-                                document.querySelector(`.bairro`).value = data.bairro;
-                                document.querySelector(`.cidade`).value = data.localidade;
-                                document.querySelector(`.estado`).value = data.uf;
+                                document.getElementById('rua').value = data.logradouro;
+                                document.getElementById('bairro').value = data.bairro;
+                                document.getElementById('cidade').value = data.localidade;
+                                document.getElementById('estado').value = data.uf;
                             } else {
                                 alert('CEP não encontrado.');
                             }
                         })
-                        .catch(error => {
-                            console.error('Erro ao buscar o CEP:', error);
-                            alert('Erro ao buscar o CEP.');
-                        });
+                        .catch(error => console.error('Erro ao buscar o CEP:', error));
                 }
             });
 
-            cepInput.addEventListener('input', function () {
-                this.value = this.value.replace(/\D/g, '').replace(/^(\d{5})(\d)/, '$1-$2');
-            });
-        }
-
-
-        // Adiciona o evento change ao dropdown
-        var manifestationText = document.getElementById('manifestationText');
-        var concorcanciaManifestation = document.getElementById('concorcanciaManifestation');
-        manifestationText.textContent = 'MANIFESTAÇÃO';
-        concorcanciaManifestation.textContent = 'apresenta';
-        var extraFieldContainer = document.getElementById('extraFieldContainer');
-        var extraContent = document.getElementById('extraContent');
-        document.getElementById('manifestationType').addEventListener('change', function () {
-            if (this.value === 'opcao9') {
-                extraFieldContainer.style.display = 'block';
-            } else {
-                extraFieldContainer.style.display = 'none';
-                if (extraContent) extraContent.value = '';
-            }
-            if (this.value === 'opcao1') {
-                concorcanciaManifestation.textContent = 'apresenta sua';
-                manifestationText.textContent = 'MANIFESTAÇÃO';
-                addressField.style.display = 'none';
-                addressParagraph.style.display = 'none';
-                content.value = '';
-
-            } else if (this.value === 'opcao2') {
-                concorcanciaManifestation.textContent = 'apresenta sua';
-                manifestationText.textContent = 'EMENDA À INICIAL';
-                addressField.style.display = 'none';
-                addressParagraph.style.display = 'none';
-                content.value = '';
-
-            } else if (this.value === 'opcao3') {
-                concorcanciaManifestation.textContent = 'requer a';
-                manifestationText.textContent = 'ATUALIZAÇÃO DO PRÓPRIO ENDEREÇO';
-                addressParagraph.style.display = 'block';
-                addressField.style.display = 'block';
-                nameAddressField.style.display = 'none';
-                content.value = '';
-
-            } else if (this.value === 'opcao4') {
-                concorcanciaManifestation.textContent = 'vem indicar o';
-                manifestationText.textContent = 'ENDEREÇO DA PARTE CONTRÁRIA';
-                addressField.style.display = 'block';
-                addressParagraph.style.display = 'block';
-                nameAddressField.style.display = 'block';
-                content.value = '';
-
-
-            } else if (this.value === 'opcao5') {
-                concorcanciaManifestation.textContent = 'vem apresentar ';
-                manifestationText.textContent = 'MANIFESTAÇÃO SOBRE A CONTESTAÇÃO';
-                addressField.style.display = 'none';
-                content.value = '';
-
-            } else if (this.value === 'opcao6') {
-                concorcanciaManifestation.textContent = 'vem ';
-                manifestationText.textContent = 'INDICAR PROVAS';
-                addressField.style.display = 'none';
-                content.value = '';
-
-            }
-            else if (this.value === 'opcao8') {
-                concorcanciaManifestation.textContent = 'vem ';
-                manifestationText.textContent = 'MANIFESTAÇÃO SOBRE A CONTESTAÇÃO';
-                addressField.style.display = 'none';
-                content.value = `Declara ter sido cientificado da possibilidade de constituição de advogado particular ou da nomeação de advogado pela Defensoria Pública, após triagem e caso atendidos os critérios daquela instituição, sentindo-se  seguro para apresentar sua réplica nos seguintes termos:                 
-Declara ter lido a(s) contestação(ões) juntadas aos autos, impugna os argumentos da(s) parte(s) requerida(s), reiterando tudo o que foi exposto em sede de inicial, requerendo que o MM. Juiz afaste qualquer preliminar suscitada, bem como a narrativa dos fatos feita pela(s) parte(s) adversa(s). 
-Declara que os fatos ocorreram da forma narrada na inicial e que a(s) parte(s) requerida(s) não logrou(ram) êxito em provar suas alegações. Por fim, pugna pela total procedência da ação, nos mesmos termos da inicial.
-Informa que <b>NÃO</b> possui mais provas a produzir, requerendo o julgamento antecipado do feito, com a consequente procedência da ação, nos termos da inicial.
-                `;
-
-
-
-            }
-            else if (this.value === 'opcao9') {
-                concorcanciaManifestation.textContent = 'vem ';
-                manifestationText.textContent = 'MANIFESTAÇÃO SOBRE A CONTESTAÇÃO';
-                addressField.style.display = 'none';
-                extraFieldContainer.style.display = 'block';
-
-                content.value = `Declara ter sido cientificado da possibilidade de constituição de advogado particular ou da nomeação de advogado pela Defensoria Pública, após triagem e caso atendidos os critérios daquela instituição, sentindo-se  seguro para apresentar sua réplica nos seguintes termos:                 
-Declara ter lido a(s) contestação(ões) juntadas aos autos, impugna os argumentos da(s) parte(s) requerida(s), reiterando tudo o que foi exposto em sede de inicial, requerendo que o MM. Juiz afaste qualquer preliminar suscitada, bem como a narrativa dos fatos feita pela(s) parte(s) adversa(s). 
-Declara que os fatos ocorreram da forma narrada na inicial e que a(s) parte(s) requerida(s) não logrou(ram) êxito em provar suas alegações. Por fim, pugna pela total procedência da ação, nos mesmos termos da inicial.
-Informa que <b> requer a produção das seguintes provas</b>:
-`
-
-
-
-
-            }
-
-            else if (this.value === 'opcao7') {
-                manifestationText.textContent = 'REQUERIMENTO DE CUMPRIMENTO DE SENTENÇA';
-                content.value = `A parte credora solicita que seja certificado ` +
-                    `o trânsito em julgado da sentença proferida` +
-                    `, renunciando a eventual prazo recursal. 
-
-Requer, ainda, o início da fase de cumprimento de sentença, com a distribuição desta petição como novo processo, vinculando-se ao processo de conhecimento como origem da presente demanda. Requer que seja o valor de seu crédito atualizado pela Serventia nos termos da sentença e, após, seja(m) o(s) executado(s) intimado(s) para, no prazo de 15 (quinze) dias, efetuar(em) o pagamento do valor devido, sob pena de incidência de multa de 10% (dez por cento) e, após, de penhora de bens e/ou valores.
-
-Desde logo, caso não seja comprovado o pagamento nos autos, a parte credora requer que sejam penhorados bens e valores do(s) executado(s) suficientes para garantir a satisfação do crédito, seguindo-se a ordem de preferência da penhora prevista no art. 835 do CPC, postulando expressamente o uso dos sistemas para localização de valores e veículos, além da expedição de mandado de penhora e avaliação de bens livres.`
-
-
-            }
-
-
-            // manifestationText.textContent = this.selectedOptions[0].textContent;
-
-            // Atualiza o parágrafo quando os campos de endereço mudam
-            document.getElementById('nameAddress').addEventListener('input', updateAddressParagraph);
-            document.querySelectorAll('.cep, .rua, .numero, .complemento, .bairro, .cidade, .estado').forEach(function (input) {
-                input.addEventListener('input', updateAddressParagraph);
-            });
-
-            function updateAddressParagraph() {
-                var nameAddress = document.getElementById('nameAddress').value;
-                var rua = document.querySelector('.rua').value;
-                var numero = document.querySelector('.numero').value;
-                var complemento = document.querySelector('.complemento').value;
-                var bairro = document.querySelector('.bairro').value;
-                var cep = document.querySelector('.cep').value;
-                var cidade = document.querySelector('.cidade').value;
-                var estado = document.querySelector('.estado').value;
-
-                addressParagraph.innerHTML = `<b>${nameAddress}</b><br>${rua}, nº ${numero}, ${complemento}<br>${bairro}, ${cep}, ${cidade}/${estado}`;
-            }
-        });
-
-
-        function validateAndGeneratePDF() {
-            // Reset values at the beginning of the function
-            const remove = document.querySelectorAll('p#paragrafo');
-            remove.forEach(paragraph => paragraph.remove());
-            const processNumber = document.getElementById('processNumber').value;
-            const name = document.getElementById('name').value;
-            const cpf = document.getElementById('cpf').value;
-            var content = document.getElementById('content').value;
-            var extraContentValue = '';
-            if (document.getElementById('extraFieldContainer').style.display === 'block') {
-                extraContentValue = document.getElementById('extraContent').value;
-            }
-
-            /*  if (processNumber === '' || processNumber.includes('_')) {
-                  alert('Por favor, preencha o campo "Nº do Processo" corretamente.');
-                  document.getElementById('processNumber').focus();
-                  return;
-  
-              }
-  
-              if (name.length <= 10) {
-                  alert('Por favor, informe um nome válido.');
-                  document.getElementById('name').focus();
-                  return;
-              }
-  
-              if (cpf.length < 11) {
-                  alert('Por favor, informe um CPF ou CNPJ válido');
-                  document.getElementById('cpf').focus();
-                  return;
-              }
-  
-              if (content.length < 20) {
-                  alert('Sua manifestação está muito curta.');
-                  document.getElementById('content').focus();
-                  return;
-              }*/
-
-            generatePDF();
-        }
-
-        function generatePDF() {
-            var newParagraphs = [];
-
-            // Para remover todos os elementos da array
-            newParagraphs.length = 0;
-            const contentContainer = document.createElement('div');
-
-            // Limpar o contentContainer antes de adicionar novos parágrafos
-            contentContainer.innerHTML = '';
-
-            const processNumber = document.getElementById('processNumber').value;
-            const name = document.getElementById('name').value;
-            const cpf = document.getElementById('cpf').value;
-            var content = document.getElementById('content').value;
-            var extraContentValue = '';
-            if (document.getElementById('extraFieldContainer').style.display === 'block') {
-                extraContentValue = document.getElementById('extraContent').value;
-            }
-            var paragraphs = content.split('\n');
-            var newParagraphs = [];
-            const words = ''
-            var paragraphsValue = '';
-            var manifestationText = document.getElementById('manifestationText');
-            var addressParagraph = document.getElementById('addressParagraph');
-
-            paragraphs.forEach(paragraph => {
-                const words = paragraph.split(' ');
-                currentParagraph = ''
-                currentParagraph.length = 0;
-                if (words.length > 100) {
-                    let startIndex = 0;
-                    while (startIndex < words.length) {
-                        let endIndex = Math.min(startIndex + 60, words.length);
-                        let currentParagraph = words.slice(startIndex, endIndex).join(' ');
-                        let remainingWords = words.slice(endIndex).join(' ');
-                        const match = remainingWords.match(/.*?\./);
-                        if (match) {
-                            currentParagraph += ' ' + match[0];
-                            newParagraphs.push(currentParagraph);
-                            startIndex += currentParagraph.split(' ').length;
-                        } else {
-                            newParagraphs.push(currentParagraph);
-                            startIndex += 100;
-                        }
-                    }
-                } else {
-                    newParagraphs.push(paragraph);
-                }
-            });
-
-            // Transformar a array de newParagraphs em uma única string
-            var paragraphsValue = newParagraphs.join('\n');
-
-            // Definir o valor do elemento de texto com o conteúdo dos parágrafos
-            document.getElementById('content').value = paragraphsValue;
-            if (extraContentValue.trim() !== '') {
-                const p = document.createElement('p');
-                p.style.pageBreakInside = 'auto';
-                p.style.whiteSpace = 'pre-wrap';
-                p.style.textAlign = 'justify';
-                p.style.textIndent = '6em';
-                p.innerHTML = extraContentValue;
-                p.id = 'paragrafo';
-                contentContainer.appendChild(p);
-            }
-
-            // Limpar o contentContainer antes de adicionar novos parágrafos
-            contentContainer.innerHTML = '';
-
-            newParagraphs.forEach(paragraph => {
-                const p = document.createElement('p');
-                p.style.pageBreakInside = 'auto';
-                p.style.whiteSpace = 'pre-wrap';
-                p.style.textAlign = 'justify';
-                p.style.textIndent = '6em'
-                p.innerHTML = paragraph;
-                p.id = 'paragrafo';
-                contentContainer.appendChild(p);
-            });
-            // Para adicionar o campo extra de provas
-            if (extraContentValue.trim() !== '') {
-                const p = document.createElement('p');
-                p.style.pageBreakInside = 'auto';
-                p.style.whiteSpace = 'pre-wrap';
-                p.style.textAlign = 'justify';
-                p.style.textIndent = '6em';
-                p.innerHTML = `${extraContentValue}`;
-                p.id = 'paragrafo';
-                contentContainer.appendChild(p);
-            }
+            // --- INICIALIZAÇÃO ---
+            addInputBehaviors(document.body);
+            fetchEconomicData();
+            toggleMainView(); // Define a view inicial
+            updateManifestationView(); // Define a view inicial da manifestação
+            document.getElementById('agreement-penalty').value = '20';
 
             const today = new Date();
-            const dateStr = today.toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' });
-
-            // Limpar o conteúdo anterior do PDF
-            document.getElementById('pdfContentText').innerHTML = '';
-
-            document.getElementById('pdfProcessNumber').innerText = processNumber;
-            document.getElementById('pdfName').innerText = name;
-            document.getElementById('pdfContentText').insertAdjacentHTML('afterend', contentContainer.innerHTML);
-            document.getElementById('pdfDate').innerText = dateStr;
-            document.getElementById('pdfSignatureName').innerText = name;
-            document.getElementById('pdfSignatureCPF').innerText = cpf;
-            document.getElementById('manifestationText').innerText = manifestationText.textContent
-            //document.getElementById('addressParagraphSpan').innerHTML = addressParagraph.innerHTML;
-
-            const element = document.getElementById('pdfContent');
-            element.style.display = 'block';
-
-            const opt = {
-                margin: [25, 0, 35, 0], // top, right, bottom, left
-                filename: 'manifestacao.pdf',
-                image: { type: 'jpeg', quality: 0.98 },
-                html2canvas: { scale: 2, useCORS: true },
-                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
-                pagebreak: { mode: ['avoid-all', 'css', 'legacy'] },
-                //   autoPaging: 'text', // Crucial for handling text flow across pages
-            };
-
-            html2pdf().from(element).set(opt).toPdf().get('pdf').then(function (pdf) {
-                const totalPages = pdf.internal.getNumberOfPages();
-                pdf.setPage(1)
-                pdf.setFont('sans-serif', 'bold');
-
-
-                pdf.text('AO JUÍZO DO JUIZADO ESPECIAL CÍVEL DA COMARCA DE MARÍLIA/SP ', pdf.internal.pageSize.getWidth() / 2, 20, { align: 'center' });
-
-                for (let i = 1; i <= totalPages; i++) {
-                    pdf.setPage(i);
-                    pdf.setFontSize(8);
-                    const pageWidth = pdf.internal.pageSize.getWidth();
-                    const marginLeft = pageWidth * 0.95; // 2.5% margin
-                    const maxWidth = pageWidth * 0.95; // 95% width
-                    pdf.text(`Página ${i} de ${totalPages}`, marginLeft, pdf.internal.pageSize.getHeight() - 10, { maxWidth: maxWidth, align: 'right' });
-                }
-                pdf.setPage(totalPages)
-                pdf.setFontSize(8);
-                const pageWidth = pdf.internal.pageSize.getWidth();
-                const marginLeft = pageWidth * 0.025; // 2.5% margin
-                const maxWidth = pageWidth * 0.95; // 95% width
-                const footerText1 = '';
-                //`_________________________________________________________________________________________________________________________`;
-                const footerText2 = ''
-                /*`ATENÇÃO: Esta manifestação somente terá validade se assinada pelo solicitante e juntada no processo.</b>
-Para juntar esta manifestação no processo, entregue-a assinada no balcão do Juizado Especial Cível da
-Comarca de Marília/SP.
-O solicitante poderá enviar a manifestação por e-mail para que seja juntada no processo. Para isso, a
-manifestação deverá ser assinada e encaminhada como anexo em formato .pdf ou .jpg para o e-mail
-mariliajec@tjsp.jus.br, juntamente com um documento de identidade em formato .pdf ou .jpg que comprove a
-assinatura do solicitante. Digite no campo "Assunto" o seguinte texto: "Petição para Juntada no Processo nº)`;*/
-
-                const lines1 = pdf.splitTextToSize(footerText1, maxWidth);
-                const lines2 = pdf.splitTextToSize(footerText2, maxWidth);
-
-                pdf.text(lines1, marginLeft, pdf.internal.pageSize.getHeight() - 30, { align: 'left' });
-                pdf.text(lines2, marginLeft, pdf.internal.pageSize.getHeight() - 25, { maxWidth: maxWidth, align: 'justify' });
-
-            }).output('blob').then(function (blob) {
-                const url = URL.createObjectURL(blob);
-                window.open(url, '_blank'); // Abre o PDF em uma nova aba                setTimeout(() => URL.revokeObjectURL(url), 10000); // Limpa o objeto após 10s
-                element.style.display = '';
-            });
-        }</script>
+            const day = String(today.getDate()).padStart(2, '0');
+            const month = String(today.getMonth() + 1).padStart(2, '0');
+            const year = today.getFullYear();
+            document.getElementById('final-date').value = `${day}/${month}/${year}`;
+        });
+    </script>
 </body>
 
 </html>

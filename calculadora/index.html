@@ -117,6 +117,8 @@
                                 <option value="Dano Moral">Dano Moral</option>
                                 <option value="Restituição">Restituição</option>
                                 <option value="Multa">Multa</option>
+                                <option value="Última Atualização">Última Atualização</option>
+                                <option value="Dedução/Pagamento Parcial">Dedução/Pagamento Parcial</option>
                                 <option value="Outro">Outro</option>
                             </select>
                             <input type="text"
@@ -224,6 +226,24 @@
                             </div>
                         </div>
                     </div>
+                    <div class="border-t pt-4 mt-4">
+                        <label class="block text-sm font-medium text-gray-700">Dedução/Pagamento Parcial (Opcional - Use
+                            SOMENTE para outros pagamentos que NÃO sejam as parcelas adimplidas)</label>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 items-end mt-1">
+                            <div>
+                                <label class="block text-xs font-medium text-gray-600">Valor a Deduzir (R$)</label>
+                                <input id="agreement-deduction-value" type="text"
+                                    class="value-input w-full mt-1 p-2 border border-gray-300 rounded-lg shadow-sm"
+                                    placeholder="Ex: 200,00">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-medium text-gray-600">Data do Pagamento</label>
+                                <input id="agreement-deduction-date" type="text"
+                                    class="date-input w-full mt-1 p-2 border border-gray-300 rounded-lg shadow-sm"
+                                    placeholder="DD/MM/AAAA">
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -306,29 +326,36 @@
 
                 <div id="penhora-container">
                     <h3 class="text-lg font-semibold text-gray-800 mb-4">Pedidos de Penhora</h3>
-                    <div class="space-y-3 text-base font-medium text-gray-800">
+                    <div class="space-y-3">
                         <div>
-                            <label class="flex items-center"><input type="checkbox" id="penhora-contas"
-                                    class="h-4 w-4 text-indigo-600 border-gray-300 rounded" checked><span
-                                    class="ml-2">Penhora de Valores
-                                    em Contas</span></label>
+                            <label class="flex items-center cursor-pointer">
+                                <input type="checkbox" id="penhora-contas"
+                                    class="h-5 w-5 text-indigo-600 border-gray-300 rounded" checked>
+                                <span class="ml-3 font-medium text-gray-800">Penhora de Valores em Contas</span>
+                            </label>
                         </div>
                         <div>
-                            <label class="flex items-center"><input type="checkbox" id="penhora-veiculos"
-                                    class="h-4 w-4 text-indigo-600 border-gray-300 rounded" checked><span
-                                    class="ml-2">Pesquisa, Bloqueio
-                                    e Penhora de Veículos</span></label>
+                            <label class="flex items-center cursor-pointer">
+                                <input type="checkbox" id="penhora-veiculos"
+                                    class="h-5 w-5 text-indigo-600 border-gray-300 rounded" checked>
+                                <span class="ml-3 font-medium text-gray-800">Pesquisa, Bloqueio e Penhora de
+                                    Veículos</span>
+                            </label>
                         </div>
                         <div>
-                            <label class="flex items-center"><input type="checkbox" id="penhora-mandado"
-                                    class="h-4 w-4 text-indigo-600 border-gray-300 rounded" checked><span
-                                    class="ml-2">Expedição de
-                                    Mandado de Penhora e Avaliação</span></label>
+                            <label class="flex items-center cursor-pointer">
+                                <input type="checkbox" id="penhora-mandado"
+                                    class="h-5 w-5 text-indigo-600 border-gray-300 rounded" checked>
+                                <span class="ml-3 font-medium text-gray-800">Expedição de Mandado de Penhora e
+                                    Avaliação</span>
+                            </label>
                         </div>
                         <div>
-                            <label class="flex items-center"><input type="checkbox" id="penhora-outros-check"
-                                    class="h-4 w-4 text-indigo-600 border-gray-300 rounded"><span class="ml-2">Outro(s)
-                                    Pedido(s)</span></label>
+                            <label class="flex items-center cursor-pointer">
+                                <input type="checkbox" id="penhora-outros-check"
+                                    class="h-5 w-5 text-indigo-600 border-gray-300 rounded">
+                                <span class="ml-3 font-medium text-gray-800">Outro(s) Pedido(s)</span>
+                            </label>
                         </div>
                         <textarea id="penhora-outros-text"
                             class="hidden w-full mt-2 p-2 border border-gray-300 rounded-lg font-normal" rows="3"
@@ -612,6 +639,9 @@
                     finalCalcDate: finalCalcDate
                 };
 
+                let positiveRows = [];
+                let deductionRows = [];
+
                 document.querySelectorAll('.calculation-row').forEach(row => {
                     const descriptionSelect = row.querySelector('.description-select');
                     let description = descriptionSelect.value;
@@ -624,7 +654,7 @@
                     const correctionDate = parseDate(row.querySelector('.correction-date-input').value);
                     const interestDate = parseDate(row.querySelector('.interest-date-input').value);
 
-                    if (originalValue === 0 || !correctionDate || !interestDate) return;
+                    if (originalValue === 0 || !correctionDate) return;
 
                     let correctedValue = originalValue;
                     for (let d = new Date(correctionDate); d < finalCalcDate; d.setMonth(d.getMonth() + 1)) {
@@ -633,34 +663,46 @@
                     }
                     const totalCorrection = correctedValue - originalValue;
 
-                    let baseForInterest = originalValue;
-                    for (let d = new Date(correctionDate); d < interestDate && d < finalCalcDate; d.setMonth(d.getMonth() + 1)) {
-                        const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
-                        baseForInterest *= (1 + (ipcaData[key] || 0) / 100);
-                    }
-
                     let totalInterest = 0;
-                    for (let d = new Date(interestDate); d < finalCalcDate; d.setMonth(d.getMonth() + 1)) {
-                        const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
-                        let monthlyRate = (monthlySelicData[key] || 0) - (ipca15Data[key] || 0);
-                        monthlyRate = Math.max(0, monthlyRate) / 100;
-                        if (d.getFullYear() === finalCalcDate.getFullYear() && d.getMonth() === finalCalcDate.getMonth()) {
-                            monthlyRate *= finalCalcDate.getDate() / new Date(d.getFullYear(), d.getMonth() + 1, 0).getDate();
+                    if (descriptionSelect.value !== 'Dedução/Pagamento Parcial' && interestDate) {
+                        let baseForInterest = originalValue;
+                        for (let d = new Date(correctionDate); d < interestDate && d < finalCalcDate; d.setMonth(d.getMonth() + 1)) {
+                            const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+                            baseForInterest *= (1 + (ipcaData[key] || 0) / 100);
                         }
-                        totalInterest += baseForInterest * monthlyRate;
+
+                        for (let d = new Date(interestDate); d < finalCalcDate; d.setMonth(d.getMonth() + 1)) {
+                            const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+                            let monthlyRate = (monthlySelicData[key] || 0) - (ipca15Data[key] || 0);
+                            monthlyRate = Math.max(0, monthlyRate) / 100;
+                            if (d.getFullYear() === finalCalcDate.getFullYear() && d.getMonth() === finalCalcDate.getMonth()) {
+                                monthlyRate *= finalCalcDate.getDate() / new Date(d.getFullYear(), d.getMonth() + 1, 0).getDate();
+                            }
+                            totalInterest += baseForInterest * monthlyRate;
+                        }
                     }
 
                     const finalValueForRow = originalValue + totalCorrection + totalInterest;
+                    const rowData = { description, originalValue, totalCorrection, totalInterest, finalValueForRow };
 
-                    calculationResult.rows.push({ description, originalValue, totalCorrection, totalInterest, finalValueForRow });
+                    if (descriptionSelect.value === 'Dedução/Pagamento Parcial') {
+                        deductionRows.push(rowData);
+                    } else {
+                        positiveRows.push(rowData);
+                    }
                 });
 
-                const subtotal = calculationResult.rows.reduce((acc, row) => acc + row.finalValueForRow, 0);
+                calculationResult.rows = [...positiveRows, ...deductionRows];
+
+                const positiveSubtotal = positiveRows.reduce((acc, row) => acc + row.finalValueForRow, 0);
+                const totalDeductions = deductionRows.reduce((acc, row) => acc + row.finalValueForRow, 0);
+
+                const subtotal = positiveSubtotal - totalDeductions;
                 const addFine = addFineCheckbox.checked;
                 const fineValue = addFine ? subtotal * 0.10 : 0;
                 const grandTotal = subtotal + fineValue;
 
-                calculationResult.summary = { subtotal, addFine, fineValue, grandTotal };
+                calculationResult.summary = { subtotal, addFine, fineValue, grandTotal, totalDeductions, positiveSubtotal };
 
                 return (calculationResult.rows.length === 0) ? null : calculationResult;
             };
@@ -719,7 +761,15 @@
                 }
                 const penaltyValue = penaltyBaseValue * (penaltyPercent / 100);
 
-                const grandTotal = updatedDebt + penaltyValue;
+                const rawDeductionValue = document.getElementById('agreement-deduction-value').value;
+                const deductionValue = parseFloat(rawDeductionValue.replace(/\./g, '').replace(',', '.')) || 0;
+                const deductionDate = parseDate(document.getElementById('agreement-deduction-date').value);
+                let updatedDeductionValue = 0;
+                if (deductionValue > 0 && deductionDate) {
+                    updatedDeductionValue = updateValue(deductionValue, deductionDate, finalCalcDate);
+                }
+
+                const grandTotal = updatedDebt + penaltyValue - updatedDeductionValue;
 
                 return {
                     type: 'agreement',
@@ -738,7 +788,9 @@
                         penaltyPercent: penaltyPercent,
                         paidInstallments: paidInstallments,
                         penaltyBaseType: penaltyBaseType,
-                        penaltyBaseValue: penaltyBaseValue
+                        penaltyBaseValue: penaltyBaseValue,
+                        updatedDeductionValue: updatedDeductionValue,
+                        deductionValue: deductionValue
                     }
                 };
             };
@@ -810,13 +862,20 @@
             const getCondemnationResultsHTML = (data) => {
                 let html = '<h3 class="text-xl font-bold text-gray-800 mb-4">Resumo do Cálculo de Condenação</h3><div class="space-y-6">';
                 data.rows.forEach((row, index) => {
-                    html += `<div class="p-4 border rounded-lg bg-white"><p class="font-semibold text-lg text-indigo-700">${index + 1}. ${row.description}</p><div class="grid grid-cols-2 md:grid-cols-4 gap-x-4 gap-y-2 mt-2 text-sm"><div><span class="font-medium text-gray-600">Valor Original:</span><br>${formatCurrency(row.originalValue)}</div><div><span class="font-medium text-gray-600">Correção (IPCA):</span><br>${formatCurrency(row.totalCorrection)}</div><div><span class="font-medium text-gray-600">Juros de Mora:</span><br>${formatCurrency(row.totalInterest)}</div><div class="font-bold"><span class="font-medium text-gray-600">Subtotal:</span><br>${formatCurrency(row.finalValueForRow)}</div></div></div>`;
+                    const isDeduction = data.summary.totalDeductions > 0 && row.description.includes('Dedução');
+                    html += `<div class="p-4 border rounded-lg bg-white"><p class="font-semibold text-lg ${isDeduction ? 'text-red-600' : 'text-indigo-700'}">${index + 1}. ${row.description}</p><div class="grid grid-cols-2 md:grid-cols-4 gap-x-4 gap-y-2 mt-2 text-sm"><div><span class="font-medium text-gray-600">Valor Original:</span><br>${formatCurrency(row.originalValue)}</div><div><span class="font-medium text-gray-600">Correção (IPCA):</span><br>${formatCurrency(row.totalCorrection)}</div><div><span class="font-medium text-gray-600">Juros de Mora:</span><br>${formatCurrency(row.totalInterest)}</div><div class="font-bold"><span class="font-medium text-gray-600">Subtotal:</span><br>${formatCurrency(row.finalValueForRow)}</div></div></div>`;
                 });
                 html += `</div>`;
 
                 const fineRowHtml = data.summary.addFine ? `<div class="flex justify-between items-center mt-2"><p class="text-lg font-semibold text-gray-700">Multa do art. 523 (10%):</p><p class="text-xl font-semibold text-red-600">${formatCurrency(data.summary.fineValue)}</p></div>` : '';
+                const deductionRowHtml = data.summary.totalDeductions > 0 ? `<div class="flex justify-between items-center"><p class="text-lg text-gray-600">(-) Total Deduzido:</p><p class="text-xl font-bold text-green-600">${formatCurrency(data.summary.totalDeductions)}</p></div>` : '';
 
-                html += `<div class="mt-8 pt-4 border-t-2 border-indigo-500 text-right space-y-2"><div class="flex justify-between items-center"><p class="text-lg text-gray-600">Subtotal da Condenação Atualizada:</p><p class="text-2xl font-bold text-indigo-700">${formatCurrency(data.summary.subtotal)}</p></div>${fineRowHtml}<div class="flex justify-between items-center pt-4 border-t mt-2"><p class="text-lg font-bold text-gray-800">Valor Total do Débito:</p><p class="text-3xl font-bold text-indigo-700">${formatCurrency(data.summary.grandTotal)}</p></div></div>`;
+                html += `<div class="mt-8 pt-4 border-t-2 border-indigo-500 text-right space-y-2">
+                    <div class="flex justify-between items-center"><p class="text-lg text-gray-600">Subtotal da Condenação:</p><p class="text-2xl font-bold text-indigo-700">${formatCurrency(data.summary.positiveSubtotal)}</p></div>
+                    ${deductionRowHtml}
+                    ${fineRowHtml}
+                    <div class="flex justify-between items-center pt-4 border-t mt-2"><p class="text-lg font-bold text-gray-800">Valor Total do Débito:</p><p class="text-3xl font-bold text-indigo-700">${formatCurrency(data.summary.grandTotal)}</p></div>
+                </div>`;
                 return html;
             }
 
@@ -830,17 +889,17 @@
                     penaltyHelperText = `(Multa sobre o valor original do acordo de ${formatCurrency(s.penaltyBaseValue)})`;
                 }
 
-                const createTableHTML = (title, items, colorClass) => {
+                const createTableHTML = (title, items, colorClass, headColorClass) => {
                     if (items.length === 0) return '';
                     let tableHTML = `<h4 class="text-lg font-semibold text-gray-700 mt-4">${title}</h4>
                     <div class="overflow-x-auto">
                         <table class="min-w-full bg-white border">
-                            <thead class="bg-gray-200">
+                            <thead class="${headColorClass} text-white">
                                 <tr>
-                                    <th class="py-2 px-4 border-b text-left">Parcela</th>
-                                    <th class="py-2 px-4 border-b text-left">Vencimento</th>
-                                    <th class="py-2 px-4 border-b text-right">Valor Original</th>
-                                    <th class="py-2 px-4 border-b text-right">Valor Atualizado</th>
+                                    <th class="py-2 px-4 border-b text-left font-semibold">Parcela</th>
+                                    <th class="py-2 px-4 border-b text-left font-semibold">Vencimento</th>
+                                    <th class="py-2 px-4 border-b text-right font-semibold">Valor Original</th>
+                                    <th class="py-2 px-4 border-b text-right font-semibold">Valor Atualizado</th>
                                 </tr>
                             </thead>
                             <tbody>`;
@@ -856,14 +915,17 @@
                     return tableHTML;
                 };
 
+                const deductionRowHtml = s.updatedDeductionValue > 0 ? `<div class="flex justify-between p-2 rounded-lg"><span class="font-medium text-gray-600">(-) Dedução Adicional (Atualizada):</span><span class="text-green-600">${formatCurrency(s.updatedDeductionValue)}</span></div>` : '';
+
+
                 const paidInstallments = installments.filter(i => i.status === 'Paga');
                 const unpaidInstallments = installments.filter(i => i.status !== 'Paga');
 
                 return `
                     <h3 class="text-xl font-bold text-gray-800 mb-4">Resumo do Descumprimento de Acordo</h3>
                     
-                    ${createTableHTML('Detalhamento das Parcelas Pagas', paidInstallments, 'text-green-600')}
-                    ${createTableHTML('Detalhamento das Parcelas Vencidas e Não Pagas', unpaidInstallments, 'text-red-600')}
+                    ${createTableHTML('Detalhamento das Parcelas Pagas', paidInstallments, 'text-green-600', 'bg-green-700')}
+                    ${createTableHTML('Detalhamento das Parcelas Vencidas e Não Pagas', unpaidInstallments, 'text-red-600', 'bg-red-700')}
 
                     <div class="mt-8 pt-4 border-t-2 border-gray-300 space-y-4 text-base">
                         <div class="p-2 rounded-lg bg-gray-50">
@@ -886,6 +948,8 @@
                             <span class="font-medium text-gray-800">(=) Saldo Devedor (Atualizado):</span>
                             <span class="font-bold">${formatCurrency(s.updatedDebt)}</span>
                         </div>
+                        
+                        ${deductionRowHtml}
 
                         <div class="flex justify-between p-2 rounded-lg">
                             <span class="font-medium text-gray-600">(+) Multa por Descumprimento (${s.penaltyPercent}%):</span>
@@ -955,10 +1019,14 @@
 
                 let penhoraRequestsHTML = '';
                 if (requests.length > 0) {
+                    let penhoraHeader = 'Caso não haja o pagamento voluntário, requer o prosseguimento da execução com as seguintes medidas:';
+                    if (data.type === 'agreement' && !includeIntimationCheckbox.checked) {
+                        penhoraHeader = 'Requer a realização das seguintes medidas para constrição e penhora:';
+                    }
                     penhoraRequestsHTML = `
-                        <p style="text-indent: 4em;">Caso não haja o pagamento voluntário, requer o prosseguimento da execução com as seguintes medidas:</p>
-                        <div style="padding-left: 40px;">
-                            ${requests.map((req, index) => `<p>${String.fromCharCode(97 + index)}. ${req}</p>`).join('')}
+                        <p style="text-indent: 4em;">${penhoraHeader}</p>
+                        <div style="padding-left: 80px; text-indent: 4.5em;">
+                            ${requests.map((req, index) => `<p>${toRoman(index + 1)}. ${req}</p>`).join('')}
                         </div>
                     `;
                 }
@@ -1011,6 +1079,16 @@
                     if (allExequentes.length === 0) {
                         alert('Por favor, informe o nome de pelo menos um exequente para gerar a petição.');
                         exequenteInputs[0].focus();
+                        return false;
+                    }
+                    const penhoraChecks = [
+                        document.getElementById('penhora-contas').checked,
+                        document.getElementById('penhora-veiculos').checked,
+                        document.getElementById('penhora-mandado').checked,
+                        document.getElementById('penhora-outros-check').checked,
+                    ];
+                    if (!penhoraChecks.some(c => c)) {
+                        alert('Selecione pelo menos um pedido de penhora ao incluir uma petição.');
                         return false;
                     }
                 }
@@ -1079,8 +1157,14 @@
                 let summaryY = finalY + 15;
                 pdf.setFontSize(10);
                 pdf.setFont('helvetica', 'normal');
-                pdf.text('Subtotal da Condenação Atualizada:', 15, summaryY);
-                pdf.text(formatCurrency(data.summary.subtotal), 195, summaryY, { align: 'right' });
+                pdf.text('Subtotal da Condenação:', 15, summaryY);
+                pdf.text(formatCurrency(data.summary.positiveSubtotal), 195, summaryY, { align: 'right' });
+
+                if (data.summary.totalDeductions > 0) {
+                    summaryY += 7;
+                    pdf.text('(-) Total Deduzido:', 15, summaryY);
+                    pdf.text(formatCurrency(data.summary.totalDeductions), 195, summaryY, { align: 'right' });
+                }
 
                 if (data.summary.addFine) {
                     summaryY += 7;
@@ -1156,15 +1240,22 @@
                 pdf.text('Resumo Final', 15, startY);
                 startY += 7;
 
+                const summaryBody = [
+                    ['Valor Total do Acordo (Atualizado)', { content: formatCurrency(s.totalUpdated), styles: { halign: 'right' } }],
+                    [`(-) Valor Pago (${s.paidInstallments} parcelas) (Atualizado)`, { content: formatCurrency(s.paidUpdated), styles: { halign: 'right' } }],
+                    ['(=) Saldo Devedor (Atualizado)', { content: formatCurrency(s.updatedDebt), styles: { halign: 'right', fontStyle: 'bold' } }]
+                ];
+
+                if (s.updatedDeductionValue > 0) {
+                    summaryBody.push([`(-) Dedução Adicional (Atualizada)`, { content: formatCurrency(s.updatedDeductionValue), styles: { halign: 'right' } }]);
+                }
+
+                summaryBody.push([`(+) Multa por Descumprimento (${s.penaltyPercent}%)`, { content: formatCurrency(s.penaltyValue), styles: { halign: 'right', textColor: [220, 53, 69] } }]);
+
                 pdf.autoTable({
                     startY: startY,
                     head: [['Descrição', 'Valor']],
-                    body: [
-                        ['Valor Total do Acordo (Atualizado)', { content: formatCurrency(s.totalUpdated), styles: { halign: 'right' } }],
-                        [`(-) Valor Pago (${s.paidInstallments} parcelas) (Atualizado)`, { content: formatCurrency(s.paidUpdated), styles: { halign: 'right' } }],
-                        ['(=) Saldo Devedor (Atualizado)', { content: formatCurrency(s.updatedDebt), styles: { halign: 'right', fontStyle: 'bold' } }],
-                        [`(+) Multa por Descumprimento (${s.penaltyPercent}%)`, { content: formatCurrency(s.penaltyValue), styles: { halign: 'right', textColor: [220, 53, 69] } }],
-                    ],
+                    body: summaryBody,
                     theme: 'striped'
                 });
 
@@ -1185,6 +1276,11 @@
                 pdf.setFont('helvetica', 'bold');
                 pdf.text('Valor Total do Débito:', 15, finalY);
                 pdf.text(formatCurrency(s.grandTotal), 195, finalY, { align: 'right' });
+            };
+
+            const toRoman = (num) => {
+                const map = { 1: 'I', 2: 'II', 3: 'III', 4: 'IV', 5: 'V', 6: 'VI', 7: 'VII', 8: 'VIII', 9: 'IX', 10: 'X' };
+                return map[num] || num;
             };
 
             const addPetitionToPdf = (pdf, data) => {
@@ -1216,13 +1312,23 @@
                         }
                     });
 
+                    const processedWords = [];
+                    for (let i = 0; i < words.length; i++) {
+                        const currentWord = words[i];
+                        if (i + 1 < words.length && /^[.,;:]/.test(words[i + 1].text)) {
+                            currentWord.text += words[i + 1].text;
+                            i++;
+                        }
+                        processedWords.push(currentWord);
+                    }
+
                     const lines = [];
                     let currentLine = [];
                     let currentLineWidth = 0;
                     const spaceWidth = pdf.getStringUnitWidth(' ') * baseFontSize / pdf.internal.scaleFactor;
                     const indentWidth = pdf.getStringUnitWidth(' '.repeat(15)) * baseFontSize / pdf.internal.scaleFactor;
 
-                    for (const word of words) {
+                    for (const word of processedWords) {
                         pdf.setFont('times', word.isBold ? 'bold' : 'normal');
                         const wordWidth = pdf.getStringUnitWidth(word.text) * baseFontSize / pdf.internal.scaleFactor;
 
@@ -1328,11 +1434,14 @@
                 if (penhoraOutrosCheck.checked && outrosTextValue) requests.push(outrosTextValue);
 
                 if (requests.length > 0) {
-                    const penhoraHeader = `Caso não haja o pagamento voluntário, requer o prosseguimento da execução com as seguintes medidas:`;
+                    let penhoraHeader = 'Caso não haja o pagamento voluntário, requer o prosseguimento da execução com as seguintes medidas:';
+                    if (data.type === 'agreement' && !document.getElementById('include-intimation-checkbox').checked) {
+                        penhoraHeader = 'Requer a realização das seguintes medidas para constrição e penhora:';
+                    }
                     renderParagraph(penhoraHeader, { indent: true });
 
                     requests.forEach((req, index) => {
-                        const itemText = `${String.fromCharCode(97 + index)}. ${req}`;
+                        const itemText = `${toRoman(index + 1)}. ${req}`;
                         checkPageBreak(lineSpacing);
                         pdf.text(itemText, margin + 10, currentY);
                         currentY += lineSpacing;
@@ -1373,7 +1482,18 @@
                 if (e.target.classList.contains('description-select')) {
                     const row = e.target.closest('.calculation-row');
                     const otherInput = row.querySelector('.other-description-input');
+                    const interestDateInput = row.querySelector('.interest-date-input');
+                    const isDeduction = e.target.value === 'Dedução/Pagamento Parcial';
+
                     otherInput.classList.toggle('hidden', e.target.value !== 'Outro');
+
+                    interestDateInput.disabled = isDeduction;
+                    if (isDeduction) {
+                        interestDateInput.value = '';
+                        interestDateInput.placeholder = 'N/A';
+                    } else {
+                        interestDateInput.placeholder = 'DD/MM/AAAA';
+                    }
                 }
             });
 
