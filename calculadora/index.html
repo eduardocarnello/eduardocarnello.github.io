@@ -125,9 +125,9 @@
                         </div>
                         <div class="md:col-span-2">
                             <label class="block text-sm font-medium text-gray-700">Valor (R$)</label>
-                            <input type="number" step="0.01"
+                            <input type="text"
                                 class="value-input w-full mt-1 p-2 border border-gray-300 rounded-lg shadow-sm"
-                                placeholder="1000,00">
+                                placeholder="1.000,00">
                         </div>
                         <div class="md:col-span-3">
                             <label class="block text-sm font-medium text-gray-700">Data Inicial (Correção)</label>
@@ -184,9 +184,9 @@
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700">Valor da Parcela (R$)</label>
-                            <input id="agreement-installment-value" type="number" step="0.01"
-                                class="w-full mt-1 p-2 border border-gray-300 rounded-lg shadow-sm"
-                                placeholder="Ex: 500,00">
+                            <input id="agreement-installment-value" type="text"
+                                class="value-input w-full mt-1 p-2 border border-gray-300 rounded-lg shadow-sm"
+                                placeholder="500,00">
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700">Data Início do Acordo</label>
@@ -200,7 +200,7 @@
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 items-start">
                             <select id="agreement-penalty"
                                 class="w-full mt-1 p-2 border border-gray-300 rounded-lg shadow-sm bg-white">
-                                <option value="0">0%</option>
+                                <option value="0">Sem multa</option>
                                 <option value="5">5%</option>
                                 <option value="10">10%</option>
                                 <option value="15">15%</option>
@@ -279,30 +279,59 @@
                         class="mt-3 bg-gray-200 hover:bg-gray-300 text-gray-700 text-sm font-semibold py-1 px-3 rounded-lg">+
                         Adicionar outro exequente</button>
                 </div>
+
+                <!-- Pedido de Intimação (Apenas para Acordo) -->
+                <div id="intimation-request-container" class="hidden">
+                    <h3 class="text-lg font-semibold text-gray-800 mb-2">Pedido de Intimação</h3>
+                    <div class="flex items-center gap-4 p-2 bg-gray-50 rounded-lg">
+                        <label class="flex items-center cursor-pointer">
+                            <input type="checkbox" id="include-intimation-checkbox"
+                                class="h-5 w-5 text-indigo-600 border-gray-300 rounded">
+                            <span class="ml-3 font-medium text-gray-800">Incluir pedido de intimação para
+                                pagamento?</span>
+                        </label>
+                        <div id="intimation-deadline-wrapper" class="hidden">
+                            <label for="intimation-deadline" class="sr-only">Prazo:</label>
+                            <select id="intimation-deadline"
+                                class="p-2 border border-gray-300 rounded-lg shadow-sm bg-white">
+                                <option value="5">5 dias</option>
+                                <option value="10">10 dias</option>
+                                <option value="15" selected>15 dias</option>
+                                <option value="20">20 dias</option>
+                                <option value="30">30 dias</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
                 <div id="penhora-container">
                     <h3 class="text-lg font-semibold text-gray-800 mb-4">Pedidos de Penhora</h3>
-                    <div class="space-y-3 text-sm text-gray-700">
+                    <div class="space-y-3 text-base font-medium text-gray-800">
                         <div>
-                            <label><input type="checkbox" id="penhora-contas"
-                                    class="h-4 w-4 text-indigo-600 border-gray-300 rounded" checked> Penhora de Valores
-                                em Contas</label>
+                            <label class="flex items-center"><input type="checkbox" id="penhora-contas"
+                                    class="h-4 w-4 text-indigo-600 border-gray-300 rounded" checked><span
+                                    class="ml-2">Penhora de Valores
+                                    em Contas</span></label>
                         </div>
                         <div>
-                            <label><input type="checkbox" id="penhora-veiculos"
-                                    class="h-4 w-4 text-indigo-600 border-gray-300 rounded" checked> Pesquisa, Bloqueio
-                                e Penhora de Veículos</label>
+                            <label class="flex items-center"><input type="checkbox" id="penhora-veiculos"
+                                    class="h-4 w-4 text-indigo-600 border-gray-300 rounded" checked><span
+                                    class="ml-2">Pesquisa, Bloqueio
+                                    e Penhora de Veículos</span></label>
                         </div>
                         <div>
-                            <label><input type="checkbox" id="penhora-mandado"
-                                    class="h-4 w-4 text-indigo-600 border-gray-300 rounded" checked> Expedição de
-                                Mandado de Penhora e Avaliação</label>
+                            <label class="flex items-center"><input type="checkbox" id="penhora-mandado"
+                                    class="h-4 w-4 text-indigo-600 border-gray-300 rounded" checked><span
+                                    class="ml-2">Expedição de
+                                    Mandado de Penhora e Avaliação</span></label>
                         </div>
                         <div>
-                            <label><input type="checkbox" id="penhora-outros-check"
-                                    class="h-4 w-4 text-indigo-600 border-gray-300 rounded"> Outro(s) Pedido(s)</label>
+                            <label class="flex items-center"><input type="checkbox" id="penhora-outros-check"
+                                    class="h-4 w-4 text-indigo-600 border-gray-300 rounded"><span class="ml-2">Outro(s)
+                                    Pedido(s)</span></label>
                         </div>
                         <textarea id="penhora-outros-text"
-                            class="hidden w-full mt-2 p-2 border border-gray-300 rounded-lg" rows="3"
+                            class="hidden w-full mt-2 p-2 border border-gray-300 rounded-lg font-normal" rows="3"
                             placeholder="Especifique outros pedidos aqui..."></textarea>
                     </div>
                 </div>
@@ -317,9 +346,23 @@
                 <button id="preview-btn" disabled
                     class="bg-gray-400 cursor-not-allowed text-white font-bold py-3 px-6 rounded-lg shadow-lg">Prévia do
                     PDF</button>
-                <button id="print-btn" disabled
-                    class="bg-gray-400 cursor-not-allowed text-white font-bold py-3 px-6 rounded-lg shadow-lg">Gerar
-                    PDF</button>
+
+                <!-- Container para os botões de PDF -->
+                <div id="pdf-buttons-container" class="flex flex-col md:flex-row gap-4">
+                    <button id="print-btn"
+                        class="bg-gray-400 cursor-not-allowed text-white font-bold py-3 px-6 rounded-lg shadow-lg"
+                        disabled>Gerar PDF</button>
+                    <button id="print-combined-btn"
+                        class="hidden bg-gray-400 cursor-not-allowed text-white font-bold py-3 px-6 rounded-lg shadow-lg"
+                        disabled>PDF Completo</button>
+                    <button id="print-petition-btn"
+                        class="hidden bg-gray-400 cursor-not-allowed text-white font-bold py-3 px-6 rounded-lg shadow-lg"
+                        disabled>PDF Petição</button>
+                    <button id="print-calc-btn"
+                        class="hidden bg-gray-400 cursor-not-allowed text-white font-bold py-3 px-6 rounded-lg shadow-lg"
+                        disabled>PDF Cálculo</button>
+                </div>
+
             </div>
 
             <!-- Seção de Resultados -->
@@ -353,6 +396,9 @@
             const addRowBtn = document.getElementById('add-row-btn');
             const calculateBtn = document.getElementById('calculate-btn');
             const printBtn = document.getElementById('print-btn');
+            const printCombinedBtn = document.getElementById('print-combined-btn');
+            const printPetitionBtn = document.getElementById('print-petition-btn');
+            const printCalcBtn = document.getElementById('print-calc-btn');
             const previewBtn = document.getElementById('preview-btn');
             const rowsContainer = document.getElementById('calculation-rows');
             const resultsContainer = document.getElementById('results-container');
@@ -372,6 +418,9 @@
             const agreementContainer = document.getElementById('agreement-container');
             const condemnationOptions = document.getElementById('condemnation-options');
             const agreementPetitionOption = document.getElementById('agreement-petition-option');
+            const intimationRequestContainer = document.getElementById('intimation-request-container');
+            const includeIntimationCheckbox = document.getElementById('include-intimation-checkbox');
+            const intimationDeadlineWrapper = document.getElementById('intimation-deadline-wrapper');
 
             // --- DADOS ECONÔMICOS ---
             let ipcaData = {};
@@ -440,12 +489,14 @@
                     agreementContainer.classList.add('hidden');
                     condemnationOptions.classList.remove('hidden');
                     agreementPetitionOption.classList.add('hidden');
+                    intimationRequestContainer.classList.add('hidden');
                     petitionOptionsContainer.classList.toggle('hidden', !complianceRequestCheckbox.checked);
                 } else { // agreement
                     condemnationContainer.classList.add('hidden');
                     agreementContainer.classList.remove('hidden');
                     condemnationOptions.classList.add('hidden');
                     agreementPetitionOption.classList.remove('hidden');
+                    intimationRequestContainer.classList.remove('hidden');
                     petitionOptionsContainer.classList.remove('hidden'); // Petição é obrigatória aqui
                 }
                 resultsContainer.classList.add('hidden');
@@ -460,7 +511,7 @@
                 select.selectedIndex = 0;
                 newRow.querySelector('.other-description-input').classList.add('hidden');
                 rowsContainer.appendChild(newRow);
-                addDateMasking(newRow);
+                addInputBehaviors(newRow);
             };
 
             const removeRow = (e) => {
@@ -508,10 +559,32 @@
                 e.target.value = `${day.padStart(2, '0')}/${month.padStart(2, '0')}/${year}`;
             };
 
-            const addDateMasking = (container) => {
+            const formatValueOnBlur = (e) => {
+                const input = e.target;
+                let value = input.value;
+                if (!value) return;
+
+                value = value.replace(/[^\d,]/g, '').replace(',', '.');
+
+                const number = parseFloat(value);
+
+                if (!isNaN(number)) {
+                    input.value = number.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+                } else {
+                    input.value = '';
+                }
+            };
+
+            const addInputBehaviors = (container) => {
                 container.querySelectorAll('.date-input').forEach(input => {
+                    input.removeEventListener('input', formatDateOnInput);
+                    input.removeEventListener('blur', autocompleteDateOnBlur);
                     input.addEventListener('input', formatDateOnInput);
                     input.addEventListener('blur', autocompleteDateOnBlur);
+                });
+                container.querySelectorAll('.value-input').forEach(input => {
+                    input.removeEventListener('blur', formatValueOnBlur);
+                    input.addEventListener('blur', formatValueOnBlur);
                 });
             };
 
@@ -546,7 +619,8 @@
                         description = row.querySelector('.other-description-input').value.trim() || 'Outro (não especificado)';
                     }
 
-                    const originalValue = parseFloat(row.querySelector('.value-input').value) || 0;
+                    const rawValue = row.querySelector('.value-input').value;
+                    const originalValue = parseFloat(rawValue.replace(/\./g, '').replace(',', '.')) || 0;
                     const correctionDate = parseDate(row.querySelector('.correction-date-input').value);
                     const interestDate = parseDate(row.querySelector('.interest-date-input').value);
 
@@ -594,7 +668,8 @@
             const performAgreementCalculation = () => {
                 const totalInstallments = parseInt(document.getElementById('agreement-total-installments').value) || 0;
                 const paidInstallments = parseInt(document.getElementById('agreement-paid-installments').value) || 0;
-                const installmentValue = parseFloat(document.getElementById('agreement-installment-value').value) || 0;
+                const rawInstallmentValue = document.getElementById('agreement-installment-value').value;
+                const installmentValue = parseFloat(rawInstallmentValue.replace(/\./g, '').replace(',', '.')) || 0;
                 const startDate = parseDate(document.getElementById('agreement-start-date').value);
                 const penaltyPercent = parseFloat(document.getElementById('agreement-penalty').value) || 0;
                 const penaltyBaseType = document.querySelector('input[name="penalty-base"]:checked').value;
@@ -606,8 +681,7 @@
                 }
 
                 const finalCalcDate = getFinalCalcDate();
-                let totalUpdatedValue = 0;
-                let paidUpdatedValue = 0;
+                const installmentsDetails = [];
 
                 const updateValue = (value, dateFrom, dateTo) => {
                     let updated = value;
@@ -622,12 +696,18 @@
                     const installmentDate = new Date(startDate);
                     installmentDate.setMonth(startDate.getMonth() + i);
                     const updatedInstallment = updateValue(installmentValue, installmentDate, finalCalcDate);
-                    totalUpdatedValue += updatedInstallment;
-                    if (i < paidInstallments) {
-                        paidUpdatedValue += updatedInstallment;
-                    }
+
+                    installmentsDetails.push({
+                        number: i + 1,
+                        originalDate: installmentDate,
+                        originalValue: installmentValue,
+                        updatedValue: updatedInstallment,
+                        status: i < paidInstallments ? 'Paga' : 'Não Paga'
+                    });
                 }
 
+                const totalUpdatedValue = installmentsDetails.reduce((sum, inst) => sum + inst.updatedValue, 0);
+                const paidUpdatedValue = installmentsDetails.filter(inst => inst.status === 'Paga').reduce((sum, inst) => sum + inst.updatedValue, 0);
                 const updatedDebt = totalUpdatedValue - paidUpdatedValue;
                 const totalOriginalDebt = totalInstallments * installmentValue;
 
@@ -645,6 +725,7 @@
                     type: 'agreement',
                     processNumber: processNumberInput.value || 'Não informado',
                     finalCalcDate: finalCalcDate,
+                    installments: installmentsDetails,
                     summary: {
                         totalOriginal: totalOriginalDebt,
                         paidOriginal: paidInstallments * installmentValue,
@@ -691,11 +772,40 @@
                 resultsContainer.classList.remove('hidden');
 
                 const hasResults = data.summary.grandTotal > 0;
-                printBtn.disabled = !hasResults;
-                previewBtn.disabled = !hasResults;
-                printBtn.className = printBtn.className.replace(/bg-gray-400\s?cursor-not-allowed/g, 'bg-green-600 hover:bg-green-700');
-                previewBtn.className = previewBtn.className.replace(/bg-gray-400\s?cursor-not-allowed/g, 'bg-blue-600 hover:bg-blue-700');
+
+                const styleButton = (btn, enabled, colorClass = 'bg-green-600 hover:bg-green-700') => {
+                    btn.disabled = !enabled;
+                    if (enabled) {
+                        btn.classList.remove('bg-gray-400', 'cursor-not-allowed');
+                        btn.classList.add(...colorClass.split(' '));
+                    } else {
+                        btn.classList.add('bg-gray-400', 'cursor-not-allowed');
+                        btn.classList.remove(...colorClass.split(' '));
+                    }
+                };
+
+                styleButton(previewBtn, hasResults, 'bg-blue-600 hover:bg-blue-700');
+
+                const isPetitionIncluded = (data.type === 'condemnation' && complianceRequestCheckbox.checked) || data.type === 'agreement';
+
+                printBtn.classList.add('hidden');
+                printCombinedBtn.classList.add('hidden');
+                printPetitionBtn.classList.add('hidden');
+                printCalcBtn.classList.add('hidden');
+
+                if (isPetitionIncluded) {
+                    printCombinedBtn.classList.remove('hidden');
+                    printPetitionBtn.classList.remove('hidden');
+                    printCalcBtn.classList.remove('hidden');
+                    styleButton(printCombinedBtn, hasResults);
+                    styleButton(printPetitionBtn, hasResults);
+                    styleButton(printCalcBtn, hasResults);
+                } else {
+                    printBtn.classList.remove('hidden');
+                    styleButton(printBtn, hasResults);
+                }
             };
+
 
             const getCondemnationResultsHTML = (data) => {
                 let html = '<h3 class="text-xl font-bold text-gray-800 mb-4">Resumo do Cálculo de Condenação</h3><div class="space-y-6">';
@@ -712,6 +822,7 @@
 
             const getAgreementResultsHTML = (data) => {
                 const s = data.summary;
+                const installments = data.installments;
                 let penaltyHelperText = '';
                 if (s.penaltyBaseType === 'remaining') {
                     penaltyHelperText = `(Multa sobre o saldo devedor atualizado de ${formatCurrency(s.penaltyBaseValue)})`;
@@ -719,10 +830,42 @@
                     penaltyHelperText = `(Multa sobre o valor original do acordo de ${formatCurrency(s.penaltyBaseValue)})`;
                 }
 
+                const createTableHTML = (title, items, colorClass) => {
+                    if (items.length === 0) return '';
+                    let tableHTML = `<h4 class="text-lg font-semibold text-gray-700 mt-4">${title}</h4>
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full bg-white border">
+                            <thead class="bg-gray-200">
+                                <tr>
+                                    <th class="py-2 px-4 border-b text-left">Parcela</th>
+                                    <th class="py-2 px-4 border-b text-left">Vencimento</th>
+                                    <th class="py-2 px-4 border-b text-right">Valor Original</th>
+                                    <th class="py-2 px-4 border-b text-right">Valor Atualizado</th>
+                                </tr>
+                            </thead>
+                            <tbody>`;
+                    items.forEach(item => {
+                        tableHTML += `<tr>
+                            <td class="py-2 px-4 border-b">${item.number}</td>
+                            <td class="py-2 px-4 border-b">${item.originalDate.toLocaleDateString('pt-BR')}</td>
+                            <td class="py-2 px-4 border-b text-right">${formatCurrency(item.originalValue)}</td>
+                            <td class="py-2 px-4 border-b text-right ${colorClass}">${formatCurrency(item.updatedValue)}</td>
+                        </tr>`;
+                    });
+                    tableHTML += `</tbody></table></div>`;
+                    return tableHTML;
+                };
+
+                const paidInstallments = installments.filter(i => i.status === 'Paga');
+                const unpaidInstallments = installments.filter(i => i.status !== 'Paga');
+
                 return `
                     <h3 class="text-xl font-bold text-gray-800 mb-4">Resumo do Descumprimento de Acordo</h3>
-                    <div class="space-y-4 text-base">
-                        
+                    
+                    ${createTableHTML('Detalhamento das Parcelas Pagas', paidInstallments, 'text-green-600')}
+                    ${createTableHTML('Detalhamento das Parcelas Vencidas e Não Pagas', unpaidInstallments, 'text-red-600')}
+
+                    <div class="mt-8 pt-4 border-t-2 border-gray-300 space-y-4 text-base">
                         <div class="p-2 rounded-lg bg-gray-50">
                             <div class="flex justify-between">
                                 <span class="font-medium text-gray-600">Valor Total do Acordo (Atualizado):</span>
@@ -734,9 +877,6 @@
                             <div class="flex justify-between">
                                 <span class="font-medium text-gray-600">(-) Valor Pago (${s.paidInstallments} parcelas) (Atualizado):</span>
                                 <span class="text-green-600">${formatCurrency(s.paidUpdated)}</span>
-                            </div>
-                            <div class="text-right text-sm text-gray-500">
-                                <span>(Valor original pago: ${formatCurrency(s.paidOriginal)})</span>
                             </div>
                         </div>
 
@@ -793,9 +933,16 @@
                 } else { // agreement
                     const agreementType = document.getElementById('agreement-type').value;
                     const actionText = agreementType === 'conhecimento' ? 'requerer o <strong>CUMPRIMENTO DE SENTENÇA</strong>' : 'informar o descumprimento do acordo e requerer o <strong>PROSSEGUIMENTO DA EXECUÇÃO</strong>';
+                    const multaText = data.summary.penaltyPercent > 0 ? 'já com o acréscimo da multa' : '';
+                    let intimationText = '';
+                    if (includeIntimationCheckbox.checked) {
+                        const deadline = document.getElementById('intimation-deadline').value;
+                        intimationText = `Diante do exposto, requer a intimação do(a)(s) executado(a)(s) para que, no prazo de <strong>${deadline}</strong> dias, efetue o pagamento do valor remanescente, sob pena de reinício da execução e penhora de bens.`;
+                    }
+
                     mainParagraphs = `
                         <p style="text-indent: 4em;">${exequentesText}, vem, respeitosamente, à presença de Vossa Excelência, informar o descumprimento do acordo homologado nos autos e, ato contínuo, ${actionText}.</p>
-                        <p style="text-indent: 4em;">Conforme se demonstra pelo cálculo anexo, o débito atualizado remanescente, já com a multa contratual aplicada, perfaz o montante de <strong>${formatCurrency(data.summary.grandTotal)}</strong>. Diante do exposto, requer a intimação do(a)(s) executado(a)(s) para que, no prazo legal, efetue o pagamento do valor devido.</p>
+                        <p style="text-indent: 4em;">Conforme se demonstra pelo cálculo anexo, o débito atualizado remanescente, ${multaText}, perfaz o montante de <strong>${formatCurrency(data.summary.grandTotal)}</strong>. ${intimationText}</p>
                     `;
                 }
 
@@ -852,39 +999,56 @@
                 previewModal.classList.remove('hidden');
             };
 
-            const printPDF = async () => {
+            const prePrintValidation = () => {
                 if (!lastCalculationData) {
                     alert('Por favor, calcule os valores antes de gerar o PDF.');
-                    return;
+                    return false;
                 }
-
                 const isPetitionIncluded = (lastCalculationData.type === 'condemnation' && complianceRequestCheckbox.checked) || lastCalculationData.type === 'agreement';
-
                 if (isPetitionIncluded) {
                     const exequenteInputs = exequentesList.querySelectorAll('.exequente-name-input');
                     const allExequentes = Array.from(exequenteInputs).map(input => input.value.trim()).filter(Boolean);
                     if (allExequentes.length === 0) {
                         alert('Por favor, informe o nome de pelo menos um exequente para gerar a petição.');
                         exequenteInputs[0].focus();
-                        return;
+                        return false;
                     }
                 }
+                return true;
+            };
 
+            const generateCalculationOnlyPDF = async () => {
+                if (!prePrintValidation()) return;
                 const { jsPDF } = window.jspdf;
                 const pdf = new jsPDF('p', 'mm', 'a4');
-
-                if (isPetitionIncluded) {
-                    addPetitionToPdf(pdf, lastCalculationData);
-                    pdf.addPage();
-                }
-
                 if (lastCalculationData.type === 'condemnation') {
                     generateCondemnationCalcPage(pdf, lastCalculationData);
                 } else {
                     generateAgreementCalcPage(pdf, lastCalculationData);
                 }
-
                 pdf.save(`Calculo_${lastCalculationData.processNumber.replace(/\D/g, '')}.pdf`);
+            };
+
+            const generatePetitionOnlyPDF = async () => {
+                if (!prePrintValidation()) return;
+                const { jsPDF } = window.jspdf;
+                const pdf = new jsPDF('p', 'mm', 'a4');
+                addPetitionToPdf(pdf, lastCalculationData);
+                pdf.save(`Peticao_${lastCalculationData.processNumber.replace(/\D/g, '')}.pdf`);
+            };
+
+            const generateCombinedPDF = async () => {
+                if (!prePrintValidation()) return;
+                const { jsPDF } = window.jspdf;
+                const pdf = new jsPDF('p', 'mm', 'a4');
+                addPetitionToPdf(pdf, lastCalculationData);
+                pdf.addPage();
+                if (lastCalculationData.type === 'condemnation') {
+                    generateCondemnationCalcPage(pdf, lastCalculationData);
+                } else {
+                    generateAgreementCalcPage(pdf, lastCalculationData);
+                }
+                pdf.save(`Completo_${lastCalculationData.processNumber.replace(/\D/g, '')}.pdf`);
             };
 
             const generateCondemnationCalcPage = (pdf, data) => {
@@ -936,6 +1100,7 @@
 
             const generateAgreementCalcPage = (pdf, data) => {
                 const s = data.summary;
+                const installments = data.installments;
                 pdf.setFontSize(16);
                 pdf.setFont('helvetica', 'bold');
                 pdf.text('Demonstrativo de Descumprimento de Acordo', pdf.internal.pageSize.getWidth() / 2, 20, { align: 'center' });
@@ -944,8 +1109,55 @@
                 pdf.text(`Cálculo realizado em: ${data.finalCalcDate.toLocaleDateString('pt-BR')}`, pdf.internal.pageSize.getWidth() / 2, 27, { align: 'center' });
                 pdf.text(`Processo nº: ${data.processNumber}`, 15, 40);
 
+                let startY = 50;
+
+                const paidInstallments = installments.filter(i => i.status === 'Paga');
+                if (paidInstallments.length > 0) {
+                    pdf.setFontSize(12);
+                    pdf.setFont('helvetica', 'bold');
+                    pdf.text('Detalhamento das Parcelas Pagas', 15, startY);
+                    startY += 7;
+                    pdf.autoTable({
+                        startY: startY,
+                        head: [['Parcela', 'Vencimento', 'Valor Original', 'Valor Atualizado']],
+                        body: paidInstallments.map(i => [
+                            i.number,
+                            i.originalDate.toLocaleDateString('pt-BR'),
+                            { content: formatCurrency(i.originalValue), styles: { halign: 'right' } },
+                            { content: formatCurrency(i.updatedValue), styles: { halign: 'right' } }
+                        ]),
+                        theme: 'grid', headStyles: { fillColor: [22, 163, 74], textColor: [255, 255, 255] }
+                    });
+                    startY = pdf.lastAutoTable.finalY + 10;
+                }
+
+                const unpaidInstallments = installments.filter(i => i.status !== 'Paga');
+                if (unpaidInstallments.length > 0) {
+                    pdf.setFontSize(12);
+                    pdf.setFont('helvetica', 'bold');
+                    pdf.text('Detalhamento das Parcelas Vencidas e Não Pagas', 15, startY);
+                    startY += 7;
+                    pdf.autoTable({
+                        startY: startY,
+                        head: [['Parcela', 'Vencimento', 'Valor Original', 'Valor Atualizado']],
+                        body: unpaidInstallments.map(i => [
+                            i.number,
+                            i.originalDate.toLocaleDateString('pt-BR'),
+                            { content: formatCurrency(i.originalValue), styles: { halign: 'right' } },
+                            { content: formatCurrency(i.updatedValue), styles: { halign: 'right' } }
+                        ]),
+                        theme: 'grid', headStyles: { fillColor: [220, 38, 38], textColor: [255, 255, 255] }
+                    });
+                    startY = pdf.lastAutoTable.finalY + 10;
+                }
+
+                pdf.setFontSize(12);
+                pdf.setFont('helvetica', 'bold');
+                pdf.text('Resumo Final', 15, startY);
+                startY += 7;
+
                 pdf.autoTable({
-                    startY: 50,
+                    startY: startY,
                     head: [['Descrição', 'Valor']],
                     body: [
                         ['Valor Total do Acordo (Atualizado)', { content: formatCurrency(s.totalUpdated), styles: { halign: 'right' } }],
@@ -1096,12 +1308,15 @@
                 } else { // agreement
                     const agreementType = document.getElementById('agreement-type').value;
                     const actionText = agreementType === 'conhecimento' ? 'requerer o <strong>CUMPRIMENTO DE SENTENÇA</strong>' : 'informar o descumprimento do acordo e requerer o <strong>PROSSEGUIMENTO DA EXECUÇÃO</strong>';
+                    const multaText = data.summary.penaltyPercent > 0 ? 'já com o acréscimo da multa' : '';
+                    let intimationText = '';
+                    if (includeIntimationCheckbox.checked) {
+                        const deadline = document.getElementById('intimation-deadline').value;
+                        intimationText = `Diante do exposto, requer a intimação do(a)(s) executado(a)(s) para que, no prazo de <strong>${deadline}</strong> dias, efetue o pagamento do valor remanescente, sob pena de reinício da execução e penhora de bens.`;
+                    }
 
-                    const para1HTML = `${exequentesText}, vem, respeitosamente, à presença de Vossa Excelência, informar o descumprimento do acordo homologado nos autos e, ato contínuo, ${actionText}.`;
-                    renderParagraph(para1HTML, { indent: true });
-
-                    const para2HTML = `Conforme se demonstra pelo cálculo anexo, o débito atualizado remanescente, já com a multa contratual aplicada, perfaz o montante de <strong>${formatCurrency(data.summary.grandTotal)}</strong>. Diante do exposto, requer a intimação do(a)(s) executado(a)(s) para que, no prazo legal, efetue o pagamento do valor devido.`;
-                    renderParagraph(para2HTML, { indent: true });
+                    renderParagraph(`${exequentesText}, vem, respeitosamente, à presença de Vossa Excelência, informar o descumprimento do acordo homologado nos autos e, ato contínuo, ${actionText}.`, { indent: true });
+                    renderParagraph(`Conforme se demonstra pelo cálculo anexo, o débito atualizado remanescente, ${multaText}, perfaz o montante de <strong>${formatCurrency(data.summary.grandTotal)}</strong>. ${intimationText}`, { indent: true });
                 }
 
                 // --- Pedidos de Penhora (Comum a todas as petições) ---
@@ -1114,7 +1329,7 @@
 
                 if (requests.length > 0) {
                     const penhoraHeader = `Caso não haja o pagamento voluntário, requer o prosseguimento da execução com as seguintes medidas:`;
-                    renderParagraph(penhoraHeader);
+                    renderParagraph(penhoraHeader, { indent: true });
 
                     requests.forEach((req, index) => {
                         const itemText = `${String.fromCharCode(97 + index)}. ${req}`;
@@ -1150,6 +1365,10 @@
             calculationTypeSelect.addEventListener('change', toggleCalculationView);
             complianceRequestCheckbox.addEventListener('change', () => petitionOptionsContainer.classList.toggle('hidden', !complianceRequestCheckbox.checked));
 
+            includeIntimationCheckbox.addEventListener('change', () => {
+                intimationDeadlineWrapper.classList.toggle('hidden', !includeIntimationCheckbox.checked);
+            });
+
             condemnationContainer.addEventListener('change', (e) => {
                 if (e.target.classList.contains('description-select')) {
                     const row = e.target.closest('.calculation-row');
@@ -1178,16 +1397,20 @@
                 }
             });
 
-            printBtn.addEventListener('click', printPDF);
+            printBtn.addEventListener('click', generateCalculationOnlyPDF);
+            printCombinedBtn.addEventListener('click', generateCombinedPDF);
+            printPetitionBtn.addEventListener('click', generatePetitionOnlyPDF);
+            printCalcBtn.addEventListener('click', generateCalculationOnlyPDF);
             previewBtn.addEventListener('click', showPreview);
             closePreviewBtn.addEventListener('click', () => previewModal.classList.add('hidden'));
             previewModal.addEventListener('click', (e) => { if (e.target === previewModal) previewModal.classList.add('hidden'); });
             processNumberInput.addEventListener('input', formatCNJOnInput);
 
             // --- INICIALIZAÇÃO ---
-            addDateMasking(document.body);
+            addInputBehaviors(document.body);
             fetchEconomicData();
             toggleCalculationView();
+            document.getElementById('agreement-penalty').value = '20';
 
             // Preenche a data final com a data de hoje por padrão
             const today = new Date();
