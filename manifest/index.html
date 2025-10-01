@@ -1155,7 +1155,6 @@
                     }
                 };
             };
-
             const handleCalculateClick = () => {
                 const type = calculationTypeSelect.value;
                 let data = null;
@@ -1232,11 +1231,11 @@
                 const deductionRowHtml = data.summary.totalDeductions > 0 ? `<div class="flex justify-between items-center"><p class="text-lg text-gray-600">(-) Total Deduzido:</p><p class="text-xl font-bold text-green-600">${formatCurrency(data.summary.totalDeductions)}</p></div>` : '';
 
                 html += `<div class="mt-8 pt-4 border-t-2 border-indigo-500 text-right space-y-2">
-                    <div class="flex justify-between items-center"><p class="text-lg text-gray-600">Subtotal da Condenação:</p><p class="text-2xl font-bold text-indigo-700">${formatCurrency(data.summary.positiveSubtotal)}</p></div>
-                    ${deductionRowHtml}
-                    ${fineRowHtml}
-                    <div class="flex justify-between items-center pt-4 border-t mt-2"><p class="text-lg font-bold text-gray-800">Valor Total do Débito:</p><p class="text-3xl font-bold text-indigo-700">${formatCurrency(data.summary.grandTotal)}</p></div>
-                </div>`;
+                        <div class="flex justify-between items-center"><p class="text-lg text-gray-600">Subtotal da Condenação:</p><p class="text-2xl font-bold text-indigo-700">${formatCurrency(data.summary.positiveSubtotal)}</p></div>
+                        ${deductionRowHtml}
+                        ${fineRowHtml}
+                        <div class="flex justify-between items-center pt-4 border-t mt-2"><p class="text-lg font-bold text-gray-800">Valor Total do Débito:</p><p class="text-3xl font-bold text-indigo-700">${formatCurrency(data.summary.grandTotal)}</p></div>
+                    </div>`;
                 return html;
             }
 
@@ -1283,50 +1282,50 @@
                 const unpaidInstallments = installments.filter(i => i.status !== 'Paga');
 
                 return `
-                    <h3 class="text-xl font-bold text-gray-800 mb-4">Resumo do Descumprimento de Acordo</h3>
-                    
-                    ${createTableHTML('Detalhamento das Parcelas Pagas', paidInstallments, 'text-green-600', 'bg-green-700')}
-                    ${createTableHTML('Detalhamento das Parcelas Vencidas e Não Pagas', unpaidInstallments, 'text-red-600', 'bg-red-700')}
-
-                    <div class="mt-8 pt-4 border-t-2 border-gray-300 space-y-4 text-base">
-                        <div class="p-2 rounded-lg bg-gray-50">
-                            <div class="flex justify-between">
-                                <span class="font-medium text-gray-600">Valor Total do Acordo (Atualizado):</span>
-                                <span>${formatCurrency(s.totalUpdated)}</span>
-                            </div>
-                        </div>
-
-                        <div class="p-2 rounded-lg">
-                            <div class="flex justify-between">
-                                <span class="font-medium text-gray-600">(-) Valor Pago (${s.paidInstallments} parcelas) (Atualizado):</span>
-                                <span class="text-green-600">${formatCurrency(s.paidUpdated)}</span>
-                            </div>
-                        </div>
-
-                        <hr class="my-2"/>
-
-                        <div class="flex justify-between p-2 rounded-lg">
-                            <span class="font-medium text-gray-800">(=) Saldo Devedor (Atualizado):</span>
-                            <span class="font-bold">${formatCurrency(s.updatedDebt)}</span>
-                        </div>
+                        <h3 class="text-xl font-bold text-gray-800 mb-4">Resumo do Descumprimento de Acordo</h3>
                         
-                        ${deductionRowHtml}
+                        ${createTableHTML('Detalhamento das Parcelas Pagas', paidInstallments, 'text-green-600', 'bg-green-700')}
+                        ${createTableHTML('Detalhamento das Parcelas Vencidas e Não Pagas', unpaidInstallments, 'text-red-600', 'bg-red-700')}
 
-                        <div class="flex justify-between p-2 rounded-lg">
-                            <span class="font-medium text-gray-600">(+) Multa por Descumprimento (${s.penaltyPercent}%):</span>
-                            <span class="text-red-600">${formatCurrency(s.penaltyValue)}</span>
-                        </div>
-                        <div class="text-right text-sm text-gray-500 -mt-3">
-                            <span>${penaltyHelperText}</span>
-                        </div>
+                        <div class="mt-8 pt-4 border-t-2 border-gray-300 space-y-4 text-base">
+                            <div class="p-2 rounded-lg bg-gray-50">
+                                <div class="flex justify-between">
+                                    <span class="font-medium text-gray-600">Valor Total do Acordo (Atualizado):</span>
+                                    <span>${formatCurrency(s.totalUpdated)}</span>
+                                </div>
+                            </div>
+
+                            <div class="p-2 rounded-lg">
+                                <div class="flex justify-between">
+                                    <span class="font-medium text-gray-600">(-) Valor Pago (${s.paidInstallments} parcelas) (Atualizado):</span>
+                                    <span class="text-green-600">${formatCurrency(s.paidUpdated)}</span>
+                                </div>
+                            </div>
+
+                            <hr class="my-2"/>
+
+                            <div class="flex justify-between p-2 rounded-lg">
+                                <span class="font-medium text-gray-800">(=) Saldo Devedor (Atualizado):</span>
+                                <span class="font-bold">${formatCurrency(s.updatedDebt)}</span>
+                            </div>
+                            
+                            ${deductionRowHtml}
+
+                            <div class="flex justify-between p-2 rounded-lg">
+                                <span class="font-medium text-gray-600">(+) Multa por Descumprimento (${s.penaltyPercent}%):</span>
+                                <span class="text-red-600">${formatCurrency(s.penaltyValue)}</span>
+                            </div>
+                            <div class="text-right text-sm text-gray-500 -mt-3">
+                                <span>${penaltyHelperText}</span>
+                            </div>
 
 
-                        <div class="flex justify-between p-3 rounded-lg bg-indigo-100 mt-4 border-t-2 border-indigo-500">
-                            <span class="text-lg font-bold text-gray-800">Valor Total do Débito:</span>
-                            <span class="text-2xl font-bold text-indigo-700">${formatCurrency(s.grandTotal)}</span>
+                            <div class="flex justify-between p-3 rounded-lg bg-indigo-100 mt-4 border-t-2 border-indigo-500">
+                                <span class="text-lg font-bold text-gray-800">Valor Total do Débito:</span>
+                                <span class="text-2xl font-bold text-indigo-700">${formatCurrency(s.grandTotal)}</span>
+                            </div>
                         </div>
-                    </div>
-                `;
+                    `;
             }
 
             // --- GERAÇÃO DE PDF E PETIÇÃO ---
@@ -1352,9 +1351,9 @@
                 let mainParagraphs = '';
                 if (data.type === 'condemnation') {
                     mainParagraphs = `
-                        <p style="text-indent: 4em;">${exequentesText}, vem, respeitosamente, à presença de Vossa Excelência, requerer o <strong>CUMPRIMENTO DE SENTENÇA</strong> em face do(a)(s) executado(a)(s), também já qualificado(a)(s), tendo em vista o trânsito em julgado da r. sentença.</p>
-                        <p style="text-indent: 4em;">Diante do exposto, requer a intimação do(a)(s) executado(a)(s) para que, no prazo legal, efetue o pagamento devido, no importe de <strong>${formatCurrency(data.summary.subtotal)}</strong>, conforme cálculo anexo. Não ocorrendo o pagamento, requer que o débito seja acrescido da multa de 10%, prevista no art. 523, §1º do CPC, totalizando a quantia de <strong>${formatCurrency(data.summary.subtotal * 1.10)}</strong>.</p>
-                    `;
+                            <p style="text-indent: 4em;">${exequentesText}, vem, respeitosamente, à presença de Vossa Excelência, requerer o <strong>CUMPRIMENTO DE SENTENÇA</strong> em face do(a)(s) executado(a)(s), também já qualificado(a)(s), tendo em vista o trânsito em julgado da r. sentença.</p>
+                            <p style="text-indent: 4em;">Diante do exposto, requer a intimação do(a)(s) executado(a)(s) para que, no prazo legal, efetue o pagamento devido, no importe de <strong>${formatCurrency(data.summary.subtotal)}</strong>, conforme cálculo anexo. Não ocorrendo o pagamento, requer que o débito seja acrescido da multa de 10%, prevista no art. 523, §1º do CPC, totalizando a quantia de <strong>${formatCurrency(data.summary.subtotal * 1.10)}</strong>.</p>
+                        `;
                 } else { // agreement
                     const agreementType = document.getElementById('agreement-type-calc').value;
                     const actionText = agreementType === 'conhecimento' ? 'requerer o <strong>CUMPRIMENTO DE SENTENÇA</strong>' : 'informar o descumprimento do acordo e requerer o <strong>PROSSEGUIMENTO DA EXECUÇÃO</strong>';
@@ -1366,9 +1365,9 @@
                     }
 
                     mainParagraphs = `
-                        <p style="text-indent: 4em;">${exequentesText}, vem, respeitosamente, à presença de Vossa Excelência, informar o descumprimento do acordo homologado nos autos e, ato contínuo, ${actionText}.</p>
-                        <p style="text-indent: 4em;">Conforme se demonstra pelo cálculo anexo, o débito atualizado remanescente, ${multaText}, perfaz o montante de <strong>${formatCurrency(data.summary.grandTotal)}</strong>. ${intimationText}</p>
-                    `;
+                            <p style="text-indent: 4em;">${exequentesText}, vem, respeitosamente, à presença de Vossa Excelência, informar o descumprimento do acordo homologado nos autos e, ato contínuo, ${actionText}.</p>
+                            <p style="text-indent: 4em;">Conforme se demonstra pelo cálculo anexo, o débito atualizado remanescente, ${multaText}, perfaz o montante de <strong>${formatCurrency(data.summary.grandTotal)}</strong>. ${intimationText}</p>
+                        `;
                 }
 
                 const requests = [];
@@ -1385,29 +1384,29 @@
                         penhoraHeader = 'Requer a realização das seguintes medidas para constrição e penhora:';
                     }
                     penhoraRequestsHTML = `
-                        <p style="text-indent: 4em;">${penhoraHeader}</p>
-                        <div style="padding-left: 40px;">
-                            ${requests.map((req, index) => `<p>${toRoman(index + 1)}. ${req}</p>`).join('')}
-                        </div>
-                    `;
+                            <p style="text-indent: 4em;">${penhoraHeader}</p>
+                            <div style="padding-left: 40px;">
+                                ${requests.map((req, index) => `<p>${toRoman(index + 1)}. ${req}</p>`).join('')}
+                            </div>
+                        `;
                 }
 
                 const printDate = data.finalCalcDate.toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' });
                 const signaturesHTML = allExequentes.map(name => `<div style="text-align: center; margin-top: 40px;"><p style="border-top: 1px solid black; width: 75%; margin: 0 auto; padding-top: 5px;">${name}</p></div>`).join('');
 
                 return `
-                    <div style="font-family: 'Times New Roman', Times, serif; font-size: 12pt; line-height: 2; text-align: justify;">
-                        <p style="text-align: center; font-weight: bold;">EXCELENTÍSSIMO(A) SENHOR(A) DOUTOR(A) JUIZ(A) DE DIREITO DO JUIZADO ESPECIAL CÍVEL DA COMARCA DE MARÍLIA - SP</p>
-                        <p style="margin-top: 2cm;"><strong>Processo nº: ${data.processNumber}</strong></p>
-                        <div style="margin-top: 1cm;">
-                            ${mainParagraphs}
+                        <div style="font-family: 'Times New Roman', Times, serif; font-size: 12pt; line-height: 2; text-align: justify;">
+                            <p style="text-align: center; font-weight: bold;">EXCELENTÍSSIMO(A) SENHOR(A) DOUTOR(A) JUIZ(A) DE DIREITO DO JUIZADO ESPECIAL CÍVEL DA COMARCA DE MARÍLIA - SP</p>
+                            <p style="margin-top: 2cm;"><strong>Processo nº: ${data.processNumber}</strong></p>
+                            <div style="margin-top: 1cm;">
+                                ${mainParagraphs}
+                            </div>
+                            ${penhoraRequestsHTML}
+                            <p style="margin-top: 2cm;">Nestes termos, pede deferimento.</p>
+                            <p style="margin-top: 2cm; text-align: right;">Marília, ${printDate}.</p>
+                            <div style="margin-top: 4cm;">${signaturesHTML}</div>
                         </div>
-                        ${penhoraRequestsHTML}
-                        <p style="margin-top: 2cm;">Nestes termos, pede deferimento.</p>
-                        <p style="margin-top: 2cm; text-align: right;">Marília, ${printDate}.</p>
-                        <div style="margin-top: 4cm;">${signaturesHTML}</div>
-                    </div>
-                `;
+                    `;
             };
 
             const showPreview = () => {
@@ -1433,6 +1432,19 @@
                     if (!processNumberManifest.value || !document.querySelector('.manifest-name').value || !document.querySelector('.manifest-cpf').value) {
                         alert("Por favor, preencha todos os campos obrigatórios: Nº do Processo, Nome da Parte e CPF.");
                         return false;
+                    }
+                    // Validação das testemunhas
+                    const witnesses = document.querySelectorAll('.witness-item');
+                    for (const witness of witnesses) {
+                        const requiresIntimation = witness.querySelector('.witness-intimation').checked;
+                        const address = witness.querySelector('.witness-address').value.trim();
+                        const name = witness.querySelector('.witness-name').value.trim() || 'sem nome';
+
+                        if (requiresIntimation && !address) {
+                            alert(`O endereço da testemunha "${name}" é obrigatório, pois a intimação pessoal foi solicitada.`);
+                            witness.querySelector('.witness-address').focus();
+                            return false;
+                        }
                     }
                 } else {
                     if (!lastCalculationData) {
@@ -1777,6 +1789,7 @@
                 }
 
                 if (selectedOption === 'opcao6' || selectedOption === 'opcao9') {
+                    extraContentContainer.classList.remove('hidden'); // Alterado para mostrar o campo de provas
                     witnessSection.classList.remove('hidden');
                 }
 
@@ -1789,6 +1802,71 @@
                     extraContentContainer.classList.remove('hidden');
                     manifestContent.value = `Declara ter sido cientificado da possibilidade de constituição de advogado particular ou da nomeação de advogado pela Defensoria Pública, após triagem e caso atendidos os critérios daquela instituição, sentindo-se  seguro para apresentar sua réplica nos seguintes termos: \n\nDeclara ter lido a(s) contestação(ões) juntadas aos autos, impugna os argumentos da(s) parte(s) requerida(s), reiterando tudo o que foi exposto em sede de inicial, requerendo que o MM. Juiz afaste qualquer preliminar suscitada, bem como a narrativa dos fatos feita pela(s) parte(s) adversa(s).\n\nDeclara que os fatos ocorreram da forma narrada na inicial e que a(s) parte(s) requerida(s) não logrou(ram) êxito em provar suas alegações. Por fim, pugna pela total procedência da ação, nos mesmos termos da inicial.\n\nInforma que <strong> requer a produção das seguintes provas</strong>:`;
                 }
+            };
+
+            const addManifestParty = () => {
+                const newItem = document.createElement('div');
+                newItem.className = 'manifest-party-item grid grid-cols-1 md:grid-cols-2 gap-6 relative mt-4 pt-4 border-t';
+                newItem.innerHTML = `
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Nome da Parte</label>
+                            <input type="text" class="manifest-name w-full p-3 border border-gray-300 rounded-lg shadow-sm">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">CPF/CNPJ</label>
+                            <input type="text" class="manifest-cpf w-full p-3 border border-gray-300 rounded-lg shadow-sm">
+                        </div>
+                        <button type="button" class="remove-manifest-party-btn absolute top-0 right-0 bg-red-500 hover:bg-red-600 text-white font-bold px-2 py-0 rounded-full text-xs" title="Remover Parte">&times;</button>
+                    `;
+                manifestPartiesList.appendChild(newItem);
+                newItem.querySelector('.manifest-cpf').addEventListener('input', formatCpfCnpjOnInput);
+            };
+
+            const addWitness = () => {
+                if (witnessList.children.length >= 3) {
+                    alert('É permitido arrolar no máximo 3 testemunhas.');
+                    return;
+                }
+                const newItem = document.createElement('div');
+                newItem.className = 'witness-item space-y-2 p-4 border rounded-lg relative';
+                newItem.innerHTML = `
+                    <button type="button" class="remove-witness-btn absolute top-2 right-2 bg-red-500 hover:bg-red-600 text-white font-bold px-2 py-0 rounded-full text-xs" title="Remover Testemunha">&times;</button>
+                    <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
+                        <div class="md:col-span-3">
+                            <label class="block text-xs font-medium text-gray-600">Nome Completo da Testemunha</label>
+                            <input type="text" class="witness-name w-full p-2 border border-gray-300 rounded-lg" required>
+                        </div>
+                        <div class="md:col-span-2 flex items-end">
+                            <div class="flex-grow">
+                                <label class="block text-xs font-medium text-gray-600">Documento da Testemunha</label>
+                                <input type="text" class="witness-doc w-full p-2 border border-gray-300 rounded-lg">
+                            </div>
+                             <label class="flex items-center ml-3 pb-1 cursor-pointer" title="Marque esta opção se a testemunha precisar ser intimada pessoalmente pelo juízo. O endereço será obrigatório.">
+                                <input type="checkbox" class="witness-intimation h-5 w-5 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500">
+                                <span class="ml-2 text-sm font-medium text-gray-700">Intimar?</span>
+                            </label>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="witness-address-label block text-xs font-medium text-gray-600">Endereço Completo da Testemunha</label>
+                        <input type="text" class="witness-address w-full p-2 border border-gray-300 rounded-lg">
+                    </div>
+                `;
+                witnessList.appendChild(newItem);
+
+                const intimationCheckbox = newItem.querySelector('.witness-intimation');
+                const addressInput = newItem.querySelector('.witness-address');
+                const addressLabel = newItem.querySelector('.witness-address-label');
+
+                intimationCheckbox.addEventListener('change', (e) => {
+                    if (e.target.checked) {
+                        addressInput.required = true;
+                        addressLabel.innerHTML = 'Endereço Completo da Testemunha <span class="text-red-500 font-bold">*</span>';
+                    } else {
+                        addressInput.required = false;
+                        addressLabel.innerHTML = 'Endereço Completo da Testemunha';
+                    }
+                });
             };
 
             const clearManifestationForm = () => {
@@ -1822,6 +1900,14 @@
                 }
             };
 
+            // Objeto para personalizar as frases de cada tipo de manifestação
+            const manifestationPhrases = {
+                'opcao6': 'apresentar RÉPLICA À CONTESTAÇÃO e INDICAR AS PROVAS que pretende produzir',
+                'opcao9': 'INDICAR AS PROVAS que pretende produzir',
+                // Para personalizar outras opções, adicione uma nova linha como o exemplo abaixo:
+                // 'sua_opcao_aqui': 'seu texto personalizado aqui'
+            };
+
             const generateManifestationPDF = () => {
                 if (!prePrintValidation(true)) return;
 
@@ -1839,14 +1925,23 @@
             };
 
             const generateManifestationPreviewHTML = () => {
+                const selectedOptionValue = manifestationType.value;
                 const selectedOptionText = manifestationType.options[manifestationType.selectedIndex].text.replace(/\s*\(.*?\)\s*/g, '').toUpperCase();
-                let concordancia = 'apresenta sua';
-                if (['opcao3', 'opcao4', 'opcao6', 'opcao8', 'opcao9'].includes(manifestationType.value)) { concordancia = 'vem'; }
-                if (manifestationType.value === 'opcao5') { concordancia = 'vem apresentar'; }
 
                 const partyNames = Array.from(document.querySelectorAll('.manifest-name')).map(input => input.value.trim().toUpperCase()).filter(Boolean);
-                const partyText = partyNames.length === 1 ? `<strong>${partyNames[0]}</strong>, já qualificado(a) nos autos`
-                    : partyNames.join(', ').replace(/,([^,]*)$/, ' e$1') + ', já qualificados nos autos';
+
+                let introHTML;
+                const customPhrase = manifestationPhrases[selectedOptionValue];
+
+                if (customPhrase) {
+                    introHTML = `<p style="text-indent: 4em; margin-top: 1cm;">A(s) parte(s) acima qualificada(s), vem <strong>${customPhrase}</strong>, nos seguintes termos:</p>`;
+                } else {
+                    let concordancia = 'apresenta sua';
+                    if (['opcao3', 'opcao4', 'opcao8'].includes(selectedOptionValue)) { concordancia = 'vem'; }
+                    if (selectedOptionValue === 'opcao5') { concordancia = 'vem apresentar'; }
+                    introHTML = `<p style="text-indent: 4em; margin-top: 1cm;">A(s) parte(s) acima qualificada(s), ${concordancia} <strong>${selectedOptionText}</strong>, nos seguintes termos:</p>`;
+                }
+
 
                 let addressHTML = '';
                 if (!addressSection.classList.contains('hidden')) {
@@ -1859,25 +1954,61 @@
                     extraContentHTML = extraContent.value.split('\n').filter(p => p.trim() !== '').map(p => `<p style="text-indent: 4em;">${p}</p>`).join('');
                 }
 
+                let witnessHTML = '';
+                const witnessItems = document.querySelectorAll('#witness-list .witness-item');
+                const witnessesData = Array.from(witnessItems)
+                    .map(item => ({
+                        name: item.querySelector('.witness-name').value.trim(),
+                        doc: item.querySelector('.witness-doc').value.trim(),
+                        address: item.querySelector('.witness-address').value.trim(),
+                        needsIntimation: item.querySelector('.witness-intimation').checked,
+                    }))
+                    .filter(w => w.name);
+
+                if (witnessesData.length > 0) {
+                    witnessHTML += '<p style="text-align: center; font-weight: bold; margin-top: 1cm; margin-bottom: 1cm;">ROL DE TESTEMUNHAS</p>';
+
+                    witnessesData.forEach((witness, index) => {
+                        let witnessLine = `<p style="text-indent: 4em; margin-bottom: 0.5em;"><strong>${index + 1}. ${witness.name.toUpperCase()}</strong>`;
+                        if (witness.doc) {
+                            witnessLine += `, portador(a) do documento nº ${witness.doc}`;
+                        }
+                        if (witness.address) {
+                            witnessLine += `, residente e domiciliado(a) no endereço: ${witness.address}`;
+                        }
+                        witnessLine += `.</p>`;
+                        witnessHTML += witnessLine;
+                    });
+
+                    const witnessesToInform = witnessesData
+                        .filter(w => w.needsIntimation)
+                        .map(w => w.name.toUpperCase());
+
+                    if (witnessesToInform.length > 0) {
+                        witnessHTML += `<p style="text-indent: 4em; font-weight: bold; font-style: italic; margin-top: 0.5cm;">REQUER-SE A INTIMAÇÃO PESSOAL DA(S) SEGUINTE(S) TESTEMUNHA(S): ${witnessesToInform.join(', ')}.</p>`;
+                    }
+                }
+
                 const today = new Date();
                 const dateStr = today.toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' });
                 const signaturesHTML = partyNames.map(name => `<div style="text-align: center; margin-top: 40px;"><p style="border-top: 1px solid black; width: 75%; margin: 0 auto; padding-top: 5px;">${name}</p></div>`).join('');
 
                 return `
-                    <div style="font-family: 'Times New Roman', Times, serif; font-size: 12pt; line-height: 2; text-align: justify;">
-                        <p style="text-align: center; font-weight: bold;">AO JUÍZO DO JUIZADO ESPECIAL CÍVEL DA COMARCA DE MARÍLIA/SP</p>
-                        <p style="margin-top: 2cm;"><strong>Processo nº: ${processNumberManifest.value}</strong></p>
-                        <p><strong>Solicitante(s): ${partyNames.join(', ')}</strong></p>
-                        <p style="text-align: center; font-weight: bold; margin-top: 1cm;">TERMO - ${selectedOptionText}</p>
-                        <p style="text-indent: 4em; margin-top: 1cm;">A(s) parte(s) acima qualificada(s), ${concordancia} <strong>${selectedOptionText}</strong>, nos seguintes termos:</p>
-                        ${addressHTML}
-                        ${contentParagraphs}
-                        ${extraContentHTML}
-                        <p style="margin-top: 2cm;">Nestes termos, pede deferimento.</p>
-                        <p style="margin-top: 2cm; text-align: right;">Marília, ${dateStr}.</p>
-                        <div style="margin-top: 4cm;">${signaturesHTML}</div>
-                    </div>
-                `;
+                        <div style="font-family: 'Times New Roman', Times, serif; font-size: 12pt; line-height: 2; text-align: justify;">
+                            <p style="text-align: center; font-weight: bold;">AO JUÍZO DO JUIZADO ESPECIAL CÍVEL DA COMARCA DE MARÍLIA/SP</p>
+                            <p style="margin-top: 2cm;"><strong>Processo nº: ${processNumberManifest.value}</strong></p>
+                            <p><strong>Solicitante(s): ${partyNames.join(', ')}</strong></p>
+                            <p style="text-align: center; font-weight: bold; margin-top: 1cm;">TERMO - ${selectedOptionText}</p>
+                            ${introHTML}
+                            ${addressHTML}
+                            ${contentParagraphs}
+                            ${extraContentHTML}
+                            ${witnessHTML}
+                            <p style="margin-top: 2cm;">Nestes termos, pede deferimento.</p>
+                            <p style="margin-top: 2cm; text-align: right;">Marília, ${dateStr}.</p>
+                            <div style="margin-top: 4cm;">${signaturesHTML}</div>
+                        </div>
+                    `;
             };
 
             const addManifestationToPdf = (pdf) => {
@@ -1899,22 +2030,32 @@
                 currentY = renderParagraph(pdf, `<strong>Processo nº: ${processNumberManifest.value}</strong>`, { ...renderOptions, currentY });
                 currentY = renderParagraph(pdf, `<strong>Solicitante(s): ${partyText}</strong>`, { ...renderOptions, currentY, paraSpacing: 10 });
 
+                const selectedOptionValue = manifestationType.value;
                 const selectedOptionText = manifestationType.options[manifestationType.selectedIndex].text.replace(/\s*\(.*?\)\s*/g, '').toUpperCase();
                 pdf.setFont('times', 'bold');
                 pdf.text(`TERMO - ${selectedOptionText}`, pdf.internal.pageSize.getWidth() / 2, currentY, { align: 'center' });
                 currentY += 8 + 10;
                 pdf.setFont('times', 'normal');
 
-                let concordancia = 'apresenta sua';
-                if (['opcao3', 'opcao4', 'opcao6', 'opcao8', 'opcao9'].includes(manifestationType.value)) { concordancia = 'vem'; }
-                if (manifestationType.value === 'opcao5') { concordancia = 'vem apresentar'; }
-
                 const introText = partyNames.length > 1 ? `As partes acima qualificadas` : `A parte acima qualificada`;
-                currentY = renderParagraph(pdf, `${introText}, ${concordancia} <strong>${selectedOptionText}</strong>, nos seguintes termos:`, { ...renderOptions, currentY, indent: true });
+
+                const customPhrase = manifestationPhrases[selectedOptionValue];
+                let introTextPDF;
+
+                if (customPhrase) {
+                    introTextPDF = `${introText}, vem <strong>${customPhrase}</strong>, nos seguintes termos:`;
+                } else {
+                    let concordancia = 'apresenta sua';
+                    if (['opcao3', 'opcao4', 'opcao8'].includes(selectedOptionValue)) { concordancia = 'vem'; }
+                    if (selectedOptionValue === 'opcao5') { concordancia = 'vem apresentar'; }
+                    introTextPDF = `${introText}, ${concordancia} <strong>${selectedOptionText}</strong>, nos seguintes termos:`;
+                }
+                currentY = renderParagraph(pdf, introTextPDF, { ...renderOptions, currentY, indent: true });
+
 
                 if (!addressSection.classList.contains('hidden')) {
                     const addressHTML = `<strong>${(document.getElementById('name-address').value || partyNames[0]).toUpperCase()}</strong><br>${document.getElementById('rua').value}, nº ${document.getElementById('numero').value}, ${document.getElementById('complemento').value}<br>${document.getElementById('bairro').value}, ${cepInput.value}, ${document.getElementById('cidade').value}/${document.getElementById('estado').value}`;
-                    currentY = renderParagraph(pdf, addressHTML, { ...renderOptions, currentY, indent: true });
+                    currentY = renderParagraph(pdf, addressHTML.replace(/<br>/g, '\n'), { ...renderOptions, currentY, indent: true });
                 }
 
                 const contentParagraphs = manifestContent.value.split('\n').filter(p => p.trim() !== '');
@@ -1929,6 +2070,51 @@
                     });
                 }
 
+                const witnessItems = Array.from(document.querySelectorAll('#witness-list .witness-item'));
+                const witnessesData = witnessItems
+                    .map(item => ({
+                        name: item.querySelector('.witness-name').value.trim(),
+                        doc: item.querySelector('.witness-doc').value.trim(),
+                        address: item.querySelector('.witness-address').value.trim(),
+                        needsIntimation: item.querySelector('.witness-intimation').checked,
+                    }))
+                    .filter(w => w.name);
+
+                if (witnessesData.length > 0) {
+                    currentY += 10;
+                    pdf.setFont('times', 'bold');
+                    pdf.text("ROL DE TESTEMUNHAS", pdf.internal.pageSize.getWidth() / 2, currentY, { align: 'center' });
+                    currentY += 8 + 5;
+                    pdf.setFont('times', 'normal');
+
+                    witnessesData.forEach((witness, index) => {
+                        let witnessText = `<strong>${index + 1}. ${witness.name.toUpperCase()}</strong>`;
+                        if (witness.doc) {
+                            witnessText += `, portador(a) do documento nº ${witness.doc}`;
+                        }
+                        if (witness.address) {
+                            witnessText += `, residente e domiciliado(a) no endereço: ${witness.address}`;
+                        }
+                        witnessText += '.';
+                        currentY = renderParagraph(pdf, witnessText, { ...renderOptions, currentY, indent: true, paraSpacing: 2 });
+                    });
+
+                    const witnessesToInform = witnessesData
+                        .filter(w => w.needsIntimation)
+                        .map(w => w.name.toUpperCase());
+
+                    if (witnessesToInform.length > 0) {
+                        currentY += 5;
+                        pdf.setFont('times', 'bolditalic');
+                        const intimationSummaryText = `REQUER-SE A INTIMAÇÃO PESSOAL DA(S) SEGUINTE(S) TESTEMUNHA(S): ${witnessesToInform.join(', ')}.`;
+                        const indentWidth = pdf.getStringUnitWidth(' '.repeat(15)) * 12 / pdf.internal.scaleFactor;
+                        const lines = pdf.splitTextToSize(intimationSummaryText, maxWidth - indentWidth);
+                        pdf.text(lines, margin + indentWidth, currentY);
+                        currentY += lines.length * (renderOptions.lineSpacing);
+                        pdf.setFont('times', 'normal');
+                    }
+                }
+
                 currentY += 10;
                 currentY = renderParagraph(pdf, "Nestes termos, pede deferimento.", { ...renderOptions, currentY, indent: false });
 
@@ -1937,7 +2123,7 @@
                 pdf.text(`Marília, ${dateStr}.`, pdf.internal.pageSize.getWidth() - margin, currentY, { align: 'right' });
                 currentY += 20;
 
-                const partyCpfs = Array.from(document.querySelectorAll('.manifest-cpf')).map(input => input.value.trim()).filter(Boolean);
+                const partyCpfs = Array.from(document.querySelectorAll('.manifest-cpf')).map(input => input.value.trim());
                 partyNames.forEach((name, index) => {
                     const signatureX = pdf.internal.pageSize.getWidth() / 2;
                     pdf.line(signatureX - 40, currentY, signatureX + 40, currentY);
@@ -2009,6 +2195,20 @@
             processNumberInputCalc.addEventListener('input', formatCNJOnInput);
 
             // -- Listeners do Gerador de Manifestação
+            addManifestPartyBtn.addEventListener('click', addManifestParty);
+            manifestPartiesList.addEventListener('click', (e) => {
+                if (e.target.classList.contains('remove-manifest-party-btn')) {
+                    e.target.closest('.manifest-party-item').remove();
+                }
+            });
+
+            addWitnessBtn.addEventListener('click', addWitness);
+            witnessList.addEventListener('click', (e) => {
+                if (e.target.classList.contains('remove-witness-btn')) {
+                    e.target.closest('.witness-item').remove();
+                }
+            });
+
             processNumberManifest.addEventListener('input', formatCNJOnInput);
 
             manifestPartiesList.addEventListener('input', (e) => {
@@ -2048,7 +2248,6 @@
             updateManifestationView(); // Define a view inicial da manifestação
             document.getElementById('agreement-penalty').value = '20';
 
-            // Preenche a data final com a data de hoje por padrão
             const today = new Date();
             const day = String(today.getDate()).padStart(2, '0');
             const month = String(today.getMonth() + 1).padStart(2, '0');
