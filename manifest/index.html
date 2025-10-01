@@ -1805,7 +1805,7 @@
                                 <input type="text" class="manifest-cpf w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
                             </div>
                         </div>`;
-                    addInputBehaviors(manifestPartiesList); // Re-apply behaviors to the new inputs
+                    manifestPartiesList.querySelector('.manifest-cpf').addEventListener('input', formatCpfCnpjOnInput);
                     manifestationType.selectedIndex = 0;
                     manifestContent.value = '';
                     extraContent.value = '';
@@ -1878,6 +1878,75 @@
                         <div style="margin-top: 4cm;">${signaturesHTML}</div>
                     </div>
                 `;
+            };
+
+            const addManifestationToPdf = (pdf) => {
+                const margin = 20;
+                const maxWidth = pdf.internal.pageSize.getWidth() - margin * 2;
+                let currentY = margin;
+                const renderOptions = { margin, maxWidth, lineSpacing: 8, paraSpacing: 5, indent: false };
+
+                pdf.setFont('times', 'bold');
+                pdf.setFontSize(12);
+                const header = "AO JUÍZO DO JUIZADO ESPECIAL CÍVEL DA COMARCA DE MARÍLIA/SP";
+                pdf.text(header, pdf.internal.pageSize.getWidth() / 2, currentY, { align: 'center' });
+                currentY += 8 + 10;
+
+                pdf.setFont('times', 'normal');
+                const partyNames = Array.from(document.querySelectorAll('.manifest-name')).map(input => input.value.trim().toUpperCase()).filter(Boolean);
+                const partyText = partyNames.join(', ');
+
+                currentY = renderParagraph(pdf, `<strong>Processo nº: ${processNumberManifest.value}</strong>`, { ...renderOptions, currentY });
+                currentY = renderParagraph(pdf, `<strong>Solicitante(s): ${partyText}</strong>`, { ...renderOptions, currentY, paraSpacing: 10 });
+
+                const selectedOptionText = manifestationType.options[manifestationType.selectedIndex].text.replace(/\s*\(.*?\)\s*/g, '').toUpperCase();
+                pdf.setFont('times', 'bold');
+                pdf.text(`TERMO - ${selectedOptionText}`, pdf.internal.pageSize.getWidth() / 2, currentY, { align: 'center' });
+                currentY += 8 + 10;
+                pdf.setFont('times', 'normal');
+
+                let concordancia = 'apresenta sua';
+                if (['opcao3', 'opcao4', 'opcao6', 'opcao8', 'opcao9'].includes(manifestationType.value)) { concordancia = 'vem'; }
+                if (manifestationType.value === 'opcao5') { concordancia = 'vem apresentar'; }
+
+                const introText = partyNames.length > 1 ? `As partes acima qualificadas` : `A parte acima qualificada`;
+                currentY = renderParagraph(pdf, `${introText}, ${concordancia} <strong>${selectedOptionText}</strong>, nos seguintes termos:`, { ...renderOptions, currentY, indent: true });
+
+                if (!addressSection.classList.contains('hidden')) {
+                    const addressHTML = `<strong>${(document.getElementById('name-address').value || partyNames[0]).toUpperCase()}</strong><br>${document.getElementById('rua').value}, nº ${document.getElementById('numero').value}, ${document.getElementById('complemento').value}<br>${document.getElementById('bairro').value}, ${cepInput.value}, ${document.getElementById('cidade').value}/${document.getElementById('estado').value}`;
+                    currentY = renderParagraph(pdf, addressHTML, { ...renderOptions, currentY, indent: true });
+                }
+
+                const contentParagraphs = manifestContent.value.split('\n').filter(p => p.trim() !== '');
+                contentParagraphs.forEach(p => {
+                    currentY = renderParagraph(pdf, p, { ...renderOptions, currentY, indent: true });
+                });
+
+                if (!extraContentContainer.classList.contains('hidden') && extraContent.value) {
+                    const extraParagraphs = extraContent.value.split('\n').filter(p => p.trim() !== '');
+                    extraParagraphs.forEach(p => {
+                        currentY = renderParagraph(pdf, p, { ...renderOptions, currentY, indent: true });
+                    });
+                }
+
+                currentY += 10;
+                currentY = renderParagraph(pdf, "Nestes termos, pede deferimento.", { ...renderOptions, currentY, indent: false });
+
+                const today = new Date();
+                const dateStr = today.toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' });
+                pdf.text(`Marília, ${dateStr}.`, pdf.internal.pageSize.getWidth() - margin, currentY, { align: 'right' });
+                currentY += 20;
+
+                const partyCpfs = Array.from(document.querySelectorAll('.manifest-cpf')).map(input => input.value.trim()).filter(Boolean);
+                partyNames.forEach((name, index) => {
+                    const signatureX = pdf.internal.pageSize.getWidth() / 2;
+                    pdf.line(signatureX - 40, currentY, signatureX + 40, currentY);
+                    currentY += 5;
+                    pdf.text(name, signatureX, currentY, { align: 'center' });
+                    currentY += 5;
+                    pdf.text(partyCpfs[index] || '', signatureX, currentY, { align: 'center' });
+                    currentY += 15;
+                });
             };
 
 
@@ -1979,6 +2048,7 @@
             updateManifestationView(); // Define a view inicial da manifestação
             document.getElementById('agreement-penalty').value = '20';
 
+            // Preenche a data final com a data de hoje por padrão
             const today = new Date();
             const day = String(today.getDate()).padStart(2, '0');
             const month = String(today.getMonth() + 1).padStart(2, '0');
