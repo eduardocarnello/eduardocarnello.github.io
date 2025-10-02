@@ -1,0 +1,1121 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerador de Atermação - Juizado Especial Cível</title>
+    <!-- Tailwind CSS para estilização -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Bibliotecas para geração de PDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <!-- Google Fonts para uma melhor tipografia -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+
+        /* Estilos para tooltips de ajuda */
+        .tooltip-container {
+            position: relative;
+            display: inline-flex;
+            align-items: center;
+            margin-left: 8px;
+        }
+
+        .tooltip-icon {
+            cursor: pointer;
+            color: #3b82f6;
+            font-weight: bold;
+            border: 1px solid #3b82f6;
+            border-radius: 50%;
+            width: 18px;
+            height: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+        }
+
+        .tooltip-text {
+            visibility: hidden;
+            width: 280px;
+            background-color: #1f2937;
+            color: #fff;
+            text-align: left;
+            border-radius: 6px;
+            padding: 10px;
+            position: absolute;
+            z-index: 50;
+            bottom: 135%;
+            left: 50%;
+            transform: translateX(-50%);
+            opacity: 0;
+            transition: opacity 0.2s;
+            font-size: 0.8rem;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+            line-height: 1.4;
+        }
+
+        .tooltip-container:hover .tooltip-text {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        /* Estilo para o modal de disclaimer */
+        #disclaimer-modal {
+            background-color: rgba(0, 0, 0, 0.8);
+        }
+
+        #main-form-container.blurred {
+            filter: blur(5px);
+            pointer-events: none;
+        }
+
+        /* Custom Dropdown Styles */
+        #action-type-options label:hover {
+            background-color: #f3f4f6;
+        }
+    </style>
+</head>
+
+<body class="bg-gray-100 min-h-screen flex items-center justify-center p-4">
+
+    <!-- Modal de Disclaimer -->
+    <div id="disclaimer-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-lg shadow-xl max-w-2xl w-full p-8 space-y-6">
+            <h2 class="text-2xl font-bold text-gray-800">Orientações Importantes</h2>
+            <p class="text-gray-600">Antes de prosseguir, por favor, leia e confirme que você compreende os seguintes
+                pontos:</p>
+            <div class="space-y-4 text-gray-700">
+                <label class="flex items-start">
+                    <input type="checkbox"
+                        class="disclaimer-check mt-1 h-5 w-5 text-indigo-600 border-gray-300 rounded">
+                    <span class="ml-3">Esta é uma ferramenta de auxílio para a elaboração de uma petição inicial
+                        (atermação). O preenchimento deste formulário <strong>NÃO</strong> significa que sua ação foi
+                        distribuída na justiça.</span>
+                </label>
+                <label class="flex items-start">
+                    <input type="checkbox"
+                        class="disclaimer-check mt-1 h-5 w-5 text-indigo-600 border-gray-300 rounded">
+                    <span class="ml-3">Após gerar o PDF, você <strong>PRECISA</strong> imprimir o documento, assinar em
+                        todos os locais indicados e entregá-lo fisicamente no balcão do Juizado Especial Cível ou
+                        enviá-lo por e-mail, conforme as orientações do Tribunal.</span>
+                </label>
+                <label class="flex items-start">
+                    <input type="checkbox"
+                        class="disclaimer-check mt-1 h-5 w-5 text-indigo-600 border-gray-300 rounded">
+                    <span class="ml-3">Este formulário não substitui a orientação jurídica de um(a) advogado(a) ou da
+                        Defensoria Pública. Se você se sentir inseguro(a) ou seu caso for complexo, <strong>busque
+                            orientação profissional</strong>.</span>
+                </label>
+            </div>
+            <div class="flex justify-end">
+                <button id="disclaimer-agree-btn"
+                    class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-6 rounded-lg shadow-lg disabled:bg-gray-400 disabled:cursor-not-allowed"
+                    disabled>
+                    Concordo e desejo prosseguir
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div id="main-form-container" class="w-full max-w-5xl mx-auto bg-white rounded-2xl shadow-lg p-6 md:p-8 blurred">
+        <header class="text-center mb-8">
+            <h1 id="main-title" class="text-2xl md:text-3xl font-bold text-gray-800">Gerador de Atermação</h1>
+            <p id="main-subtitle" class="text-gray-500 mt-2">Preencha os campos abaixo para criar o Termo de Atermação
+                para o Juizado Especial Cível.</p>
+            <p class="text-gray-500 mt-2 text-sm">Passe o mouse sobre o ícone <span
+                    class="tooltip-icon inline-flex">?</span> para obter ajuda. Campos com <span
+                    class="text-red-500 font-bold">*</span> são obrigatórios.</p>
+        </header>
+
+        <main>
+            <!-- ############################################ -->
+            <!-- ### CONTAINER DO GERADOR DE ATERMAÇÃO ### -->
+            <!-- ############################################ -->
+            <div id="atermacao-app-container">
+                <form id="atermacao-form">
+                    <!-- Template das Partes -->
+                    <div class="party-item-template" style="display: none;">
+                        <div class="party-item p-4 border rounded-lg bg-white relative space-y-4">
+                            <button type="button"
+                                class="remove-party-btn absolute top-2 right-2 bg-red-500 hover:bg-red-600 text-white font-bold h-6 w-6 rounded-full text-xs flex items-center justify-center"
+                                title="Remover Parte">&times;</button>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div><label class="block text-sm font-medium text-gray-700">Nome Completo <span
+                                            class="text-red-500">*</span></label><input type="text"
+                                        class="party-name w-full mt-1 p-2 border border-gray-300 rounded-lg shadow-sm">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700">Estado Civil</label>
+                                    <select
+                                        class="party-marital-status w-full mt-1 p-2 border border-gray-300 rounded-lg shadow-sm bg-white">
+                                        <option value="" selected>Selecione...</option>
+                                        <option value="solteiro(a)">Solteiro(a)</option>
+                                        <option value="casado(a)">Casado(a)</option>
+                                        <option value="em união estável">Em União Estável</option>
+                                        <option value="separado(a)">Separado(a)</option>
+                                        <option value="divorciado(a)">Divorciado(a)</option>
+                                        <option value="viúvo(a)">Viúvo(a)</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div><label class="block text-sm font-medium text-gray-700">Profissão</label><input
+                                        type="text"
+                                        class="party-profession w-full mt-1 p-2 border border-gray-300 rounded-lg shadow-sm">
+                                </div>
+                                <div class="party-dob-field"><label class="block text-sm font-medium text-gray-700">Data
+                                        de Nascimento <span class="text-red-500">*</span></label><input type="text"
+                                        class="party-dob w-full mt-1 p-2 border border-gray-300 rounded-lg shadow-sm"
+                                        placeholder="DD/MM/AAAA"></div>
+                            </div>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div><label class="block text-sm font-medium text-gray-700">CPF/CNPJ <span
+                                            class="party-cpf-required text-red-500">*</span></label><input type="text"
+                                        class="party-cpf w-full mt-1 p-2 border border-gray-300 rounded-lg shadow-sm">
+                                </div>
+                                <div><label class="block text-sm font-medium text-gray-700">RG</label><input type="text"
+                                        class="party-rg w-full mt-1 p-2 border border-gray-300 rounded-lg shadow-sm">
+                                </div>
+                            </div>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div><label class="block text-sm font-medium text-gray-700">Órgão
+                                        Expedidor</label><input type="text"
+                                        class="party-emitter w-full mt-1 p-2 border border-gray-300 rounded-lg shadow-sm"
+                                        placeholder="Ex: SSP/SP"></div>
+                                <div><label class="block text-sm font-medium text-gray-700">Telefone</label><input
+                                        type="text"
+                                        class="party-phone w-full mt-1 p-2 border border-gray-300 rounded-lg shadow-sm"
+                                        placeholder="(XX) XXXXX-XXXX"></div>
+                            </div>
+                            <div class="grid grid-cols-1 gap-4">
+                                <div><label class="block text-sm font-medium text-gray-700">E-mail</label><input
+                                        type="email"
+                                        class="party-email w-full mt-1 p-2 border border-gray-300 rounded-lg shadow-sm">
+                                </div>
+                            </div>
+                            <div class="address-container">
+                                <div class="grid grid-cols-1 md:grid-cols-4 gap-4 items-end mt-4">
+                                    <div class="md:col-span-1"><label
+                                            class="block text-sm font-medium text-gray-700">CEP</label><input
+                                            type="text"
+                                            class="party-cep w-full mt-1 p-2 border border-gray-300 rounded-lg shadow-sm"
+                                            maxlength="9"></div>
+                                    <div class="md:col-span-3"><label
+                                            class="block text-sm font-medium text-gray-700">Logradouro</label><input
+                                            type="text"
+                                            class="party-street w-full mt-1 p-2 border border-gray-300 rounded-lg shadow-sm bg-gray-100"
+                                            readonly></div>
+                                </div>
+                                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
+                                    <div><label class="block text-sm font-medium text-gray-700">Nº</label><input
+                                            type="text"
+                                            class="party-number w-full mt-1 p-2 border border-gray-300 rounded-lg shadow-sm">
+                                    </div>
+                                    <div class="md:col-span-2"><label
+                                            class="block text-sm font-medium text-gray-700">Complemento</label><input
+                                            type="text"
+                                            class="party-complement w-full mt-1 p-2 border border-gray-300 rounded-lg shadow-sm">
+                                    </div>
+                                </div>
+                                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
+                                    <div class="md:col-span-1"><label
+                                            class="block text-sm font-medium text-gray-700">Bairro</label><input
+                                            type="text"
+                                            class="party-district w-full mt-1 p-2 border border-gray-300 rounded-lg shadow-sm bg-gray-100"
+                                            readonly></div>
+                                    <div><label class="block text-sm font-medium text-gray-700">Cidade</label><input
+                                            type="text"
+                                            class="party-city w-full mt-1 p-2 border border-gray-300 rounded-lg shadow-sm bg-gray-100"
+                                            readonly></div>
+                                    <div><label class="block text-sm font-medium text-gray-700">UF</label><input
+                                            type="text"
+                                            class="party-state w-full mt-1 p-2 border border-gray-300 rounded-lg shadow-sm bg-gray-100"
+                                            readonly></div>
+                                </div>
+                            </div>
+                            <div class="mt-4 space-y-2">
+                                <label class="flex items-center text-sm no-cep-option">
+                                    <input type="checkbox"
+                                        class="no-cep-check h-4 w-4 text-indigo-600 border-gray-300 rounded">
+                                    <span class="ml-2 text-gray-700">Não sei o CEP (preencher endereço
+                                        manualmente)</span>
+                                </label>
+                                <label class="flex items-center text-sm no-address-option" style="display: none;">
+                                    <input type="checkbox"
+                                        class="no-address-check h-4 w-4 text-indigo-600 border-gray-300 rounded">
+                                    <span class="ml-2 text-gray-700">Não possuo o endereço do requerido</span>
+                                </label>
+                            </div>
+                            <div class="no-address-justification-field hidden mt-4">
+                                <label class="block text-sm font-medium text-gray-700">Justifique a ausência do endereço
+                                    e informe se requer a realização de pesquisas nos sistemas para localização</label>
+                                <textarea
+                                    class="no-address-justification w-full mt-1 p-2 border border-gray-300 rounded-lg shadow-sm"
+                                    rows="3"></textarea>
+                            </div>
+
+                            <div class="party-digital-exclusion-field hidden pt-2 mt-2 border-t">
+                                <label class="flex items-center text-sm">
+                                    <input type="checkbox"
+                                        class="party-excluded h-4 w-4 text-indigo-600 border-gray-300 rounded">
+                                    <span class="ml-2 text-gray-700">Declaro ser <strong>excluído(a) digital</strong>,
+                                        com dificuldade de acesso à internet e/ou participação em audiências
+                                        virtuais.</span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Seção de Partes -->
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-6">
+                        <!-- Coluna dos Autores -->
+                        <div class="p-4 border border-gray-200 rounded-lg bg-gray-50">
+                            <h3 class="flex items-center text-lg font-semibold text-gray-800 mb-4">
+                                Parte Autora (Requerente)
+                                <div class="tooltip-container">
+                                    <span class="tooltip-icon">?</span>
+                                    <span class="tooltip-text">É a pessoa ou empresa que está iniciando a ação judicial.
+                                        Preencha aqui os dados de quem está processando.</span>
+                                </div>
+                            </h3>
+                            <div id="autores-list" class="space-y-4"></div>
+                            <div class="flex justify-start mt-4">
+                                <button id="add-autor-btn" type="button"
+                                    class="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded-lg shadow-md">+
+                                    Adicionar Autor</button>
+                            </div>
+                        </div>
+                        <!-- Coluna dos Réus -->
+                        <div class="p-4 border border-gray-200 rounded-lg bg-gray-50">
+                            <h3 class="flex items-center text-lg font-semibold text-gray-800 mb-4">
+                                Parte Ré (Requerido)
+                                <div class="tooltip-container">
+                                    <span class="tooltip-icon">?</span>
+                                    <span class="tooltip-text">É a pessoa ou empresa que está sendo processada. Preencha
+                                        aqui os dados de quem você quer processar.</span>
+                                </div>
+                            </h3>
+                            <div id="reus-list" class="space-y-4"></div>
+                            <div class="flex justify-start mt-4">
+                                <button id="add-reu-btn" type="button"
+                                    class="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded-lg shadow-md">+
+                                    Adicionar Réu</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <hr class="my-6 border-t-2 border-dashed">
+
+                    <!-- Seção Dados da Ação -->
+                    <div class="p-4 border border-gray-200 rounded-lg mb-6">
+                        <h3 class="text-lg font-semibold text-gray-800 mb-4">Dados da Ação</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label for="action-type-button"
+                                    class="flex items-center text-sm font-medium text-gray-700 mb-2">
+                                    Tipo de Ação
+                                    <div class="tooltip-container">
+                                        <span class="tooltip-icon">?</span>
+                                        <span class="tooltip-text">Selecione uma ou mais opções. Basta clicar para
+                                            marcar ou desmarcar.</span>
+                                    </div>
+                                </label>
+                                <div class="relative" id="action-type-container">
+                                    <button type="button" id="action-type-button"
+                                        class="w-full p-3 border border-gray-300 rounded-lg shadow-sm bg-white text-left flex justify-between items-center">
+                                        <span id="action-type-text"
+                                            class="text-gray-500 truncate pr-2">Selecione...</span>
+                                        <svg class="w-4 h-4 text-gray-500 flex-shrink-0" fill="none"
+                                            stroke="currentColor" viewBox="0 0 24 24"
+                                            xmlns="http://www.w3.org/2000/svg">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M19 9l-7 7-7-7"></path>
+                                        </svg>
+                                    </button>
+                                    <div id="action-type-options"
+                                        class="hidden absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                                        <!-- Opções injetadas via JS -->
+                                    </div>
+                                </div>
+                                <input type="text" id="action-type-other"
+                                    class="hidden w-full mt-2 p-3 border border-gray-300 rounded-lg shadow-sm"
+                                    placeholder="Especifique o tipo de ação">
+                            </div>
+                            <div>
+                                <label for="action-value"
+                                    class="flex items-center text-sm font-medium text-gray-700 mb-2">
+                                    Valor da Causa (R$) <span class="text-red-500">*</span>
+                                    <div class="tooltip-container">
+                                        <span class="tooltip-icon">?</span>
+                                        <span class="tooltip-text">O valor da causa deve corresponder à soma de todas as
+                                            parcelas e valores pretendidos na ação ou ao proveito econômico que se
+                                            pede.</span>
+                                    </div>
+                                </label>
+                                <input type="text" id="action-value"
+                                    class="value-input w-full p-3 border border-gray-300 rounded-lg shadow-sm"
+                                    placeholder="1.000,00">
+                            </div>
+                        </div>
+                        <div class="mt-4 space-y-3 pt-4 border-t">
+                            <div>
+                                <label class="flex items-center">
+                                    <input type="checkbox" id="tutela-antecipada-check"
+                                        class="h-5 w-5 text-indigo-600 border-gray-300 rounded">
+                                    <span class="ml-3 font-medium text-gray-800">Requerer Pedido de Tutela de Urgência
+                                        (Liminar)</span>
+                                    <div class="tooltip-container">
+                                        <span class="tooltip-icon">?</span>
+                                        <span class="tooltip-text">É um pedido para que o juiz conceda uma decisão
+                                            provisória e imediata, antes do fim do processo, por haver risco de dano
+                                            irreparável. Ex: religar a luz, retirar nome do SPC/Serasa, etc.</span>
+                                    </div>
+                                </label>
+                                <div id="tutela-justificativa-container" class="hidden mt-2 ml-8">
+                                    <label for="tutela-justificativa"
+                                        class="block text-sm font-medium text-gray-700 mb-1">Justifique a urgência do
+                                        pedido:</label>
+                                    <textarea id="tutela-justificativa" rows="3"
+                                        class="w-full p-2 border border-gray-300 rounded-lg shadow-sm"></textarea>
+                                </div>
+                            </div>
+                            <div>
+                                <label class="flex items-center">
+                                    <input type="checkbox" id="segredo-justica-check"
+                                        class="h-5 w-5 text-indigo-600 border-gray-300 rounded">
+                                    <span class="ml-3 font-medium text-gray-800">Requerer Tramitação em Segredo de
+                                        Justiça</span>
+                                    <div class="tooltip-container">
+                                        <span class="tooltip-icon">?</span>
+                                        <span class="tooltip-text">Marque esta opção apenas se a ação envolver dados
+                                            sensíveis protegidos por sigilo, como informações médicas, segredos
+                                            comerciais ou questões de direito de família.</span>
+                                    </div>
+                                </label>
+                                <div id="sigilo-justificativa-container" class="hidden mt-2 ml-8">
+                                    <label for="sigilo-justificativa"
+                                        class="block text-sm font-medium text-gray-700 mb-1">Justifique o pedido de
+                                        sigilo:</label>
+                                    <textarea id="sigilo-justificativa" rows="3"
+                                        class="w-full p-2 border border-gray-300 rounded-lg shadow-sm"></textarea>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mt-4 pt-4 border-t">
+                            <label class="flex items-center text-sm font-medium text-gray-700 mb-2">
+                                Audiência de Conciliação
+                                <div class="tooltip-container">
+                                    <span class="tooltip-icon">?</span>
+                                    <span class="tooltip-text">É uma audiência inicial onde as partes, com o auxílio de
+                                        um conciliador, tentam chegar a um acordo para resolver o processo de forma
+                                        amigável e rápida.</span>
+                                </div>
+                            </label>
+                            <div class="space-y-2">
+                                <label class="flex items-center">
+                                    <input type="radio" name="audiencia" value="sim"
+                                        class="h-4 w-4 text-indigo-600 border-gray-300">
+                                    <span class="ml-3 text-gray-800">Requer a designação de audiência de
+                                        conciliação</span>
+                                </label>
+                                <label class="flex items-center">
+                                    <input type="radio" name="audiencia" value="nao"
+                                        class="h-4 w-4 text-indigo-600 border-gray-300">
+                                    <span class="ml-3 text-gray-800">Não requer designação de audiência de
+                                        conciliação</span>
+                                </label>
+                            </div>
+                            <div id="audiencia-justificativa-container" class="hidden mt-2 ml-8">
+                                <label for="audiencia-justificativa"
+                                    class="block text-sm font-medium text-gray-700 mb-1">Justifique (ex: a parte ré é de
+                                    outro estado, tornando a conciliação inviável):</label>
+                                <textarea id="audiencia-justificativa" rows="2"
+                                    class="w-full p-2 border border-gray-300 rounded-lg shadow-sm"></textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Seção de Fatos e Pedidos -->
+                    <div class="mb-6">
+                        <label for="fatos-content" class="flex items-center text-sm font-medium text-gray-700 mb-2">
+                            DOS FATOS
+                            <div class="tooltip-container">
+                                <span class="tooltip-icon">?</span>
+                                <span class="tooltip-text">Descreva de forma clara e em ordem cronológica tudo o que
+                                    aconteceu. Informe datas, locais e pessoas envolvidas. Seja objetivo.</span>
+                            </div>
+                        </label>
+                        <textarea id="fatos-content" rows="10"
+                            class="w-full p-3 border border-gray-300 rounded-lg shadow-sm"></textarea>
+                    </div>
+                    <div class="mb-6">
+                        <label for="pedido-content" class="flex items-center text-sm font-medium text-gray-700 mb-2">
+                            PEDIDOS
+                            <div class="tooltip-container">
+                                <span class="tooltip-icon">?</span>
+                                <span class="tooltip-text">Liste exatamente o que você quer que o juiz decida. Ex: 1. A
+                                    condenação do réu a pagar R$ X por danos morais; 2. A obrigação de o réu consertar o
+                                    produto.</span>
+                            </div>
+                        </label>
+                        <textarea id="pedido-content" rows="8"
+                            class="w-full p-3 border border-gray-300 rounded-lg shadow-sm"></textarea>
+                    </div>
+
+                    <!-- Seção de Documentos -->
+                    <div id="document-section" class="space-y-4 mb-6 p-4 border border-gray-200 rounded-lg">
+                        <h3 class="flex items-center text-lg font-semibold text-gray-800 mb-4">
+                            Lista dos Documentos que acompanham a ação
+                            <div class="tooltip-container">
+                                <span class="tooltip-icon">?</span>
+                                <span class="tooltip-text">Esta é apenas a lista de documentos que constará no PDF. Você
+                                    ainda precisa enviar os arquivos dos documentos junto com este termo, conforme as
+                                    orientações do Juizado.</span>
+                            </div>
+                        </h3>
+                        <div id="document-list" class="space-y-4"></div>
+                        <div class="flex justify-start">
+                            <button id="add-document-btn" type="button"
+                                class="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded-lg shadow-md">+
+                                Adicionar Documento</button>
+                        </div>
+                    </div>
+
+                    <div class="flex gap-4 justify-end mt-8 flex-wrap">
+                        <button id="test-fill-btn" type="button"
+                            class="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-lg shadow-lg">Preencher
+                            para Teste</button>
+                        <button id="clear-form-btn" type="button"
+                            class="bg-gray-500 hover:bg-red-600 text-white font-bold py-3 px-6 rounded-lg shadow-lg">Limpar
+                            Tudo</button>
+                        <button id="preview-btn" type="button"
+                            class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg shadow-lg">Pré-visualizar</button>
+                        <button id="generate-pdf-btn" type="button"
+                            class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-6 rounded-lg shadow-lg">Gerar
+                            PDF</button>
+                    </div>
+                </form>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modal de Pré-visualização -->
+    <div id="preview-modal"
+        class="hidden fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center p-4 z-50">
+        <div class="bg-gray-200 rounded-lg shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto p-6 relative">
+            <button id="close-preview-btn"
+                class="absolute top-3 right-3 text-3xl font-bold text-gray-500 hover:text-gray-800 leading-none">&times;</button>
+            <div id="preview-content" class="bg-white p-8"
+                style="font-family: 'Times New Roman', Times, serif; color: #111827;">
+                <!-- Conteúdo da prévia será injetado aqui -->
+            </div>
+        </div>
+    </div>
+
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- REFERÊNCIAS GERAIS ---
+            const disclaimerModal = document.getElementById('disclaimer-modal');
+            const disclaimerChecks = document.querySelectorAll('.disclaimer-check');
+            const disclaimerAgreeBtn = document.getElementById('disclaimer-agree-btn');
+            const mainFormContainer = document.getElementById('main-form-container');
+
+            // --- REFERÊNCIAS DO GERADOR DE ATERMAÇÃO ---
+            const atermacaoForm = document.getElementById('atermacao-form');
+            const autoresList = document.getElementById('autores-list');
+            const reusList = document.getElementById('reus-list');
+            const addAutorBtn = document.getElementById('add-autor-btn');
+            const addReuBtn = document.getElementById('add-reu-btn');
+            const partyTemplate = document.querySelector('.party-item-template');
+
+            // Custom dropdown refs
+            const actionTypeContainer = document.getElementById('action-type-container');
+            const actionTypeButton = document.getElementById('action-type-button');
+            const actionTypeOptions = document.getElementById('action-type-options');
+            const actionTypeText = document.getElementById('action-type-text');
+            const actionTypeOtherInput = document.getElementById('action-type-other');
+
+            const tutelaCheck = document.getElementById('tutela-antecipada-check');
+            const tutelaJustificativaContainer = document.getElementById('tutela-justificativa-container');
+            const sigiloCheck = document.getElementById('segredo-justica-check');
+            const sigiloJustificativaContainer = document.getElementById('sigilo-justificativa-container');
+            const audienciaRadios = document.querySelectorAll('input[name="audiencia"]');
+            const audienciaJustificativaContainer = document.getElementById('audiencia-justificativa-container');
+            const documentList = document.getElementById('document-list');
+            const addDocumentBtn = document.getElementById('add-document-btn');
+            const clearFormBtn = document.getElementById('clear-form-btn');
+            const generatePdfBtn = document.getElementById('generate-pdf-btn');
+            const previewBtn = document.getElementById('preview-btn');
+            const previewModal = document.getElementById('preview-modal');
+            const closePreviewBtn = document.getElementById('close-preview-btn');
+            const previewContent = document.getElementById('preview-content');
+            const testFillBtn = document.getElementById('test-fill-btn');
+
+
+            // --- LÓGICA DO DISCLAIMER ---
+            const checkDisclaimer = () => {
+                disclaimerAgreeBtn.disabled = !Array.from(disclaimerChecks).every(c => c.checked);
+            };
+
+            disclaimerAgreeBtn.addEventListener('click', () => {
+                disclaimerModal.classList.add('hidden');
+                mainFormContainer.classList.remove('blurred');
+            });
+
+            // --- FUNÇÕES DE FORMATAÇÃO E UI ---
+            const formatCpfCnpj = (value) => {
+                value = value.replace(/\D/g, '').slice(0, 14);
+                if (value.length <= 11) value = value.replace(/(\d{3})(\d)/, '$1.$2').replace(/(\d{3})(\d)/, '$1.$2').replace(/(\d{3})(\d{1,2})$/, '$1-$2');
+                else value = value.replace(/^(\d{2})(\d)/, '$1.$2').replace(/^(\d{2})\.(\d{3})(\d)/, '$1.$2.$3').replace(/\.(\d{3})(\d)/, '.$1/$2').replace(/(\d{4})(\d)/, '$1-$2');
+                return value;
+            };
+
+            const formatPhone = (value) => {
+                value = value.replace(/\D/g, '').slice(0, 11);
+                if (value.length > 10) value = value.replace(/^(\d\d)(\d{5})(\d{4}).*/, "($1) $2-$3");
+                else if (value.length > 5) value = value.replace(/^(\d\d)(\d{4})(\d{0,4}).*/, "($1) $2-$3");
+                else if (value.length > 2) value = value.replace(/^(\d\d)(\d{0,5}).*/, "($1) $2");
+                else value = value.replace(/^(\d*)/, "($1");
+                return value;
+            };
+
+            const formatDate = (value) => value.replace(/\D/g, '').slice(0, 8).replace(/(\d{2})(\d)/, '$1/$2').replace(/(\d{2})\/(\d{2})(\d)/, '$1/$2/$3');
+            const formatValueOnBlur = (e) => {
+                let value = e.target.value.replace(/[^\d,]/g, '').replace(',', '.');
+                e.target.value = !isNaN(parseFloat(value)) ? parseFloat(value).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '';
+            };
+
+            const createPartyElement = (isAuthor) => {
+                const newParty = partyTemplate.firstElementChild.cloneNode(true);
+                if (isAuthor) {
+                    newParty.querySelector('.party-digital-exclusion-field').classList.remove('hidden');
+                } else {
+                    newParty.querySelector('.party-dob-field').style.display = 'none';
+                    newParty.querySelector('.party-cpf-required').style.display = 'none';
+                    newParty.querySelector('.no-address-option').style.display = 'flex';
+                }
+                return newParty;
+            };
+
+            const addParty = (listElement, isAuthor) => {
+                const newParty = createPartyElement(isAuthor);
+                listElement.appendChild(newParty);
+                addInputBehaviors(newParty);
+            };
+
+            const addInputBehaviors = (container) => {
+                container.querySelectorAll('.party-cpf').forEach(input => input.addEventListener('input', (e) => e.target.value = formatCpfCnpj(e.target.value)));
+                container.querySelectorAll('.party-phone').forEach(input => input.addEventListener('input', (e) => e.target.value = formatPhone(e.target.value)));
+                container.querySelectorAll('.party-dob').forEach(input => input.addEventListener('input', (e) => e.target.value = formatDate(e.target.value)));
+
+                const noCepCheck = container.querySelector('.no-cep-check');
+                noCepCheck.addEventListener('change', (e) => {
+                    const isChecked = e.target.checked;
+                    const addressContainer = container.querySelector('.address-container');
+                    addressContainer.querySelectorAll('input:not(.party-cep)').forEach(input => {
+                        input.readOnly = !isChecked;
+                        input.classList.toggle('bg-gray-100', !isChecked);
+                        if (isChecked) input.value = '';
+                    });
+                    addressContainer.querySelector('.party-cep').disabled = isChecked;
+                });
+
+                const noAddressCheck = container.querySelector('.no-address-check');
+                noAddressCheck.addEventListener('change', (e) => {
+                    const isChecked = e.target.checked;
+                    container.querySelector('.address-container').style.display = isChecked ? 'none' : 'block';
+                    container.querySelector('.no-cep-option').style.display = isChecked ? 'none' : 'flex';
+                    container.querySelector('.no-address-justification-field').classList.toggle('hidden', !isChecked);
+                });
+
+                container.querySelectorAll('.party-cep').forEach(input => {
+                    input.addEventListener('input', function () {
+                        if (container.querySelector('.no-cep-check').checked) return;
+                        this.value = this.value.replace(/\D/g, '').replace(/^(\d{5})(\d)/, '$1-$2');
+                        const cep = this.value.replace(/\D/g, '');
+                        if (cep.length === 8) {
+                            const parent = this.closest('.party-item');
+                            fetch(`https://viacep.com.br/ws/${cep}/json/`)
+                                .then(response => response.json())
+                                .then(data => {
+                                    if (!data.erro) {
+                                        parent.querySelector('.party-street').value = data.logradouro;
+                                        parent.querySelector('.party-district').value = data.bairro;
+                                        parent.querySelector('.party-city').value = data.localidade;
+                                        parent.querySelector('.party-state').value = data.uf;
+                                        parent.querySelector('.party-number').focus();
+                                    } else { alert('CEP não encontrado.'); }
+                                }).catch(error => console.error('Erro ao buscar o CEP:', error));
+                        }
+                    });
+                });
+            };
+
+            // --- LÓGICA CUSTOM DROPDOWN ---
+            const actionTypes = [
+                { value: "Indenização por Danos Morais", text: "Indenização por Danos Morais" },
+                { value: "Indenização por Danos Materiais", text: "Indenização por Danos Materiais" },
+                { value: "Obrigação de Fazer/Não Fazer", text: "Obrigação de Fazer/Não Fazer" },
+                { value: "Rescisão de Contrato c/c Devolução do Dinheiro", text: "Rescisão de Contrato c/c Devolução do Dinheiro" },
+                { value: "Rescisão de Contrato", text: "Rescisão de Contrato" },
+                { value: "Inexigibilidade de Débito", text: "Inexigibilidade de Débito" },
+                { value: "Ação de Cobrança", text: "Ação de Cobrança" },
+                { value: "Defesa do Consumidor (Inscrição Indevida)", text: "Defesa do Consumidor (Inscrição Indevida)" },
+                { value: "Defesa do Consumidor (Produto/Serviço Defeituoso)", text: "Defesa do Consumidor (Produto/Serviço)" },
+                { value: "Outros", text: "Outros (especificar)" },
+            ];
+
+            actionTypes.forEach(action => {
+                const optionLabel = document.createElement('label');
+                optionLabel.className = 'flex items-center p-2 cursor-pointer';
+                optionLabel.innerHTML = `
+                    <input type="checkbox" class="h-4 w-4 text-indigo-600 border-gray-300 rounded action-type-checkbox" value="${action.value}">
+                    <span class="ml-2 text-gray-700">${action.text}</span>
+                `;
+                actionTypeOptions.appendChild(optionLabel);
+            });
+
+            const updateActionTypeDisplay = () => {
+                const selected = Array.from(actionTypeOptions.querySelectorAll('.action-type-checkbox:checked'))
+                    .map(cb => cb.parentElement.querySelector('span').textContent);
+
+                if (selected.length === 0) {
+                    actionTypeText.textContent = 'Selecione...';
+                    actionTypeText.classList.add('text-gray-500');
+                } else {
+                    actionTypeText.textContent = selected.join(', ');
+                    actionTypeText.classList.remove('text-gray-500');
+                }
+                const isOtherSelected = selected.some(s => s.includes('Outros'));
+                actionTypeOtherInput.classList.toggle('hidden', !isOtherSelected);
+            };
+
+            actionTypeButton.addEventListener('click', (e) => {
+                e.stopPropagation();
+                actionTypeOptions.classList.toggle('hidden');
+            });
+
+            document.addEventListener('click', (e) => {
+                if (!actionTypeContainer.contains(e.target)) {
+                    actionTypeOptions.classList.add('hidden');
+                }
+            });
+
+            actionTypeOptions.addEventListener('change', updateActionTypeDisplay);
+
+            // --- FUNÇÕES DE GERAÇÃO DE CONTEÚDO E PDF ---
+
+            const fillWithTestData = () => {
+                // Limpa o formulário manualmente para evitar o diálogo de confirmação
+                autoresList.innerHTML = '';
+                reusList.innerHTML = '';
+                documentList.innerHTML = '';
+                atermacaoForm.reset();
+
+                // Reset custom dropdown
+                actionTypeOptions.querySelectorAll('.action-type-checkbox').forEach(cb => cb.checked = false);
+                updateActionTypeDisplay();
+
+                actionTypeOtherInput.classList.add('hidden');
+                tutelaJustificativaContainer.classList.add('hidden');
+                sigiloJustificativaContainer.classList.add('hidden');
+
+                // Adiciona e preenche Autor
+                addParty(autoresList, true);
+                const autor1 = autoresList.querySelector('.party-item');
+                autor1.querySelector('.party-name').value = 'João da Silva Sauro';
+                autor1.querySelector('.party-marital-status').value = 'solteiro(a)';
+                autor1.querySelector('.party-profession').value = 'Desenvolvedor de Software';
+                autor1.querySelector('.party-dob').value = '15/05/1990';
+                autor1.querySelector('.party-cpf').value = formatCpfCnpj('12345678901');
+                autor1.querySelector('.party-rg').value = '12.345.678-9';
+                autor1.querySelector('.party-emitter').value = 'SSP/SP';
+                autor1.querySelector('.party-phone').value = formatPhone('14998765432');
+                autor1.querySelector('.party-email').value = 'joao.silva@emailteste.com';
+                autor1.querySelector('.party-cep').value = '17500-001';
+                autor1.querySelector('.party-cep').dispatchEvent(new Event('input', { bubbles: true }));
+                setTimeout(() => {
+                    autor1.querySelector('.party-number').value = '100';
+                    autor1.querySelector('.party-complement').value = 'Apto 10';
+                }, 500);
+                autor1.querySelector('.party-excluded').checked = true;
+
+                // Adiciona e preenche Réu 1 (Empresa com endereço manual)
+                addParty(reusList, false);
+                const reu1 = reusList.querySelector('.party-item');
+                reu1.querySelector('.party-name').value = 'Empresa de Telefonia Fictícia S/A';
+                reu1.querySelector('.party-cpf').value = formatCpfCnpj('12345678000190');
+                reu1.querySelector('.no-cep-check').checked = true;
+                reu1.querySelector('.no-cep-check').dispatchEvent(new Event('change'));
+                reu1.querySelector('.party-street').value = 'Avenida dos Testes';
+                reu1.querySelector('.party-number').value = '987';
+                reu1.querySelector('.party-district').value = 'Centro';
+                reu1.querySelector('.party-city').value = 'Marília';
+                reu1.querySelector('.party-state').value = 'SP';
+
+                // Adiciona e preenche Réu 2 (Pessoa sem endereço)
+                addParty(reusList, false);
+                const reu2 = reusList.querySelectorAll('.party-item')[1];
+                reu2.querySelector('.party-name').value = 'Maria Oliveira';
+                reu2.querySelector('.no-address-check').checked = true;
+                reu2.querySelector('.no-address-check').dispatchEvent(new Event('change'));
+                reu2.querySelector('.no-address-justification').value = 'a parte autora desconhece o paradeiro da requerida, sendo esta a última informação de contato. Requer-se a pesquisa via sistemas conveniados (BacenJud, InfoJud, etc).';
+
+                // Preenche Dados da Ação
+                actionTypeOptions.querySelectorAll('.action-type-checkbox').forEach(cb => {
+                    if (cb.value === 'Obrigação de Fazer/Não Fazer' || cb.value === 'Indenização por Danos Morais') {
+                        cb.checked = true;
+                    }
+                });
+                updateActionTypeDisplay();
+
+
+                document.getElementById('action-value').value = '12.500,00';
+
+                tutelaCheck.checked = true;
+                tutelaCheck.dispatchEvent(new Event('change'));
+                document.getElementById('tutela-justificativa').value = 'a imediata remoção do nome do autor dos cadastros de inadimplentes, uma vez que a cobrança é indevida e está causando prejuízos diários.';
+
+                sigiloCheck.checked = true;
+                sigiloCheck.dispatchEvent(new Event('change'));
+                document.getElementById('sigilo-justificativa').value = 'o processo contém extratos bancários e dados fiscais sensíveis.';
+
+                document.querySelector('input[name="audiencia"][value="nao"]').checked = true;
+                audienciaJustificativaContainer.classList.remove('hidden');
+                document.getElementById('audiencia-justificativa').value = 'a parte ré (Empresa de Telefonia Fictícia S/A) possui sede em outra comarca, tornando a tentativa de conciliação presencial infrutífera e apenas protelatória.';
+
+                // Preenche Fatos e Pedidos
+                document.getElementById('fatos-content').value = `Em 01/08/2025, o autor adquiriu um smartphone modelo XPTO da empresa requerida, pelo valor de R$ 2.500,00, conforme nota fiscal anexa.\n\nOcorre que, com menos de uma semana de uso, o aparelho começou a apresentar superaquecimento e a bateria não durava mais que duas horas, mesmo com pouco uso.\n\nO autor contatou o suporte técnico por diversas vezes (protocolos anexos), mas não obteve solução, sendo informado que deveria arcar com os custos de um reparo que, segundo a empresa, foi causado por "mau uso", o que não é verdade.`;
+                document.getElementById('pedido-content').value = `b) A procedência da ação para condenar a empresa ré a substituir o aparelho por um novo, idêntico ou superior, em perfeitas condições de uso;\nc) Subsidiariamente, caso não seja possível a troca, a rescisão do contrato com a devolução do valor pago de R$ 2.500,00, devidamente corrigido;\nd) A condenação da empresa ré ao pagamento de uma indenização por danos morais no valor de R$ 10.000,00, em razão do descaso e do tempo perdido pelo autor na tentativa de solucionar o problema.`;
+
+                // Preenche Documentos
+                const docTypes = ['Nota Fiscal', 'Conversas em WhatsApp', 'Outro'];
+                docTypes.forEach(type => {
+                    addDocumentBtn.click();
+                    const lastDoc = documentList.lastElementChild;
+                    const select = lastDoc.querySelector('.document-type');
+                    select.value = type;
+                    if (type === 'Outro') {
+                        const otherInput = lastDoc.querySelector('.document-other-type');
+                        otherInput.classList.remove('hidden');
+                        otherInput.value = 'Protocolos de Atendimento';
+                    }
+                });
+
+                alert('Dados de teste preenchidos!');
+            };
+
+            const getFormData = () => {
+                const getPartyData = (listElement, isAuthor) => {
+                    return Array.from(listElement.querySelectorAll('.party-item')).map(item => ({
+                        name: item.querySelector('.party-name').value.trim(),
+                        maritalStatus: item.querySelector('.party-marital-status').value,
+                        profession: item.querySelector('.party-profession').value.trim(),
+                        cpf: item.querySelector('.party-cpf').value.trim(),
+                        dob: isAuthor ? item.querySelector('.party-dob').value.trim() : null,
+                        rg: item.querySelector('.party-rg').value.trim(),
+                        emitter: item.querySelector('.party-emitter').value.trim(),
+                        phone: item.querySelector('.party-phone').value.trim(),
+                        email: item.querySelector('.party-email').value.trim(),
+                        address: item.querySelector('.no-address-check').checked ? null : `${item.querySelector('.party-street').value}, nº ${item.querySelector('.party-number').value}, ${item.querySelector('.party-complement').value || ''}`.trim() + ` - ${item.querySelector('.party-district').value}, CEP: ${item.querySelector('.party-cep').value}, ${item.querySelector('.party-city').value}/${item.querySelector('.party-state').value}`,
+                        noAddressJustification: item.querySelector('.no-address-check').checked ? item.querySelector('.no-address-justification').value.trim() : null,
+                        isExcluded: isAuthor ? item.querySelector('.party-excluded').checked : false,
+                        city: item.querySelector('.party-city').value,
+                        state: item.querySelector('.party-state').value,
+                    })).filter(p => p.name);
+                };
+
+                const getDocuments = () => {
+                    return Array.from(documentList.querySelectorAll('.document-item')).map(item => {
+                        const type = item.querySelector('.document-type').value;
+                        return type === 'Outro' ? item.querySelector('.document-other-type').value.trim() : type;
+                    }).filter(Boolean);
+                };
+
+                const selectedActions = Array.from(actionTypeOptions.querySelectorAll('.action-type-checkbox:checked')).map(cb => cb.value);
+                const otherIndex = selectedActions.indexOf('Outros');
+                if (otherIndex > -1) {
+                    selectedActions[otherIndex] = actionTypeOtherInput.value.trim();
+                }
+                const actionType = selectedActions.filter(Boolean).join(' c/c ');
+
+                return {
+                    autores: getPartyData(autoresList, true),
+                    reus: getPartyData(reusList, false),
+                    actionType: actionType,
+                    actionValue: document.getElementById('action-value').value.trim(),
+                    fatos: document.getElementById('fatos-content').value.trim(),
+                    pedido: document.getElementById('pedido-content').value.trim(),
+                    documents: getDocuments(),
+                    tutela: tutelaCheck.checked,
+                    tutelaJustificativa: document.getElementById('tutela-justificativa').value.trim(),
+                    sigilo: sigiloCheck.checked,
+                    sigiloJustificativa: document.getElementById('sigilo-justificativa').value.trim(),
+                    audiencia: document.querySelector('input[name="audiencia"]:checked') ? document.querySelector('input[name="audiencia"]:checked').value : null,
+                    audienciaJustificativa: document.getElementById('audiencia-justificativa').value.trim(),
+                };
+            };
+
+            const validateForm = (data) => {
+                if (data.autores.length === 0 || data.autores.some(a => !a.cpf || !a.dob || a.dob.length < 10)) { alert("Adicione pelo menos um autor com Nome, CPF e Data de Nascimento completos."); return false; }
+                if (data.reus.length === 0) { alert("Adicione pelo menos um réu com Nome."); return false; }
+                if (!data.actionType) { alert("Selecione ou especifique o tipo de ação."); return false; }
+                if (!data.fatos) { alert("O campo 'DOS FATOS' é obrigatório."); return false; }
+                if (!data.pedido) { alert("O campo 'PEDIDOS' é obrigatório."); return false; }
+                if (!data.actionValue) { alert("O campo 'Valor da Causa' é obrigatório."); return false; }
+                if (data.tutela && !data.tutelaJustificativa) { alert("Justifique o pedido de tutela de urgência."); return false; }
+                if (data.sigilo && !data.sigiloJustificativa) { alert("Justifique o pedido de segredo de justiça."); return false; }
+                return true;
+            };
+
+            const calculateAge = (dobString) => {
+                if (!dobString || dobString.length < 10) return null;
+                const [day, month, year] = dobString.split('/');
+                const birthDate = new Date(+year, +month - 1, +day);
+                const today = new Date();
+                let age = today.getFullYear() - birthDate.getFullYear();
+                const m = today.getMonth() - birthDate.getMonth();
+                if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) age--;
+                return age;
+            };
+
+            const generateContentHTML = (data) => {
+                const today = new Date();
+                const dateStr = today.toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' });
+                const locationStr = data.autores[0] && data.autores[0].city ? `${data.autores[0].city}/${data.autores[0].state}` : 'Marília/SP';
+
+
+                const generatePartyHTML = (party, isAuthor) => {
+                    const age = calculateAge(party.dob);
+                    const isMinor = isAuthor && age !== null && age < 18;
+
+                    const nameHTML = `<span style="font-weight: bold;">${party.name.toUpperCase()}</span>`;
+
+                    let details = '';
+                    if (isMinor) details += `, menor`;
+                    if (party.maritalStatus) details += `, ${party.maritalStatus}`;
+                    if (party.profession) details += `, ${party.profession}`;
+                    if (party.rg) details += `, portador(a) do RG nº ${party.rg}` + (party.emitter ? ` - ${party.emitter}` : '');
+                    if (party.cpf) details += `, inscrito(a) no CPF/CNPJ sob o nº ${party.cpf}`;
+
+                    if (party.address) details += `, residente e domiciliado(a) no endereço: ${party.address}`;
+                    else details += `, em lugar incerto e não sabido, requerendo-se a pesquisa do seu endereço`;
+
+                    if (party.phone) details += `, Telefone: ${party.phone}`;
+                    if (party.email) details += `, E-mail: ${party.email}`;
+
+                    const detailsHTML = `<span>${details}</span>`;
+
+                    return `<p>${nameHTML}${detailsHTML}</p>`;
+                };
+
+                const fatosHTML = data.fatos.split('\n').map(p => `<p style="text-indent: 4em;">${p}</p>`).join('');
+
+                let citacaoText = `a) A citação da parte ré para, querendo, apresentar defesa, sob pena de revelia;`;
+                if (data.audiencia === 'sim') {
+                    citacaoText = `a) A citação e intimação da parte ré para comparecer à audiência de conciliação a ser designada, sob pena de revelia;`
+                }
+
+                let pedidoFinal = `${citacaoText}\n\n${data.pedido}`;
+
+                if (data.tutela) pedidoFinal += `\n\n- A concessão da tutela de urgência para ${data.tutelaJustificativa}`;
+                if (data.autores.some(a => a.isExcluded)) pedidoFinal += "\n\n- A designação de eventuais audiências na modalidade presencial, em razão da declarada exclusão digital da parte autora.";
+                if (data.sigilo) pedidoFinal += `\n\n- A tramitação do feito em segredo de justiça, pois ${data.sigiloJustificativa}`;
+                data.reus.forEach(reu => {
+                    if (reu.noAddressJustification) {
+                        pedidoFinal += `\n\n- A localização do endereço do(a) réu(ré) ${reu.name}, uma vez que ${reu.noAddressJustification}`;
+                    }
+                });
+
+                pedidoFinal += "\n\n- Havendo relação de consumo, a parte autora, desde logo, postula pela inversão do ônus da prova.";
+
+                if (data.audiencia === 'sim') {
+                    // Já tratado na citação
+                } else if (data.audiencia === 'nao' && data.audienciaJustificativa) {
+                    pedidoFinal += `\n\n- A parte autora manifesta o desinteresse na designação de audiência de conciliação, pela seguinte razão: ${data.audienciaJustificativa}`;
+                } else if (data.audiencia === 'nao') {
+                    pedidoFinal += "\n\n- A parte autora manifesta o desinteresse na designação de audiência de conciliação.";
+                }
+
+
+                const pedidoHTML = pedidoFinal.split('\n').filter(p => p.trim() !== '').map(p => `<p style="text-indent: 4em;">${p}</p>`).join('');
+
+                const documentsHTML = data.documents.length > 0 ? `<p style="text-indent: 4em;">Acompanham a presente petição os seguintes documentos: ${data.documents.join(', ')}.</p>` : '';
+                const signaturesHTML = data.autores.map(autor => `<div style="text-align: center; margin-top: 60px; page-break-inside: avoid;"><p style="border-top: 1px solid black; width: 75%; margin: 0 auto; padding-top: 5px;">${autor.name.toUpperCase()}</p><p style="margin:0; font-size: 10pt;">${autor.cpf}</p></div>`).join('');
+
+                const actionName = data.actionType.toUpperCase() + (data.tutela ? " COM PEDIDO DE TUTELA DE URGÊNCIA" : "");
+
+                let headersHTML = '';
+                if (data.tutela) headersHTML += `<p style="text-align: right; font-weight: bold; color: red;">URGENTE - PEDIDO DE TUTELA DE URGÊNCIA</p>`;
+                if (data.sigilo) headersHTML += `<p style="text-align: right; font-weight: bold;">TRAMITAÇÃO EM SEGREDO DE JUSTIÇA</p>`;
+                if (data.autores.some(a => a.isExcluded)) headersHTML += `<p style="text-align: right; font-weight: bold;">PARTE AUTORA EXCLUÍDA DIGITAL</p>`;
+                if (data.autores.some(a => calculateAge(a.dob) < 18)) headersHTML += `<p style="text-align: right; font-weight: bold; color: blue;">PARTE AUTORA MENOR DE IDADE</p>`;
+
+                const orientacoesHTML = `
+                    <div style="margin-top: 2cm; padding: 10px; border: 2px solid #e5e7eb; background-color: #f9fafb; page-break-inside: avoid;">
+                        <h3 style="text-align: center; font-weight: bold; font-size: 11pt; margin: 0 0 10px 0;">ORIENTAÇÕES IMPORTANTES</h3>
+                        <ul style="font-size: 10pt; line-height: 1.5; margin: 0; padding-left: 20px;">
+                            <li style="margin-bottom: 5px;"><strong>Responsabilidade:</strong> Os fatos, fundamentos e pedidos contidos nesta atermação são de sua inteira responsabilidade.</li>
+                            <li style="margin-bottom: 5px;"><strong>Envio de Documentos:</strong> Os documentos devem ser enviados junto com esta manifestação. Tamanho máximo por arquivo: 10MB. Formatos aceitos: PDF, JPG, PNG, MP3, MP4, etc. <strong>Atenção:</strong> o nome dos arquivos <strong>NÃO</strong> deve conter os caracteres: \\ / : * ? " &lt; &gt; |</li>
+                            <li style="margin-bottom: 5px;"><strong>Mudança de Endereço:</strong> Comunique ao Juizado qualquer mudança de endereço durante o processo. Intimações enviadas ao endereço antigo serão consideradas válidas.</li>
+                            <li style="margin-bottom: 5px;"><strong>Limite de Valor:</strong> A escolha pelo Juizado Especial implica na renúncia de valores que ultrapassem 40 salários mínimos, salvo em caso de acordo.</li>
+                            <li style="margin-bottom: 5px;"><strong>Testemunhas:</strong> Não é necessário levar testemunhas na audiência de conciliação. O pedido para ouvi-las em audiência de instrução deve ser feito separadamente, com a qualificação completa (nome e endereço).</li>
+                        </ul>
+                    </div>
+                `;
+
+                return `
+                    <div style="font-size: 12pt; line-height: 2; text-align: justify;">
+                        <p style="text-align: center; font-weight: bold;">EXCELENTÍSSIMO(A) SENHOR(A) DOUTOR(A) JUIZ(A) DE DIREITO DO JUIZADO ESPECIAL CÍVEL DA COMARCA DE MARÍLIA/SP</p>
+                        <div style="margin-top: 1cm;">${headersHTML}</div>
+                        
+                        <div style="margin-top: 1cm;">
+                            <p><strong>REQUERENTE(S):</strong><br>${data.autores.map(p => generatePartyHTML(p, true)).join(' ')}</p>
+                        </div>
+                        <div style="margin-top: 1cm;">
+                            <p><strong>REQUERIDO(S):</strong><br>${data.reus.map(p => generatePartyHTML(p, false)).join(' ')}</p>
+                        </div>
+
+                        <p style="text-align: center; font-weight: bold; margin-top: 1cm; margin-bottom: 0.5cm;">AÇÃO DE ${actionName}</p>
+                        <p style="text-align: left; font-weight: bold; margin-top: 1cm; margin-bottom: 0.5cm;">DOS FATOS</p>
+                        ${fatosHTML}
+                        <p style="text-align: left; font-weight: bold; margin-top: 1cm; margin-bottom: 0.5cm;">PEDIDOS</p>
+                        <p style="text-indent: 4em;">Diante do exposto, requer a Vossa Excelência:</p>
+                        ${pedidoHTML}
+                        <p style="margin-top: 1cm;">${documentsHTML}</p>
+                        <p>&nbsp;</p>
+                        <p>Dá-se à causa o valor de <span style="font-weight: bold;">R$ ${data.actionValue}</span>.</p>
+                        
+                        <div style="margin-top: 2cm; page-break-inside: avoid; text-align: left;">
+                             <p>Nestes termos, pede deferimento.</p>
+                             <p style="margin-top: 1cm;">${locationStr}, ${dateStr}.</p>
+                             ${orientacoesHTML}
+                             ${signaturesHTML}
+                        </div>
+                    </div>
+                `;
+            };
+
+            function showPreview() {
+                const data = getFormData();
+                if (!validateForm(data)) return;
+                previewContent.innerHTML = generateContentHTML(data);
+                previewModal.classList.remove('hidden');
+            }
+
+            function generatePDF() {
+                const data = getFormData();
+                if (!validateForm(data)) return;
+
+                const { jsPDF } = window.jspdf;
+                const pdf = new jsPDF('p', 'mm', 'a4');
+
+                const content = document.createElement('div');
+                content.innerHTML = generateContentHTML(data);
+                content.style.width = '210mm';
+                content.style.padding = '15mm';
+                content.style.boxSizing = 'border-box';
+                content.style.fontFamily = 'Times New Roman, Times, serif';
+                content.style.color = '#111827';
+                document.body.appendChild(content);
+
+                pdf.html(content, {
+                    callback: function (doc) {
+                        document.body.removeChild(content);
+                        doc.save(`Atermacao_${data.autores[0].name.split(' ')[0]}.pdf`);
+                    },
+                    margin: [15, 15, 15, 15],
+                    autoPaging: 'text',
+                    width: 180,
+                    windowWidth: 794
+                });
+            }
+
+            // --- EVENT LISTENERS (Moved to the end) ---
+            disclaimerChecks.forEach(c => c.addEventListener('change', checkDisclaimer));
+            addAutorBtn.addEventListener('click', () => addParty(autoresList, true));
+            addReuBtn.addEventListener('click', () => addParty(reusList, false));
+            document.getElementById('action-value').addEventListener('blur', formatValueOnBlur);
+            document.getElementById('atermacao-app-container').addEventListener('click', (e) => {
+                if (e.target.classList.contains('remove-party-btn')) e.target.closest('.party-item').remove();
+            });
+
+            tutelaCheck.addEventListener('change', () => tutelaJustificativaContainer.classList.toggle('hidden', !tutelaCheck.checked));
+            sigiloCheck.addEventListener('change', () => sigiloJustificativaContainer.classList.toggle('hidden', !sigiloCheck.checked));
+
+            audienciaRadios.forEach(radio => {
+                radio.addEventListener('change', () => {
+                    audienciaJustificativaContainer.classList.toggle('hidden', radio.value !== 'nao');
+                });
+            });
+
+            addDocumentBtn.addEventListener('click', () => {
+                const newItem = document.createElement('div');
+                newItem.className = 'document-item grid grid-cols-1 md:grid-cols-2 gap-4 items-center';
+                newItem.innerHTML = `
+                    <div class="flex items-center gap-2">
+                        <select class="document-type w-full p-2 border border-gray-300 rounded-lg bg-white">
+                            <option value="RG/CPF">RG/CPF</option>
+                            <option value="Comprovante de Residência">Comprovante de Residência</option>
+                            <option value="Nota Fiscal">Nota Fiscal</option>
+                            <option value="Extrato Bancário">Extrato Bancário</option>
+                            <option value="Comprovante de Transferência/PIX">Comprovante de Transferência/PIX</option>
+                            <option value="Comprovante de Pagamento">Comprovante de Pagamento</option>
+                            <option value="Conversas em WhatsApp">Conversas em WhatsApp</option>
+                            <option value="Foto/Print">Foto/Print</option>
+                            <option value="Contrato/Termo de Adesão">Contrato/Termo de Adesão</option>
+                            <option value="Laudo/Atestado Médico">Laudo/Atestado Médico</option>
+                            <option value="Boletim de Ocorrência">Boletim de Ocorrência</option>
+                            <option value="Outro">Outro</option>
+                        </select>
+                        <button type="button" class="remove-document-btn bg-red-500 hover:bg-red-600 text-white font-bold h-8 w-8 rounded-lg flex-shrink-0 flex items-center justify-center" title="Remover Documento">&times;</button>
+                    </div>
+                    <input type="text" class="document-other-type w-full p-2 border border-gray-300 rounded-lg hidden" placeholder="Especifique o tipo de documento">
+                `;
+                documentList.appendChild(newItem);
+                newItem.querySelector('.document-type').addEventListener('change', (e) => {
+                    e.target.parentElement.parentElement.querySelector('.document-other-type').classList.toggle('hidden', e.target.value !== 'Outro');
+                });
+            });
+
+            documentList.addEventListener('click', (e) => {
+                if (e.target.classList.contains('remove-document-btn')) e.target.closest('.document-item').remove();
+            });
+
+            clearFormBtn.addEventListener('click', () => {
+                if (confirm("Tem certeza que deseja limpar todos os campos?")) {
+                    atermacaoForm.reset();
+                    autoresList.innerHTML = ''; reusList.innerHTML = ''; documentList.innerHTML = '';
+                    addParty(autoresList, true); addParty(reusList, false);
+                    actionTypeOtherInput.classList.add('hidden');
+                    tutelaJustificativaContainer.classList.add('hidden');
+                    sigiloJustificativaContainer.classList.add('hidden');
+                    audienciaJustificativaContainer.classList.add('hidden');
+                    // Reset custom dropdown
+                    actionTypeOptions.querySelectorAll('.action-type-checkbox').forEach(cb => cb.checked = false);
+                    updateActionTypeDisplay();
+                }
+            });
+
+            previewBtn.addEventListener('click', showPreview);
+            generatePdfBtn.addEventListener('click', generatePDF);
+            testFillBtn.addEventListener('click', fillWithTestData);
+            closePreviewBtn.addEventListener('click', () => previewModal.classList.add('hidden'));
+            previewModal.addEventListener('click', (e) => { if (e.target === previewModal) previewModal.classList.add('hidden'); });
+
+            // --- INICIALIZAÇÃO ---
+            addParty(autoresList, true);
+            addParty(reusList, false);
+        });
+    </script>
+</body>
+
+</html>
