@@ -605,10 +605,23 @@
                 return newParty;
             };
 
+            const updateRemoveButtons = () => {
+                [autoresList, reusList].forEach(list => {
+                    const items = list.querySelectorAll('.party-item');
+                    items.forEach(item => {
+                        const removeBtn = item.querySelector('.remove-party-btn');
+                        if (removeBtn) {
+                            removeBtn.style.display = items.length > 1 ? 'flex' : 'none';
+                        }
+                    });
+                });
+            };
+
             const addParty = (listElement, isAuthor) => {
                 const newParty = createPartyElement(isAuthor);
                 listElement.appendChild(newParty);
                 addInputBehaviors(newParty);
+                updateRemoveButtons();
             };
 
             const addInputBehaviors = (container) => {
@@ -825,7 +838,12 @@
                         emitter: item.querySelector('.party-emitter').value.trim(),
                         phone: item.querySelector('.party-phone').value.trim(),
                         email: item.querySelector('.party-email').value.trim(),
-                        address: item.querySelector('.no-address-check').checked ? null : `${item.querySelector('.party-street').value}, nº ${item.querySelector('.party-number').value}, ${item.querySelector('.party-complement').value || ''}`.trim() + ` - ${item.querySelector('.party-district').value}, CEP: ${item.querySelector('.party-cep').value}, ${item.querySelector('.party-city').value}/${item.querySelector('.party-state').value}`,
+                        address: (() => {
+                            if (item.querySelector('.no-address-check').checked) return null;
+                            const cep = item.querySelector('.party-cep').value.trim();
+                            return `${item.querySelector('.party-street').value}, nº ${item.querySelector('.party-number').value}, ${item.querySelector('.party-complement').value || ''}`.trim() +
+                                ` - ${item.querySelector('.party-district').value}${cep ? `, CEP: ${cep}` : ''}, ${item.querySelector('.party-city').value}/${item.querySelector('.party-state').value}`;
+                        })(),
                         noAddressJustification: item.querySelector('.no-address-check').checked ? item.querySelector('.no-address-justification').value.trim() : null,
                         isExcluded: isAuthor ? item.querySelector('.party-excluded').checked : false,
                         city: item.querySelector('.party-city').value,
@@ -865,7 +883,25 @@
             };
 
             const validateForm = (data) => {
-                if (data.autores.length === 0 || data.autores.some(a => !a.cpf || !a.dob || a.dob.length < 10)) { alert("Adicione pelo menos um autor com Nome, CPF e Data de Nascimento completos."); return false; }
+                if (data.autores.length === 0) {
+                    alert("Adicione pelo menos um autor.");
+                    return false;
+                }
+                const autorElements = autoresList.querySelectorAll('.party-item');
+                for (const autorEl of autorElements) {
+                    if (!autorEl.querySelector('.party-name').value.trim() ||
+                        !autorEl.querySelector('.party-cpf').value.trim() ||
+                        !autorEl.querySelector('.party-dob').value.trim() ||
+                        autorEl.querySelector('.party-dob').value.trim().length < 10 ||
+                        !autorEl.querySelector('.party-street').value.trim() ||
+                        !autorEl.querySelector('.party-number').value.trim() ||
+                        !autorEl.querySelector('.party-cep').value.trim()
+                    ) {
+                        alert("Para todos os autores, é obrigatório preencher: Nome, CPF, Data de Nascimento e Endereço completo (CEP, Logradouro, Número).");
+                        return false;
+                    }
+                }
+
                 if (data.reus.length === 0) { alert("Adicione pelo menos um réu com Nome."); return false; }
                 if (!data.actionType) { alert("Selecione ou especifique o tipo de ação."); return false; }
                 if (!data.fatos) { alert("O campo 'DOS FATOS' é obrigatório."); return false; }
@@ -1045,7 +1081,10 @@
             addReuBtn.addEventListener('click', () => addParty(reusList, false));
             document.getElementById('action-value').addEventListener('blur', formatValueOnBlur);
             document.getElementById('atermacao-app-container').addEventListener('click', (e) => {
-                if (e.target.classList.contains('remove-party-btn')) e.target.closest('.party-item').remove();
+                if (e.target.classList.contains('remove-party-btn')) {
+                    e.target.closest('.party-item').remove();
+                    updateRemoveButtons();
+                }
             });
 
             tutelaCheck.addEventListener('change', () => tutelaJustificativaContainer.classList.toggle('hidden', !tutelaCheck.checked));
@@ -1114,6 +1153,7 @@
             // --- INICIALIZAÇÃO ---
             addParty(autoresList, true);
             addParty(reusList, false);
+            updateRemoveButtons();
         });
     </script>
 </body>
