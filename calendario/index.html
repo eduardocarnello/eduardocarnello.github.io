@@ -97,7 +97,7 @@
                 severa: { label: 'Indisponibilidade Severa', colorClass: 'bg-red-600', textColor: 'text-white', colorValue: 'red', borderClass: 'border-2 border-black-500' },
                 feriado: { label: 'Feriado', colorClass: 'bg-teal-200', textColor: 'text-red-600', colorValue: '#99f6e4', borderClass: 'border-2 border-red-600' },
                 recesso: { label: 'Recesso / Suspensão RITJSP', colorClass: 'bg-gray-400', textColor: 'text-white', colorValue: '#9ca3af' },
-                recesso: { label: 'Hoje', colorClass: 'bg-blue-600', textColor: 'text-white', colorValue: '#9ca3af' },
+                //  recesso: { label: 'Hoje', colorClass: 'bg-blue-600', textColor: 'text-white', colorValue: '#9ca3af' },
             };
 
             // --- FONTES DE DADOS DE EVENTOS ---
@@ -310,6 +310,21 @@
                 },
                 {
                     startDate: '03/10/2025',
+                    type: 'falta',
+                    description: 'Falta do Antonio'
+                },
+                {
+                    startDate: '08/10/2025',
+                    type: 'falta',
+                    description: 'Falta da Tifany'
+                },
+                {
+                    startDate: '03/11/2025',
+                    type: 'outro',
+                    description: 'Correição Ordinária'
+                },
+                {
+                    startDate: '03/10/2025',
                     endDate: '17/10/2025',
                     type: 'ferias',
                     description: 'Férias do Helton Marcelo '
@@ -321,8 +336,8 @@
                     description: 'Férias da Sandra'
                 },
                 {
-                    startDate: '28/10/2025',
-                    endDate: '11/11/2025',
+                    startDate: '31/10/2025',
+                    endDate: '14/11/2025',
                     type: 'ferias',
                     description: 'Férias do Beto'
                 },
@@ -445,7 +460,8 @@
 
                     const today = new Date();
                     if (day === today.getDate() && month === today.getMonth() && year === today.getFullYear()) {
-                        dayElement.classList.add('bg-blue-600', 'text-white', 'font-bold');
+                        dayElement.classList.add('border-2', 'text-blue', 'font-bold', 'border-blue-800');
+
                     }
 
                     const dailyEvents = events.filter(e => {
