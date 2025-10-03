@@ -3,7 +3,11 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <!-- Meta tags para experiência de app móvel -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#ffffff">
     <title>Gerador de Atermação - Juizado Especial Cível</title>
     <!-- Tailwind CSS para estilização -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -80,10 +84,79 @@
         #action-type-options label:hover {
             background-color: #f3f4f6;
         }
+
+        /* Estilos para a experiência de app móvel */
+        @media (max-width: 768px) {
+            body {
+                background-color: #ffffff;
+            }
+
+            #main-form-container {
+                height: 100%;
+                min-height: 100vh;
+                width: 100vw;
+                border-radius: 0;
+                box-shadow: none;
+                display: flex;
+                flex-direction: column;
+                overflow: hidden;
+                /* Previne o scroll do container inteiro */
+                padding: 0;
+            }
+
+            #main-form-container header {
+                padding: 1.5rem 1rem 0 1rem;
+                flex-shrink: 0;
+            }
+
+            #main-form-container main {
+                overflow-y: auto;
+                /* Apenas o conteúdo principal tem scroll */
+                flex-grow: 1;
+                padding: 1rem;
+                padding-bottom: 120px;
+                /* Espaço para a barra de ações fixa */
+            }
+
+            #action-buttons-container {
+                position: fixed;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                z-index: 20;
+                background-color: rgba(255, 255, 255, 0.85);
+                backdrop-filter: blur(8px);
+                -webkit-backdrop-filter: blur(8px);
+                padding: 1rem;
+                padding-bottom: calc(1rem + env(safe-area-inset-bottom));
+                /* Espaço seguro para iPhones */
+                border-top: 1px solid #e5e7eb;
+                justify-content: space-between;
+                gap: 1rem;
+                margin-top: 0;
+            }
+
+            /* Esconde botões menos importantes para uma UI mais limpa */
+            #test-fill-btn,
+            #clear-form-btn {
+                display: none;
+            }
+
+            #preview-btn,
+            #generate-pdf-btn {
+                flex-grow: 1;
+                /* Faz os botões principais ocuparem o espaço */
+            }
+
+            /* Garante que as colunas fiquem empilhadas */
+            .main-columns {
+                grid-template-columns: 1fr;
+            }
+        }
     </style>
 </head>
 
-<body class="bg-gray-100 min-h-screen flex items-center justify-center p-4">
+<body class="bg-white md:bg-gray-100 min-h-screen flex items-center justify-center p-0 md:p-4">
 
     <!-- Modal de Disclaimer -->
     <div id="disclaimer-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4">
@@ -124,7 +197,7 @@
         </div>
     </div>
 
-    <div id="main-form-container" class="w-full max-w-5xl mx-auto bg-white rounded-2xl shadow-lg p-6 md:p-8 blurred">
+    <div id="main-form-container" class="w-full max-w-5xl mx-auto bg-white md:rounded-2xl md:shadow-lg md:p-8 blurred">
         <header class="text-center mb-8">
             <h1 id="main-title" class="text-2xl md:text-3xl font-bold text-gray-800">Gerador de Atermação</h1>
             <p id="main-subtitle" class="text-gray-500 mt-2">Preencha os campos abaixo para criar o Termo de Atermação
@@ -274,7 +347,7 @@
                     </div>
 
                     <!-- Seção de Partes -->
-                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-6">
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-6 main-columns">
                         <!-- Coluna dos Autores -->
                         <div class="p-4 border border-gray-200 rounded-lg bg-gray-50">
                             <h3 class="flex items-center text-lg font-semibold text-gray-800 mb-4">
@@ -488,10 +561,10 @@
                         </div>
                     </div>
 
-                    <div class="flex gap-4 justify-end mt-8 flex-wrap">
-                        <button id="test-fill-btn" type="button"
+                    <div id="action-buttons-container" class="flex gap-4 justify-end mt-8 flex-wrap">
+                        <!--button id="test-fill-btn" type="button"
                             class="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-lg shadow-lg">Preencher
-                            para Teste</button>
+                            para Teste</button-->
                         <button id="clear-form-btn" type="button"
                             class="bg-gray-500 hover:bg-red-600 text-white font-bold py-3 px-6 rounded-lg shadow-lg">Limpar
                             Tudo</button>
@@ -557,7 +630,7 @@
             const previewModal = document.getElementById('preview-modal');
             const closePreviewBtn = document.getElementById('close-preview-btn');
             const previewContent = document.getElementById('preview-content');
-            const testFillBtn = document.getElementById('test-fill-btn');
+            //   const testFillBtn = document.getElementById('test-fill-btn');
 
 
             // --- LÓGICA DO DISCLAIMER ---
@@ -945,6 +1018,10 @@
                     if (party.address) details += `, residente e domiciliado(a) no endereço: ${party.address}`;
                     else details += `, em lugar incerto e não sabido, requerendo-se a pesquisa do seu endereço`;
 
+                    if (!isAuthor && !party.cpf && !party.rg) {
+                        details += ', demais dados desconhecidos';
+                    }
+
                     if (party.phone) details += `, Telefone: ${party.phone}`;
                     if (party.email) details += `, E-mail: ${party.email}`;
 
@@ -1146,7 +1223,7 @@
 
             previewBtn.addEventListener('click', showPreview);
             generatePdfBtn.addEventListener('click', generatePDF);
-            testFillBtn.addEventListener('click', fillWithTestData);
+            //   testFillBtn.addEventListener('click', fillWithTestData);
             closePreviewBtn.addEventListener('click', () => previewModal.classList.add('hidden'));
             previewModal.addEventListener('click', (e) => { if (e.target === previewModal) previewModal.classList.add('hidden'); });
 
