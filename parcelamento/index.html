@@ -4,365 +4,1073 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Proposta de Acordo</title>
+    <title>Calculadora de Acordo Judicial</title>
+    <!-- Tailwind CSS para estilização -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- jQuery & jQuery UI for Datepicker -->
+    <link rel="stylesheet" href="https://code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.min.js"></script>
+    <!-- Bibliotecas para geração de PDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+    <!-- iMask para formatação de inputs -->
+    <script src="https://unpkg.com/imask"></script>
+    <!-- Google Fonts para uma melhor tipografia -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         body {
-            font-family: 'Arial', sans-serif;
-            background-color: #f4f4f4;
-            color: #000;
+            font-family: 'Inter', sans-serif;
+            scroll-behavior: smooth;
         }
 
-        .container {
-            width: auto;
-            max-width: 186mm;
-            margin: 0 auto;
-            background: #fff;
-            border-radius: 8px;
-            box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
-            padding: 15mm;
+        #petition-area {
+            font-family: 'Times New Roman', Times, serif;
+            color: #111827;
+            line-height: 2;
+            text-align: justify;
+            font-size: 12pt;
         }
 
-        .header {
-            text-align: center;
-            font-weight: bold;
-            font-size: 1.1em;
-            margin-bottom: 10px;
-            padding-bottom: 10px;
+        .loader {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #3498db;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            animation: spin 1s linear infinite;
+            display: inline-block;
+            margin-right: 10px;
         }
 
-        .section {
-            margin-bottom: 20px;
-        }
-
-        .inline-section {
-            display: flex;
-            align-items: center;
-            margin-bottom: 5px;
-        }
-
-        .inline-section input[type="text"],
-        .inline-section input[type="number"],
-        .inline-section input[type="date"],
-        .inline-section select {
-            flex: 1;
-            padding: 8px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            font-size: 1em;
-        }
-
-        .hidden {
-            display: none;
-        }
-
-        .print-button {
-            display: block;
-            width: 150px;
-            margin: 20px auto;
-            padding: 10px;
-            background-color: #007bff;
-            color: #fff;
-            text-align: center;
-            text-decoration: none;
-            border-radius: 4px;
-            cursor: pointer;
-        }
-
-        .print-button:hover {
-            background-color: #0056b3;
-        }
-
-        @media (max-width: 768px) {
-            .container {
-                padding: 10mm;
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
             }
 
-            .inline-section {
-                flex-direction: column;
-                align-items: flex-start;
-            }
-
-            .inline-section label {
-                width: 100%;
-                margin-bottom: 5px;
-            }
-
-            .inline-section input[type="text"],
-            .inline-section input[type="number"],
-            .inline-section input[type="date"],
-            .inline-section select {
-                width: 100%;
-            }
-
-            .print-button {
-                width: 100%;
+            100% {
+                transform: rotate(360deg);
             }
         }
 
-        @media (max-width: 480px) {
-            .container {
-                padding: 5mm;
-            }
-
-            .header {
-                font-size: 1em;
-            }
-
-            .inline-section label {
-                font-size: 0.9em;
-            }
-
-            .inline-section input[type="text"],
-            .inline-section input[type="number"],
-            .inline-section input[type="date"],
-            .inline-section select {
-                font-size: 0.9em;
-            }
-
-            .print-button {
-                font-size: 0.9em;
-            }
+        input[type=number]::-webkit-inner-spin-button,
+        input[type=number]::-webkit-outer-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
         }
 
-        .executado-signature {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 20px;
-            page-break-inside: avoid;
+        input[type=number] {
+            -moz-appearance: textfield;
         }
     </style>
 </head>
 
-<body>
-    <div class="container">
-        <div class="header">
-            Proposta de Acordo
-        </div>
-        <div class="inline-section">
-            <label>Nº do Processo:</label>
-            <input type="text" id="numero_processo">
-        </div>
-        <div class="inline-section">
-            <label>Nome do Executado:</label>
-            <input type="text" id="nome_executado">
-        </div>
-        <div class="inline-section">
-            <label>Valor da Dívida (R$):</label>
-            <input type="number" id="valor_divida" step="0.01">
-        </div>
-        <div class="inline-section">
-            <label>Tem Entrada?</label>
-            <input type="checkbox" id="tem_entrada">
-        </div>
-        <div class="inline-section hidden" id="entrada_section">
-            <label>Entrada (R$):</label>
-            <input type="number" id="valor_entrada" step="0.01">
-        </div>
-        <div class="inline-section hidden" id="data_entrada_section">
-            <label>Data da Entrada:</label>
-            <input type="date" id="data_entrada">
-        </div>
-        <div class="inline-section">
-            <label>Parcelamento por Valor (R$):</label>
-            <input type="number" id="parcelamento_valor" step="0.01">
-        </div>
-        <div class="inline-section">
-            <label>Parcelas:</label>
-            <input type="number" id="parcelas" min="1" max="120">
-        </div>
-        <div class="inline-section">
-            <label>Valor da Parcela:</label>
-            <input type="text" id="valor_parcela" readonly>
-        </div>
-        <div class="inline-section">
-            <label>Data da Primeira Parcela:</label>
-            <input type="date" id="data_primeira_parcela">
-        </div>
-        <div class="inline-section">
-            <label>Aplicar Juros de 1% ao mês:</label>
-            <input type="checkbox" id="aplicar_juros">
-        </div>
-        <div class="inline-section">
-            <label>Aplicar Multa pelo Descumprimento?</label>
-            <input type="checkbox" id="aplicar_multa">
-        </div>
-        <div class="inline-section hidden" id="multa_section">
-            <label>Valor da Multa (%):</label>
-            <select id="valor_multa">
-                <option value="5">5%</option>
-                <option value="10">10%</option>
-                <option value="15">15%</option>
-                <option value="20">20%</option>
-                <option value="25">25%</option>
-                <option value="30">30%</option>
-                <option value="35">35%</option>
-                <option value="40">40%</option>
-                <option value="50">50%</option>
-                <option value="60">60%</option>
-            </select>
-        </div>
-        <div class="section hidden" id="datas_parcelas_section">
-            <label>Datas das Parcelas:</label>
-            <ul id="datas_parcelas"></ul>
-        </div>
-        <button class="print-button">Gerar PDF</button>
-    </div>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-    <script>
-        document.getElementById('valor_divida').addEventListener('input', updateParcelas);
-        document.getElementById('valor_entrada').addEventListener('input', updateParcelas);
-        document.getElementById('parcelamento_valor').addEventListener('input', updateParcelas);
-        document.getElementById('parcelas').addEventListener('input', updateParcelas);
-        document.getElementById('data_primeira_parcela').addEventListener('input', updateDatasParcelas);
-        document.getElementById('aplicar_juros').addEventListener('change', updateDatasParcelas);
-        document.getElementById('aplicar_multa').addEventListener('change', function () {
-            const multaSection = document.getElementById('multa_section');
-            if (this.checked) {
-                multaSection.classList.remove('hidden');
-            } else {
-                multaSection.classList.add('hidden');
-            }
-        });
-        document.getElementById('tem_entrada').addEventListener('change', function () {
-            const entradaSection = document.getElementById('entrada_section');
-            const dataEntradaSection = document.getElementById('data_entrada_section');
-            if (this.checked) {
-                entradaSection.classList.remove('hidden');
-                dataEntradaSection.classList.remove('hidden');
-            } else {
-                entradaSection.classList.add('hidden');
-                dataEntradaSection.classList.add('hidden');
-            }
-            updateParcelas();
-        });
+<body class="bg-gray-100 min-h-screen flex items-center justify-center p-4">
 
-        function updateParcelas() {
-            const valorDivida = parseFloat(document.getElementById('valor_divida').value) || 0;
-            const valorEntrada = parseFloat(document.getElementById('valor_entrada').value) || 0;
-            const parcelamentoValor = parseFloat(document.getElementById('parcelamento_valor').value) || 0;
-            const parcelas = parseInt(document.getElementById('parcelas').value) || 0;
-            const valorRestante = valorDivida - valorEntrada;
+    <div class="w-full max-w-5xl mx-auto bg-white rounded-2xl shadow-lg p-6 md:p-8">
 
-            if (parcelamentoValor > 0) {
-                const numParcelas = Math.ceil(valorRestante / parcelamentoValor);
-                document.getElementById('parcelas').value = numParcelas;
-                const ultimaParcela = valorRestante % parcelamentoValor;
-                const valorParcela = ultimaParcela > 0 ? `${parcelamentoValor.toFixed(2).replace('.', ',')} (última parcela: ${ultimaParcela.toFixed(2).replace('.', ',')})` : parcelamentoValor.toFixed(2).replace('.', ',');
-                document.getElementById('valor_parcela').value = `R$ ${valorParcela}`;
-            } else if (parcelas > 0) {
-                const valorParcela = (valorRestante / parcelas).toFixed(2).replace('.', ',');
-                document.getElementById('valor_parcela').value = `R$ ${valorParcela}`;
-            }
+        <header class="text-center mb-8">
+            <h1 class="text-2xl md:text-3xl font-bold text-gray-800">Proposta de Acordo Judicial</h1>
+            <p class="text-gray-500 mt-2">Preencha os dados para gerar a petição e o demonstrativo de parcelas.</p>
+        </header>
 
-            updateDatasParcelas();
-        }
+        <main>
+            <!-- Seção de parâmetros gerais -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6 border-b pb-6">
+                <div>
+                    <label for="calculation-type" class="block text-sm font-medium text-gray-700 mb-2">Tipo de
+                        Operação</label>
+                    <select id="calculation-type"
+                        class="w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 bg-white">
+                        <option value="agreement-proposal">Proposta de Acordo/Parcelamento</option>
+                        <option value="cpc-916">Parcelamento do art. 916, do CPC</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="process-number" class="block text-sm font-medium text-gray-700 mb-2">Número do Processo
+                        (Padrão CNJ)</label>
+                    <input type="text" id="process-number"
+                        class="w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
+                        placeholder="0000000-00.0000.0.00.0000">
+                </div>
+            </div>
 
-        function updateDatasParcelas() {
-            const dataPrimeiraParcela = new Date(document.getElementById('data_primeira_parcela').value);
-            const parcelas = parseInt(document.getElementById('parcelas').value) || 0;
-            const valorParcela = parseFloat(document.getElementById('valor_parcela').value.replace('R$ ', '').replace(',', '.')) || 0;
-            const aplicarJuros = document.getElementById('aplicar_juros').checked;
-            const datasParcelas = document.getElementById('datas_parcelas');
-            datasParcelas.innerHTML = '';
+            <!-- Dados dos Executados -->
+            <div id="executados-container" class="mb-6">
+                <h3 class="text-lg font-semibold text-gray-800 mb-4 border-b pb-2">Dados do(s) Executado(s)</h3>
+                <div id="executados-list" class="space-y-4">
+                    <!-- Injetado via JS -->
+                </div>
+                <button id="add-executado-btn"
+                    class="mt-4 bg-gray-200 hover:bg-gray-300 text-gray-700 text-sm font-semibold py-1 px-3 rounded-lg">+
+                    Adicionar outro executado</button>
+            </div>
 
-            if (aplicarJuros) {
-                for (let i = 0; i < parcelas; i++) {
-                    const dataParcela = new Date(dataPrimeiraParcela);
-                    dataParcela.setMonth(dataParcela.getMonth() + i);
-                    const valorParcelaComJuros = (valorParcela * Math.pow(1.01, i + 1)).toFixed(2).replace('.', ',');
-                    const li = document.createElement('li');
-                    li.textContent = `${dataParcela.toLocaleDateString()} - R$ ${valorParcelaComJuros}`;
-                    datasParcelas.appendChild(li);
-                }
-            } else {
-                const dataUltimaParcela = new Date(dataPrimeiraParcela);
-                dataUltimaParcela.setMonth(dataUltimaParcela.getMonth() + parcelas - 1);
-                const diaPrimeiraParcela = dataPrimeiraParcela.getDate();
-                const textoParcelas = `A primeira parcela será depositada no dia ${dataPrimeiraParcela.toLocaleDateString()} e as demais todo dia ${diaPrimeiraParcela}, com última parcela prevista para ${dataUltimaParcela.toLocaleDateString()}.`;
-                const li = document.createElement('li');
-                li.textContent = textoParcelas;
-                datasParcelas.appendChild(li);
-            }
-        }
+            <!-- Container para Proposta de Acordo -->
+            <div id="agreement-proposal-container" class="space-y-6">
+                <div class="p-4 border border-gray-200 rounded-lg space-y-4">
+                    <h3 class="text-lg font-semibold text-gray-800">Valores do Acordo</h3>
 
-        document.querySelector('.print-button').addEventListener('click', generatePDF);
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
+                        <div>
+                            <label for="proposal-valor-divida" class="block text-sm font-medium text-gray-700">Valor
+                                Base do Acordo (R$)</label>
+                            <input type="text" id="proposal-valor-divida"
+                                class="value-input w-full mt-1 p-2 border border-gray-300 rounded-lg shadow-sm"
+                                placeholder="5.000,00">
+                        </div>
+                    </div>
 
-        function generatePDF() {
-            const numeroProcesso = document.getElementById('numero_processo').value;
-            const nomeExecutado = document.getElementById('nome_executado').value;
-            const valorDivida = parseFloat(document.getElementById('valor_divida').value);
-            const temEntrada = document.getElementById('tem_entrada').checked;
-            const valorEntrada = temEntrada ? parseFloat(document.getElementById('valor_entrada').value) || 0 : 0;
-            const dataEntrada = temEntrada ? new Date(document.getElementById('data_entrada').value).toLocaleDateString('pt-BR') : '';
-            const parcelas = parseInt(document.getElementById('parcelas').value);
-            const valorParcela = parseFloat(document.getElementById('valor_parcela').value.replace('R$ ', '').replace(',', '.'));
-            const dataPrimeiraParcela = new Date(document.getElementById('data_primeira_parcela').value);
-            const hoje = new Date();
-            const dataExtenso = hoje.toLocaleDateString('pt-BR', { day: 'numeric', month: 'long', year: 'numeric' });
-            const aplicarJuros = document.getElementById('aplicar_juros').checked;
-            const aplicarMulta = document.getElementById('aplicar_multa').checked;
-            const valorMulta = aplicarMulta ? document.getElementById('valor_multa').value : 0;
-
-            let datasParcelas = '';
-            if (aplicarJuros) {
-                for (let i = 0; i < parcelas; i++) {
-                    const dataParcela = new Date(dataPrimeiraParcela);
-                    dataParcela.setMonth(dataParcela.getMonth() + i);
-                    const valorParcelaComJuros = (valorParcela * Math.pow(1.01, i + 1)).toFixed(2).replace('.', ',');
-                    datasParcelas += `<li>${dataParcela.toLocaleDateString()} - R$ ${valorParcelaComJuros}</li>`;
-                }
-            } else {
-                const dataUltimaParcela = new Date(dataPrimeiraParcela);
-                dataUltimaParcela.setMonth(dataUltimaParcela.getMonth() + parcelas - 1);
-                const diaPrimeiraParcela = dataPrimeiraParcela.getDate();
-                const resto = (valorDivida - valorEntrada) % valorParcela;
-                if (resto > 0) {
-                    datasParcelas = `O valor do débito, no importe de R$ ${valorDivida.toFixed(2).replace('.', ',')}, será pago em ${parcelas - 1} parcelas iguais e sucessivas no valor de R$ ${valorParcela.toFixed(2).replace('.', ',')}, com pagamento da primeira para o dia ${dataPrimeiraParcela.toLocaleDateString()} e as demais todo dia ${diaPrimeiraParcela} dos meses subsequentes, com uma última parcela no valor de R$ ${(valorParcela + resto).toFixed(2).replace('.', ',')}, no dia ${dataUltimaParcela.toLocaleDateString()}.`;
-                } else {
-                    datasParcelas = `O valor do débito, no importe de R$ ${valorDivida.toFixed(2).replace('.', ',')}, será pago em ${parcelas} parcelas iguais e sucessivas no valor de R$ ${valorParcela.toFixed(2).replace('.', ',')}, com pagamento da primeira para o dia ${dataPrimeiraParcela.toLocaleDateString()} e as demais todo dia ${diaPrimeiraParcela} dos meses subsequentes, com data de término prevista para o dia ${dataUltimaParcela.toLocaleDateString()}.`;
-                }
-            }
-
-            const peticaoContent = `
-                <div style="font-family: Arial, sans-serif; padding: 20px;">
-                    <p style="text-align: center; font-weight: bold; font-size: 20px;">EXMO. DR. JUIZ DE DIREITO DO JUIZADO ESPECIAL CÍVEL DE MARÍLIA/SP</p>
-                    <p style="margin-bottom: 20px;"></p>
-                    <p style="font-weight: bold; font-size: 16px; margin-bottom: 20px;">Processo nº ${numeroProcesso}</p>
-                    <p></p>
-                    <p style="margin-bottom: 20px;"></p>
-                    <p style="text-align: center; font-weight: bold; margin-bottom: 20px; font-size: 18px;">PROPOSTA DE ACORDO</p>
-                    <p style="margin-bottom: 20px;"></p>
-                    <p style="text-align: justify;">O executado reconhece o débito em execução e propõe o seu parcelamento nos seguintes moldes:</p>
-                    <p style="text-align: justify;">${datasParcelas}</p>
-                    <p style="text-align: justify;">O executado está ciente de que o descumprimento do parcelamento importará no vencimento antecipado de todas as parcelas não pagas${aplicarMulta ? `, junto com o acréscimo de multa de ${valorMulta}%` : ''}, vedada a oposição de embargos à execução em razão do reconhecimento do débito.</p>
-                    <p style="text-align: justify;">Requer seja a parte exequente intimada para ciência da presente proposta e que seja a execução suspensa pelo prazo previsto para cumprimento do parcelamento.</p>
-                    <p style="text-align: justify;">Pede o deferimento.</p>
-                    <p>Marília, ${dataExtenso}</p>
-                    <div class="executado-signature" style="page-break-inside: avoid;">______________________________<br>${nomeExecutado}</div>
-                    <div class="page-footer" style="position: fixed; bottom: 0; width: 100%; text-align: center; font-size: 12px;">
-                        Página <span class="page-number"></span> de <span class="total-pages"></span>
+                    <div class="flex items-center space-x-4">
+                        <label class="flex items-center cursor-pointer">
+                            <input type="checkbox" id="update-value-checkbox"
+                                class="h-5 w-5 text-indigo-600 border-gray-300 rounded">
+                            <span class="ml-2 text-sm font-medium text-gray-700">Atualizar Valor do Acordo?</span>
+                        </label>
+                    </div>
+                    <div id="update-value-section" class="hidden grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
+                        <div>
+                            <label for="last-update-date" class="block text-sm font-medium text-gray-700">Data da Última
+                                Atualização</label>
+                            <input type="text" id="last-update-date"
+                                class="date-input w-full mt-1 p-2 border border-gray-300 rounded-lg shadow-sm">
+                        </div>
+                        <div>
+                            <label for="updated-agreement-value" class="block text-sm font-medium text-gray-700">Valor
+                                Atualizado do Acordo (R$)</label>
+                            <input type="text" id="updated-agreement-value"
+                                class="w-full mt-1 p-2 bg-gray-100 border border-gray-300 rounded-lg" readonly>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4 pt-4">
+                        <div>
+                            <label for="havera_entrada" class="block text-sm font-medium text-gray-700">Haverá
+                                Entrada?</label>
+                            <input type="checkbox" id="havera_entrada"
+                                class="h-5 w-5 mt-2 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500">
+                        </div>
+                        <div></div>
+                        <div id="entrada_section" class="hidden">
+                            <label for="valor_entrada" class="block text-sm font-medium text-gray-700">Valor da Entrada
+                                (R$)</label>
+                            <input type="text" id="valor_entrada"
+                                class="value-input w-full mt-1 p-2 border border-gray-300 rounded-lg shadow-sm"
+                                placeholder="1.000,00">
+                        </div>
+                        <div id="data_entrada_section" class="hidden">
+                            <label for="data_entrada" class="block text-sm font-medium text-gray-700">Data da
+                                Entrada</label>
+                            <input type="text" id="data_entrada"
+                                class="date-input w-full mt-1 p-2 border border-gray-300 rounded-lg shadow-sm"
+                                placeholder="DD/MM/AAAA">
+                        </div>
                     </div>
                 </div>
-            `;
+                <div class="p-4 border border-gray-200 rounded-lg space-y-4">
+                    <h3 class="text-lg font-semibold text-gray-800">Condições de Parcelamento</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
+                        <div id="valor-restante-container" class="hidden">
+                            <label class="block text-sm font-medium text-gray-700">Valor Restante (R$)</label>
+                            <input type="text" id="valor_restante"
+                                class="w-full mt-1 p-2 bg-gray-100 border border-gray-300 rounded-lg" readonly>
+                        </div>
+                        <div>
+                            <label for="tipo_parcelamento" class="block text-sm font-medium text-gray-700">Calcular
+                                por:</label>
+                            <select id="tipo_parcelamento"
+                                class="w-full mt-1 p-2 border border-gray-300 rounded-lg shadow-sm bg-white">
+                                <option value="parcelas">Número de Parcelas</option>
+                                <option value="valor">Valor da Parcela</option>
+                            </select>
+                        </div>
+                        <div id="parcelas_section">
+                            <label for="parcelas" class="block text-sm font-medium text-gray-700">Número de
+                                Parcelas</label>
+                            <input type="number" id="parcelas" min="1" max="120"
+                                class="w-full mt-1 p-2 border border-gray-300 rounded-lg shadow-sm"
+                                placeholder="Ex: 12">
+                        </div>
+                        <div id="valor_parcela_section" class="hidden">
+                            <label for="valor_parcela_insert" class="block text-sm font-medium text-gray-700">Valor Fixo
+                                da Parcela (R$)</label>
+                            <input type="text" id="valor_parcela_insert"
+                                class="value-input w-full mt-1 p-2 border border-gray-300 rounded-lg shadow-sm"
+                                placeholder="Ex: 250,00">
+                        </div>
+                        <div id="parcelas-calculado-section">
+                            <label class="block text-sm font-medium text-gray-700">Valor de Cada Parcela (R$)</label>
+                            <input type="text" id="valor_parcela"
+                                class="w-full mt-1 p-2 bg-gray-100 border border-gray-300 rounded-lg" readonly>
+                        </div>
+                        <div id="numero-parcelas-calculado-section" class="hidden">
+                            <label class="block text-sm font-medium text-gray-700">Número de Parcelas Gerado</label>
+                            <input type="text" id="numero_parcelas"
+                                class="w-full mt-1 p-2 bg-gray-100 border border-gray-300 rounded-lg" readonly>
+                        </div>
+                        <div>
+                            <label for="data_primeira_parcela" class="block text-sm font-medium text-gray-700">Data da
+                                Primeira Parcela</label>
+                            <input type="text" id="data_primeira_parcela"
+                                class="date-input w-full mt-1 p-2 border border-gray-300 rounded-lg shadow-sm"
+                                placeholder="DD/MM/AAAA">
+                        </div>
+                        <div class="flex items-center pt-6">
+                            <input type="checkbox" id="aplicar_juros"
+                                class="h-5 w-5 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500">
+                            <label for="aplicar_juros" class="ml-2 text-sm font-medium text-gray-700">Aplicar juros
+                                simples de 1% a.m.</label>
+                        </div>
+                        <div id="resto_section"
+                            class="hidden md:col-span-2 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+                            <label class="block text-sm font-medium text-gray-700">Resto da Divisão</label>
+                            <div class="flex items-center justify-between mt-1">
+                                <input type="text" id="valor_resto"
+                                    class="p-2 bg-gray-100 border border-gray-300 rounded-lg w-1/3" readonly>
+                                <div class="flex items-center gap-4">
+                                    <label class="flex items-center text-sm">
+                                        <input type="radio" name="resto_option" value="ultima_parcela"
+                                            class="h-4 w-4 text-indigo-600 border-gray-300">
+                                        <span class="ml-2 text-gray-700">Somar na última</span>
+                                    </label>
+                                    <label class="flex items-center text-sm">
+                                        <input type="radio" name="resto_option" value="nova_parcela"
+                                            class="h-4 w-4 text-indigo-600 border-gray-300">
+                                        <span class="ml-2 text-gray-700">Criar nova parcela</span>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
-            const opt = {
-                margin: [10, 10, 10, 10],
-                filename: 'Proposta_Acordo.pdf',
-                image: { type: 'jpeg', quality: 0.98 },
-                html2canvas: { scale: 2 },
-                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
-                pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
+            <!-- Container para Parcelamento Art. 916 -->
+            <div id="cpc-916-container" class="hidden space-y-6">
+                <div class="p-4 border border-gray-200 rounded-lg space-y-4">
+                    <h3 class="text-lg font-semibold text-gray-800">Valores (Parcelamento Art. 916)</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
+                        <div>
+                            <label for="cpc916-valor-base" class="block text-sm font-medium text-gray-700">Valor Base da
+                                Dívida (R$)</label>
+                            <input type="text" id="cpc916-valor-base"
+                                class="value-input w-full mt-1 p-2 border border-gray-300 rounded-lg shadow-sm">
+                        </div>
+                        <div>
+                            <label for="cpc916-data-atualizacao" class="block text-sm font-medium text-gray-700">Data da
+                                Última Atualização</label>
+                            <input type="text" id="cpc916-data-atualizacao"
+                                class="date-input w-full mt-1 p-2 border border-gray-300 rounded-lg shadow-sm">
+                        </div>
+                        <div class="md:col-span-2">
+                            <label for="cpc916-valor-atualizado" class="block text-sm font-medium text-gray-700">Valor
+                                Atualizado da Dívida (R$)</label>
+                            <input type="text" id="cpc916-valor-atualizado"
+                                class="w-full mt-1 p-2 bg-gray-100 border border-gray-300 rounded-lg" readonly>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4 pt-4">
+                        <div>
+                            <label for="cpc916-valor-entrada" class="block text-sm font-medium text-gray-700">Valor da
+                                Entrada (mínimo 30%)</label>
+                            <input type="text" id="cpc916-valor-entrada"
+                                class="value-input w-full mt-1 p-2 border border-gray-300 rounded-lg shadow-sm">
+                            <small id="cpc916-min-entrada-helper" class="text-xs text-gray-500 mt-1 block"></small>
+                        </div>
+                        <div>
+                            <label for="cpc916-data-entrada" class="block text-sm font-medium text-gray-700">Data da
+                                Entrada</label>
+                            <input type="text" id="cpc916-data-entrada"
+                                class="date-input w-full mt-1 p-2 border border-gray-300 rounded-lg shadow-sm bg-gray-100"
+                                readonly>
+                        </div>
+                    </div>
+                </div>
+                <div class="p-4 border border-gray-200 rounded-lg space-y-4">
+                    <h3 class="text-lg font-semibold text-gray-800">Condições de Parcelamento</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
+                        <div>
+                            <label for="cpc916-parcelas" class="block text-sm font-medium text-gray-700">Parcelas do
+                                Remanescente (até 6)</label>
+                            <select id="cpc916-parcelas"
+                                class="w-full mt-1 p-2 border border-gray-300 rounded-lg shadow-sm bg-white">
+                                <option value="1">1</option>
+                                <option value="2">2</option>
+                                <option value="3">3</option>
+                                <option value="4">4</option>
+                                <option value="5">5</option>
+                                <option value="6">6</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label for="cpc916-valor-parcela" class="block text-sm font-medium text-gray-700">Valor da
+                                Parcela (R$)</label>
+                            <input type="text" id="cpc916-valor-parcela"
+                                class="w-full mt-1 p-2 bg-gray-100 border border-gray-300 rounded-lg" readonly>
+                        </div>
+                        <div class="md:col-span-2">
+                            <label for="cpc916-data-primeira-parcela"
+                                class="block text-sm font-medium text-gray-700">Data da 1ª Parcela (Restante)</label>
+                            <input type="text" id="cpc916-data-primeira-parcela"
+                                class="date-input w-full mt-1 p-2 border border-gray-300 rounded-lg shadow-sm">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
+            <!-- Outras Observações -->
+            <div id="additional-clauses-container" class="mt-6 p-4 border border-gray-200 rounded-lg">
+                <h3 class="text-lg font-semibold text-gray-800 mb-2">Cláusulas Adicionais</h3>
+                <div class="space-y-4">
+                    <div id="multa-container">
+                        <label for="multa_descumprimento" class="block text-sm font-medium text-gray-700">Multa por
+                            Descumprimento</label>
+                        <select id="multa_descumprimento"
+                            class="w-full mt-1 p-2 border border-gray-300 rounded-lg shadow-sm bg-white md:w-1/2">
+                            <option value="0">Sem multa</option>
+                            <option value="10" selected>10%</option>
+                            <option value="20">20%</option>
+                            <option value="30">30%</option>
+                            <option value="40">40%</option>
+                            <option value="50">50%</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="outras_observacoes" class="block text-sm font-medium text-gray-700">Observações
+                            (Opcional)</label>
+                        <textarea id="outras_observacoes" rows="3"
+                            class="w-full mt-1 p-2 border border-gray-300 rounded-lg shadow-sm"
+                            placeholder="Insira aqui outras cláusulas ou pedidos que devem constar no acordo..."></textarea>
+                    </div>
+                </div>
+            </div>
+
+            <hr class="my-8 border-gray-200">
+
+            <!-- Opções da Petição -->
+            <div id="exequente-presente-container" class="p-4 border border-dashed rounded-lg">
+                <label class="flex items-center cursor-pointer">
+                    <input type="checkbox" id="exequente-presente-checkbox"
+                        class="h-5 w-5 text-indigo-600 border-gray-300 rounded">
+                    <span class="ml-3 text-base font-medium text-gray-800">Exequente(s) presente(s) e de acordo com a
+                        proposta?</span>
+                </label>
+            </div>
+
+            <div id="petition-options-container" class="hidden mt-6 p-4 border-t border-dashed space-y-6">
+                <div>
+                    <h3 class="text-lg font-semibold text-gray-800 mb-4">Dados do(s) Exequente(s)</h3>
+                    <div id="exequentes-list" class="space-y-3">
+                        <div class="exequente-item flex items-center gap-3">
+                            <input type="text"
+                                class="exequente-name-input flex-grow p-2 border border-gray-300 rounded-lg shadow-sm"
+                                placeholder="Nome completo do Exequente">
+                        </div>
+                    </div>
+                    <button id="add-exequente-btn"
+                        class="mt-3 bg-gray-200 hover:bg-gray-300 text-gray-700 text-sm font-semibold py-1 px-3 rounded-lg">+
+                        Adicionar outro exequente</button>
+                </div>
+            </div>
+
+            <!-- Botões de Ação -->
+            <div class="flex flex-col md:flex-row gap-4 justify-end mt-8">
+                <button id="calculate-btn"
+                    class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-6 rounded-lg shadow-lg flex items-center justify-center">
+                    Calcular Proposta
+                </button>
+                <button id="preview-btn" disabled
+                    class="bg-gray-400 cursor-not-allowed text-white font-bold py-3 px-6 rounded-lg shadow-lg">Prévia da
+                    Petição</button>
+                <button id="generate-pdf-btn" disabled
+                    class="bg-gray-400 cursor-not-allowed text-white font-bold py-3 px-6 rounded-lg shadow-lg">Gerar PDF
+                    Completo</button>
+            </div>
+
+            <!-- Seção de Resultados -->
+            <div id="results-container" class="mt-10 p-6 bg-gray-50 rounded-lg border border-gray-200 hidden"></div>
+        </main>
+    </div>
+
+    <!-- Modal de Pré-visualização -->
+    <div id="preview-modal"
+        class="hidden fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center p-4 z-50">
+        <div class="bg-gray-200 rounded-lg shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto p-6 relative">
+            <button id="close-preview-btn"
+                class="absolute top-3 right-3 text-3xl font-bold text-gray-500 hover:text-gray-800 leading-none">&times;</button>
+            <div id="preview-content" class="space-y-8 bg-white p-8"></div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const dom = {
+                calculationType: document.getElementById('calculation-type'),
+                processNumber: document.getElementById('process-number'),
+                calculateBtn: document.getElementById('calculate-btn'),
+                previewBtn: document.getElementById('preview-btn'),
+                generatePdfBtn: document.getElementById('generate-pdf-btn'),
+                resultsContainer: document.getElementById('results-container'),
+                agreementProposalContainer: document.getElementById('agreement-proposal-container'),
+                cpc916Container: document.getElementById('cpc-916-container'),
+                exequentePresenteCheckbox: document.getElementById('exequente-presente-checkbox'),
+                petitionOptionsContainer: document.getElementById('petition-options-container'),
+                exequentesList: document.getElementById('exequentes-list'),
+                addExequenteBtn: document.getElementById('add-exequente-btn'),
+                executadosList: document.getElementById('executados-list'),
+                addExecutadoBtn: document.getElementById('add-executado-btn'),
+                additionalClausesContainer: document.getElementById('additional-clauses-container'),
+                multaContainer: document.getElementById('multa-container'),
+
+                // Proposta de Acordo Fields
+                updateValueCheckbox: document.getElementById('update-value-checkbox'),
+                updateValueSection: document.getElementById('update-value-section'),
+                lastUpdateDate: document.getElementById('last-update-date'),
+                updatedAgreementValue: document.getElementById('updated-agreement-value'),
+                proposalValorDivida: document.getElementById('proposal-valor-divida'),
+                haveraEntrada: document.getElementById('havera_entrada'),
+                entradaSection: document.getElementById('entrada_section'),
+                dataEntradaSection: document.getElementById('data_entrada_section'),
+                valorEntrada: document.getElementById('valor_entrada'),
+                dataEntrada: document.getElementById('data_entrada'),
+                valorRestanteContainer: document.getElementById('valor-restante-container'),
+                valorRestante: document.getElementById('valor_restante'),
+                tipoParcelamento: document.getElementById('tipo_parcelamento'),
+                parcelasSection: document.getElementById('parcelas_section'),
+                parcelas: document.getElementById('parcelas'),
+                valorParcelaCalculado: document.getElementById('valor_parcela'),
+                parcelasCalculadoSection: document.getElementById('parcelas-calculado-section'),
+                valorParcelaSection: document.getElementById('valor_parcela_section'),
+                valorParcelaInsert: document.getElementById('valor_parcela_insert'),
+                numeroParcelasCalculado: document.getElementById('numero_parcelas'),
+                numeroParcelasCalculadoSection: document.getElementById('numero-parcelas-calculado-section'),
+                dataPrimeiraParcela: document.getElementById('data_primeira_parcela'),
+                aplicarJuros: document.getElementById('aplicar_juros'),
+                restoSection: document.getElementById('resto_section'),
+                valorResto: document.getElementById('valor_resto'),
+                multaDescumprimento: document.getElementById('multa_descumprimento'),
+                outrasObservacoes: document.getElementById('outras_observacoes'),
+
+                // Art. 916 Fields
+                cpc916ValorBase: document.getElementById('cpc916-valor-base'),
+                cpc916DataAtualizacao: document.getElementById('cpc916-data-atualizacao'),
+                cpc916ValorAtualizado: document.getElementById('cpc916-valor-atualizado'),
+                cpc916ValorEntrada: document.getElementById('cpc916-valor-entrada'),
+                cpc916MinEntradaHelper: document.getElementById('cpc916-min-entrada-helper'),
+                cpc916DataEntrada: document.getElementById('cpc916-data-entrada'),
+                cpc916Parcelas: document.getElementById('cpc916-parcelas'),
+                cpc916ValorParcela: document.getElementById('cpc916-valor-parcela'),
+                cpc916DataPrimeiraParcela: document.getElementById('cpc916-data-primeira-parcela'),
+
+
+                // Shared
+                previewModal: document.getElementById('preview-modal'),
+                closePreviewBtn: document.getElementById('close-preview-btn'),
+                previewContent: document.getElementById('preview-content'),
             };
 
-            html2pdf().from(peticaoContent).set(opt).toPdf().get('pdf').then(function (pdf) {
-                const totalPages = pdf.internal.getNumberOfPages();
+            let ipcaData = {};
+            let ipca15Data = {};
+            let monthlySelicData = {};
+            let lastCalculationData = null;
+            let executadoCount = 0;
+            const maxExecutados = 4;
 
-                for (let i = 1; i <= totalPages; i++) {
-                    pdf.setPage(i);
-                    pdf.text(`Página ${i} de ${totalPages}`, pdf.internal.pageSize.getWidth() / 2, pdf.internal.pageSize.getHeight() - 10, { align: 'center' });
+            // --- FUNÇÕES DE SETUP E UI ---
+
+            const fetchEconomicData = async () => {
+                const today = new Date();
+                const fiveYearsAgo = new Date(today.getFullYear() - 5, today.getMonth(), 1);
+                const formatDateForApi = (d) => `${d.getDate().toString().padStart(2, '0')}/${(d.getMonth() + 1).toString().padStart(2, '0')}/${d.getFullYear()}`;
+                const startDate = formatDateForApi(fiveYearsAgo);
+                const endDate = formatDateForApi(today);
+
+                const IPCA_CODE = 433;
+                const IPCA15_CODE = 7478;
+                const SELIC_DAILY_CODE = 11;
+
+                const ipcaUrl = `https://api.bcb.gov.br/dados/serie/bcdata.sgs.${IPCA_CODE}/dados?formato=json&dataInicial=${startDate}&dataFinal=${endDate}`;
+                const ipca15Url = `https://api.bcb.gov.br/dados/serie/bcdata.sgs.${IPCA15_CODE}/dados?formato=json&dataInicial=${startDate}&dataFinal=${endDate}`;
+                const selicUrl = `https://api.bcb.gov.br/dados/serie/bcdata.sgs.${SELIC_DAILY_CODE}/dados?formato=json&dataInicial=${startDate}&dataFinal=${endDate}`;
+
+                try {
+                    const [ipcaResponse, ipca15Response, selicResponse] = await Promise.all([
+                        fetch(ipcaUrl), fetch(ipca15Url), fetch(selicUrl)
+                    ]);
+
+                    if (!ipcaResponse.ok || !ipca15Response.ok || !selicResponse.ok) throw new Error('Falha ao buscar dados do BCB.');
+
+                    const [ipcaJson, ipca15Json, selicJson] = await Promise.all([
+                        ipcaResponse.json(), ipca15Response.json(), selicResponse.json()
+                    ]);
+
+                    const processMonthlyData = (jsonData) => jsonData.reduce((acc, item) => {
+                        const [, month, year] = item.data.split('/');
+                        acc[`${year}-${month.padStart(2, '0')}`] = parseFloat(item.valor);
+                        return acc;
+                    }, {});
+
+                    const processDailySelic = (dailyData) => {
+                        const monthlyFactors = dailyData.reduce((acc, item) => {
+                            const [day, month, year] = item.data.split('/');
+                            const key = `${year}-${month.padStart(2, '0')}`;
+                            acc[key] = (acc[key] || 1) * (1 + parseFloat(item.valor) / 100);
+                            return acc;
+                        }, {});
+                        return Object.entries(monthlyFactors).reduce((acc, [key, factor]) => {
+                            acc[key] = (factor - 1) * 100;
+                            return acc;
+                        }, {});
+                    };
+
+                    ipcaData = processMonthlyData(ipcaJson);
+                    ipca15Data = processMonthlyData(ipca15Json);
+                    monthlySelicData = processDailySelic(selicJson);
+                } catch (error) {
+                    console.error('Erro ao buscar dados econômicos:', error);
+                    alert('Não foi possível carregar os índices econômicos. A função de atualização de valor pode não funcionar.');
                 }
-            }).save();
-        }
+            };
+
+            const toggleView = () => {
+                const type = dom.calculationType.value;
+                const isProposal = type === 'agreement-proposal';
+                dom.agreementProposalContainer.classList.toggle('hidden', !isProposal);
+                dom.cpc916Container.classList.toggle('hidden', isProposal);
+                dom.multaContainer.classList.toggle('hidden', !isProposal);
+
+                if (!isProposal) { // If CPC 916
+                    dom.cpc916Parcelas.value = '6';
+                    calculateUpdatedValue();
+                }
+            };
+
+            const autocompleteDateOnBlur = (e) => {
+                let value = e.target.value;
+                const parts = value.split('/').filter(p => p.length > 0);
+
+                if ((parts.length === 3 && parts[2].length === 4) || !value) {
+                    if (e.target.id === 'last-update-date' || e.target.id === 'cpc916-data-atualizacao') { calculateUpdatedValue(); }
+                    return;
+                }
+
+                const today = new Date();
+                let day = parts[0] || '', month = parts[1] || '', year = parts[2] || '';
+
+                if (day && !month) {
+                    month = String(today.getMonth() + 1).padStart(2, '0');
+                    year = today.getFullYear();
+                } else if (day && month && !year) {
+                    year = today.getFullYear();
+                } else if (year.length > 0 && year.length < 4) {
+                    const yearNum = parseInt(year, 10);
+                    year = yearNum < 50 ? '20' + String(yearNum).padStart(2, '0') : '19' + String(yearNum).padStart(2, '0');
+                }
+
+                if (day && month && year) { e.target.value = `${String(day).padStart(2, '0')}/${String(month).padStart(2, '0')}/${year}`; }
+                if (e.target.id === 'last-update-date' || e.target.id === 'cpc916-data-atualizacao') { calculateUpdatedValue(); }
+            };
+
+            const addInputBehaviors = (container) => {
+                container.querySelectorAll('.date-input').forEach(input => {
+                    IMask(input, { mask: '00/00/0000' });
+                    input.addEventListener('blur', autocompleteDateOnBlur);
+                });
+                container.querySelectorAll('.value-input').forEach(input => {
+                    IMask(input, { mask: Number, scale: 2, signed: false, thousandsSeparator: '.', padFractionalZeros: true, normalizeZeros: true, radix: ',', mapToRadix: ['.'] });
+                });
+                container.querySelectorAll('.cep-input').forEach(input => {
+                    IMask(input, { mask: '00000-000' });
+                });
+            };
+
+            const formatCurrency = (value) => (value || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+            const parseCurrency = (valueStr) => parseFloat(String(valueStr || '0').replace(/\./g, '').replace(',', '.')) || 0;
+            const parseDate = (dateStr) => {
+                if (!dateStr || dateStr.length < 10) return null;
+                const [day, month, year] = dateStr.split('/');
+                return new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
+            };
+
+            const getNextWorkingDay = (date) => {
+                const newDate = new Date(date.getTime());
+                let dayOfWeek = newDate.getDay(); // 0 = Sunday, 6 = Saturday
+                if (dayOfWeek === 6) { // Saturday
+                    newDate.setDate(newDate.getDate() + 2);
+                } else if (dayOfWeek === 0) { // Sunday
+                    newDate.setDate(newDate.getDate() + 1);
+                }
+                return newDate;
+            };
+
+            // --- LÓGICA DE CÁLCULO E ATUALIZAÇÃO ---
+
+            let lastUpdateDetails = null;
+
+            const calculateUpdatedValue = () => {
+                const type = dom.calculationType.value;
+                const isProposal = type === 'agreement-proposal';
+
+                const isChecked = isProposal ? dom.updateValueCheckbox.checked : true;
+                const valorBaseInput = isProposal ? dom.proposalValorDivida : dom.cpc916ValorBase;
+                const dataInicialInput = isProposal ? dom.lastUpdateDate : dom.cpc916DataAtualizacao;
+                const valorAtualizadoOutput = isProposal ? dom.updatedAgreementValue : dom.cpc916ValorAtualizado;
+
+                if (!isChecked) {
+                    valorAtualizadoOutput.value = '';
+                    lastUpdateDetails = null;
+                    if (isProposal) updateProposalCalculations();
+                    return;
+                }
+
+                const valorBase = parseCurrency(valorBaseInput.value);
+                const dataInicial = parseDate(dataInicialInput.value);
+                const dataFinal = new Date();
+
+                let correcaoMonetaria = 0;
+                let jurosMora = 0;
+                let valorCorrigido = valorBase;
+
+                if (valorBase > 0 && dataInicial && !isNaN(dataInicial) && dataInicial < dataFinal) {
+                    let currentDate = new Date(dataInicial.getFullYear(), dataInicial.getMonth(), 1);
+                    while (currentDate <= dataFinal) {
+                        const key = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}`;
+
+                        const ipcaRate = (ipcaData[key] || 0) / 100;
+                        valorCorrigido *= (1 + ipcaRate);
+
+                        const selicRate = (monthlySelicData[key] || 0) / 100;
+                        const ipca15Rate = (ipca15Data[key] || 0) / 100;
+                        const jurosRate = Math.max(0, selicRate - ipca15Rate);
+                        jurosMora += valorBase * jurosRate;
+
+                        currentDate.setMonth(currentDate.getMonth() + 1);
+                    }
+                    correcaoMonetaria = valorCorrigido - valorBase;
+                }
+
+                const valorTotalAtualizado = valorBase + correcaoMonetaria + jurosMora;
+
+                lastUpdateDetails = { valorOriginal: valorBase, correcaoMonetaria, jurosMora, valorTotalAtualizado };
+                valorAtualizadoOutput.value = formatCurrency(valorTotalAtualizado).replace('R$', '').trim();
+
+                if (isProposal) {
+                    updateProposalCalculations();
+                } else {
+                    updateCPC916Calculations();
+                }
+            };
+
+            const updateProposalCalculations = () => {
+                const valorBaseAcordo = parseCurrency(dom.proposalValorDivida.value);
+                const valorAcordo = dom.updateValueCheckbox.checked ? (parseCurrency(dom.updatedAgreementValue.value) || valorBaseAcordo) : valorBaseAcordo;
+                const comEntrada = dom.haveraEntrada.checked;
+                const valorEntrada = comEntrada ? parseCurrency(dom.valorEntrada.value) : 0;
+                const valorRestante = valorAcordo - valorEntrada;
+                dom.valorRestante.value = formatCurrency(valorRestante < 0 ? 0 : valorRestante).replace('R$', '').trim();
+                if (dom.tipoParcelamento.value === 'parcelas') {
+                    const numParcelas = parseInt(dom.parcelas.value);
+                    if (numParcelas > 0) {
+                        const valorParcela = valorRestante / numParcelas;
+                        dom.valorParcelaCalculado.value = formatCurrency(valorParcela).replace('R$', '').trim();
+                    } else { dom.valorParcelaCalculado.value = ''; }
+                } else {
+                    const valorParcela = parseCurrency(dom.valorParcelaInsert.value);
+                    if (valorParcela > 0 && valorRestante > 0) {
+                        const numParcelas = Math.floor(valorRestante / valorParcela);
+                        const resto = valorRestante - (numParcelas * valorParcela);
+                        dom.numeroParcelasCalculado.value = numParcelas + (resto > 0.01 ? 1 : 0);
+                        dom.valorResto.value = formatCurrency(resto).replace('R$', '').trim();
+                        dom.restoSection.classList.toggle('hidden', resto <= 0.01);
+                    } else {
+                        dom.numeroParcelasCalculado.value = '';
+                        dom.restoSection.classList.add('hidden');
+                    }
+                }
+            };
+
+            const updateCPC916Calculations = () => {
+                const valorAtualizado = parseCurrency(dom.cpc916ValorAtualizado.value);
+                const minEntrada = valorAtualizado * 0.3;
+                dom.cpc916MinEntradaHelper.textContent = `Valor mínimo: ${formatCurrency(minEntrada)}`;
+
+                dom.cpc916ValorEntrada.value = formatCurrency(minEntrada).replace('R$', '').trim();
+
+                const valorEntradaFinal = parseCurrency(dom.cpc916ValorEntrada.value);
+                const valorRestante = valorAtualizado - valorEntradaFinal;
+                const numParcelas = parseInt(dom.cpc916Parcelas.value);
+
+                if (numParcelas > 0 && valorRestante >= 0) {
+                    const valorParcela = valorRestante / numParcelas;
+                    dom.cpc916ValorParcela.value = formatCurrency(valorParcela).replace('R$', '').trim();
+                } else {
+                    dom.cpc916ValorParcela.value = '';
+                }
+            };
+
+            const handleCalculateClick = () => {
+                const type = dom.calculationType.value;
+                if (type === 'agreement-proposal') {
+                    calculateAgreementProposal();
+                } else {
+                    calculateCPC916();
+                }
+            };
+
+            const calculateAgreementProposal = () => {
+                const valorBaseAcordo = parseCurrency(dom.proposalValorDivida.value);
+                const valorAcordo = dom.updateValueCheckbox.checked ? (parseCurrency(dom.updatedAgreementValue.value) || valorBaseAcordo) : valorBaseAcordo;
+                const valorEntrada = dom.haveraEntrada.checked ? parseCurrency(dom.valorEntrada.value) : 0;
+                const valorRestante = valorAcordo - valorEntrada;
+                const dataPrimeiraParcela = parseDate(dom.dataPrimeiraParcela.value);
+                if (valorAcordo <= 0 || !dataPrimeiraParcela) { alert('Por favor, preencha o valor do acordo e a data da primeira parcela.'); return; }
+
+                let parcelas = [];
+                let numParcelas = 0;
+                if (dom.tipoParcelamento.value === 'parcelas') {
+                    numParcelas = parseInt(dom.parcelas.value);
+                    if (numParcelas > 0) {
+                        const valorBaseParcela = valorRestante / numParcelas;
+                        for (let i = 0; i < numParcelas; i++) { parcelas.push({ numero: i + 1, valorOriginal: valorBaseParcela }); }
+                    }
+                } else {
+                    const valorParcelaFixo = parseCurrency(dom.valorParcelaInsert.value);
+                    numParcelas = parseInt(dom.numeroParcelasCalculado.value);
+                    const resto = parseCurrency(dom.valorResto.value);
+                    const restoOption = document.querySelector('input[name="resto_option"]:checked')?.value;
+                    if (valorParcelaFixo > 0) {
+                        for (let i = 0; i < numParcelas; i++) {
+                            let valor = valorParcelaFixo;
+                            if (i === numParcelas - 1 && resto > 0) {
+                                if (restoOption === 'ultima_parcela') {
+                                    if (parcelas.length > 0) { parcelas[parcelas.length - 1].valorOriginal += resto; }
+                                    else { parcelas.push({ numero: 1, valorOriginal: valor + resto }); }
+                                    break;
+                                }
+                                valor = resto;
+                            }
+                            if (valor > 0) parcelas.push({ numero: i + 1, valorOriginal: valor });
+                        }
+                    }
+                }
+                parcelas.forEach(p => {
+                    p.valorFinal = p.valorOriginal;
+                    if (dom.aplicarJuros.checked) {
+                        const jurosDaParcela = p.valorOriginal * 0.01;
+                        p.valorFinal += jurosDaParcela * (p.numero - 1);
+                    }
+                });
+                lastCalculationData = { type: 'agreement-proposal', parcelas, dataPrimeiraParcela, valorAcordo, valorEntrada, valorRestante, updateDetails: dom.updateValueCheckbox.checked ? lastUpdateDetails : null };
+                displayResults(lastCalculationData);
+            };
+
+            const calculateCPC916 = () => {
+                const valorAtualizado = parseCurrency(dom.cpc916ValorAtualizado.value);
+                const valorEntrada = parseCurrency(dom.cpc916ValorEntrada.value);
+                const minEntrada = parseFloat((valorAtualizado * 0.3).toFixed(2));
+                const numParcelas = parseInt(dom.cpc916Parcelas.value);
+                const dataPrimeiraParcela = parseDate(dom.cpc916DataPrimeiraParcela.value);
+                const today = new Date(); today.setHours(0, 0, 0, 0);
+                const maxDate = new Date(); maxDate.setDate(today.getDate() + 30);
+
+                if (valorAtualizado <= 0) { alert('O valor atualizado da dívida deve ser maior que zero.'); return; }
+                if (valorEntrada < minEntrada) { alert(`O valor da entrada deve ser de no mínimo 30% (${formatCurrency(minEntrada)}).`); return; }
+                if (!numParcelas || numParcelas < 1 || numParcelas > 6) { alert('O número de parcelas deve ser entre 1 e 6.'); return; }
+                if (!dataPrimeiraParcela || dataPrimeiraParcela > maxDate || dataPrimeiraParcela < today) { alert('A data da primeira parcela deve ser em até 30 dias a partir de hoje.'); return; }
+
+                const valorRestante = valorAtualizado - valorEntrada;
+                const valorBaseParcela = valorRestante / numParcelas;
+                let parcelas = [];
+                for (let i = 0; i < numParcelas; i++) {
+                    const valorOriginal = valorBaseParcela;
+                    const juros = valorOriginal * 0.01 * (i + 1); // Juros é obrigatório
+                    parcelas.push({ numero: i + 1, valorOriginal, juros, valorFinal: valorOriginal + juros });
+                }
+                lastCalculationData = { type: 'cpc-916', parcelas, dataPrimeiraParcela, valorAtualizado, valorEntrada, valorRestante, updateDetails: lastUpdateDetails };
+                displayResults(lastCalculationData);
+            };
+
+            const generateSummaryTable = (data) => {
+                const isProposal = data.type === 'agreement-proposal';
+                const valorTotal = isProposal ? data.valorAcordo : data.valorAtualizado;
+                const valorEntrada = isProposal ? data.valorEntrada : data.valorEntrada;
+                const valorRestante = isProposal ? data.valorRestante : data.valorRestante;
+
+                let summaryHTML = `<h3 class="text-lg font-semibold text-gray-800 mb-2">Resumo do Cálculo</h3>
+                <div class="space-y-2 text-sm">`;
+
+                if (data.updateDetails && data.updateDetails.valorOriginal > 0) {
+                    summaryHTML += `<div class="flex justify-between p-2"><span>Valor Original:</span><span class="font-semibold">${formatCurrency(data.updateDetails.valorOriginal)}</span></div>`;
+                    summaryHTML += `<div class="flex justify-between p-2"><span>(+) Atualização Monetária (IPCA):</span><span class="font-semibold">${formatCurrency(data.updateDetails.correcaoMonetaria)}</span></div>`;
+                    summaryHTML += `<div class="flex justify-between p-2"><span>(+) Juros de Mora (Taxa Legal):</span><span class="font-semibold">${formatCurrency(data.updateDetails.jurosMora)}</span></div>`;
+                }
+
+                summaryHTML += `<div class="flex justify-between p-2 rounded-lg bg-gray-100"><span>(=) Valor Total:</span><span class="font-semibold">${formatCurrency(valorTotal)}</span></div>`;
+
+                if (valorEntrada > 0) {
+                    summaryHTML += `<div class="flex justify-between p-2"><span>(-) Entrada:</span><span class="font-semibold text-red-600">${formatCurrency(valorEntrada)}</span></div>`;
+                }
+
+                summaryHTML += `<div class="flex justify-between p-2 rounded-lg bg-gray-100"><span>(=) Saldo Remanescente:</span><span class="font-semibold">${formatCurrency(valorRestante)}</span></div>
+                </div>`;
+                return summaryHTML;
+            }
+
+            const displayResults = (data) => {
+                let tableHTML = `<table class="min-w-full bg-white border mt-4"><thead><tr class="bg-gray-200 text-gray-600 uppercase text-sm leading-normal"><th class="py-3 px-6 text-left">#</th><th class="py-3 px-6 text-left">Vencimento</th><th class="py-3 px-6 text-right">Valor</th></tr></thead><tbody class="text-gray-600 text-sm font-light">`;
+                data.parcelas.forEach((p, i) => {
+                    let dataVencimento = new Date(data.dataPrimeiraParcela);
+                    dataVencimento.setMonth(dataVencimento.getMonth() + i);
+                    dataVencimento = getNextWorkingDay(dataVencimento);
+                    tableHTML += `<tr class="border-b border-gray-200 hover:bg-gray-100"><td class="py-3 px-6 text-left whitespace-nowrap">${p.numero}</td><td class="py-3 px-6 text-left">${dataVencimento.toLocaleDateString('pt-BR')}</td><td class="py-3 px-6 text-right">${formatCurrency(p.valorFinal)}</td></tr>`;
+                });
+                tableHTML += `</tbody></table>`;
+
+                const summaryHTML = generateSummaryTable(data);
+                dom.resultsContainer.innerHTML = `${summaryHTML}<h3 class="text-lg font-semibold text-gray-800 mt-6 mb-2">Demonstrativo de Parcelas</h3> ${tableHTML}`;
+                dom.resultsContainer.classList.remove('hidden');
+                updateActionButtons(true);
+            };
+
+            const updateActionButtons = (hasResults) => {
+                const styleButton = (btn, enabled, colorClass = 'bg-green-600 hover:bg-green-700') => {
+                    btn.disabled = !enabled;
+                    btn.className = btn.className.replace(/bg-(gray|green|blue|indigo)-(400|600|700)/g, '').replace(/hover:bg-(gray|green|blue|indigo)-(600|700)/g, '').replace('cursor-not-allowed', '');
+                    if (enabled) { btn.classList.add(...colorClass.split(' ')); }
+                    else { btn.classList.add('bg-gray-400', 'cursor-not-allowed'); }
+                };
+                styleButton(dom.previewBtn, hasResults, 'bg-blue-600 hover:bg-blue-700');
+                styleButton(dom.generatePdfBtn, hasResults);
+            };
+
+            const addExecutado = () => {
+                if (executadoCount >= maxExecutados) return;
+                executadoCount++;
+                const item = document.createElement('div');
+                item.className = 'executado-item p-4 border border-gray-200 rounded-lg space-y-4';
+                item.id = `executado-${executadoCount}`;
+                item.innerHTML = `
+                    ${executadoCount > 1 ? `<div class="flex justify-between items-center mb-2"><h4 class="font-semibold text-gray-600">Executado ${executadoCount}</h4><button type="button" class="remove-executado-btn text-red-500 hover:text-red-700 font-bold" data-index="${executadoCount}">&times; Remover</button></div>` : ''}
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Nome Completo</label>
+                            <input type="text" class="nome-executado w-full mt-1 p-2 border border-gray-300 rounded-lg" data-index="${executadoCount}">
+                        </div>
+                        <div>
+                            <label class="cpf-cnpj-label block text-sm font-medium text-gray-700" data-index="${executadoCount}">CPF/CNPJ</label>
+                            <input type="text" class="cpf-cnpj w-full mt-1 p-2 border border-gray-300 rounded-lg" data-index="${executadoCount}">
+                        </div>
+                    </div>
+                     <div><label class="flex items-center cursor-pointer mt-4"><input type="checkbox" class="atualizar-endereco h-4 w-4 text-indigo-600 border-gray-300 rounded" data-index="${executadoCount}"><span class="ml-2 text-sm font-medium text-gray-700">Atualizar Endereço?</span></label></div>
+                    <div class="endereco-details hidden space-y-4 mt-4" data-index="${executadoCount}"><div class="grid grid-cols-1 md:grid-cols-3 gap-4"><div><label class="block text-sm font-medium text-gray-700">CEP</label><input type="text" class="cep-input w-full mt-1 p-2 border border-gray-300 rounded-lg" data-index="${executadoCount}"></div><div class="md:col-span-2"><label class="block text-sm font-medium text-gray-700">Rua/Logradouro</label><input type="text" class="rua w-full mt-1 p-2 border border-gray-300 rounded-lg bg-gray-100" readonly data-index="${executadoCount}"></div></div><div class="grid grid-cols-1 md:grid-cols-3 gap-4"><div><label class="block text-sm font-medium text-gray-700">Número</label><input type="text" class="numero w-full mt-1 p-2 border border-gray-300 rounded-lg" data-index="${executadoCount}"></div><div><label class="block text-sm font-medium text-gray-700">Complemento</label><input type="text" class="complemento w-full mt-1 p-2 border border-gray-300 rounded-lg" data-index="${executadoCount}"></div><div><label class="block text-sm font-medium text-gray-700">Bairro</label><input type="text" class="bairro w-full mt-1 p-2 border border-gray-300 rounded-lg bg-gray-100" readonly data-index="${executadoCount}"></div></div><div class="grid grid-cols-1 md:grid-cols-3 gap-4"><div class="md:col-span-2"><label class="block text-sm font-medium text-gray-700">Cidade</label><input type="text" class="cidade w-full mt-1 p-2 border border-gray-300 rounded-lg bg-gray-100" readonly data-index="${executadoCount}"></div><div><label class="block text-sm font-medium text-gray-700">Estado</label><input type="text" class="estado w-full mt-1 p-2 border border-gray-300 rounded-lg bg-gray-100" readonly data-index="${executadoCount}"></div></div></div>`;
+                dom.executadosList.appendChild(item);
+                addInputBehaviors(item);
+                addEventListenersToExecutado(item, executadoCount);
+                if (executadoCount === maxExecutados) dom.addExecutadoBtn.classList.add('hidden');
+            };
+
+            const addEventListenersToExecutado = (item, index) => {
+                const removeBtn = item.querySelector('.remove-executado-btn');
+                if (removeBtn) { removeBtn.addEventListener('click', () => { item.remove(); executadoCount--; dom.addExecutadoBtn.classList.remove('hidden'); }); }
+                item.querySelector('.atualizar-endereco').addEventListener('change', (e) => { item.querySelector('.endereco-details').classList.toggle('hidden', !e.target.checked); });
+                const cepInput = item.querySelector('.cep-input');
+                cepInput.addEventListener('blur', async () => {
+                    const cep = cepInput.value.replace(/\D/g, '');
+                    if (cep.length === 8) {
+                        try {
+                            const response = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
+                            if (!response.ok) throw new Error('Falha na resposta da rede');
+                            const data = await response.json();
+                            if (!data.erro) {
+                                item.querySelector(`.rua`).value = data.logradouro; item.querySelector(`.bairro`).value = data.bairro; item.querySelector(`.cidade`).value = data.localidade; item.querySelector(`.estado`).value = data.uf;
+                            } else { alert('CEP não encontrado.'); }
+                        } catch (err) { alert('Erro ao buscar o CEP. Verifique a conexão e o CEP informado.'); }
+                    }
+                });
+                const cpfCnpjInput = item.querySelector('.cpf-cnpj');
+                IMask(cpfCnpjInput, {
+                    mask: [{ mask: '000.000.000-00', maxLength: 11 }, { mask: '00.000.000/0000-00' }],
+                    dispatch: (appended, dynamicMasked) => {
+                        const number = (dynamicMasked.value + appended).replace(/\D/g, '');
+                        return dynamicMasked.compiledMasks[number.length > 11 ? 1 : 0];
+                    }
+                });
+            };
+
+            // --- GERAÇÃO DE PDF E PRÉVIA ---
+
+            function getPetitionHTML() {
+                const type = dom.calculationType.value;
+                if (type === 'agreement-proposal') {
+                    return getAgreementProposalPetition();
+                } else {
+                    return getCPC916Petition();
+                }
+            }
+
+            function getAgreementProposalPetition() {
+                //... (código anterior mantido) ...
+            }
+
+            function getCPC916Petition() {
+                //... (código anterior mantido) ...
+            }
+
+
+            function showPreview() {
+                if (!lastCalculationData) { alert('Primeiro, clique em "Calcular Proposta" para gerar os dados.'); return; }
+                const petitionHTML = getPetitionHTML();
+                const calculationHTML = dom.resultsContainer.innerHTML;
+                if (!petitionHTML) return;
+                const finalHTML = `<h2 class="text-xl font-bold text-center mb-4">Página 1: Petição</h2><div class="p-8 border shadow-lg bg-white mx-auto" style="width: 210mm; min-height: 297mm;">${petitionHTML}</div><h2 class="text-xl font-bold text-center mt-8 mb-4">Página 2: Demonstrativo de Cálculo</h2><div class="p-8 border shadow-lg bg-white mx-auto" style="width: 210mm;">${calculationHTML}</div>`;
+                dom.previewContent.innerHTML = finalHTML;
+                dom.previewModal.classList.remove('hidden');
+            }
+
+            async function generateCombinedPDF() {
+                if (!lastCalculationData) { alert('Primeiro, clique em "Calcular Proposta" para gerar os dados.'); return; }
+
+                const { jsPDF } = window.jspdf;
+                const pdf = new jsPDF('p', 'mm', 'a4');
+
+                const petitionHTML = getPetitionHTML();
+                if (!petitionHTML) return;
+
+                const petitionElement = document.createElement('div');
+                petitionElement.innerHTML = petitionHTML;
+
+                await pdf.html(petitionElement, {
+                    x: 15,
+                    y: 15,
+                    width: 180,
+                    windowWidth: 675,
+                    callback: function (pdf) {
+                        pdf.addPage();
+                        pdf.setFontSize(16);
+                        pdf.text("Demonstrativo de Parcelamento do Acordo", 105, 20, { align: 'center' });
+
+                        let finalY = 30;
+
+                        const summaryHTML = dom.resultsContainer.querySelector('div:first-of-type').innerHTML;
+                        const tempDiv = document.createElement('div');
+                        tempDiv.innerHTML = summaryHTML;
+
+                        const summaryData = Array.from(tempDiv.querySelectorAll('.flex')).map(row => {
+                            const label = row.children[0].textContent;
+                            const value = row.children[1].textContent;
+                            return [label, { content: value, styles: { halign: 'right' } }];
+                        });
+
+                        pdf.autoTable({
+                            startY: finalY,
+                            body: summaryData,
+                            theme: 'plain'
+                        });
+                        finalY = pdf.autoTable.previous.finalY + 10;
+
+                        const head = [['#', 'Data de Vencimento', 'Valor da Parcela']];
+                        const body = lastCalculationData.parcelas.map(p => {
+                            let dataVencimento = new Date(lastCalculationData.dataPrimeiraParcela);
+                            dataVencimento.setMonth(dataVencimento.getMonth() + (p.numero - 1));
+                            dataVencimento = getNextWorkingDay(dataVencimento);
+                            return [p.numero, dataVencimento.toLocaleDateString('pt-BR'), formatCurrency(p.valorFinal).replace('R$', '').trim()];
+                        });
+
+                        pdf.autoTable({
+                            startY: finalY,
+                            head: head,
+                            body: body,
+                            headStyles: { fillColor: [75, 85, 99] },
+                            columnStyles: { 2: { halign: 'right' } }
+                        });
+
+                        pdf.save(`Acordo_${dom.processNumber.value.replace(/\D/g, '')}.pdf`);
+                    }
+                });
+            }
+
+
+            // --- LISTENERS ---
+            dom.calculationType.addEventListener('change', toggleView);
+            dom.calculateBtn.addEventListener('click', handleCalculateClick);
+            dom.exequentePresenteCheckbox.addEventListener('change', (e) => dom.petitionOptionsContainer.classList.toggle('hidden', !e.target.checked));
+            dom.updateValueCheckbox.addEventListener('change', (e) => {
+                dom.updateValueSection.classList.toggle('hidden', !e.target.checked);
+                if (!e.target.checked) dom.updatedAgreementValue.value = '';
+                calculateUpdatedValue();
+            });
+            dom.haveraEntrada.addEventListener('change', (e) => {
+                const isChecked = e.target.checked;
+                dom.entradaSection.classList.toggle('hidden', !isChecked);
+                dom.dataEntradaSection.classList.toggle('hidden', !isChecked);
+                dom.valorRestanteContainer.classList.toggle('hidden', !isChecked);
+                if (!isChecked) dom.valorEntrada.value = '';
+                updateProposalCalculations();
+            });
+            dom.tipoParcelamento.addEventListener('change', (e) => {
+                const isPorParcelas = e.target.value === 'parcelas';
+                dom.parcelasSection.classList.toggle('hidden', !isPorParcelas);
+                dom.parcelasCalculadoSection.classList.toggle('hidden', !isPorParcelas);
+                dom.valorParcelaSection.classList.toggle('hidden', isPorParcelas);
+                dom.numeroParcelasCalculadoSection.classList.toggle('hidden', isPorParcelas);
+                dom.restoSection.classList.add('hidden');
+                updateProposalCalculations();
+            });
+            ['valor_entrada', 'parcelas', 'valor_parcela_insert'].forEach(id => { document.getElementById(id).addEventListener('input', updateProposalCalculations); });
+            dom.proposalValorDivida.addEventListener('input', () => {
+                if (dom.updateValueCheckbox.checked) { calculateUpdatedValue(); }
+                else { updateProposalCalculations(); }
+            });
+            dom.lastUpdateDate.addEventListener('blur', calculateUpdatedValue);
+
+            // Listeners for CPC 916
+            dom.cpc916ValorBase.addEventListener('input', calculateUpdatedValue);
+            dom.cpc916DataAtualizacao.addEventListener('blur', calculateUpdatedValue);
+            dom.cpc916ValorEntrada.addEventListener('blur', () => { // Check value on blur
+                const valorAtualizado = parseCurrency(dom.cpc916ValorAtualizado.value);
+                const minEntrada = parseFloat((valorAtualizado * 0.3).toFixed(2));
+                const entradaAtual = parseCurrency(dom.cpc916ValorEntrada.value);
+                if (entradaAtual < minEntrada) {
+                    dom.cpc916ValorEntrada.value = formatCurrency(minEntrada).replace('R$', '').trim();
+                }
+                updateCPC916Calculations();
+            });
+            dom.cpc916Parcelas.addEventListener('change', updateCPC916Calculations);
+
+
+            dom.addExecutadoBtn.addEventListener('click', addExecutado);
+            dom.previewBtn.addEventListener('click', showPreview);
+            dom.generatePdfBtn.addEventListener('click', generateCombinedPDF);
+            dom.closePreviewBtn.addEventListener('click', () => dom.previewModal.classList.add('hidden'));
+            dom.previewModal.addEventListener('click', (e) => { if (e.target === dom.previewModal) dom.previewModal.classList.add('hidden') });
+
+            // --- INICIALIZAÇÃO ---
+            IMask(dom.processNumber, { mask: '0000000-00.0000.0.00.0000' });
+            addInputBehaviors(document.body);
+
+            const today = new Date();
+            const todayFormatted = `${String(today.getDate()).padStart(2, '0')}/${String(today.getMonth() + 1).padStart(2, '0')}/${today.getFullYear()}`;
+            dom.cpc916DataEntrada.value = todayFormatted;
+
+            const thirtyDaysFromNow = new Date();
+            thirtyDaysFromNow.setDate(today.getDate() + 30);
+            const thirtyDaysFromNowFormatted = `${String(thirtyDaysFromNow.getDate()).padStart(2, '0')}/${String(thirtyDaysFromNow.getMonth() + 1).padStart(2, '0')}/${thirtyDaysFromNow.getFullYear()}`;
+            dom.cpc916DataPrimeiraParcela.value = thirtyDaysFromNowFormatted;
+
+            $("#cpc916-data-primeira-parcela").datepicker({
+                dateFormat: "dd/mm/yy",
+                minDate: 0,
+                maxDate: "+30D"
+            });
+
+            fetchEconomicData();
+            addExecutado();
+            toggleView();
+            dom.tipoParcelamento.dispatchEvent(new Event('change'));
+        });
     </script>
 </body>
 

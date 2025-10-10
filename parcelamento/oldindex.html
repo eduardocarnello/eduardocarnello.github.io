@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Proposta de Acordo</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f4f4f4;
+            color: #000;
+        }
+
+        .container {
+            width: auto;
+            max-width: 186mm;
+            margin: 0 auto;
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+            padding: 15mm;
+        }
+
+        .header {
+            text-align: center;
+            font-weight: bold;
+            font-size: 1.1em;
+            margin-bottom: 10px;
+            padding-bottom: 10px;
+        }
+
+        .section {
+            margin-bottom: 20px;
+        }
+
+        .inline-section {
+            display: flex;
+            align-items: center;
+            margin-bottom: 5px;
+        }
+
+        .inline-section input[type="text"],
+        .inline-section input[type="number"],
+        .inline-section input[type="date"],
+        .inline-section select {
+            flex: 1;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 1em;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .print-button {
+            display: block;
+            width: 150px;
+            margin: 20px auto;
+            padding: 10px;
+            background-color: #007bff;
+            color: #fff;
+            text-align: center;
+            text-decoration: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .print-button:hover {
+            background-color: #0056b3;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 10mm;
+            }
+
+            .inline-section {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .inline-section label {
+                width: 100%;
+                margin-bottom: 5px;
+            }
+
+            .inline-section input[type="text"],
+            .inline-section input[type="number"],
+            .inline-section input[type="date"],
+            .inline-section select {
+                width: 100%;
+            }
+
+            .print-button {
+                width: 100%;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: 5mm;
+            }
+
+            .header {
+                font-size: 1em;
+            }
+
+            .inline-section label {
+                font-size: 0.9em;
+            }
+
+            .inline-section input[type="text"],
+            .inline-section input[type="number"],
+            .inline-section input[type="date"],
+            .inline-section select {
+                font-size: 0.9em;
+            }
+
+            .print-button {
+                font-size: 0.9em;
+            }
+        }
+
+        .executado-signature {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            page-break-inside: avoid;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="header">
+            Proposta de Acordo
+        </div>
+        <div class="inline-section">
+            <label>Nº do Processo:</label>
+            <input type="text" id="numero_processo">
+        </div>
+        <div class="inline-section">
+            <label>Nome do Executado:</label>
+            <input type="text" id="nome_executado">
+        </div>
+        <div class="inline-section">
+            <label>Valor da Dívida (R$):</label>
+            <input type="number" id="valor_divida" step="0.01">
+        </div>
+        <div class="inline-section">
+            <label>Tem Entrada?</label>
+            <input type="checkbox" id="tem_entrada">
+        </div>
+        <div class="inline-section hidden" id="entrada_section">
+            <label>Entrada (R$):</label>
+            <input type="number" id="valor_entrada" step="0.01">
+        </div>
+        <div class="inline-section hidden" id="data_entrada_section">
+            <label>Data da Entrada:</label>
+            <input type="date" id="data_entrada">
+        </div>
+        <div class="inline-section">
+            <label>Parcelamento por Valor (R$):</label>
+            <input type="number" id="parcelamento_valor" step="0.01">
+        </div>
+        <div class="inline-section">
+            <label>Parcelas:</label>
+            <input type="number" id="parcelas" min="1" max="120">
+        </div>
+        <div class="inline-section">
+            <label>Valor da Parcela:</label>
+            <input type="text" id="valor_parcela" readonly>
+        </div>
+        <div class="inline-section">
+            <label>Data da Primeira Parcela:</label>
+            <input type="date" id="data_primeira_parcela">
+        </div>
+        <div class="inline-section">
+            <label>Aplicar Juros de 1% ao mês:</label>
+            <input type="checkbox" id="aplicar_juros">
+        </div>
+        <div class="inline-section">
+            <label>Aplicar Multa pelo Descumprimento?</label>
+            <input type="checkbox" id="aplicar_multa">
+        </div>
+        <div class="inline-section hidden" id="multa_section">
+            <label>Valor da Multa (%):</label>
+            <select id="valor_multa">
+                <option value="5">5%</option>
+                <option value="10">10%</option>
+                <option value="15">15%</option>
+                <option value="20">20%</option>
+                <option value="25">25%</option>
+                <option value="30">30%</option>
+                <option value="35">35%</option>
+                <option value="40">40%</option>
+                <option value="50">50%</option>
+                <option value="60">60%</option>
+            </select>
+        </div>
+        <div class="section hidden" id="datas_parcelas_section">
+            <label>Datas das Parcelas:</label>
+            <ul id="datas_parcelas"></ul>
+        </div>
+        <button class="print-button">Gerar PDF</button>
+    </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script>
+        document.getElementById('valor_divida').addEventListener('input', updateParcelas);
+        document.getElementById('valor_entrada').addEventListener('input', updateParcelas);
+        document.getElementById('parcelamento_valor').addEventListener('input', updateParcelas);
+        document.getElementById('parcelas').addEventListener('input', updateParcelas);
+        document.getElementById('data_primeira_parcela').addEventListener('input', updateDatasParcelas);
+        document.getElementById('aplicar_juros').addEventListener('change', updateDatasParcelas);
+        document.getElementById('aplicar_multa').addEventListener('change', function () {
+            const multaSection = document.getElementById('multa_section');
+            if (this.checked) {
+                multaSection.classList.remove('hidden');
+            } else {
+                multaSection.classList.add('hidden');
+            }
+        });
+        document.getElementById('tem_entrada').addEventListener('change', function () {
+            const entradaSection = document.getElementById('entrada_section');
+            const dataEntradaSection = document.getElementById('data_entrada_section');
+            if (this.checked) {
+                entradaSection.classList.remove('hidden');
+                dataEntradaSection.classList.remove('hidden');
+            } else {
+                entradaSection.classList.add('hidden');
+                dataEntradaSection.classList.add('hidden');
+            }
+            updateParcelas();
+        });
+
+        function updateParcelas() {
+            const valorDivida = parseFloat(document.getElementById('valor_divida').value) || 0;
+            const valorEntrada = parseFloat(document.getElementById('valor_entrada').value) || 0;
+            const parcelamentoValor = parseFloat(document.getElementById('parcelamento_valor').value) || 0;
+            const parcelas = parseInt(document.getElementById('parcelas').value) || 0;
+            const valorRestante = valorDivida - valorEntrada;
+
+            if (parcelamentoValor > 0) {
+                const numParcelas = Math.ceil(valorRestante / parcelamentoValor);
+                document.getElementById('parcelas').value = numParcelas;
+                const ultimaParcela = valorRestante % parcelamentoValor;
+                const valorParcela = ultimaParcela > 0 ? `${parcelamentoValor.toFixed(2).replace('.', ',')} (última parcela: ${ultimaParcela.toFixed(2).replace('.', ',')})` : parcelamentoValor.toFixed(2).replace('.', ',');
+                document.getElementById('valor_parcela').value = `R$ ${valorParcela}`;
+            } else if (parcelas > 0) {
+                const valorParcela = (valorRestante / parcelas).toFixed(2).replace('.', ',');
+                document.getElementById('valor_parcela').value = `R$ ${valorParcela}`;
+            }
+
+            updateDatasParcelas();
+        }
+
+        function updateDatasParcelas() {
+            const dataPrimeiraParcela = new Date(document.getElementById('data_primeira_parcela').value);
+            const parcelas = parseInt(document.getElementById('parcelas').value) || 0;
+            const valorParcela = parseFloat(document.getElementById('valor_parcela').value.replace('R$ ', '').replace(',', '.')) || 0;
+            const aplicarJuros = document.getElementById('aplicar_juros').checked;
+            const datasParcelas = document.getElementById('datas_parcelas');
+            datasParcelas.innerHTML = '';
+
+            if (aplicarJuros) {
+                for (let i = 0; i < parcelas; i++) {
+                    const dataParcela = new Date(dataPrimeiraParcela);
+                    dataParcela.setMonth(dataParcela.getMonth() + i);
+                    const valorParcelaComJuros = (valorParcela * Math.pow(1.01, i + 1)).toFixed(2).replace('.', ',');
+                    const li = document.createElement('li');
+                    li.textContent = `${dataParcela.toLocaleDateString()} - R$ ${valorParcelaComJuros}`;
+                    datasParcelas.appendChild(li);
+                }
+            } else {
+                const dataUltimaParcela = new Date(dataPrimeiraParcela);
+                dataUltimaParcela.setMonth(dataUltimaParcela.getMonth() + parcelas - 1);
+                const diaPrimeiraParcela = dataPrimeiraParcela.getDate();
+                const textoParcelas = `A primeira parcela será depositada no dia ${dataPrimeiraParcela.toLocaleDateString()} e as demais todo dia ${diaPrimeiraParcela}, com última parcela prevista para ${dataUltimaParcela.toLocaleDateString()}.`;
+                const li = document.createElement('li');
+                li.textContent = textoParcelas;
+                datasParcelas.appendChild(li);
+            }
+        }
+
+        document.querySelector('.print-button').addEventListener('click', generatePDF);
+
+        function generatePDF() {
+            const numeroProcesso = document.getElementById('numero_processo').value;
+            const nomeExecutado = document.getElementById('nome_executado').value;
+            const valorDivida = parseFloat(document.getElementById('valor_divida').value);
+            const temEntrada = document.getElementById('tem_entrada').checked;
+            const valorEntrada = temEntrada ? parseFloat(document.getElementById('valor_entrada').value) || 0 : 0;
+            const dataEntrada = temEntrada ? new Date(document.getElementById('data_entrada').value).toLocaleDateString('pt-BR') : '';
+            const parcelas = parseInt(document.getElementById('parcelas').value);
+            const valorParcela = parseFloat(document.getElementById('valor_parcela').value.replace('R$ ', '').replace(',', '.'));
+            const dataPrimeiraParcela = new Date(document.getElementById('data_primeira_parcela').value);
+            const hoje = new Date();
+            const dataExtenso = hoje.toLocaleDateString('pt-BR', { day: 'numeric', month: 'long', year: 'numeric' });
+            const aplicarJuros = document.getElementById('aplicar_juros').checked;
+            const aplicarMulta = document.getElementById('aplicar_multa').checked;
+            const valorMulta = aplicarMulta ? document.getElementById('valor_multa').value : 0;
+
+            let datasParcelas = '';
+            if (aplicarJuros) {
+                for (let i = 0; i < parcelas; i++) {
+                    const dataParcela = new Date(dataPrimeiraParcela);
+                    dataParcela.setMonth(dataParcela.getMonth() + i);
+                    const valorParcelaComJuros = (valorParcela * Math.pow(1.01, i + 1)).toFixed(2).replace('.', ',');
+                    datasParcelas += `<li>${dataParcela.toLocaleDateString()} - R$ ${valorParcelaComJuros}</li>`;
+                }
+            } else {
+                const dataUltimaParcela = new Date(dataPrimeiraParcela);
+                dataUltimaParcela.setMonth(dataUltimaParcela.getMonth() + parcelas - 1);
+                const diaPrimeiraParcela = dataPrimeiraParcela.getDate();
+                const resto = (valorDivida - valorEntrada) % valorParcela;
+                if (resto > 0) {
+                    datasParcelas = `O valor do débito, no importe de R$ ${valorDivida.toFixed(2).replace('.', ',')}, será pago em ${parcelas - 1} parcelas iguais e sucessivas no valor de R$ ${valorParcela.toFixed(2).replace('.', ',')}, com pagamento da primeira para o dia ${dataPrimeiraParcela.toLocaleDateString()} e as demais todo dia ${diaPrimeiraParcela} dos meses subsequentes, com uma última parcela no valor de R$ ${(valorParcela + resto).toFixed(2).replace('.', ',')}, no dia ${dataUltimaParcela.toLocaleDateString()}.`;
+                } else {
+                    datasParcelas = `O valor do débito, no importe de R$ ${valorDivida.toFixed(2).replace('.', ',')}, será pago em ${parcelas} parcelas iguais e sucessivas no valor de R$ ${valorParcela.toFixed(2).replace('.', ',')}, com pagamento da primeira para o dia ${dataPrimeiraParcela.toLocaleDateString()} e as demais todo dia ${diaPrimeiraParcela} dos meses subsequentes, com data de término prevista para o dia ${dataUltimaParcela.toLocaleDateString()}.`;
+                }
+            }
+
+            const peticaoContent = `
+                <div style="font-family: Arial, sans-serif; padding: 20px;">
+                    <p style="text-align: center; font-weight: bold; font-size: 20px;">EXMO. DR. JUIZ DE DIREITO DO JUIZADO ESPECIAL CÍVEL DE MARÍLIA/SP</p>
+                    <p style="margin-bottom: 20px;"></p>
+                    <p style="font-weight: bold; font-size: 16px; margin-bottom: 20px;">Processo nº ${numeroProcesso}</p>
+                    <p></p>
+                    <p style="margin-bottom: 20px;"></p>
+                    <p style="text-align: center; font-weight: bold; margin-bottom: 20px; font-size: 18px;">PROPOSTA DE ACORDO</p>
+                    <p style="margin-bottom: 20px;"></p>
+                    <p style="text-align: justify;">O executado reconhece o débito em execução e propõe o seu parcelamento nos seguintes moldes:</p>
+                    <p style="text-align: justify;">${datasParcelas}</p>
+                    <p style="text-align: justify;">O executado está ciente de que o descumprimento do parcelamento importará no vencimento antecipado de todas as parcelas não pagas${aplicarMulta ? `, junto com o acréscimo de multa de ${valorMulta}%` : ''}, vedada a oposição de embargos à execução em razão do reconhecimento do débito.</p>
+                    <p style="text-align: justify;">Requer seja a parte exequente intimada para ciência da presente proposta e que seja a execução suspensa pelo prazo previsto para cumprimento do parcelamento.</p>
+                    <p style="text-align: justify;">Pede o deferimento.</p>
+                    <p>Marília, ${dataExtenso}</p>
+                    <div class="executado-signature" style="page-break-inside: avoid;">______________________________<br>${nomeExecutado}</div>
+                    <div class="page-footer" style="position: fixed; bottom: 0; width: 100%; text-align: center; font-size: 12px;">
+                        Página <span class="page-number"></span> de <span class="total-pages"></span>
+                    </div>
+                </div>
+            `;
+
+            const opt = {
+                margin: [10, 10, 10, 10],
+                filename: 'Proposta_Acordo.pdf',
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2 },
+                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+                pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
+            };
+
+            html2pdf().from(peticaoContent).set(opt).toPdf().get('pdf').then(function (pdf) {
+                const totalPages = pdf.internal.getNumberOfPages();
+
+                for (let i = 1; i <= totalPages; i++) {
+                    pdf.setPage(i);
+                    pdf.text(`Página ${i} de ${totalPages}`, pdf.internal.pageSize.getWidth() / 2, pdf.internal.pageSize.getHeight() - 10, { align: 'center' });
+                }
+            }).save();
+        }
+    </script>
+</body>
+
+</html>
