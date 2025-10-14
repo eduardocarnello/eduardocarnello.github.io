@@ -377,7 +377,10 @@
             </div>
 
             <!-- Botões de Ação -->
-            <div class="flex flex-col md:flex-row gap-4 justify-end mt-8">
+            <div class="flex flex-col md:flex-row gap-4 justify-end mt-8 items-center">
+                <button id="reset-btn"
+                    class="bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-6 rounded-lg shadow-lg">Apagar
+                    Tudo</button>
                 <button id="calculate-btn"
                     class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-6 rounded-lg shadow-lg flex items-center justify-center">
                     Calcular Proposta
@@ -388,6 +391,18 @@
                 <button id="generate-pdf-btn" disabled
                     class="bg-gray-400 cursor-not-allowed text-white font-bold py-3 px-6 rounded-lg shadow-lg">Gerar PDF
                     Completo</button>
+            </div>
+
+            <!-- Controle de Ajuste de Assinaturas (Adicionado) -->
+            <div id="signature-adjust-container" class="hidden mt-6 p-4 border border-dashed rounded-lg bg-yellow-50">
+                <label for="signature-spacing" class="block text-sm font-medium text-gray-700 mb-2">Ajuste Manual do
+                    Espaçamento das Assinaturas (cm)</label>
+                <div class="flex items-center gap-2">
+                    <p class="text-xs text-gray-600">Se as assinaturas quebrarem a página, aumente o valor abaixo e gere
+                        o PDF novamente.</p>
+                    <input type="number" id="signature-spacing" value="1.5" step="0.1"
+                        class="w-24 p-2 border border-gray-300 rounded-lg">
+                </div>
             </div>
 
             <!-- Seção de Resultados -->
@@ -405,6 +420,22 @@
         </div>
     </div>
 
+    <!-- Modal de Confirmação para Apagar -->
+    <div id="confirm-reset-modal"
+        class="hidden fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center p-4 z-50">
+        <div class="bg-white rounded-lg shadow-2xl max-w-sm w-full p-6 text-center">
+            <h3 class="text-lg font-bold text-gray-800 mb-4">Confirmar Ação</h3>
+            <p class="text-gray-600 mb-6">Tem a certeza que deseja apagar todos os dados preenchidos? Esta ação não pode
+                ser desfeita.</p>
+            <div class="flex justify-center gap-4">
+                <button id="cancel-reset-btn"
+                    class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-6 rounded-lg">Cancelar</button>
+                <button id="confirm-reset-action-btn"
+                    class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-6 rounded-lg">Sim, Apagar</button>
+            </div>
+        </div>
+    </div>
+
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             const dom = {
@@ -413,6 +444,10 @@
                 calculateBtn: document.getElementById('calculate-btn'),
                 previewBtn: document.getElementById('preview-btn'),
                 generatePdfBtn: document.getElementById('generate-pdf-btn'),
+                resetBtn: document.getElementById('reset-btn'),
+                confirmResetModal: document.getElementById('confirm-reset-modal'),
+                cancelResetBtn: document.getElementById('cancel-reset-btn'),
+                confirmResetActionBtn: document.getElementById('confirm-reset-action-btn'),
                 resultsContainer: document.getElementById('results-container'),
                 agreementProposalContainer: document.getElementById('agreement-proposal-container'),
                 cpc916Container: document.getElementById('cpc-916-container'),
@@ -424,6 +459,8 @@
                 addExecutadoBtn: document.getElementById('add-executado-btn'),
                 additionalClausesContainer: document.getElementById('additional-clauses-container'),
                 multaContainer: document.getElementById('multa-container'),
+                signatureAdjustContainer: document.getElementById('signature-adjust-container'),
+                signatureSpacing: document.getElementById('signature-spacing'),
 
                 // Proposta de Acordo Fields
                 updateValueCheckbox: document.getElementById('update-value-checkbox'),
@@ -483,32 +520,24 @@
 
             const fetchEconomicData = async () => {
                 const today = new Date();
-                const fiveYearsAgo = new Date(today.getFullYear() - 5, today.getMonth(), 1);
-                const formatDateForApi = (d) => `${d.getDate().toString().padStart(2, '0')}/${(d.getMonth() + 1).toString().padStart(2, '0')}/${d.getFullYear()}`;
+                const fiveYearsAgo = new Date(today.getFullYear() - 5, today.getMonth(), today.getDate());
+                const formatDateForApi = (date) => `${String(date.getDate()).padStart(2, '0')}/${String(date.getMonth() + 1).padStart(2, '0')}/${date.getFullYear()}`;
                 const startDate = formatDateForApi(fiveYearsAgo);
                 const endDate = formatDateForApi(today);
 
-                const IPCA_CODE = 433;
-                const IPCA15_CODE = 7478;
-                const SELIC_DAILY_CODE = 11;
-
+                const IPCA_CODE = 433, IPCA15_CODE = 7478, SELIC_DAILY_CODE = 11;
                 const ipcaUrl = `https://api.bcb.gov.br/dados/serie/bcdata.sgs.${IPCA_CODE}/dados?formato=json&dataInicial=${startDate}&dataFinal=${endDate}`;
                 const ipca15Url = `https://api.bcb.gov.br/dados/serie/bcdata.sgs.${IPCA15_CODE}/dados?formato=json&dataInicial=${startDate}&dataFinal=${endDate}`;
                 const selicUrl = `https://api.bcb.gov.br/dados/serie/bcdata.sgs.${SELIC_DAILY_CODE}/dados?formato=json&dataInicial=${startDate}&dataFinal=${endDate}`;
 
                 try {
-                    const [ipcaResponse, ipca15Response, selicResponse] = await Promise.all([
-                        fetch(ipcaUrl), fetch(ipca15Url), fetch(selicUrl)
-                    ]);
+                    const [ipcaResponse, ipca15Response, selicResponse] = await Promise.all([fetch(ipcaUrl), fetch(ipca15Url), fetch(selicUrl)]);
+                    if (!ipcaResponse.ok || !ipca15Response.ok || !selicResponse.ok) throw new Error('Falha ao buscar dados do Banco Central.');
 
-                    if (!ipcaResponse.ok || !ipca15Response.ok || !selicResponse.ok) throw new Error('Falha ao buscar dados do BCB.');
-
-                    const [ipcaJson, ipca15Json, selicJson] = await Promise.all([
-                        ipcaResponse.json(), ipca15Response.json(), selicResponse.json()
-                    ]);
+                    const [ipcaJson, ipca15Json, selicJson] = await Promise.all([ipcaResponse.json(), ipca15Response.json(), selicResponse.json()]);
 
                     const processMonthlyData = (jsonData) => jsonData.reduce((acc, item) => {
-                        const [, month, year] = item.data.split('/');
+                        const [day, month, year] = item.data.split('/');
                         acc[`${year}-${month.padStart(2, '0')}`] = parseFloat(item.valor);
                         return acc;
                     }, {});
@@ -529,6 +558,7 @@
                     ipcaData = processMonthlyData(ipcaJson);
                     ipca15Data = processMonthlyData(ipca15Json);
                     monthlySelicData = processDailySelic(selicJson);
+
                 } catch (error) {
                     console.error('Erro ao buscar dados econômicos:', error);
                     alert('Não foi possível carregar os índices econômicos. A função de atualização de valor pode não funcionar.');
@@ -808,14 +838,19 @@
                     summaryHTML += `<div class="flex justify-between p-2"><span>(+) Juros de Mora (Taxa Legal):</span><span class="font-semibold">${formatCurrency(data.updateDetails.jurosMora)}</span></div>`;
                 }
 
-                summaryHTML += `<div class="flex justify-between p-2 rounded-lg bg-gray-100"><span>(=) Valor Total:</span><span class="font-semibold">${formatCurrency(valorTotal)}</span></div>`;
+                const hasUpdate = data.updateDetails && data.updateDetails.valorOriginal > 0;
+                const hasEntrada = valorEntrada > 0;
+                const valorTotalLabel = (hasUpdate || hasEntrada) ? '(=) Valor Total:' : 'Valor do Acordo:';
+                summaryHTML += `<div class="flex justify-between p-2 rounded-lg bg-gray-100"><span>${valorTotalLabel}</span><span class="font-semibold">${formatCurrency(valorTotal)}</span></div>`;
 
                 if (valorEntrada > 0) {
                     summaryHTML += `<div class="flex justify-between p-2"><span>(-) Entrada:</span><span class="font-semibold text-red-600">${formatCurrency(valorEntrada)}</span></div>`;
+                    if (valorTotal !== valorRestante) {
+                        summaryHTML += `<div class="flex justify-between p-2 rounded-lg bg-gray-100"><span>(=) Saldo Remanescente:</span><span class="font-semibold">${formatCurrency(valorRestante)}</span></div>`;
+                    }
                 }
 
-                summaryHTML += `<div class="flex justify-between p-2 rounded-lg bg-gray-100"><span>(=) Saldo Remanescente:</span><span class="font-semibold">${formatCurrency(valorRestante)}</span></div>
-                </div>`;
+                summaryHTML += `</div>`;
                 return summaryHTML;
             }
 
@@ -912,11 +947,172 @@
             }
 
             function getAgreementProposalPetition() {
-                //... (código anterior mantido) ...
+                const numeroProcesso = dom.processNumber.value;
+                const allExecutadosItems = Array.from(dom.executadosList.querySelectorAll('.executado-item'));
+                if (allExecutadosItems.some(item => !item.querySelector('.nome-executado').value.trim())) { alert('Por favor, preencha o nome de todos os executados.'); return null; }
+                const executadosData = allExecutadosItems.map(item => ({
+                    nome: item.querySelector('.nome-executado').value.toUpperCase(),
+                    cpfCnpj: item.querySelector('.cpf-cnpj').value,
+                    cpfCnpjType: item.querySelector('.cpf-cnpj').value.replace(/\D/g, '').length > 11 ? 'CNPJ' : 'CPF',
+                    atualizarEndereco: item.querySelector('.atualizar-endereco').checked,
+                    rua: item.querySelector('.rua').value,
+                    numero: item.querySelector('.numero').value,
+                    complemento: item.querySelector('.complemento').value,
+                    bairro: item.querySelector('.bairro').value,
+                    cep: item.querySelector('.cep-input').value,
+                    cidade: item.querySelector('.cidade').value,
+                    estado: item.querySelector('.estado').value
+                }));
+                const exequentePresente = dom.exequentePresenteCheckbox.checked;
+                const allExequentes = exequentePresente ? Array.from(dom.petitionOptionsContainer.querySelectorAll('.exequente-name-input')).map(input => input.value.trim().toUpperCase()).filter(Boolean) : [];
+                if (exequentePresente && allExequentes.length === 0) { alert('Por favor, informe o nome de pelo menos um exequente presente.'); return null; }
+
+                const valorBaseAcordo = parseCurrency(dom.proposalValorDivida.value);
+                const valorAcordo = dom.updateValueCheckbox.checked ? (parseCurrency(dom.updatedAgreementValue.value) || valorBaseAcordo) : valorBaseAcordo;
+                const valorEntrada = dom.haveraEntrada.checked ? parseCurrency(dom.valorEntrada.value) : 0;
+                const dataEntrada = dom.haveraEntrada.checked ? dom.dataEntrada.value : '';
+                const valorRestante = valorAcordo - valorEntrada;
+                const dataPrimeiraParcela = dom.dataPrimeiraParcela.value;
+                const outrasObservacoes = dom.outrasObservacoes.value.trim();
+
+                const plural = executadosData.length > 1;
+                let executadosNomes = executadosData.map(e => {
+                    let text = `<strong>${e.nome}</strong>, portador(a) do ${e.cpfCnpjType} nº ${e.cpfCnpj}`;
+                    if (e.atualizarEndereco) {
+                        text += `, residente e domiciliado(a) na ${e.rua}, nº ${e.numero}`;
+                        if (e.complemento) text += `, ${e.complemento}`;
+                        text += `, Bairro ${e.bairro}, CEP ${e.cep}, ${e.cidade}/${e.estado}`;
+                    } else {
+                        text += `, já qualificad${plural ? 'os' : 'o'}(a) nos autos`;
+                    }
+                    return text;
+                }).join(plural ? '; ' : ', ').replace(/;([^;]*)$/, ' e$1');
+
+                const [vem] = plural ? ['vêm'] : ['vem'];
+                let reconhecimentoTexto = '';
+                if (dom.updateValueCheckbox.checked) {
+                    reconhecimentoTexto = `<p style="text-indent: 4em;">${executadosData.length > 1 ? 'Os executados' : 'O executado'} reconhece${plural ? 'm' : ''} a dívida objeto da presente ação, que, atualizada para a presente data, importa em <strong>${formatCurrency(valorAcordo)}</strong>, e propõe${plural ? 'm' : ''} o seu pagamento da seguinte forma:</p>`;
+                } else {
+                    reconhecimentoTexto = `<p style="text-indent: 4em;">${executadosData.length > 1 ? 'Os executados' : 'O executado'} reconhece${plural ? 'm' : ''} a dívida objeto da presente ação, no valor de <strong>${formatCurrency(valorAcordo)}</strong>, e propõe${plural ? 'm' : ''} o seu pagamento da seguinte forma:</p>`;
+                }
+
+                let entradaTexto = dom.haveraEntrada.checked ? `<p style="text-indent: 4em;"><strong>Da entrada:</strong> A título de entrada, será paga a quantia de <strong>${formatCurrency(valorEntrada)}</strong> até a data de <strong>${dataEntrada}</strong>.</p>` : '';
+
+                const textoInicialParcelamento = dom.haveraEntrada.checked ? `O valor remanescente de <strong>${formatCurrency(valorRestante)}</strong>` : `O valor da dívida acima, ou seja, <strong>${formatCurrency(valorAcordo)}</strong>,`;
+                const textoFinalParcelamento = `será pago em <strong>${lastCalculationData.parcelas.length}</strong> parcelas mensais e sucessivas, com vencimento da primeira em <strong>${dataPrimeiraParcela}</strong> e as demais no mesmo dia dos meses subsequentes. Caso a data do vencimento da parcela ocorra em um dia sem expediente bancário, deverá ser considerado o dia útil imediatamente subsequente.`;
+                let parcelamentoTexto = '';
+
+                if (dom.aplicarJuros.checked) {
+                    parcelamentoTexto = `<p style="text-indent: 4em;"><strong>Do parcelamento:</strong> ${textoInicialParcelamento} ${textoFinalParcelamento.replace('será pago em', 'será pago, com acréscimo de juros simples de 1% a.m., em')} O valor de cada parcela consta no demonstrativo anexo.</p>`;
+                } else {
+                    if (dom.tipoParcelamento.value === 'parcelas') {
+                        const valorParcelaUnica = lastCalculationData.parcelas[0].valorFinal;
+                        parcelamentoTexto = `<p style="text-indent: 4em;"><strong>Do parcelamento:</strong> ${textoInicialParcelamento} será pago em <strong>${lastCalculationData.parcelas.length}</strong> parcelas mensais e sucessivas de <strong>${formatCurrency(valorParcelaUnica)}</strong>, com vencimento da primeira em <strong>${dataPrimeiraParcela}</strong> e as demais no mesmo dia dos meses subsequentes. Caso a data do vencimento da parcela ocorra em um dia sem expediente bancário, deverá ser considerado o dia útil imediatamente subsequente.</p>`;
+                    } else {
+                        const valorParcelaFixo = parseCurrency(dom.valorParcelaInsert.value);
+                        const ultimaParcelaValor = lastCalculationData.parcelas[lastCalculationData.parcelas.length - 1].valorFinal;
+                        if (lastCalculationData.parcelas.length > 1 && Math.abs(valorParcelaFixo - ultimaParcelaValor) > 0.01) {
+                            parcelamentoTexto = `<p style="text-indent: 4em;"><strong>Do parcelamento:</strong> ${textoInicialParcelamento} será pago em <strong>${lastCalculationData.parcelas.length - 1}</strong> parcelas de <strong>${formatCurrency(valorParcelaFixo)}</strong> e uma última parcela de <strong>${formatCurrency(ultimaParcelaValor)}</strong>, com vencimento da primeira em <strong>${dataPrimeiraParcela}</strong> e as demais no mesmo dia dos meses subsequentes. Caso a data do vencimento da parcela ocorra em um dia sem expediente bancário, deverá ser considerado o dia útil imediatamente subsequente.</p>`;
+                        } else {
+                            parcelamentoTexto = `<p style="text-indent: 4em;"><strong>Do parcelamento:</strong> ${textoInicialParcelamento} será pago em <strong>${lastCalculationData.parcelas.length}</strong> parcelas mensais e sucessivas de <strong>${formatCurrency(valorParcelaFixo)}</strong>, com vencimento da primeira em <strong>${dataPrimeiraParcela}</strong> e as demais no mesmo dia dos meses subsequentes. Caso a data do vencimento da parcela ocorra em um dia sem expediente bancário, deverá ser considerado o dia útil imediatamente subsequente.</p>`;
+                        }
+                    }
+                }
+
+                let observacoesTexto = outrasObservacoes ? `<p style="text-indent: 4em;">${outrasObservacoes.replace(/\n/g, '<br>')}</p>` : '';
+                const multaValor = dom.multaDescumprimento.value;
+                let descumprimentoTexto = '';
+                if (multaValor === "0") {
+                    descumprimentoTexto = `<p style="text-indent: 4em;">O descumprimento do acordo importará no vencimento antecipado das parcelas vincendas e prosseguimento da execução.</p>`;
+                } else {
+                    descumprimentoTexto = `<p style="text-indent: 4em;">O descumprimento do acordo importará no vencimento antecipado das parcelas vincendas, com aplicação de multa de ${multaValor}% sobre o saldo devedor remanescente e prosseguimento da execução.</p>`;
+                }
+
+                let exequenteTexto = '';
+                if (exequentePresente) {
+                    const exequentesNomes = allExequentes.join(', ').replace(/,([^,]*)$/, ' e$1');
+                    const declaram = allExequentes.length > 1 ? 'declaram' : 'declara';
+                    exequenteTexto = `<p style="text-indent: 4em;">O(s) exequente(s), <strong>${exequentesNomes}</strong>, presente(s) neste ato, ${declaram} que aceita(m) os termos da presente proposta de acordo, requerendo a sua homologação por sentença, para que produza os seus jurídicos e legais efeitos.</p>`;
+                }
+                const printDate = new Date().toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' });
+                const signatureSpacingValue = dom.signatureSpacing.value || '1.5';
+
+                let allSignatures = [...executadosData.map(e => ({ name: e.nome, doc: `${e.cpfCnpjType}: ${e.cpfCnpj}` })), ...(exequentePresente ? allExequentes.map(nome => ({ name: nome, doc: '' })) : [])];
+                let signaturesHTML = `<div style="padding-top: 0.25cm; text-align: center; page-break-inside: avoid;">`;
+                allSignatures.forEach(sig => {
+                    signaturesHTML += `
+                        <div style="display: inline-block; width: 48%; text-align: center; vertical-align: bottom; margin-top: ${signatureSpacingValue}cm; page-break-inside: avoid;">
+                            <div style="border-top: 1px solid black; padding-top: 5px; margin: 0 auto; width: 80%; page-break-inside: avoid;">
+                                ${sig.name}<br>${sig.doc}
+                            </div>
+                        </div>
+                    `;
+                });
+                signaturesHTML += `</div>`;
+
+                return `<div id="petition-area"><p style="text-align: center; font-weight: bold;">EXCELENTÍSSIMO(A) SENHOR(A) DOUTOR(A) JUIZ(A) DE DIREITO DO JUIZADO ESPECIAL CÍVEL DA COMARCA DE MARÍLIA - SP</p><p style="margin-top: 2cm;"><strong>Processo nº: ${numeroProcesso}</strong></p><div style="margin-top: 1cm;"><p style="text-indent: 4em;">${executadosNomes}, ${vem}, respeitosamente, à presença de Vossa Excelência, por meio de seu procurador, expor e requerer o que segue.</p>${reconhecimentoTexto}${entradaTexto}${parcelamentoTexto}${observacoesTexto}${descumprimentoTexto}${exequenteTexto}<p style="text-indent: 4em;">Diante do exposto, requer a homologação do presente acordo por sentença e a suspensão do processo até o seu integral cumprimento.</p></div><p style="margin-top: 0.5cm;">Nestes termos, pede deferimento.</p><p style="margin-top: 0.5cm; text-align: right;">Marília, ${printDate}.</p>${signaturesHTML}</div>`;
             }
 
             function getCPC916Petition() {
-                //... (código anterior mantido) ...
+                const numeroProcesso = dom.processNumber.value;
+                const allExecutadosItems = Array.from(dom.executadosList.querySelectorAll('.executado-item'));
+                if (allExecutadosItems.some(item => !item.querySelector('.nome-executado').value.trim())) { alert('Por favor, preencha o nome de todos os executados.'); return null; }
+                const executadosData = allExecutadosItems.map(item => ({
+                    nome: item.querySelector('.nome-executado').value.toUpperCase(),
+                    cpfCnpj: item.querySelector('.cpf-cnpj').value,
+                    cpfCnpjType: item.querySelector('.cpf-cnpj').value.replace(/\D/g, '').length > 11 ? 'CNPJ' : 'CPF',
+                    atualizarEndereco: item.querySelector('.atualizar-endereco').checked,
+                    rua: item.querySelector('.rua').value,
+                    numero: item.querySelector('.numero').value,
+                    complemento: item.querySelector('.complemento').value,
+                    bairro: item.querySelector('.bairro').value,
+                    cep: item.querySelector('.cep-input').value,
+                    cidade: item.querySelector('.cidade').value,
+                    estado: item.querySelector('.estado').value
+                }));
+                const plural = executadosData.length > 1;
+                let executadosNomes = executadosData.map(e => {
+                    let text = `<strong>${e.nome}</strong>, portador(a) do ${e.cpfCnpjType} nº ${e.cpfCnpj}`;
+                    if (e.atualizarEndereco) {
+                        text += `, residente e domiciliado(a) na ${e.rua}, nº ${e.numero}`;
+                        if (e.complemento) text += `, ${e.complemento}`;
+                        text += `, Bairro ${e.bairro}, CEP ${e.cep}, ${e.cidade}/${e.estado}`;
+                    } else {
+                        text += `, já qualificad${plural ? 'os' : 'o'}(a) nos autos`;
+                    }
+                    return text;
+                }).join(plural ? '; ' : ', ').replace(/;([^;]*)$/, ' e$1');
+
+                const [vem, o_s, executado_s, reconhece_m, requer_em] = plural ? ['vêm', 'Os', 'executados', 'reconhecem', 'requer'] : ['vem', 'O', 'executado', 'reconhece', 'requer'];
+                const outrasObservacoes = dom.outrasObservacoes.value.trim();
+
+                const valorAtualizado = parseCurrency(dom.cpc916ValorAtualizado.value);
+                const valorEntrada = parseCurrency(dom.cpc916ValorEntrada.value);
+                const dataEntrada = dom.cpc916DataEntrada.value;
+                const numParcelas = lastCalculationData.parcelas.length;
+
+                const reconhecimentoTexto = `<p style="text-indent: 4em;">${o_s} ${executado_s} ${reconhece_m} o crédito exequendo, no valor atualizado de <strong>${formatCurrency(valorAtualizado)}</strong>, e ${requer_em} o parcelamento do débito, nos termos do art. 916 do Código de Processo Civil.</p>`;
+                const entradaTexto = `<p style="text-indent: 4em;">Para tanto, comprova${plural ? 'm' : ''} o depósito de 30% (trinta por cento) do valor da execução, acrescido de custas e de honorários de advogado, no montante de <strong>${formatCurrency(valorEntrada)}</strong>, realizado em <strong>${dataEntrada}</strong>.</p>`;
+                const parcelamentoTexto = `<p style="text-indent: 4em;">O restante do débito será pago em <strong>${numParcelas}</strong> parcelas mensais, acrescidas de correção monetária e de juros de 1% (um por cento) ao mês, conforme demonstrativo anexo. Caso a data do vencimento da parcela ocorra em um dia sem expediente bancário, deverá ser considerado o dia útil imediatamente subsequente.</p>`;
+                let observacoesTexto = outrasObservacoes ? `<p style="text-indent: 4em;">${outrasObservacoes.replace(/\n/g, '<br>')}</p>` : '';
+                const descumprimentoTexto = `<p style="text-indent: 4em;">O não pagamento de qualquer das prestações implicará o vencimento das subsequentes e o prosseguimento do processo, com o acréscimo de multa de 10% (dez por cento) sobre o valor das prestações não pagas.</p>`;
+
+                const printDate = new Date().toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' });
+                const signatureSpacingValue = dom.signatureSpacing.value || '1.5';
+
+                let signaturesHTML = `<div style="padding-top: 0.25cm; text-align: center;">`;
+                executadosData.forEach(sig => {
+                    signaturesHTML += `
+                        <div style="display: inline-block; width: 48%; text-align: center; vertical-align: bottom; margin-top: ${signatureSpacingValue}cm; page-break-inside: avoid;">
+                            <div style="border-top: 1px solid black; padding-top: 5px; margin: 0 auto; width: 80%;">
+                                ${sig.nome}<br>${sig.cpfCnpjType}: ${sig.cpfCnpj}
+                            </div>
+                        </div>
+                    `;
+                });
+                signaturesHTML += `</div>`;
+
+                return `<div id="petition-area"><p style="text-align: center; font-weight: bold;">EXCELENTÍSSIMO(A) SENHOR(A) DOUTOR(A) JUIZ(A) DE DIREITO DO JUIZADO ESPECIAL CÍVEL DA COMARCA DE MARÍLIA - SP</p><p style="margin-top: 2cm;"><strong>Processo nº: ${numeroProcesso}</strong></p><div style="margin-top: 1cm;"><p style="text-indent: 4em;">${executadosNomes}, ${vem}, respeitosamente, à presença de Vossa Excelência, requerer o que segue.</p>${reconhecimentoTexto}${entradaTexto}${parcelamentoTexto}${observacoesTexto}${descumprimentoTexto}<p style="text-indent: 4em;">Diante do exposto, requer o deferimento do parcelamento do débito, com a consequente suspensão dos atos executivos.</p></div><p style="margin-top: 0.5cm;">Nestes termos, pede deferimento.</p><p style="margin-top: 0.5cm; text-align: right;">Marília, ${printDate}.</p>${signaturesHTML}</div>`;
             }
 
 
@@ -933,6 +1129,9 @@
             async function generateCombinedPDF() {
                 if (!lastCalculationData) { alert('Primeiro, clique em "Calcular Proposta" para gerar os dados.'); return; }
 
+                // Exibe o controle de ajuste manual
+                dom.signatureAdjustContainer.classList.remove('hidden');
+
                 const { jsPDF } = window.jspdf;
                 const pdf = new jsPDF('p', 'mm', 'a4');
 
@@ -943,6 +1142,7 @@
                 petitionElement.innerHTML = petitionHTML;
 
                 await pdf.html(petitionElement, {
+                    autoPaging: 'slice',
                     x: 15,
                     y: 15,
                     width: 180,
@@ -954,22 +1154,24 @@
 
                         let finalY = 30;
 
-                        const summaryHTML = dom.resultsContainer.querySelector('div:first-of-type').innerHTML;
-                        const tempDiv = document.createElement('div');
-                        tempDiv.innerHTML = summaryHTML;
+                        if (dom.calculationType.value === 'agreement-proposal') {
+                            const summaryHTML = dom.resultsContainer.querySelector('div:first-of-type').innerHTML;
+                            const tempDiv = document.createElement('div');
+                            tempDiv.innerHTML = summaryHTML;
 
-                        const summaryData = Array.from(tempDiv.querySelectorAll('.flex')).map(row => {
-                            const label = row.children[0].textContent;
-                            const value = row.children[1].textContent;
-                            return [label, { content: value, styles: { halign: 'right' } }];
-                        });
+                            const summaryData = Array.from(tempDiv.querySelectorAll('.flex')).map(row => {
+                                const label = row.children[0].textContent;
+                                const value = row.children[1].textContent;
+                                return [label, { content: value, styles: { halign: 'right' } }];
+                            });
 
-                        pdf.autoTable({
-                            startY: finalY,
-                            body: summaryData,
-                            theme: 'plain'
-                        });
-                        finalY = pdf.autoTable.previous.finalY + 10;
+                            pdf.autoTable({
+                                startY: finalY,
+                                body: summaryData,
+                                theme: 'plain'
+                            });
+                            finalY = pdf.autoTable.previous.finalY + 10;
+                        }
 
                         const head = [['#', 'Data de Vencimento', 'Valor da Parcela']];
                         const body = lastCalculationData.parcelas.map(p => {
@@ -992,6 +1194,42 @@
                 });
             }
 
+            const resetForm = () => {
+                document.querySelector('main').querySelectorAll('input, select, textarea').forEach(input => {
+                    if (input.readOnly) return;
+                    if (input.type === 'checkbox' || input.type === 'radio') {
+                        input.checked = false;
+                    } else if (input.tagName === 'SELECT') {
+                        input.selectedIndex = 0;
+                    } else {
+                        input.value = '';
+                    }
+                    input.dispatchEvent(new Event('change', { bubbles: true }));
+                });
+
+                dom.executadosList.innerHTML = '';
+                executadoCount = 0;
+                addExecutado();
+
+                dom.resultsContainer.classList.add('hidden');
+                dom.resultsContainer.innerHTML = '';
+                updateActionButtons(false);
+                toggleView();
+
+                const today = new Date();
+                const todayFormatted = `${String(today.getDate()).padStart(2, '0')}/${String(today.getMonth() + 1).padStart(2, '0')}/${today.getFullYear()}`;
+                dom.cpc916DataEntrada.value = todayFormatted;
+
+                let thirtyDaysFromNow = new Date();
+                thirtyDaysFromNow.setDate(today.getDate() + 30);
+                thirtyDaysFromNow = getNextWorkingDay(thirtyDaysFromNow);
+                const thirtyDaysFromNowFormatted = `${String(thirtyDaysFromNow.getDate()).padStart(2, '0')}/${String(thirtyDaysFromNow.getMonth() + 1).padStart(2, '0')}/${thirtyDaysFromNow.getFullYear()}`;
+                dom.dataPrimeiraParcela.value = thirtyDaysFromNowFormatted;
+                dom.cpc916DataPrimeiraParcela.value = thirtyDaysFromNowFormatted;
+
+                dom.confirmResetModal.classList.add('hidden');
+            };
+
 
             // --- LISTENERS ---
             dom.calculationType.addEventListener('change', toggleView);
@@ -1007,7 +1245,14 @@
                 dom.entradaSection.classList.toggle('hidden', !isChecked);
                 dom.dataEntradaSection.classList.toggle('hidden', !isChecked);
                 dom.valorRestanteContainer.classList.toggle('hidden', !isChecked);
-                if (!isChecked) dom.valorEntrada.value = '';
+                if (isChecked) {
+                    const today = new Date();
+                    const todayFormatted = `${String(today.getDate()).padStart(2, '0')}/${String(today.getMonth() + 1).padStart(2, '0')}/${today.getFullYear()}`;
+                    dom.dataEntrada.value = todayFormatted;
+                } else {
+                    dom.valorEntrada.value = '';
+                    dom.dataEntrada.value = '';
+                }
                 updateProposalCalculations();
             });
             dom.tipoParcelamento.addEventListener('change', (e) => {
@@ -1047,6 +1292,11 @@
             dom.closePreviewBtn.addEventListener('click', () => dom.previewModal.classList.add('hidden'));
             dom.previewModal.addEventListener('click', (e) => { if (e.target === dom.previewModal) dom.previewModal.classList.add('hidden') });
 
+            dom.resetBtn.addEventListener('click', () => dom.confirmResetModal.classList.remove('hidden'));
+            dom.cancelResetBtn.addEventListener('click', () => dom.confirmResetModal.classList.add('hidden'));
+            dom.confirmResetActionBtn.addEventListener('click', resetForm);
+
+
             // --- INICIALIZAÇÃO ---
             IMask(dom.processNumber, { mask: '0000000-00.0000.0.00.0000' });
             addInputBehaviors(document.body);
@@ -1055,9 +1305,11 @@
             const todayFormatted = `${String(today.getDate()).padStart(2, '0')}/${String(today.getMonth() + 1).padStart(2, '0')}/${today.getFullYear()}`;
             dom.cpc916DataEntrada.value = todayFormatted;
 
-            const thirtyDaysFromNow = new Date();
+            let thirtyDaysFromNow = new Date();
             thirtyDaysFromNow.setDate(today.getDate() + 30);
+            thirtyDaysFromNow = getNextWorkingDay(thirtyDaysFromNow);
             const thirtyDaysFromNowFormatted = `${String(thirtyDaysFromNow.getDate()).padStart(2, '0')}/${String(thirtyDaysFromNow.getMonth() + 1).padStart(2, '0')}/${thirtyDaysFromNow.getFullYear()}`;
+            dom.dataPrimeiraParcela.value = thirtyDaysFromNowFormatted;
             dom.cpc916DataPrimeiraParcela.value = thirtyDaysFromNowFormatted;
 
             $("#cpc916-data-primeira-parcela").datepicker({
