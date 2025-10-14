@@ -507,7 +507,22 @@
                 previewModal: document.getElementById('preview-modal'),
                 closePreviewBtn: document.getElementById('close-preview-btn'),
                 previewContent: document.getElementById('preview-content'),
+
+
             };
+            // Lê os parâmetros da URL
+            const urlParams = new URLSearchParams(window.location.search);
+            const operacaoParam = urlParams.get('operacao');
+
+            // Se o parâmetro 'operacao' existir na URL...
+            if (operacaoParam) {
+                // ...verifica se existe uma opção com esse valor no seletor
+                const optionExists = dom.calculationType.querySelector(`option[value="${operacaoParam}"]`);
+                if (optionExists) {
+                    // ...e define o valor do seletor para corresponder ao parâmetro
+                    dom.calculationType.value = operacaoParam;
+                }
+            }
 
             let ipcaData = {};
             let ipca15Data = {};
