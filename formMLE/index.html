@@ -2,1037 +2,511 @@
 <html lang="pt-BR">
 
 <head>
-    <script src="https://cdn.jsdelivr.net/npm/extenso@1.0.0/dist/extenso.min.js"></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Formulário MLE - Mandado de Levantamento Eletrônico</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <script src="https://unpkg.com/imask"></script>
+    <!-- Novas bibliotecas para geração de PDF com texto selecionável -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.23/jspdf.plugin.autotable.min.js"></script>
+
     <style>
         body {
-            font-family: 'Arial', sans-serif;
-            background-color: #f4f4f4;
-            color: #000;
+            font-family: 'Inter', sans-serif;
         }
 
-        .container {
-            width: auto;
-            max-width: 186mm;
-            margin: 0 auto;
-            background: #fff;
-            border-radius: 8px;
-            box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
-            padding: 15mm;
-        }
-
-        .header {
-            text-align: center;
-            font-weight: bold;
-            font-size: 1.1em;
-            margin-bottom: 10px;
-            /*border-bottom: 2px solid #333;*/
-            padding-bottom: 10px;
-        }
-
-        .header span {
-            font-weight: normal;
-        }
-
-        .section {
-            margin-bottom: 20px;
-        }
-
-        .inline-section {
-            display: flex;
-            align-items: center;
-            margin-bottom: 5px;
-        }
-
-        .inline-section.smaller-margin {
-            margin-bottom: 10px;
-        }
-
-        .inline-section.print-smaller-margin {
-            margin-bottom: 1px;
-        }
-
-        .inline-section label {
-            width: 289px;
-            /* Ajuste conforme necessário */
-            font-weight: bold;
-            margin-right: 10px;
-        }
-
-        label.label-banco {
-            width: auto;
-            margin-right: 23px;
-        }
-
-        label.nConta-label {
-            width: 71px;
-        }
-
-        .inline-section .banco {
-            flex: 1;
-            /*max-width: calc(55% - 160px);
-            /* Ajuste conforme necessário */
-        }
-
-        .inline-section .codigo-banco {
-            flex: 1;
-            max-width: 220px;
-            /* Ajuste conforme necessário */
-        }
-
-        .inline-section input[type="text"],
-        .inline-section input[type="number"],
-        select#banco_select {
-            flex: 1;
-            padding: 8px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            font-size: 1em;
-        }
-
-        input[type="radio"] {
-            margin-right: 5px;
-        }
-
-        .form-group {
-            margin-bottom: 15px;
-        }
-
-        input[type="text"],
-        input[type="number"],
-        select#banco_select {
-            width: 50%;
-            padding: 10px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            box-sizing: border-box;
-        }
-
-        label {
-            font-weight: bold;
-        }
-
-        label.codbanco-lab {
-            margin-left: 10px;
-            width: 150px;
-        }
-
-        .radio-group {
-            margin-bottom: 20px;
-            margin-top: 8px;
-        }
-
-        .radio-group label {
-            font-weight: normal;
-            font-size: 16px;
-            padding: 10px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            background-color: #fff;
-            display: flex;
-            align-items: center;
-            cursor: pointer;
-            margin-bottom: 5px;
-            width: 100%;
-            box-sizing: border-box;
-        }
-
-        .radio-group input[type="radio"] {
-            margin-right: 10px;
-            margin-bottom: 8px;
-        }
-
-        .radio-group input[type="radio"]:checked+label {
-            border-color: #007bff;
-            background-color: #e7f3ff;
-        }
-
-        .radio-group.credito {
-            margin: 0px;
-        }
-
-        .observacoes input {
-            width: calc(100% - 20px);
-            padding: 10px;
-        }
-
-        .no-border-on-pdf input[type="text"],
-        .no-border-on-pdf input[type="number"],
-        .no-border-on-pdf select#banco_select {
-            border: none;
-            /*border-bottom: 1px solid #000;*/
-            background: none;
-            box-shadow: none;
-            padding: 5px;
-        }
-
-        .no-border-on-pdf {
-            border: 2px solid #000;
-            padding: 1mm 1mm 1mm 1mm;
-            margin: 0;
-            width: 189mm;
-        }
-
-        .hidden {
-            display: none;
-        }
-
-        .copy-button {
-            margin-left: 10px;
-            padding: 5px 10px;
-            background-color: #007bff;
-            color: #fff;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-        }
-
-        .copy-button:hover {
-            background-color: #0056b3;
-        }
-
-        @media print {
-            .copy-button {
-                display: none;
-            }
-
-
-            .container {
-                box-shadow: none;
-                border: none;
-                width: 100%;
-                margin: 0;
-                padding: 0;
-            }
-
-            .header {
-                font-size: 1.1em;
-                border-bottom: 1px solid #000;
-                margin-bottom: 15px;
-            }
-
-            .inline-section,
-            .section,
-            .radio-group {
-                page-break-inside: avoid;
-            }
-
-            .no-border-on-pdf input[type="text"],
-            .no-border-on-pdf input[type="number"] {
-                border: none;
-                border-bottom: 1px solid #000;
-                background: none;
-                box-shadow: none;
-                padding: 5px;
-            }
-
-            .copy-button {
-                display: none;
-            }
-
-            .declaration {
-                display: block;
-            }
-        }
-
-        .print-button {
-            display: block;
-            width: 150px;
-            margin: 20px auto;
-            padding: 10px;
-            background-color: #007bff;
-            color: #fff;
-            text-align: center;
-            text-decoration: none;
-            border-radius: 4px;
-            cursor: pointer;
-        }
-
-        .print-button:hover {
-            background-color: #0056b3;
-        }
-
-        .declaration {
-            display: none;
-            text-align: justify;
-            margin-top: 20px;
-        }
-
-        .declaration .signature-line {
-            margin-top: 20px;
-            border-top: 1px solid #000;
-            width: 450px;
-            margin-left: auto;
-            margin-right: auto;
-        }
-
-        select.banco {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            background-color: #fff;
-            font-size: 16px;
-            color: #333;
-            appearance: none;
-            -webkit-appearance: none;
-            -moz-appearance: none;
-        }
-
-        select.banco:focus {
-            border-color: #007bff;
-            outline: none;
-        }
-
-        /* Adicionando um ícone de seta para o dropdown */
-        select.banco {
-            background-image: url('data:image/svg+xml;utf8,<svg fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M19 9l-7 7-7-7"></path></svg>');
-            background-repeat: no-repeat;
-            background-position: right 10px center;
-            background-size: 16px 16px;
-        }
-
-        .inline-fields {
-            display: flex;
-            align-items: center;
-        }
-
-        .inline-fields .inline-section {
-            margin-right: 20px;
-        }
-
-        .radio-group-terceiro {
-            display: flex;
-            flex-direction: column;
-            margin-bottom: 20px;
-            margin-top: 10px;
-        }
-
-        .radio-group-terceiro .inline-input {
-            display: flex;
-            align-items: center;
-            height: 10px;
-            margin-top: 10px;
-        }
-
-        .radio-group-terceiro .inline-input #terceiro_nome {
-            margin-left: 10px;
-            padding: 10px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            display: hidden;
-        }
-
-        .radio-group-terceiro .inline-input input[type="radio"]:checked+label+#terceiro_nome {
-            display: inline-block;
-            width: 80%;
-            font-size: 1em;
-        }
-
-        #valor_extenso {
-            font-style: italic;
-            color: #555;
-            max-width: 250px;
-            font-size: 13px;
-        }
-
-        input#valor_deposito {
-            width: 125px;
-            flex: 0;
+        #generate-pdf-btn:disabled {
+            cursor: not-allowed;
+            opacity: 0.7;
         }
     </style>
-    <script src="https://unpkg.com/imask"></script>
-    <script src="https://cdn.jsdelivr.net/npm/cleave.js@1.6.0/dist/cleave.min.js"></script>
 </head>
 
-<body>
-    <div class="container">
-        <div class="header">
-            FORMULÁRIO MLE – MANDADO DE LEVANTAMENTO ELETRÔNICO<br>
-            <span>(1 Formulário para cada beneficiário)</span>
-        </div>
-        <div class="inline-section smaller-margin" id="processo-section">
-            <label>Número do processo (padrão CNJ):</label>
-            <input type="text" name="numero_processo" id="numero_processo">
-        </div>
-        <div class="inline-section smaller-margin" id="credor-section">
-            <label>Nome do Credor (Beneficiário):</label>
-            <input type="text" name="nome_credor" id="nome_credor">
-        </div>
-        <div class="inline-section smaller-margin" id="cpf-section">
-            <label>CPF/CNPJ do Credor (Beneficiário):</label>
-            <!DOCTYPE html>
-            <input type="text" name="cpf_cnpj_credor" id="cpf_cnpj_credor" maxlength="18">
-        </div>
-        <p style="height: 2px;"></p>
+<body class="bg-gray-100 flex items-center justify-center min-h-screen p-4">
 
-        <div class="section">
-            <label>Forma de recebimento:</label><br>
-            <div class="radio-group">
-                <input type="radio" name="forma_recebimento" value="comparecer_banco" class="radio-option"> Comparecer
-                ao banco [valores até
-                R$ 5.000,00 – isento de tarifa]<br>
-                <input type="radio" name="forma_recebimento" value="credito_bb" class="radio-option"> Crédito em conta
-                do Banco do Brasil*
-                [Qualquer valor. Isento de tarifa]<br>
-                <input type="radio" name="forma_recebimento" value="credito_outros" class="radio-option"> Crédito em
-                conta para outros
-                bancos* [Qualquer valor. Isento de tarifa]<br>
-                <input type="radio" name="forma_recebimento" value="pix" class="radio-option"> IV – Pix [valores até R$
-                50.000,00 – isento de
-                tarifa]
-            </div>
+    <!-- Tela de Carregamento (Overlay) -->
+    <div id="pdf-loader-overlay"
+        class="hidden fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center z-50">
+        <div class="bg-white p-8 rounded-lg shadow-xl text-center">
+            <p class="font-bold text-lg">Gerando PDF...</p>
+            <p class="text-gray-600 mt-2">Por favor, aguarde.</p>
         </div>
-        <div id="form-fields" class="hidden">
-            <div id="hidden-fields">
-                <div class="section">
-                    <label>Titular da conta de destino:</label><br>
-                    <div class="radio-group-terceiro">
-                        <div>
-                            <input type="radio" name="titular_conta" value="parte" class="radio-option" id="parte">
-                            <label for="parte">Parte</label>
-                        </div>
-                        <div class="inline-input">
-                            <input type="radio" name="titular_conta" value="terceiro" class="radio-option"
-                                id="titular_terceiro">
-                            <label for="titular_terceiro">Terceiro</label>
-                            <input type="text" id="terceiro_nome" class="hidden" placeholder="Nome do terceiro">
-                        </div>
-                    </div>
-                </div>
-                <div class="inline-section">
-                    <label class="label-banco">Banco:</label>
-                    <select name="banco" class="banco" id="banco_select">
-                        <option value="" disabled selected>Selecione um banco</option>
-                        <option value="Banco do Brasil" data-codigo="001">Banco do Brasil</option>
-                        <option value="Caixa Econômica Federal" data-codigo="104">Caixa Econômica Federal</option>
-                        <option value="Itaú Unibanco" data-codigo="341">Itaú Unibanco</option>
-                        <option value="Banco Bradesco" data-codigo="237">Banco Bradesco</option>
-                        <option value="Banco Santander" data-codigo="033">Banco Santander</option>
-                        <option value="Banco Safra" data-codigo="422">Banco Safra</option>
-                        <option value="Banco BTG Pactual" data-codigo="208">Banco BTG Pactual</option>
-                        <option value="Banco Votorantim" data-codigo="655">Banco Votorantim</option>
-                        <option value="Banco Inter" data-codigo="077">Banco Inter</option>
-                        <option value="Banco Original" data-codigo="212">Banco Original</option>
-                        <option value="Banco C6" data-codigo="336">Banco C6</option>
-                        <option value="Banco Modal" data-codigo="746">Banco Modal</option>
-                        <option value="Banco Neon" data-codigo="735">Banco Neon</option>
-                        <option value="NuBank (Nu Pagamentos - IP)" data-codigo="260">Nu Pagamentos (NuBank)
-                        </option>
-                        <option value="Banco Pan" data-codigo="623">Banco Pan</option>
-                        <option value="Banco Daycoval" data-codigo="707">Banco Daycoval</option>
-                        <option value="Banco Mercantil do Brasil" data-codigo="389">Banco Mercantil do Brasil</option>
-                        <option value="Banco Banrisul" data-codigo="041">Banco Banrisul</option>
-                        <option value="Banco Sicoob" data-codigo="756">Banco Sicoob</option>
-                        <option value="Mercado Pago" data-codigo="323">Mercado Pago</option>
-                        <option value="Banco Cooperativo Sicredi" data-codigo="748">Banco Cooperativo Sicredi</option>
-                        <option value="Banco XP" data-codigo="102">Xp Investimentos</option>
-                        <option value="Outro">Outro</option>
-                    </select>
-                    <input type="text" name="banco_outro" id="banco_outro" class="hidden" placeholder="Digite o Banco">
-
-                    <label class="codbanco-lab">Código do Banco:</label>
-                    <input type="text" name="codigo_banco" id="codigo_banco" maxlength="4" class="codigo-banco"
-                        readonly>
-
-                </div>
-                <div class="inline-section">
-                    <label style="width: auto;">Agência:</label>
-                    <input type="text" name="agencia" maxlength="4">
-                </div>
-                <div class="inline-fields">
-                    <div class="inline-section">
-                        <label class="nConta-label" style="margin-right: 7px;">Conta nº:</label>
-                        <input type="text" name="conta_numero" id="conta_numero" maxlength="11" style="width: 132px;">
-                    </div>
-                    <div class="inline-section">
-                        <label style="width: auto;">Tipo de Crédito:</label><br>
-                        <div class="radio-group credito">
-                            <input type="radio" name="tipo_credito" value="conta_corrente" class="radio-option"> Conta
-                            Corrente
-                            <input type="radio" name="tipo_credito" value="poupanca" class="radio-option"> Conta
-                            Poupança
-                        </div>
-                    </div>
-                </div>
-                <div class="inline-section">
-                    <label>CPF/CNPJ do titular da conta destino:</label>
-                    <input type="text" name="cpf_cnpj_titular" id="cpf_cnpj_titular" maxlength="18">
-                    <button type="button" class="copy-button" onclick="copyCpfCnpj()">Copiar</button>
-                </div>
-                <div class="inline-section">
-                    <label>Nome do titular da conta destino:</label>
-                    <input type="text" name="nome_titular" id="nome_titular">
-                    <button type="button" class="copy-button" onclick="copyNome()">Copiar</button>
-                </div>
-            </div>
-            <div id="pix-fields" class="hidden">
-                <div class="inline-section">
-                    <label>*Para a opção “IV –Pix”, será necessário informar a chave Pix (CPF ou CNPJ):</label>
-                    <input type="text" name="chave_pix" id="chave_pix" maxlength="18">
-                    <button type="button" class="copy-button" onclick="copyCpfCnpjPix()">Copiar</button>
-                </div>
-                <div class="inline-section">
-                    <label>Nome do titular da conta destino:</label>
-                    <input type="text" name="nome_titular_pix" id="nome_titular_pix">
-                    <button type="button" class="copy-button" onclick="copyNomePix()">Copiar</button>
-                </div>
-            </div>
-        </div>
-        <div class="section">
-            <label>Tipo de Resgate:</label><br>
-            <div class="radio-group">
-                <input type="radio" name="tipo_resgate" value="parcial" class="radio-option"> Parcial
-                <input type="radio" name="tipo_resgate" value="total" class="radio-option"> Total
-            </div>
-        </div>
-        <div class="inline-section">
-            <label>Nº da página do processo em que consta o comprovante do depósito:</label>
-            <input type="number" name="pagina_processo">
-        </div>
-        <div class="inline-section">
-            <label>Valor nominal do depósito:</label>
-            <input type="text" name="valor_deposito" id="valor_deposito">
-            <span id="valor_extenso" style="margin-left: 10px;"></span>
-        </div>
-        <div class="section observacoes">
-            <label>Observações:</label><br>
-            <input type="text" name="observacoes">
-        </div>
-        <div class="declaration">
-            <p>Declaro ser de minha responsabilidade os dados deste formulário, os quais eu conferi e revisei.</p>
-            <p style="height: 45px;"></p>
-            <div class="signature-line"></div>
-            <p style="text-align: center;" id="nome_credor_declaration"></p>
-
-
-        </div>
-        <button class="print-button" onclick="generatePDF()">Gerar PDF</button>
     </div>
-    <script src="https://cdn.jsdelivr.net/npm/extenso@1.0.0/dist/extenso.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.2/html2pdf.bundle.min.js"></script>
+
+    <div id="mle-form-container" class="w-full max-w-4xl mx-auto bg-white rounded-2xl shadow-lg p-6 md:p-8">
+
+        <header class="text-center mb-6">
+            <h1 class="text-xl md:text-2xl font-bold text-gray-800">Gerador de Formulário MLE</h1>
+            <p class="text-gray-500 mt-1 text-sm">(Mandado de Levantamento Eletrônico)</p>
+        </header>
+
+        <main class="text-sm space-y-6">
+            <!-- Dados Iniciais -->
+            <div class="space-y-4 p-4 border border-gray-200 rounded-lg">
+                <h3 class="font-bold text-base text-gray-700">Dados Iniciais</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label for="numero_processo" class="font-bold">Nº do Processo:</label>
+                        <input type="text" id="numero_processo"
+                            class="w-full p-2 mt-1 border border-gray-300 rounded-md">
+                    </div>
+                    <div>
+                        <label for="nome_credor" class="font-bold">Nome do Credor (Beneficiário):</label>
+                        <input type="text" id="nome_credor" class="w-full p-2 mt-1 border border-gray-300 rounded-md">
+                    </div>
+                </div>
+                <div>
+                    <label for="cpf_cnpj_credor" class="font-bold">CPF/CNPJ do Credor:</label>
+                    <input type="text" id="cpf_cnpj_credor" class="w-full p-2 mt-1 border border-gray-300 rounded-md">
+                </div>
+            </div>
+
+            <!-- Forma de Recebimento -->
+            <div class="space-y-3 p-4 border border-gray-200 rounded-lg">
+                <h3 class="font-bold text-base text-gray-700">Forma de Recebimento</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <label
+                        class="flex items-center p-3 border rounded-md has-[:checked]:bg-indigo-50 has-[:checked]:border-indigo-400"><input
+                            type="radio" id="forma_recebimento_banco" name="forma_recebimento" value="comparecer_banco"
+                            class="h-4 w-4 text-indigo-600"><span class="ml-2">I - Comparecer ao banco</span></label>
+                    <label
+                        class="flex items-center p-3 border rounded-md has-[:checked]:bg-indigo-50 has-[:checked]:border-indigo-400"><input
+                            type="radio" id="forma_recebimento_bb" name="forma_recebimento" value="credito_bb"
+                            class="h-4 w-4 text-indigo-600"><span class="ml-2">II - Crédito em conta BB</span></label>
+                    <label
+                        class="flex items-center p-3 border rounded-md has-[:checked]:bg-indigo-50 has-[:checked]:border-indigo-400"><input
+                            type="radio" id="forma_recebimento_outros" name="forma_recebimento" value="credito_outros"
+                            class="h-4 w-4 text-indigo-600"><span class="ml-2">III - Crédito em outros
+                            bancos</span></label>
+                    <label
+                        class="flex items-center p-3 border rounded-md has-[:checked]:bg-indigo-50 has-[:checked]:border-indigo-400"><input
+                            type="radio" id="forma_recebimento_pix" name="forma_recebimento" value="pix"
+                            class="h-4 w-4 text-indigo-600"><span class="ml-2">IV - PIX (Chave CPF/CNPJ)</span></label>
+                </div>
+            </div>
+
+            <!-- Dados Condicionais -->
+            <div id="conditional-fields" class="hidden space-y-4 p-4 border border-gray-200 rounded-lg">
+                <h3 class="font-bold text-base text-gray-700">Dados Adicionais</h3>
+
+                <div id="titular-container" class="space-y-3">
+                    <label class="font-bold">Titular da conta de destino:</label>
+                    <div class="space-y-2">
+                        <label class="flex items-center"><input type="radio" id="titular_parte" name="titular_conta"
+                                value="parte" class="h-4 w-4 text-indigo-600"><span class="ml-2">Parte</span></label>
+                        <label class="flex items-center"><input type="radio" id="titular_advogado" name="titular_conta"
+                                value="advogado" class="h-4 w-4 text-indigo-600"><span
+                                class="ml-2">Advogado</span></label>
+                        <div id="advogado-fields" class="hidden grid grid-cols-1 md:grid-cols-3 gap-2 pl-6">
+                            <input type="text" id="adv_oab" placeholder="OAB/UF" class="p-2 border rounded-md">
+                            <input type="text" id="adv_nome" placeholder="Nome do Advogado"
+                                class="p-2 border rounded-md">
+                            <input type="text" id="adv_procuracao" placeholder="Procuração fls."
+                                class="p-2 border rounded-md">
+                        </div>
+                        <label class="flex items-center"><input type="radio" id="titular_terceiro" name="titular_conta"
+                                value="terceiro" class="h-4 w-4 text-indigo-600"><span
+                                class="ml-2">Terceiro</span></label>
+                        <input type="text" id="terceiro_nome" class="hidden w-full md:w-2/3 p-2 border rounded-md ml-6"
+                            placeholder="Nome completo do terceiro">
+                    </div>
+                </div>
+
+                <div id="credito-fields" class="hidden space-y-4 pt-4 border-t">
+                    <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
+                        <div class="md:col-span-3">
+                            <label for="banco_select" class="font-bold">Banco:</label>
+                            <select id="banco_select" class="w-full p-2 mt-1 border rounded-md bg-white">
+                                <option value="" disabled selected>Selecione</option>
+                                <option value="Banco do Brasil" data-codigo="001">Banco do Brasil</option>
+                                <option value="Caixa Econômica Federal" data-codigo="104">Caixa Econômica Federal
+                                </option>
+                                <option value="Itaú Unibanco" data-codigo="341">Itaú Unibanco</option>
+                                <option value="Banco Bradesco" data-codigo="237">Banco Bradesco</option>
+                                <option value="Banco Santander" data-codigo="033">Banco Santander</option>
+                                <option value="Outro">Outro</option>
+                            </select>
+                            <input type="text" id="banco_outro" class="hidden w-full p-2 mt-1 border rounded-md"
+                                placeholder="Nome do banco">
+                        </div>
+                        <div class="md:col-span-2">
+                            <label for="codigo_banco" class="font-bold">Código do Banco:</label>
+                            <input type="text" id="codigo_banco" class="w-full p-2 mt-1 border bg-gray-100 rounded-md"
+                                readonly>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div><label for="agencia" class="font-bold">Agência:</label><input type="text" id="agencia"
+                                class="w-full p-2 mt-1 border rounded-md"></div>
+                        <div><label for="conta_numero" class="font-bold">Conta nº:</label><input type="text"
+                                id="conta_numero" class="w-full p-2 mt-1 border rounded-md"></div>
+                    </div>
+                    <div>
+                        <span class="font-bold">Tipo de Crédito:</span>
+                        <div class="flex gap-4 mt-1">
+                            <label class="flex items-center"><input type="radio" id="credito_cc" name="tipo_credito"
+                                    value="corrente" class="h-4 w-4 text-indigo-600"><span class="ml-2">Conta
+                                    Corrente</span></label>
+                            <label class="flex items-center"><input type="radio" id="credito_cp" name="tipo_credito"
+                                    value="poupanca" class="h-4 w-4 text-indigo-600"><span class="ml-2">Conta
+                                    Poupança</span></label>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="pix-container" class="hidden pt-4 border-t">
+                    <div>
+                        <label for="chave_pix" class="font-bold">Chave PIX (CPF/CNPJ):</label>
+                        <div class="relative"><input type="text" id="chave_pix"
+                                class="w-full p-2 mt-1 border rounded-md"><button
+                                onclick="copyValue('cpf_cnpj_credor', 'chave_pix')"
+                                class="absolute right-2 top-3 text-xs font-semibold text-indigo-600">Copiar</button>
+                        </div>
+                    </div>
+                </div>
+                <div id="final-titular-fields" class="hidden space-y-4 pt-4 border-t">
+                    <div>
+                        <label for="cpf_cnpj_titular" class="font-bold">CPF/CNPJ do Titular da Conta:</label>
+                        <div class="relative"><input type="text" id="cpf_cnpj_titular"
+                                class="w-full p-2 mt-1 border rounded-md"><button
+                                onclick="copyValue('cpf_cnpj_credor', 'cpf_cnpj_titular')"
+                                class="absolute right-2 top-3 text-xs font-semibold text-indigo-600">Copiar</button>
+                        </div>
+                    </div>
+                    <div>
+                        <label for="nome_titular" class="font-bold">Nome do Titular da Conta:</label>
+                        <div class="relative"><input type="text" id="nome_titular"
+                                class="w-full p-2 mt-1 border rounded-md"><button
+                                onclick="copyValue('nome_credor', 'nome_titular')"
+                                class="absolute right-2 top-3 text-xs font-semibold text-indigo-600">Copiar</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="space-y-4 p-4 border border-gray-200 rounded-lg">
+                <h3 class="font-bold text-base text-gray-700">Dados do Depósito</h3>
+                <div>
+                    <span class="font-bold">Tipo de Resgate:</span>
+                    <div class="flex gap-4 mt-1">
+                        <label class="flex items-center"><input type="radio" id="resgate_parcial" name="tipo_resgate"
+                                value="parcial" class="h-4 w-4 text-indigo-600"><span
+                                class="ml-2">Parcial</span></label>
+                        <label class="flex items-center"><input type="radio" id="resgate_total" name="tipo_resgate"
+                                value="total" class="h-4 w-4 text-indigo-600"><span class="ml-2">Total</span></label>
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label for="valor_deposito" class="font-bold">Valor Nominal:</label>
+                        <input type="text" id="valor_deposito" class="w-full p-2 mt-1 border rounded-md">
+                        <p id="valor_extenso" class="text-xs text-gray-500 mt-1 h-4"></p>
+                    </div>
+                    <div>
+                        <label for="pagina_processo" class="font-bold">Nº da pág. do comprovante:</label>
+                        <input type="number" id="pagina_processo" class="w-full p-2 mt-1 border rounded-md">
+                    </div>
+                </div>
+                <div>
+                    <label for="observacoes" class="font-bold">Observações:</label>
+                    <input type="text" id="observacoes" class="w-full p-2 mt-1 border rounded-md">
+                </div>
+            </div>
+
+            <div class="flex flex-col md:flex-row gap-4 justify-end pt-6 border-t mt-6">
+                <button id="reset-btn"
+                    class="bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold py-2 px-5 rounded-lg">Limpar</button>
+                <button id="generate-pdf-btn"
+                    class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-5 rounded-lg">Gerar
+                    PDF</button>
+            </div>
+        </main>
+    </div>
+
     <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const { jsPDF } = window.jspdf;
 
-        document.addEventListener('DOMContentLoaded', function () {
-            function applyCpfCnpjMask(input) {
-                input.addEventListener('input', function () {
-                    let value = input.value.replace(/\D/g, ''); // Remove todos os caracteres não numéricos
-                    if (value.length > 14) {
-                        value = value.slice(0, 14); // Limita a entrada a 14 caracteres
-                    }
-                    if (value.length <= 11) {
-                        // CPF
-                        value = value.replace(/(\d{3})(\d)/, '$1.$2');
-                        value = value.replace(/(\d{3})(\d)/, '$1.$2');
-                        value = value.replace(/(\d{3})(\d{1,2})$/, '$1-$2');
-                    } else {
-                        // CNPJ
-                        value = value.replace(/^(\d{2})(\d)/, '$1.$2');
-                        value = value.replace(/^(\d{2})\.(\d{3})(\d)/, '$1.$2.$3');
-                        value = value.replace(/\.(\d{3})(\d)/, '.$1/$2');
-                        value = value.replace(/(\d{4})(\d{1,2})$/, '$1-$2');
-                    }
-                    input.value = value;
-                });
-            }
-
-            const cpfCnpjCredor = document.getElementById('cpf_cnpj_credor');
-            const cpfCnpjTitular = document.getElementById('cpf_cnpj_titular');
-            const chavePix = document.getElementById('chave_pix');
-
-            applyCpfCnpjMask(cpfCnpjCredor);
-            applyCpfCnpjMask(cpfCnpjTitular);
-            applyCpfCnpjMask(chavePix);
-        });
-        //
-        document.addEventListener('DOMContentLoaded', function () {
-            const contaNumero = document.getElementById('conta_numero');
-
-            contaNumero.addEventListener('input', function () {
-                let value = contaNumero.value.replace(/[^0-9xX]/g, ''); // Remove todos os caracteres não numéricos e não "x" ou "X"
-                if (value.includes('x') || value.includes('X')) {
-                    value = value.replace(/x/g, 'X'); // Converte "x" minúsculo para "X" maiúsculo
-                    value = value.replace(/X(?!$)/g, ''); // Remove "X" que não está no final
-                }
-                value = value.padStart(9, ' '); // Preenche com underscores até ter 9 caracteres
-                value = value.slice(0, 8) + '-' + value.slice(8); // Adiciona o hífen antes do último dígito
-                contaNumero.value = value;
-            });
-
-            contaNumero.addEventListener('keydown', function (e) {
-                if (e.key.toLowerCase() === 'x' && contaNumero.value.includes('X')) {
-                    e.preventDefault(); // Impede a digitação de "X" se já houver um "X" no campo
-                }
-            });
-        });
-
-        document.addEventListener('DOMContentLoaded', function () {
-            const valorDeposito = document.getElementById('valor_deposito');
-            const valorExtenso = document.getElementById('valor_extenso');
-
-            // Aplicar máscara de dinheiro com prefixo "R$"
-            const maskOptions = {
-                mask: 'R$ num',
-                blocks: {
-                    num: {
-                        mask: Number,
-                        scale: 2,
-                        thousandsSeparator: '.',
-                        radix: ',',
-                        mapToRadix: ['.'],
-                        padFractionalZeros: true,
-                        normalizeZeros: true,
-                        min: 0,
-                        max: 9999999999.99
-                    }
-                }
+            const dom = {
+                formContainer: document.getElementById('mle-form-container'),
+                loaderOverlay: document.getElementById('pdf-loader-overlay'),
+                recebimentoOptions: document.querySelectorAll('input[name="forma_recebimento"]'),
+                conditionalFields: document.getElementById('conditional-fields'),
+                advogadoFields: document.getElementById('advogado-fields'),
+                creditoFields: document.getElementById('credito-fields'),
+                pixContainer: document.getElementById('pix-container'),
+                finalTitularFields: document.getElementById('final-titular-fields'),
+                bancoSelect: document.getElementById('banco_select'),
+                bancoOutro: document.getElementById('banco_outro'),
+                codigoBanco: document.getElementById('codigo_banco'),
+                titularContaOptions: document.querySelectorAll('input[name="titular_conta"]'),
+                terceiroNome: document.getElementById('terceiro_nome'),
+                valorDeposito: document.getElementById('valor_deposito'),
+                valorExtenso: document.getElementById('valor_extenso'),
+                generatePdfBtn: document.getElementById('generate-pdf-btn'),
+                resetBtn: document.getElementById('reset-btn'),
+                nomeCredor: document.getElementById('nome_credor'),
             };
-            const mask = IMask(valorDeposito, maskOptions);
 
-
-
-
-            // Converter valor para extenso
             function numeroParaExtenso(numero) {
-                const unidades = ['zero', 'um', 'dois', 'três', 'quatro', 'cinco', 'seis', 'sete', 'oito', 'nove'];
-                const dezenas = ['', 'dez', 'vinte', 'trinta', 'quarenta', 'cinquenta', 'sessenta', 'setenta', 'oitenta', 'noventa'];
-                const especiais = ['dez', 'onze', 'doze', 'treze', 'quatorze', 'quinze', 'dezesseis', 'dezessete', 'dezoito', 'dezenove'];
-                const centenas = ['', 'cento', 'duzentos', 'trezentos', 'quatrocentos', 'quinhentos', 'seiscentos', 'setecentos', 'oitocentos', 'novecentos'];
-                const milhares = ['mil', 'milhão', 'bilhão', 'trilhão'];
-
-                if (numero === 0) return 'zero reais';
-
-                let extenso = '';
-                let parteInteira = Math.floor(numero);
-                let parteDecimal = Math.round((numero - parteInteira) * 100);
-
-
-                function converteParteInteira(numero) {
-                    let resultado = '';
-                    if (numero === 100) {
-                        return 'cem';
-                    } else {
-                        let milhar = Math.floor(numero / 1000);
-                        let centena = Math.floor(numero / 100);
-                        let dezena = Math.floor((numero % 100) / 10);
-                        let unidade = numero % 10;
-
-
-
-                        console.log()
-                        if (centena > 0 && dezena > 0 && unidade > 0) resultado += centenas[centena] + ' e ';
-                        else if (centena > 0 && dezena > 0 && unidade == 0) { resultado += centenas[centena] + ' e  '; }
-                        else if (centena > 0 && unidade > 0) { resultado += centenas[centena] + ' e  ' + dezenas[dezena]; }
-                        else if (centena > 0 && unidade == 0) { resultado += centenas[centena] + ' '; }
-                        //if (centena > 0 && dezena == 0) resultado += centenas[centena] += ' e ';
-                        if (dezena === 1) {
-                            resultado += especiais[unidade];
-                        } else {
-                            if (dezena > 1 && unidade > 0) resultado += dezenas[dezena] + ' e ';
-                            if (dezena > 1 && unidade == 0) resultado += dezenas[dezena];
-                            if (unidade > 0) resultado += unidades[unidade];
-                            if (unidade === 0) resultado = resultado.trim();
-                        }
+                const unidades = ["", "um", "dois", "três", "quatro", "cinco", "seis", "sete", "oito", "nove"];
+                const especiais = ["dez", "onze", "doze", "treze", "catorze", "quinze", "dezesseis", "dezessete", "dezoito", "dezenove"];
+                const dezenas = ["", "", "vinte", "trinta", "quarenta", "cinquenta", "sessenta", "setenta", "oitenta", "noventa"];
+                const centenas = ["", "cento", "duzentos", "trezentos", "quatrocentos", "quinhentos", "seiscentos", "setecentos", "oitocentos", "novecentos"];
+                if (numero === 0) return "zero";
+                function getExtenso(n) {
+                    if (n < 10) return unidades[n];
+                    if (n < 20) return especiais[n - 10];
+                    if (n < 100) return dezenas[Math.floor(n / 10)] + (n % 10 > 0 ? " e " + unidades[n % 10] : "");
+                    if (n < 1000) {
+                        if (n === 100) return "cem";
+                        return centenas[Math.floor(n / 100)] + (n % 100 > 0 ? " e " + getExtenso(n % 100) : "");
                     }
-                    return resultado.trim();
+                    return "";
                 }
-
-                let partes = [];
-                let divisor = 1000;
-                while (parteInteira > 0) {
-                    partes.push(parteInteira % divisor);
-                    parteInteira = Math.floor(parteInteira / divisor);
-                }
-
-                for (let i = partes.length - 1; i >= 0; i--) {
-                    let centena = Math.floor(numero / 100);
-                    let dezena = Math.floor((numero % 100) / 10);
-                    let unidade = numero % 10;
-                    if (partes[i] > 0) {
-                        if (i > 0) {
-                            console.log(centena)
-                            extenso += converteParteInteira(partes[i]) + ' ' + milhares[i - 1];
-                            if (i > 1 && partes[i - 1] > 0) {
-                                extenso += ', ';
-                            } else {
-                                extenso += '  ';
-                            }
-                        } else {
-                            if (partes.length > 1 && partes[i] < 100) {
-                                extenso += ' e ';
-                            }
-                            extenso += converteParteInteira(partes[i]);
-                        }
+                const parteInteira = Math.floor(numero);
+                const parteDecimal = Math.round((numero - parteInteira) * 100);
+                let extenso = "";
+                if (parteInteira > 0) {
+                    const milhoes = Math.floor(parteInteira / 1000000); let restoMilhoes = parteInteira % 1000000;
+                    if (milhoes > 0) extenso += getExtenso(milhoes) + (milhoes > 1 ? " milhões" : " milhão");
+                    const milhares = Math.floor(restoMilhoes / 1000); let resto = restoMilhoes % 1000;
+                    if (milhares > 0) {
+                        if (extenso !== "") extenso += (resto > 0) ? ", " : " e ";
+                        if (milhares !== 1) extenso += getExtenso(milhares) + " ";
+                        extenso += "mil";
                     }
+                    if (resto > 0) {
+                        if (extenso !== "") extenso += " e ";
+                        extenso += getExtenso(resto);
+                    }
+                    extenso += parteInteira > 1 ? " reais" : " real";
                 }
-
-                // Adicionar "e" entre milhares e centenas
-                //extenso = extenso.replace(/ mil/, ' mil,');
-
-                extenso += ' reais';
-
                 if (parteDecimal > 0) {
-                    if (extenso !== '') extenso += ' e ';
-                    if (parteDecimal === 1) {
-                        extenso += 'um centavo';
-                    } else {
-                        let dezena = Math.floor(parteDecimal / 10);
-                        let unidade = parteDecimal % 10;
-
-                        if (dezena === 1) {
-                            extenso += especiais[unidade];
-                        } else {
-                            if (dezena > 1 && unidade > 0) extenso += dezenas[dezena] + ' e ';
-                            if (dezena > 1 && unidade == 0) extenso += dezenas[dezena] + ' ';
-                            if (unidade > 0) extenso += unidades[unidade];
-                        }
-                        extenso += ' centavos';
-                    }
+                    if (extenso !== "") extenso += " e ";
+                    extenso += getExtenso(parteDecimal) + (parteDecimal > 1 ? " centavos" : " centavo");
                 }
-
-                return extenso.trim();
+                return extenso;
             }
 
-            // Atualizar valor por extenso ao digitar
-            valorDeposito.addEventListener('input', function () {
-                const valor = parseFloat(valorDeposito.value.replace(/[R$.\s]/g, '').replace(',', '.'));
-                if (!isNaN(valor)) {
-                    valorExtenso.textContent = numeroParaExtenso(valor);
+            const applyMask = (element, maskOptions) => IMask(element, maskOptions);
+            applyMask(document.getElementById('numero_processo'), { mask: '0000000-00.0000.0.00.0000' });
+            const cpfCnpjMask = { mask: [{ mask: '000.000.000-00' }, { mask: '00.000.000/0000-00' }] };
+            applyMask(document.getElementById('cpf_cnpj_credor'), cpfCnpjMask);
+            applyMask(document.getElementById('cpf_cnpj_titular'), cpfCnpjMask);
+            applyMask(document.getElementById('chave_pix'), cpfCnpjMask);
+            applyMask(document.getElementById('agencia'), { mask: '00000' });
+            applyMask(document.getElementById('conta_numero'), { mask: /^[0-9xX-]*$/ });
+            const currencyMask = IMask(dom.valorDeposito, { mask: 'R$ num', blocks: { num: { mask: Number, scale: 2, thousandsSeparator: '.', padFractionalZeros: true, radix: ',' } } });
+
+            dom.valorDeposito.addEventListener('input', () => {
+                dom.valorExtenso.textContent = currencyMask.number > 0 ? `(${numeroParaExtenso(currencyMask.number)})` : '';
+            });
+
+            dom.recebimentoOptions.forEach(option => {
+                option.addEventListener('change', () => {
+                    const selectedValue = document.querySelector('input[name="forma_recebimento"]:checked')?.value;
+                    const showConditionals = ['credito_bb', 'credito_outros', 'pix'].includes(selectedValue);
+                    dom.conditionalFields.classList.toggle('hidden', !showConditionals);
+                    dom.creditoFields.classList.toggle('hidden', !['credito_bb', 'credito_outros'].includes(selectedValue));
+                    dom.pixContainer.classList.toggle('hidden', selectedValue !== 'pix');
+                    dom.finalTitularFields.classList.toggle('hidden', !showConditionals);
+                });
+            });
+
+            dom.titularContaOptions.forEach(option => {
+                option.addEventListener('change', (e) => {
+                    dom.advogadoFields.classList.toggle('hidden', e.target.value !== 'advogado');
+                    dom.terceiroNome.classList.toggle('hidden', e.target.value !== 'terceiro');
+                });
+            });
+
+            dom.bancoSelect.addEventListener('change', (e) => {
+                const isOutro = e.target.value === 'Outro';
+                dom.bancoOutro.classList.toggle('hidden', !isOutro);
+                dom.codigoBanco.value = isOutro ? '' : e.target.options[e.target.selectedIndex].dataset.codigo;
+                if (isOutro) {
+                    dom.codigoBanco.readOnly = false;
+                    dom.bancoOutro.focus();
                 } else {
-                    valorExtenso.textContent = '';
+                    dom.codigoBanco.readOnly = true;
                 }
             });
-        });
 
-        ///
-        document.addEventListener('DOMContentLoaded', function () {
-            const bancoSelect = document.getElementById('banco_select');
-            const bancoOutro = document.getElementById('banco_outro');
-            const codigoBanco = document.getElementById('codigo_banco');
-
-            bancoSelect.addEventListener('change', function () {
-                const selectedOption = bancoSelect.options[bancoSelect.selectedIndex];
-                if (selectedOption.value === 'Outro') {
-                    bancoSelect.classList.add('hidden');
-                    bancoOutro.classList.remove('hidden');
-                    codigoBanco.removeAttribute('readonly');
-                    codigoBanco.value = '';
-                } else {
-                    bancoSelect.classList.remove('hidden');
-                    bancoOutro.classList.add('hidden');
-                    codigoBanco.setAttribute('readonly', true);
-                    codigoBanco.value = selectedOption.getAttribute('data-codigo');
-                }
+            dom.resetBtn.addEventListener('click', () => {
+                dom.formContainer.querySelector('main').querySelectorAll('input, select').forEach(el => {
+                    if (el.type === 'radio' || el.type === 'checkbox') el.checked = false;
+                    else el.value = '';
+                });
+                dom.recebimentoOptions.forEach(opt => opt.dispatchEvent(new Event('change')));
+                dom.titularContaOptions.forEach(opt => opt.dispatchEvent(new Event('change')));
+                document.getElementById('valor_extenso').textContent = '';
+                currencyMask.updateValue();
             });
-        });
-        document.addEventListener('DOMContentLoaded', function () {
-            var element = document.getElementById('numero_processo');
-            var maskOptions = {
-                mask: '0000000-00.2X00.8.26.X344',
-                definitions: {
-                    X: {
-                        mask: '0',
-                        displayChar: '0',
-                        placeholderChar: '0',
-                    },
-                },
-                lazy: false,
-                overwrite: 'shift',
+
+            window.copyValue = (sourceId, destinationId) => {
+                const sourceEl = document.getElementById(sourceId);
+                const destEl = document.getElementById(destinationId);
+                if (sourceEl && destEl) {
+                    destEl.value = sourceEl.value;
+                    destEl.dispatchEvent(new Event('input', { bubbles: true }));
+                }
             };
 
-            var mask = IMask(element, maskOptions);
+            dom.generatePdfBtn.addEventListener('click', () => {
+                dom.generatePdfBtn.disabled = true;
+                dom.loaderOverlay.classList.remove('hidden');
 
-            // Adicionar evento change aos botões de rádio
-            const radioOptions = document.querySelectorAll('input[name="forma_recebimento"]');
-            const formFields = document.getElementById('form-fields');
-            const hiddenFields = document.getElementById('hidden-fields');
-            const pixFields = document.getElementById('pix-fields');
-            const terceiroNome = document.getElementById('terceiro_nome');
-            const titularTerceiro = document.getElementById('titular_terceiro');
-            const declaration = document.querySelector('.declaration');
-            const bancoSelect = document.getElementById('banco_select');
-            const bancoOutro = document.getElementById('banco_outro');
-            const codigoBanco = document.getElementById('codigo_banco');
+                setTimeout(() => {
+                    try {
+                        const doc = new jsPDF({
+                            orientation: 'p',
+                            unit: 'mm',
+                            format: 'a4'
+                        });
 
+                        const getValue = (id) => document.getElementById(id).value;
+                        const isChecked = (id) => {
+                            const el = document.getElementById(id);
+                            return el ? el.checked : false;
+                        };
 
-            document.addEventListener('DOMContentLoaded', function () {
-                const titularContaOptions = document.querySelectorAll('input[name="titular_conta"]');
-                const terceiroNome = document.getElementById('terceiro_nome');
+                        const pageWidth = doc.internal.pageSize.getWidth();
+                        const margin = 15;
+                        const contentWidth = pageWidth - (margin * 2);
+                        const centerX = pageWidth / 2;
+                        const valueX = margin + 90; // Ponto de início para a coluna de valores
 
-                titularContaOptions.forEach(option => {
-                    option.addEventListener('change', function () {
-                        if (this.value === 'terceiro') {
-                            terceiroNome.classList.remove('hidden');
-                        } else {
-                            terceiroNome.classList.add('hidden');
+                        doc.setFont('helvetica', 'bold');
+                        doc.setFontSize(12);
+                        doc.text('FORMULÁRIO MLE – MANDADO DE LEVANTAMENTO ELETRÔNICO', centerX, 20, { align: 'center' });
+
+                        doc.setFont('helvetica', 'normal');
+                        doc.setFontSize(10);
+                        doc.text('(1 Formulário para cada beneficiário)', centerX, 25, { align: 'center' });
+
+                        doc.setLineWidth(0.5);
+                        doc.rect(margin - 5, 10, contentWidth + 10, 277);
+
+                        doc.setFontSize(12);
+                        let y = 40;
+
+                        const addField = (label, value) => {
+                            doc.setFont('helvetica', 'bold');
+                            doc.text(label, margin, y);
+                            doc.setFont('helvetica', 'normal');
+                            doc.text(value, valueX, y);
+                            y += 7;
+                        };
+
+                        addField('Número do processo (padrão CNJ):', getValue('numero_processo'));
+                        addField('Nome do Credor (Beneficiário):', getValue('nome_credor'));
+                        addField('CPF/CNPJ do Credor (Beneficiário):', getValue('cpf_cnpj_credor'));
+
+                        y += 5;
+                        doc.setFont('helvetica', 'bold');
+                        doc.text('Forma de recebimento:', margin, y);
+                        y += 7;
+
+                        const addOption = (id, label) => {
+                            const marker = isChecked(id) ? '(X)' : '( )';
+                            doc.setFont('helvetica', 'normal');
+                            doc.text(`${marker} ${label}`, margin, y);
+                            y += 7;
+                        };
+
+                        addOption('forma_recebimento_banco', 'I - Comparecer ao banco [valores até R$ 5.000,00 – isento de tarifa];');
+                        addOption('forma_recebimento_bb', 'II - Crédito em conta do Banco do Brasil* [Qualquer valor. Isento de tarifa];');
+                        addOption('forma_recebimento_outros', 'III – Crédito em conta para outros bancos* [Qualquer valor. Isento de tarifa];');
+                        addOption('forma_recebimento_pix', 'IV – Pix [valores até R$ 50.000,00 – isento de tarifa]');
+
+                        y += 5;
+
+                        if (isChecked('forma_recebimento_bb') || isChecked('forma_recebimento_outros') || isChecked('forma_recebimento_pix')) {
+                            doc.setFontSize(10);
+                            doc.text('*Para as opções “II”, “III” e “IV”, será necessário informar os seguintes dados:', margin, y);
+                            y += 7;
+                            doc.setFontSize(12);
+                            doc.setFont('helvetica', 'bold');
+                            doc.text('Titular da conta de destino:', margin, y);
+                            y += 7;
+
+                            addOption('titular_parte', 'Parte');
+
+                            let advText = `Advogado – OAB/${getValue('adv_oab')} - Nome: ${getValue('adv_nome')} - Procuração nas fls. ${getValue('adv_procuracao')}`;
+                            addOption('titular_advogado', advText);
+
+                            doc.setFont('helvetica', 'normal');
+                            doc.text('( ) Procurador/Representante Legal – Procuração nas fls. ____', margin, y);
+                            y += 7;
+
+                            addOption('titular_terceiro', `Terceiro: ${getValue('terceiro_nome')}`);
+
+                            y += 5;
                         }
-                    });
-                });
-            });
 
+                        if (isChecked('forma_recebimento_bb') || isChecked('forma_recebimento_outros')) {
+                            doc.setFontSize(10);
+                            doc.text('*Para as opções “II” e “III” será necessário informar os seguintes dados bancários:', margin, y);
+                            y += 7;
+                            doc.setFontSize(12);
 
+                            let banco = dom.bancoSelect.value === 'Outro' ? getValue('banco_outro') : dom.bancoSelect.value;
+                            addField('Banco:', banco);
+                            addField('Código do Banco:', getValue('codigo_banco'));
+                            addField('Agência:', getValue('agencia'));
+                            addField('Conta nº:', getValue('conta_numero'));
 
+                            doc.setFont('helvetica', 'bold');
+                            doc.text('Tipo de Crédito:', margin, y);
+                            doc.setFont('helvetica', 'normal');
+                            let tipoCreditoText = `${isChecked('credito_cc') ? '(X)' : '( )'} Conta Corrente  ${isChecked('credito_cp') ? '(X)' : '( )'} Conta Poupança`;
+                            doc.text(tipoCreditoText, valueX, y)
+                            y += 7;
 
+                            addField('CPF/CNPJ do titular da conta destino:', getValue('cpf_cnpj_titular'));
+                            addField('Nome do titular da conta destino:', getValue('nome_titular'));
+                            y += 5;
+                        }
 
+                        if (isChecked('forma_recebimento_pix')) {
+                            doc.setFontSize(10);
+                            doc.text('*Para a opção “IV –Pix”, será necessário informar a chave Pix (CPF ou CNPJ):', margin, y);
+                            y += 7;
+                            doc.setFontSize(12);
+                            addField('Chave Pix:', getValue('chave_pix'));
+                            addField('Nome do titular da conta destino:', getValue('nome_titular'));
+                            y += 5;
+                        }
 
-            radioOptions.forEach(option => {
-                option.addEventListener('change', function () {
-                    formFields.classList.remove('hidden');
-                    if (this.value === 'comparecer_banco') {
-                        hiddenFields.classList.add('hidden');
-                        pixFields.classList.add('hidden');
-                    } else if (this.value === 'pix') {
-                        hiddenFields.classList.add('hidden');
-                        pixFields.classList.remove('hidden');
-                    } else {
-                        hiddenFields.classList.remove('hidden');
-                        pixFields.classList.add('hidden');
+                        doc.setFont('helvetica', 'bold');
+                        doc.text('Tipo de Resgate:', margin, y);
+                        doc.setFont('helvetica', 'normal');
+                        let tipoResgateText = `${isChecked('resgate_parcial') ? '(X)' : '( )'} Parcial  ${isChecked('resgate_total') ? '(X)' : '( )'} Total`;
+                        doc.text(tipoResgateText, valueX, y);
+                        y += 7;
+
+                        addField('Nº da pág. do comprovante do depósito:', getValue('pagina_processo'));
+                        addField('Valor nominal do depósito:', getValue('valor_deposito'));
+                        addField('Observações:', getValue('observacoes'));
+
+                        doc.save(`Formulario_MLE_${dom.nomeCredor.value.trim().replace(/\s+/g, '_') || 'sem_nome'}.pdf`);
+
+                    } catch (error) {
+                        console.error("Erro ao gerar PDF:", error);
+                    } finally {
+                        dom.loaderOverlay.classList.add('hidden');
+                        dom.generatePdfBtn.disabled = false;
                     }
-                });
-            });
-            // Adicionar evento change ao botão de rádio "Terceiro"
-            const titularContaOptions = document.querySelectorAll('input[name="titular_conta"]');
-            titularContaOptions.forEach(option => {
-                option.addEventListener('change', function () {
-                    if (this.value === 'terceiro') {
-                        terceiroNome.classList.remove('hidden');
-                        updateDeclarationText();
-                    } else {
-                        terceiroNome.classList.add('hidden');
-                        removeDeclarationText();
-                    }
-                });
-            });
-
-            // Adicionar evento input ao campo "Nome do Terceiro"
-            terceiroNome.addEventListener('input', updateDeclarationText);
-            function updateDeclarationText() {
-                const nomeTerceiro = document.getElementById('terceiro_nome').value;
-                let autorizacaoText = document.getElementById('autorizacao_text');
-                if (!autorizacaoText) {
-                    autorizacaoText = document.createElement('span');
-                    autorizacaoText.id = 'autorizacao_text';
-                    autorizacaoText.classList.add('hidden');
-                    declaration.querySelector('p').appendChild(autorizacaoText);
-                }
-                autorizacaoText.textContent = ` Autorizo que os valores sejam creditados na conta de ${nomeTerceiro}.`;
-            }
-
-            function removeDeclarationText() {
-                const autorizacaoText = document.getElementById('autorizacao_text');
-                if (autorizacaoText) {
-                    autorizacaoText.remove();
-                }
-            }
-
-            // Adicionar evento change ao dropdown "Banco"
-            bancoSelect.addEventListener('change', function () {
-                const selectedOption = bancoSelect.options[bancoSelect.selectedIndex];
-                if (selectedOption.value === 'Outro') {
-                    bancoSelect.style.width = '10px';
-                    bancoOutro.classList.remove('hidden');
-                    codigoBanco.removeAttribute('readonly');
-                    codigoBanco.value = '';
-                } else {
-                    bancoOutro.classList.add('hidden');
-                    codigoBanco.setAttribute('readonly', true);
-                    codigoBanco.value = selectedOption.getAttribute('data-codigo');
-                }
+                }, 100);
             });
         });
-
-        function copyCpfCnpj() {
-            const cpfCnpjCredor = document.getElementById('cpf_cnpj_credor').value;
-            document.getElementById('cpf_cnpj_titular').value = cpfCnpjCredor;
-        }
-
-        function copyNome() {
-            const nomeCredor = document.getElementById('nome_credor').value;
-            document.getElementById('nome_titular').value = nomeCredor;
-        }
-
-        function copyCpfCnpjPix() {
-            const cpfCnpjCredor = document.getElementById('cpf_cnpj_credor').value;
-            document.getElementById('chave_pix').value = cpfCnpjCredor;
-        }
-
-        function copyNomePix() {
-            const nomeCredor = document.getElementById('nome_credor').value;
-            document.getElementById('nome_titular_pix').value = nomeCredor;
-        }
-
-        function generatePDF() {
-            const terceiroNome = document.getElementById('terceiro_nome');
-            if (document.getElementById('titular_terceiro').checked) {
-                terceiroNome.classList.remove('hidden');
-            }
-
-            const element = document.querySelector('.container');
-            const printButton = document.querySelector('.print-button');
-            const copyButtons = document.querySelectorAll('.copy-button');
-            const smallerSections = document.querySelectorAll('.inline-section.smaller-margin');
-            const declaration = document.querySelector('.declaration');
-            const nomeCredor = document.getElementById('nome_credor').value;
-            const nomeCredorDeclaration = document.getElementById('nome_credor_declaration');
-            const autorizacaoText = document.getElementById('autorizacao_text');
-
-
-            // Ocultar o botão "Gerar PDF"
-            printButton.style.display = 'none';
-            copyButtons.forEach(button => {
-                button.style.display = 'none';
-            });
-            //exibir o texto no campo titular_terceiro
-            if (document.getElementById('titular_terceiro').checked) {
-                terceiroNome.classList.remove('hidden');
-                //adicionar classe para que fique como block !important
-                terceiroNome.classList.add('block');
-            }
-
-            // Exibir o texto de autorização no PDF
-            if (autorizacaoText) {
-                autorizacaoText.classList.remove('hidden');
-            }
-            // Exibir a declaração
-            nomeCredorDeclaration.textContent = nomeCredor;
-            declaration.style.display = 'block';
-
-
-
-            // Substituir botões de rádio selecionados por "X" e não selecionados por "( )" na classe .radio-group
-            const radioGroups = document.querySelectorAll('.radio-group');
-            radioGroups.forEach(group => {
-                const selectedRadio = group.querySelector('input[type="radio"]:checked');
-                if (selectedRadio) {
-                    const label = selectedRadio.nextSibling;
-                    if (label && label.nodeType === Node.TEXT_NODE) {
-                        const xSpan = document.createElement('span');
-                        xSpan.textContent = '( X ) ';
-                        xSpan.classList.add('radio-replacement');
-                        label.parentNode.insertBefore(xSpan, label);
-                        selectedRadio.style.display = 'none';
-                    }
-                }
-                group.querySelectorAll('input[type="radio"]').forEach(radio => {
-                    if (!radio.checked) {
-                        const label = radio.nextSibling;
-                        if (label && label.nodeType === Node.TEXT_NODE) {
-                            const emptySpan = document.createElement('span');
-                            emptySpan.innerHTML = '( )&nbsp;';
-                            emptySpan.classList.add('radio-replacement');
-                            label.parentNode.insertBefore(emptySpan, label);
-                        }
-                    }
-                    radio.style.display = 'none';
-                });
-            });
-
-            // Substituir botões de rádio selecionados por "X" e não selecionados por "( )" na classe .radio-group-terceiro
-            const radioGroupsTerceiro = document.querySelectorAll('.radio-group-terceiro');
-            radioGroupsTerceiro.forEach(group => {
-                const selectedRadio = group.querySelector('input[type="radio"]:checked');
-                if (selectedRadio) {
-                    const label = selectedRadio.nextSibling;
-                    if (label && label.nodeType === Node.TEXT_NODE) {
-                        const xSpan = document.createElement('span');
-                        xSpan.textContent = '(X)';
-                        xSpan.classList.add('radio-replacement');
-                        label.parentNode.insertBefore(xSpan, label);
-                        selectedRadio.style.display = 'none';
-                    }
-                }
-                group.querySelectorAll('input[type="radio"]').forEach(radio => {
-                    if (!radio.checked) {
-                        const label = radio.nextSibling;
-                        if (label && label.nodeType === Node.TEXT_NODE) {
-                            const emptySpan = document.createElement('span');
-                            emptySpan.innerHTML = '( )&nbsp;';
-                            emptySpan.classList.add('radio-replacement');
-                            label.parentNode.insertBefore(emptySpan, label);
-                        }
-                    }
-                    radio.style.display = 'none';
-                });
-            });
-
-
-            smallerSections.forEach(section => {
-                section.classList.add('print-smaller-margin');
-            });
-            element.classList.add('no-border-on-pdf');
-
-            html2pdf().set({
-                margin: [10, 10, 10, 10],
-                filename: 'Formulario_MLE.pdf',
-                image: { type: 'jpeg', quality: 0.98 },
-                html2canvas: { scale: 2, useCORS: true },
-                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
-            }).from(element).save().then(() => {
-                // Mostrar o botão "Gerar PDF" novamente
-                printButton.style.display = 'block';
-                element.classList.remove('no-border-on-pdf');
-                smallerSections.forEach(section => {
-                    section.classList.remove('print-smaller-margin');
-                });
-                // Mostrar botões de copiar novamente
-                copyButtons.forEach(button => {
-                    button.style.display = 'block';
-                });
-
-                // Restaurar os botões de rádio
-                radioGroups.forEach(group => {
-                    group.querySelectorAll('input[type="radio"]').forEach(radio => {
-                        radio.style.display = 'inline-block';
-                    });
-                    group.querySelectorAll('.radio-replacement').forEach(span => {
-                        span.remove();
-                    });
-                });
-
-                radioGroupsTerceiro.forEach(group => {
-                    group.querySelectorAll('input[type="radio"]').forEach(radio => {
-                        radio.style.display = 'inline-block';
-                    });
-                    group.querySelectorAll('.radio-replacement').forEach(span => {
-                        span.remove();
-                    });
-                });
-
-                // Ocultar o texto de autorização novamente
-                if (autorizacaoText) {
-                    autorizacaoText.classList.add('hidden');
-                }
-                // Ocultar texto da declaração novamente
-                declaration.style.display = 'none';
-
-
-            }).catch(err => {
-                console.error('Erro ao gerar PDF:', err);
-                // Mostrar o botão "Gerar PDF" novamente em caso de erro
-                printButton.style.display = 'block';
-                element.classList.remove('no-border-on-pdf');
-                smallerSections.forEach(section => {
-                    section.classList.remove('print-smaller-margin');
-                });
-
-                // Restaurar os botões de rádio em caso de erro
-                radioGroups.forEach(group => {
-                    group.querySelectorAll('input[type="radio"]').forEach(radio => {
-                        radio.style.display = 'inline-block';
-                    });
-                    group.querySelectorAll('.radio-replacement').forEach(span => {
-                        span.remove();
-                    });
-                });
-
-                // Ocultar o texto de autorização novamente em caso de erro
-                if (autorizacaoText) {
-                    autorizacaoText.classList.add('hidden');
-                }
-            });
-        }
     </script>
 </body>
 
