@@ -381,32 +381,7 @@
                         const margin = 15;
                         const contentWidth = pageWidth - (margin * 2);
                         const centerX = pageWidth / 2;
-
-                        // --- AJUSTE DINÂMICO DA COLUNA DE VALORES ---
-                        const allLabels = [
-                            'Número do processo (padrão CNJ):',
-                            'Nome do Credor (Beneficiário):',
-                            'CPF/CNPJ do Credor (Beneficiário):',
-                            'Banco:', 'Código do Banco:', 'Agência:', 'Conta nº:',
-                            'Tipo de Crédito:',
-                            'CPF/CNPJ do titular da conta destino:',
-                            'Nome do titular da conta destino:',
-                            'Chave Pix:',
-                            'Tipo de Resgate:',
-                            'Nº da pág. do comprovante do depósito:',
-                            'Valor nominal do depósito:',
-                            'Observações:'
-                        ];
-                        doc.setFont('helvetica', 'bold');
-                        doc.setFontSize(12);
-                        const maxLabelWidth = allLabels.reduce((max, label) => {
-                            const width = doc.getStringUnitWidth(label) * doc.internal.getFontSize() / doc.internal.scaleFactor;
-                            return width > max ? width : max;
-                        }, 0);
-
-                        const valueX = margin + maxLabelWidth + 3; // 3mm de espaço
-                        // --- FIM DO AJUSTE DINÂMICO ---
-
+                        const col2X = margin + 90;
 
                         doc.setFont('helvetica', 'bold');
                         doc.setFontSize(12);
@@ -425,7 +400,10 @@
                         const addField = (label, value) => {
                             doc.setFont('helvetica', 'bold');
                             doc.text(label, margin, y);
+
                             doc.setFont('helvetica', 'normal');
+                            const labelWidth = doc.getStringUnitWidth(label) * doc.internal.getFontSize() / doc.internal.scaleFactor;
+                            const valueX = margin + labelWidth + 5;
                             doc.text(value, valueX, y);
                             y += 7;
                         };
@@ -455,7 +433,7 @@
 
                         if (isChecked('forma_recebimento_bb') || isChecked('forma_recebimento_outros') || isChecked('forma_recebimento_pix')) {
                             doc.setFontSize(10);
-                            doc.text('*Para as opções “II”, “III” e “IV”, será necessário informar os seguintes dados:', margin, y);
+                            doc.text('*Para as opções “II”, “III” e “IV”, será necessário informar os seguintes dados:', margin, y - 5);
                             y += 7;
                             doc.setFontSize(12);
                             doc.setFont('helvetica', 'bold');
@@ -478,25 +456,42 @@
 
                         if (isChecked('forma_recebimento_bb') || isChecked('forma_recebimento_outros')) {
                             doc.setFontSize(10);
-                            doc.text('*Para as opções “II” e “III” será necessário informar os seguintes dados bancários:', margin, y);
+                            doc.text('*Para as opções “II” e “III” será necessário informar os seguintes dados bancários:', margin, y - 5);
                             y += 7;
                             doc.setFontSize(12);
 
                             let banco = dom.bancoSelect.value === 'Outro' ? getValue('banco_outro') : dom.bancoSelect.value;
-                            addField('Banco:', banco);
-                            addField('Código do Banco:', getValue('codigo_banco'));
-                            addField('Agência:', getValue('agencia'));
-                            addField('Conta nº:', getValue('conta_numero'));
+
+                            // Linha 1: Banco e Código
+                            doc.setFont('helvetica', 'bold');
+                            doc.text('Banco:', margin, y);
+                            doc.setFont('helvetica', 'normal');
+                            doc.text(banco, margin + 15, y);
 
                             doc.setFont('helvetica', 'bold');
-                            doc.text('Tipo de Crédito:', margin, y);
+                            doc.text('Código do Banco:  ', col2X - 5, y);
                             doc.setFont('helvetica', 'normal');
-                            let tipoCreditoText = `${isChecked('credito_cc') ? '(X)' : '( )'} Conta Corrente  ${isChecked('credito_cp') ? '(X)' : '( )'} Conta Poupança`;
-                            doc.text(tipoCreditoText, valueX, y)
+                            doc.text(getValue('codigo_banco'), col2X + 35, y);
                             y += 7;
 
-                            addField('CPF/CNPJ do titular da conta destino:', getValue('cpf_cnpj_titular'));
-                            addField('Nome do titular da conta destino:', getValue('nome_titular'));
+                            // Linha 2: Agência (sozinha)
+                            addField('Agência:', getValue('agencia'));
+
+                            // Linha 3: Conta e Tipo de Crédito
+                            doc.setFont('helvetica', 'bold');
+                            doc.text('Conta nº:', margin, y);
+                            doc.setFont('helvetica', 'normal');
+                            doc.text(getValue('conta_numero'), margin + 22, y);
+
+                            doc.setFont('helvetica', 'bold');
+                            doc.text('Tipo de Crédito:', col2X - 5, y);
+                            doc.setFont('helvetica', 'normal');
+                            let tipoCreditoText = `${isChecked('credito_cc') ? '(X)' : '( )'} C/C  ${isChecked('credito_cp') ? '(X)' : '( )'} C/P`;
+                            doc.text(tipoCreditoText, col2X + 28, y);
+                            y += 7;
+
+                            addField('CPF/CNPJ do titular da conta destino:    ', getValue('cpf_cnpj_titular'));
+                            addField('Nome do titular da conta destino:  ', getValue('nome_titular'));
                             y += 5;
                         }
 
@@ -506,18 +501,22 @@
                             y += 7;
                             doc.setFontSize(12);
                             addField('Chave Pix:', getValue('chave_pix'));
-                            addField('Nome do titular da conta destino:', getValue('nome_titular'));
+                            addField('Nome do titular da conta destino:  ', getValue('nome_titular'));
                             y += 5;
                         }
 
                         doc.setFont('helvetica', 'bold');
                         doc.text('Tipo de Resgate:', margin, y);
                         doc.setFont('helvetica', 'normal');
-                        let tipoResgateText = `${isChecked('resgate_parcial') ? '(X)' : '( )'} Parcial  ${isChecked('resgate_total') ? '(X)' : '( )'} Total`;
-                        doc.text(tipoResgateText, valueX, y);
+                        let tipoResgateText = `${isChecked('resgate_parcial') ? '(X)' : '( )'} Parcial`;
+                        doc.text(tipoResgateText, margin + 40, y);
+                        y += 7;
+                        let tipoResgateText2 = `${isChecked('resgate_total') ? '(X)' : '( )'} Total`;
+                        doc.text(tipoResgateText2, margin + 40, y);
                         y += 7;
 
-                        addField('Nº da pág. do comprovante do depósito:', getValue('pagina_processo'));
+
+                        addField('Nº da pág. do comprovante do depósito:  ', getValue('pagina_processo'));
                         addField('Valor nominal do depósito:', getValue('valor_deposito'));
                         addField('Observações:', getValue('observacoes'));
 
