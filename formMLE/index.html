@@ -381,7 +381,32 @@
                         const margin = 15;
                         const contentWidth = pageWidth - (margin * 2);
                         const centerX = pageWidth / 2;
-                        const valueX = margin + 90; // Ponto de início para a coluna de valores
+
+                        // --- AJUSTE DINÂMICO DA COLUNA DE VALORES ---
+                        const allLabels = [
+                            'Número do processo (padrão CNJ):',
+                            'Nome do Credor (Beneficiário):',
+                            'CPF/CNPJ do Credor (Beneficiário):',
+                            'Banco:', 'Código do Banco:', 'Agência:', 'Conta nº:',
+                            'Tipo de Crédito:',
+                            'CPF/CNPJ do titular da conta destino:',
+                            'Nome do titular da conta destino:',
+                            'Chave Pix:',
+                            'Tipo de Resgate:',
+                            'Nº da pág. do comprovante do depósito:',
+                            'Valor nominal do depósito:',
+                            'Observações:'
+                        ];
+                        doc.setFont('helvetica', 'bold');
+                        doc.setFontSize(12);
+                        const maxLabelWidth = allLabels.reduce((max, label) => {
+                            const width = doc.getStringUnitWidth(label) * doc.internal.getFontSize() / doc.internal.scaleFactor;
+                            return width > max ? width : max;
+                        }, 0);
+
+                        const valueX = margin + maxLabelWidth + 3; // 3mm de espaço
+                        // --- FIM DO AJUSTE DINÂMICO ---
+
 
                         doc.setFont('helvetica', 'bold');
                         doc.setFontSize(12);
