@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Página de Links</title>
+    <!-- Tailwind CSS para estilização -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts para uma melhor tipografia -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Lucide Icons para iconografia -->
+    <script src="https://unpkg.com/lucide-react@latest/dist/lucide-react.js"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+
+        /* Fallback para ícones caso o script falhe */
+        [data-lucide] {
+            display: inline-block;
+            width: 24px;
+            height: 24px;
+        }
+    </style>
+</head>
+
+<body class="bg-gradient-to-br from-gray-50 to-gray-200 min-h-screen flex items-center justify-center p-4">
+
+    <div class="w-full max-w-5xl mx-auto bg-white rounded-2xl shadow-xl p-8 md:p-12">
+
+        <header class="text-center mb-10">
+            <h1 class="text-3xl md:text-4xl font-bold text-gray-800">Bem-vindo!</h1>
+            <p class="text-gray-500 mt-2 text-lg">Escolha uma das opções abaixo para prosseguir.</p>
+        </header>
+
+        <main class="space-y-12">
+            <!-- Seção de Ferramentas -->
+            <section>
+                <h2 class="text-2xl font-bold text-gray-700 mb-6 text-center md:text-left">Ferramentas</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+
+                    <!-- Manifestação em Balcão -->
+                    <a href="/manifest" target="_self"
+                        class="group flex flex-col items-center justify-center p-6 bg-gray-50 rounded-xl shadow-md hover:bg-indigo-600 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-in-out">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                            class="text-indigo-500 group-hover:text-white transition-colors lucide lucide-file-pen-line">
+                            <path d="m18 5-3-3H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2Z" />
+                            <path d="M8 18h1" />
+                            <path d="M18.4 9.6a2 2 0 1 1 3 3L17 17l-4 1 1-4Z" />
+                        </svg>
+                        <span
+                            class="mt-3 font-semibold text-gray-700 group-hover:text-white transition-colors text-center">Manifestação
+                            em Balcão</span>
+                    </a>
+
+                    <!-- Parcelamento do art. 916 -->
+                    <a href="/parcelamento/index.html?operacao=cpc-916" target="_self"
+                        class="group flex flex-col items-center justify-center p-6 bg-gray-50 rounded-xl shadow-md hover:bg-indigo-600 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-in-out">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                            class="text-indigo-500 group-hover:text-white transition-colors lucide lucide-pie-chart">
+                            <path d="M21.21 15.89A10 10 0 1 1 8 2.83" />
+                            <path d="M22 12A10 10 0 0 0 12 2v10z" />
+                        </svg>
+                        <span
+                            class="mt-3 font-semibold text-gray-700 group-hover:text-white transition-colors text-center">Parcelamento
+                            do art. 916</span>
+                    </a>
+
+                    <!-- Gerar Chave de Acesso -->
+                    <a href="/senha" target="_self"
+                        class="group flex flex-col items-center justify-center p-6 bg-gray-50 rounded-xl shadow-md hover:bg-indigo-600 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-in-out">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                            class="text-indigo-500 group-hover:text-white transition-colors lucide lucide-key-round">
+                            <path d="M2 18v3c0 .6.4 1 1 1h4v-3h3v-3h2l1.4-1.4a6.5 6.5 0 1 0-4-4Z" />
+                            <circle cx="16.5" cy="7.5" r=".5" />
+                        </svg>
+                        <span
+                            class="mt-3 font-semibold text-gray-700 group-hover:text-white transition-colors text-center">Gerar
+                            Chave de Acesso</span>
+                    </a>
+
+                    <!-- Proposta de Acordo -->
+                    <a href="/parcelamento/index.html" target="_self"
+                        class="group flex flex-col items-center justify-center p-6 bg-gray-50 rounded-xl shadow-md hover:bg-indigo-600 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-in-out">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                            class="text-indigo-500 group-hover:text-white transition-colors lucide lucide-file-check-2">
+                            <path d="M4 22h14a2 2 0 0 0 2-2V7.5L14.5 2H6a2 2 0 0 0-2 2v4" />
+                            <polyline points="14 2 14 8 20 8" />
+                            <path d="m3 15 2 2 4-4" />
+                        </svg>
+                        <span
+                            class="mt-3 font-semibold text-gray-700 group-hover:text-white transition-colors text-center">Proposta
+                            de Acordo</span>
+                    </a>
+
+                    <!-- Formulário MLE -->
+                    <a href="/formMLE" target="_self"
+                        class="group flex flex-col items-center justify-center p-6 bg-gray-50 rounded-xl shadow-md hover:bg-indigo-600 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-in-out">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                            class="text-indigo-500 group-hover:text-white transition-colors lucide lucide-banknote">
+                            <rect width="20" height="12" x="2" y="6" rx="2" />
+                            <circle cx="12" cy="12" r="2" />
+                            <path d="M6 12h.01M18 12h.01" />
+                        </svg>
+                        <span
+                            class="mt-3 font-semibold text-gray-700 group-hover:text-white transition-colors text-center">Formulário
+                            MLE</span>
+                    </a>
+
+                    <!-- Gerar Chave Documento -->
+                    <a href="/envio" target="_self"
+                        class="group flex flex-col items-center justify-center p-6 bg-gray-50 rounded-xl shadow-md hover:bg-indigo-600 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-in-out">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                            class="text-indigo-500 group-hover:text-white transition-colors lucide lucide-file-key-2">
+                            <path d="M4 10V4a2 2 0 0 1 2-2h8.5L20 7.5V20a2 2 0 0 1-2 2H4" />
+                            <polyline points="14 2 14 8 20 8" />
+                            <circle cx="4" cy="16" r="2" />
+                            <path d="m10 13-4.5 4.5" />
+                            <path d="m9 12 1 1" />
+                        </svg>
+                        <span
+                            class="mt-3 font-semibold text-gray-700 group-hover:text-white transition-colors text-center">Gerar
+                            Chave Documento</span>
+                    </a>
+
+                    <!-- Calculadora Judicial -->
+                    <a href="/calculadora" target="_self"
+                        class="group flex flex-col items-center justify-center p-6 bg-gray-50 rounded-xl shadow-md hover:bg-indigo-600 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-in-out">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                            class="text-indigo-500 group-hover:text-white transition-colors lucide lucide-calculator">
+                            <rect width="16" height="20" x="4" y="2" rx="2" />
+                            <line x1="8" x2="16" y1="6" y2="6" />
+                            <line x1="16" x2="16" y1="14" y2="18" />
+                            <path d="M16 10h.01" />
+                            <path d="M12 10h.01" />
+                            <path d="M8 10h.01" />
+                            <path d="M12 14h.01" />
+                            <path d="M8 14h.01" />
+                            <path d="M12 18h.01" />
+                            <path d="M8 18h.01" />
+                        </svg>
+                        <span
+                            class="mt-3 font-semibold text-gray-700 group-hover:text-white transition-colors text-center">Calculadora
+                            de Atualização
+                            e Cumprimento de Sentença</span>
+                    </a>
+
+                    <!-- Contagem de Prazo -->
+                    <a href="/prazo" target="_self"
+                        class="group flex flex-col items-center justify-center p-6 bg-gray-50 rounded-xl shadow-md hover:bg-indigo-600 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-in-out">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                            class="text-indigo-500 group-hover:text-white transition-colors lucide lucide-hourglass">
+                            <path d="M5 22h14" />
+                            <path d="M5 2h14" />
+                            <path d="M17 22v-4.172a2 2 0 0 0-.586-1.414L12 12l-4.414 4.414A2 2 0 0 0 7 17.828V22" />
+                            <path d="M7 2v4.172a2 2 0 0 0 .586 1.414L12 12l4.414-4.414A2 2 0 0 0 17 6.172V2" />
+                        </svg>
+                        <span
+                            class="mt-3 font-semibold text-gray-700 group-hover:text-white transition-colors text-center">Contagem
+                            de Prazo</span>
+                    </a>
+
+                    <!-- Calendário -->
+                    <a href="/calendario" target="_self"
+                        class="group flex flex-col items-center justify-center p-6 bg-gray-50 rounded-xl shadow-md hover:bg-indigo-600 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-in-out">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                            class="text-indigo-500 group-hover:text-white transition-colors lucide lucide-calendar-days">
+                            <rect width="18" height="18" x="3" y="4" rx="2" ry="2" />
+                            <line x1="16" x2="16" y1="2" y2="6" />
+                            <line x1="8" x2="8" y1="2" y2="6" />
+                            <line x1="3" x2="21" y1="10" y2="10" />
+                            <path d="M8 14h.01" />
+                            <path d="M12 14h.01" />
+                            <path d="M16 14h.01" />
+                            <path d="M8 18h.01" />
+                            <path d="M12 18h.01" />
+                            <path d="M16 18h.01" />
+                        </svg>
+                        <span
+                            class="mt-3 font-semibold text-gray-700 group-hover:text-white transition-colors text-center">Calendário</span>
+                    </a>
+
+                    <!-- Ajuizamento (Centralizado) -->
+                    <div class="md:col-span-2 lg:col-span-3 flex justify-center">
+                        <a href="/ajuizamento" target="_self"
+                            class="group flex flex-col items-center justify-center p-6 bg-gray-50 rounded-xl shadow-md hover:bg-indigo-600 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-in-out w-full lg:w-[calc(33.33%-1rem)]">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"
+                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round"
+                                class="text-indigo-500 group-hover:text-white transition-colors lucide lucide-scale">
+                                <path d="m16 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z" />
+                                <path d="m2 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z" />
+                                <path d="M7 21h10" />
+                                <path d="M12 3v18" />
+                                <path d="M3 7h2c2 0 5-1 7-2 2 1 5 2 7 2h2" />
+                            </svg>
+                            <span
+                                class="mt-3 font-semibold text-gray-700 group-hover:text-white transition-colors text-center">Ajuizamento</span>
+                        </a>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Seção de Links Úteis -->
+            <section>
+                <h2 class="text-2xl font-bold text-gray-700 mb-6 text-center md:text-left">Links Úteis</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+
+                    <!-- Pauta Cejusc Presencial -->
+                    <a href="https://tjsp-my.sharepoint.com/:w:/r/personal/ejatoba_tjsp_jus_br/_layouts/15/doc2.aspx?sourcedoc=%7BE524C766-1391-4CEE-A3CC-916E33A9CC05%7D&file=PAUTA%20AUDI%C3%8ANCIA%20PRESENCIAL%20CEJUSC.docx&action=default&mobileredirect=true"
+                        target="_self"
+                        class="group flex flex-col items-center justify-center p-6 bg-gray-50 rounded-xl shadow-md hover:bg-teal-600 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-in-out">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                            class="text-teal-500 group-hover:text-white transition-colors lucide lucide-users">
+                            <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+                            <circle cx="9" cy="7" r="4" />
+                            <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
+                            <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+                        </svg>
+                        <span
+                            class="mt-3 font-semibold text-gray-700 group-hover:text-white transition-colors text-center">Pauta
+                            Cejusc Presencial</span>
+                    </a>
+
+                    <!-- Pauta Cejusc Virtual -->
+                    <a href="https://tjsp-my.sharepoint.com/:w:/r/personal/ejatoba_tjsp_jus_br/_layouts/15/Doc.aspx?sourcedoc=%7B53F135D6-5B8F-4798-93FB-F794F9E9C1AA%7D&file=PAUTA%20AUDI%C3%8ANCIA%20MANH%C3%83%20VIRTUAL%20CEJUSC.docx&action=default&mobileredirect=true"
+                        target="_self"
+                        class="group flex flex-col items-center justify-center p-6 bg-gray-50 rounded-xl shadow-md hover:bg-teal-600 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-in-out">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                            class="text-teal-500 group-hover:text-white transition-colors lucide lucide-video">
+                            <path d="m22 8-6 4 6 4V8Z" />
+                            <rect width="14" height="12" x="2" y="6" rx="2" ry="2" />
+                        </svg>
+                        <span
+                            class="mt-3 font-semibold text-gray-700 group-hover:text-white transition-colors text-center">Pauta
+                            Cejusc Virtual</span>
+                    </a>
+
+                    <!-- Pauta Instrução e Julgamento -->
+                    <a href="https://tjsp-my.sharepoint.com/:w:/r/personal/ejatoba_tjsp_jus_br/_layouts/15/Doc.aspx?sourcedoc=%7BB1D38FAF-0192-4D9C-98FA-94419511133A%7D&file=PAUTA%20-%20INSTRU%C3%87%C3%83O%20E%20JULGAMENTO.docx&action=default&mobileredirect=true"
+                        target="_self"
+                        class="group flex flex-col items-center justify-center p-6 bg-gray-50 rounded-xl shadow-md hover:bg-teal-600 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-in-out">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                            class="text-teal-500 group-hover:text-white transition-colors lucide lucide-gavel">
+                            <path d="m14 13-8.5 8.5a2.1 2.1 0 1 1-3-3L11 10" />
+                            <path d="m16 16 6-6" />
+                            <path d="m8 8 6-6" />
+                            <path d="m9 7 8 8" />
+                            <path d="m21 11-8-8" />
+                        </svg>
+                        <span
+                            class="mt-3 font-semibold text-gray-700 group-hover:text-white transition-colors text-center">Pauta
+                            Instrução e Julgamento</span>
+                    </a>
+
+                    <!-- Portal de Custas -->
+                    <a href="https://portaldecustas.tjsp.jus.br/portaltjsp/login.jsp" target="_self"
+                        class="group flex flex-col items-center justify-center p-6 bg-gray-50 rounded-xl shadow-md hover:bg-teal-600 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-in-out">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                            class="text-teal-500 group-hover:text-white transition-colors lucide lucide-dollar-sign">
+                            <line x1="12" x2="12" y1="2" y2="22" />
+                            <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
+                        </svg>
+                        <span
+                            class="mt-3 font-semibold text-gray-700 group-hover:text-white transition-colors text-center">Portal
+                            de Custas</span>
+                    </a>
+
+                    <!-- Indisponibilidades -->
+                    <a href="https://www.tjsp.jus.br/Indisponibilidade/Comunicados" target="_self"
+                        class="group flex flex-col items-center justify-center p-6 bg-gray-50 rounded-xl shadow-md hover:bg-teal-600 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-in-out">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                            class="text-teal-500 group-hover:text-white transition-colors lucide lucide-ban">
+                            <circle cx="12" cy="12" r="10" />
+                            <path d="m4.9 4.9 14.2 14.2" />
+                        </svg>
+                        <span
+                            class="mt-3 font-semibold text-gray-700 group-hover:text-white transition-colors text-center">Indisponibilidades</span>
+                    </a>
+
+                    <!-- CPC -->
+                    <a href="https://www.planalto.gov.br/ccivil_03/_ato2015-2018/2015/lei/l13105.htm" target="_self"
+                        class="group flex flex-col items-center justify-center p-6 bg-gray-50 rounded-xl shadow-md hover:bg-teal-600 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-in-out">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                            class="text-teal-500 group-hover:text-white transition-colors lucide lucide-scale">
+                            <path d="m16 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z" />
+                            <path d="m2 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z" />
+                            <path d="M7 21h10" />
+                            <path d="M12 3v18" />
+                            <path d="M3 7h2c2 0 5-1 7-2 2 1 5 2 7 2h2" />
+                        </svg>
+                        <span
+                            class="mt-3 font-semibold text-gray-700 group-hover:text-white transition-colors text-center">CPC</span>
+                    </a>
+
+                    <!-- Lei 9.099/95 -->
+                    <a href="https://www.planalto.gov.br/ccivil_03/leis/l9099.htm" target="_self"
+                        class="group flex flex-col items-center justify-center p-6 bg-gray-50 rounded-xl shadow-md hover:bg-teal-600 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-in-out">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                            class="text-teal-500 group-hover:text-white transition-colors lucide lucide-file-text">
+                            <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z" />
+                            <polyline points="14 2 14 8 20 8" />
+                            <line x1="16" x2="8" y1="13" y2="13" />
+                            <line x1="16" x2="8" y1="17" y2="17" />
+                            <line x1="10" x2="8" y1="9" y2="9" />
+                        </svg>
+                        <span
+                            class="mt-3 font-semibold text-gray-700 group-hover:text-white transition-colors text-center">Lei
+                            9.099/95</span>
+                    </a>
+
+                    <!-- Código Civil -->
+                    <a href="https://www.planalto.gov.br/ccivil_03/leis/2002/l10406compilada.htm" target="_self"
+                        class="group flex flex-col items-center justify-center p-6 bg-gray-50 rounded-xl shadow-md hover:bg-teal-600 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-in-out">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                            class="text-teal-500 group-hover:text-white transition-colors lucide lucide-book-marked">
+                            <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20" />
+                            <path d="m14 2-4.5 4.5" />
+                        </svg>
+                        <span
+                            class="mt-3 font-semibold text-gray-700 group-hover:text-white transition-colors text-center">Código
+                            Civil</span>
+                    </a>
+
+                    <!-- Normas da Corregedoria -->
+                    <a href="https://www.tjsp.jus.br/Corregedoria/Comunicados/NormasJudiciais" target="_self"
+                        class="group flex flex-col items-center justify-center p-6 bg-gray-50 rounded-xl shadow-md hover:bg-teal-600 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-in-out">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                            class="text-teal-500 group-hover:text-white transition-colors lucide lucide-archive">
+                            <rect width="20" height="5" x="2" y="3" rx="1" />
+                            <path d="M4 8v11a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8" />
+                            <path d="M10 12h4" />
+                        </svg>
+                        <span
+                            class="mt-3 font-semibold text-gray-700 group-hover:text-white transition-colors text-center">Normas
+                            da Corregedoria</span>
+                    </a>
+
+                    <!-- Enunciados Fonaje -->
+                    <a href="https://www.cnj.jus.br/enunciados-civeis/" target="_self"
+                        class="group flex flex-col items-center justify-center p-6 bg-gray-50 rounded-xl shadow-md hover:bg-teal-600 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-in-out">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                            class="text-teal-500 group-hover:text-white transition-colors lucide lucide-quote">
+                            <path d="M3 21c3 0 7-1 7-8V5c0-1.25-.756-2.017-2-2H4c-1.25 0-2 .75-2 2v6c0 7 5 8 8 8Z" />
+                            <path d="M14 21c3 0 7-1 7-8V5c0-1.25-.756-2.017-2-2h-4c-1.25 0-2 .75-2 2v6c0 7 5 8 8 8Z" />
+                        </svg>
+                        <span
+                            class="mt-3 font-semibold text-gray-700 group-hover:text-white transition-colors text-center">Enunciados
+                            Fonaje</span>
+                    </a>
+
+                    <!-- Enunciados Fojesp -->
+                    <a href="https://apamagis.org.br/fojesp/" target="_self"
+                        class="group flex flex-col items-center justify-center p-6 bg-gray-50 rounded-xl shadow-md hover:bg-teal-600 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-in-out">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                            class="text-teal-500 group-hover:text-white transition-colors lucide lucide-message-square-quote">
+                            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+                            <path
+                                d="M8 12a.5.5 0 0 0-.5.5v0a.5.5 0 0 0 .5.5h.5a.5.5 0 0 1 .5.5v0a.5.5 0 0 1-.5.5h-.5a.5.5 0 0 0-.5.5v0a.5.5 0 0 0 .5.5" />
+                            <path
+                                d="M16 12a.5.5 0 0 0-.5.5v0a.5.5 0 0 0 .5.5h.5a.5.5 0 0 1 .5.5v0a.5.5 0 0 1-.5.5h-.5a.5.5 0 0 0-.5.5v0a.5.5 0 0 0 .5.5" />
+                        </svg>
+                        <span
+                            class="mt-3 font-semibold text-gray-700 group-hover:text-white transition-colors text-center">Enunciados
+                            Fojesp</span>
+                    </a>
+
+                    <!-- Portal do Servidor -->
+                    <a href="https://www.tjsp.jus.br/rhf/acesso/Login/SignIn?ReturnUrl=%2Frhf%2Facesso%2Fwsfederation%3Fwtrealm%3Dhttps%253a%252f%252fwww.tjsp.jus.br%252fRHF%252fPortalServidor%252f%26wctx%3DWsFedOwinState%253dAcPVYCMH4pzOt7H31xiqN6Cz49TMcbf80HkZqx9hnOrFsRdhMqpPMk4rcvWRGQEvgE_EPaGbNBuxYiNLHnoQmMz13PPH7cysnWGGdABIEzafHZQApeUeCYdtBsANXX2Kt8eiCiLpyyw5kCKuONOxQw%26wa%3Dwsignin1.0"
+                        target="_self"
+                        class="group flex flex-col items-center justify-center p-6 bg-gray-50 rounded-xl shadow-md hover:bg-teal-600 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-in-out">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                            class="text-teal-500 group-hover:text-white transition-colors lucide lucide-briefcase">
+                            <rect width="20" height="14" x="2" y="7" rx="2" ry="2" />
+                            <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16" />
+                        </svg>
+                        <span
+                            class="mt-3 font-semibold text-gray-700 group-hover:text-white transition-colors text-center">Portal
+                            do Servidor</span>
+                    </a>
+
+                    <!-- Lista de E-mails (empresas) -->
+                    <a href="https://apps.powerapps.com/play/e/default-3590422d-8e59-4036-9245-d6edd8cc0f7a/a/7932e893-0b26-499e-8e48-8239f9181721?tenantId=3590422d-8e59-4036-9245-d6edd8cc0f7a&hint=1417467a-65d3-4fe5-a4bd-262658e564ac&sourcetime=1730999267210&source=portal"
+                        target="_self"
+                        class="group flex flex-col items-center justify-center p-6 bg-gray-50 rounded-xl shadow-md hover:bg-teal-600 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-in-out">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                            class="text-teal-500 group-hover:text-white transition-colors lucide lucide-mail">
+                            <rect width="20" height="16" x="2" y="4" rx="2" />
+                            <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
+                        </svg>
+                        <span
+                            class="mt-3 font-semibold text-gray-700 group-hover:text-white transition-colors text-center">Lista
+                            de E-mails (empresas)</span>
+                    </a>
+
+                    <!-- Busca CEP -->
+                    <a href="https://buscacepinter.correios.com.br/app/endereco/index.php" target="_self"
+                        class="group flex flex-col items-center justify-center p-6 bg-gray-50 rounded-xl shadow-md hover:bg-teal-600 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-in-out">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                            class="text-teal-500 group-hover:text-white transition-colors lucide lucide-search">
+                            <circle cx="11" cy="11" r="8" />
+                            <path d="m21 21-4.3-4.3" />
+                        </svg>
+                        <span
+                            class="mt-3 font-semibold text-gray-700 group-hover:text-white transition-colors text-center">Busca
+                            CEP</span>
+                    </a>
+
+                    <!-- Busca Jurisprudência TJSP -->
+                    <a href="https://www.tjsp.jus.br/Jurisprudencia" target="_self"
+                        class="group flex flex-col items-center justify-center p-6 bg-gray-50 rounded-xl shadow-md hover:bg-teal-600 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-in-out">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                            class="text-teal-500 group-hover:text-white transition-colors lucide lucide-search-code">
+                            <path d="M15.5 15.5 19 19" />
+                            <path d="M5 12a7 7 0 1 0 14 0 7 7 0 1 0-14 0Z" />
+                            <path d="m9.5 7.5-3 3 3 3" />
+                            <path d="m14.5 16.5 3-3-3-3" />
+                        </svg>
+                        <span
+                            class="mt-3 font-semibold text-gray-700 group-hover:text-white transition-colors text-center">Busca
+                            Jurisprudência TJSP</span>
+                    </a>
+                    <!-- Login EPROC -->
+                    <a href="https://eproc1g.tjsp.jus.br/eproc/" target="_self"
+                        class="group flex flex-col items-center justify-center p-6 bg-gray-50 rounded-xl shadow-md hover:bg-teal-600 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-in-out">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                            class="text-teal-500 group-hover:text-white transition-colors lucide lucide-log-in">
+                            <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4" />
+                            <polyline points="10 17 15 12 10 7" />
+                            <line x1="15" x2="3" y1="12" y2="12" />
+                        </svg>
+                        <span
+                            class="mt-3 font-semibold text-gray-700 group-hover:text-white transition-colors text-center">Login
+                            EPROC</span>
+                    </a>
+
+
+                </div>
+            </section>
+        </main>
+    </div>
+</body>
+
+</html>
