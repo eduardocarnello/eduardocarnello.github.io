@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JusCalc - Calculadora de Prazos</title>
+
+    <!-- Estilos (CSS) Externos -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet"
+        href="https://cdn.jsdelivr.net/npm/bootstrap-select@1.14.0-beta3/dist/css/bootstrap-select.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet"
+        href="https://cdn.jsdelivr.net/npm/vanillajs-datepicker@1.3.4/dist/css/datepicker-bs5.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/intro.js/7.2.0/introjs.min.css">
+
+    <!-- Seu arquivo de estilos local -->
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+    <!-- Notificações Toast -->
+    <div class="toast-container position-fixed bottom-0 end-0 p-3">
+        <div id="liveToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="toast-header">
+                <i class="fas fa-check-circle rounded me-2 text-success"></i>
+                <strong class="me-auto">Notificação</strong>
+                <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+            <div class="toast-body">
+                Imagem gerada em nova aba para cópia.
+            </div>
+        </div>
+    </div>
+
+    <!-- Navegação -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="#">JusCalc</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+                aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <a class="nav-link active" aria-current="page" href="#"><i
+                                class="fa fa-home fa-fw me-1"></i>Prazo</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="https://eduardocarnello.github.io/calendario"><i
+                                class="fa fa-book fa-fw me-1"></i>Calendário e Indisponibilidades</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Conteúdo Principal -->
+    <main class="container mt-4">
+        <div class="col-md-9 col-lg-8 mx-auto">
+            <div class="card shadow-sm">
+                <div class="card-body p-4">
+                    <h1 class="card-title text-center mb-4">
+                        Cálculo de Prazo
+                        <i class="fa-solid fa-circle-question fa-xs tutorial-icon" id="tutorial-icon" role="button"
+                            aria-label="Iniciar tutorial"></i>
+                    </h1>
+
+                    <form id="deadlineCalc">
+                        <div class="row g-3">
+                            <!-- Comarca -->
+                            <div class="col-12" id="divCity">
+                                <div class="form-floating">
+                                    <select class="form-select" id="floatingSelect">
+                                        <option selected>Marília/SP</option>
+                                    </select>
+                                    <label for="floatingSelect">Comarca</label>
+                                </div>
+                            </div>
+
+                            <!-- Opções de Cálculo -->
+                            <div class="col-md-6" id="divCalcType">
+                                <div class="form-floating">
+                                    <select id='calcType' class="form-select">
+                                        <option selected value="workingDays">Dias úteis</option>
+                                        <option value="calendarDays">Dias corridos</option>
+                                        <option value="months">Meses</option>
+                                    </select>
+                                    <label for="calcType">Formato do Prazo</label>
+                                </div>
+                            </div>
+
+                            <div class="col-md-6" id="divCountType">
+                                <div class="form-floating">
+                                    <select id='countType' class="form-select">
+                                        <option value="0" title="do ato" selected>do ato ou da juntada</option>
+                                        <option value="1" title="da disp. DJE">da disponibilização no DJE</option>
+                                        <option value="2" title="da pub. DJE">da publicação no DJE</option>
+                                        <option value="3" title="da Citação no Portal">da Confirmação da Citação no
+                                            Portal</option>
+                                    </select>
+                                    <label for="countType">Início da Contagem</label>
+                                </div>
+                            </div>
+
+                            <!-- Data Inicial e Dias -->
+                            <div class="col-md-7" id="divInitialDate">
+                                <div class="input-group">
+                                    <div class="form-floating flex-grow-1">
+                                        <input type="text" class="form-control" id="initialDate"
+                                            placeholder="DD/MM/AAAA" required autocomplete="off">
+                                        <label id="countFormatLabel" for="initialDate">Data do ato ou da juntada</label>
+                                    </div>
+                                    <span class="input-group-text" id="calendar-icon" role="button"><i
+                                            class="fa-solid fa-calendar-days"></i></span>
+                                </div>
+                            </div>
+
+                            <div class="col-md-5" id="divDays">
+                                <div class="input-group">
+                                    <button class="btn btn-outline-secondary" type="button" id="minus-btn">-</button>
+                                    <div class="form-floating flex-grow-1">
+                                        <input type="number" class="form-control text-center" id="days" value="" min="1"
+                                            max="999" placeholder="Dias" required>
+                                        <label for="days">Dias do Prazo</label>
+                                    </div>
+                                    <button class="btn btn-outline-secondary" type="button" id="plus-btn">+</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Botões de Ação -->
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4">
+                            <button type="button" class="btn btn-secondary" id="reset1">Limpar</button>
+                            <button type="submit" class="btn btn-primary" id="calcBtn">Calcular Prazo</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Seção de Resultados (inicialmente oculta) -->
+            <div id="results" class="mt-4" style="display: none;">
+                <div class="card shadow-sm">
+                    <div class="card-body p-4 text-center">
+                        <div id="printResults">
+                            <!-- O resumo do cálculo será inserido aqui pelo JS -->
+                        </div>
+                        <div class="buttons mt-3">
+                            <button class="btn btn-outline-primary" type="button" data-bs-toggle="collapse"
+                                data-bs-target="#collapseReport">
+                                <i class="fas fa-list-alt me-1"></i> Relatório Detalhado
+                            </button>
+                            <button class="btn btn-outline-primary" type="button" data-bs-toggle="collapse"
+                                data-bs-target="#collapseCalendar">
+                                <i class="fas fa-calendar-alt me-1"></i> Ver no Calendário
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Collapse: Relatório -->
+                <div class="collapse" id="collapseReport">
+                    <div class="card card-body mt-3">
+                        <div id="listReport" class="table-responsive"></div>
+                        <div class="d-flex justify-content-center flex-wrap gap-2 mt-3">
+                            <button class="btn btn-dark btn-sm" id="printBtn"><i class="fas fa-print me-1"></i>
+                                Imprimir</button>
+                            <button class="btn btn-dark btn-sm" id="copyAllBtn"><i class="fas fa-copy me-1"></i> Copiar
+                                Resumo e Contagem</button>
+                            <button class="btn btn-dark btn-sm" id="copyListBtn"><i class="fas fa-highlighter me-1"></i>
+                                Copiar só a Contagem</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Collapse: Calendário -->
+                <div class="collapse" id="collapseCalendar">
+                    <div class="card card-body mt-3">
+                        <div id="inlineCalendar"></div>
+                        <h5 class="mt-3">Legenda</h5>
+                        <div class="row g-2 small">
+                            <div class="col-6 col-md-4"><i class="fa-solid fa-square label-start me-1"></i> Início (não
+                                conta)</div>
+                            <div class="col-6 col-md-4"><i class="fa-solid fa-square label-count me-1"></i> Dia de
+                                Contagem</div>
+                            <div class="col-6 col-md-4"><i class="fa-solid fa-square label-end me-1"></i> Prazo Final
+                            </div>
+                            <div class="col-6 col-md-4"><i class="fa-solid fa-square label-weekend me-1"></i> Fim de
+                                Semana</div>
+                            <div class="col-6 col-md-4"><i class="fa-solid fa-square label-holiday me-1"></i>
+                                Feriado/Suspensão</div>
+                            <div class="col-6 col-md-4"><i class="fa-solid fa-square label-prorogation me-1"></i>
+                                Prorrogação</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Scripts (JavaScript) Externos -->
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap-select@1.14.0-beta3/dist/js/bootstrap-select.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.30.1/moment.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.30.1/locale/pt-br.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment-business-days/1.2.0/index.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/imask@7.3.0/dist/imask.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vanillajs-datepicker@1.3.4/dist/js/datepicker-full.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vanillajs-datepicker@1.3.4/dist/js/locales/pt-BR.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/intro.js/7.2.0/intro.min.js"></script>
+
+    <!-- Seu arquivo de script local -->
+    <script src="main.js"></script>
+
+</body>
+
+</html>
