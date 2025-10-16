@@ -1,0 +1,207 @@
+/* Importa uma fonte moderna do Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap');
+
+/* Variáveis de Cor para fácil customização */
+:root {
+    --primary-color: #0d6efd;
+    --secondary-color: #6c757d;
+    --background-color: #f8f9fa;
+    --card-background: #ffffff;
+    --text-color: #212529;
+    --border-color: #dee2e6;
+    --shadow-color: rgba(0, 0, 0, 0.075);
+
+    /* Cores do Calendário */
+    --cal-start: #dbeafe;
+    /* Azul claro */
+    --cal-count: #e0f2fe;
+    /* Ciano claro */
+    --cal-end: #0ea5e9;
+    /* Ciano */
+    --cal-weekend: #fee2e2;
+    /* Vermelho claro */
+    --cal-holiday: #fed7aa;
+    /* Laranja claro */
+    --cal-prorogation: #e9d5ff;
+    /* Roxo claro */
+}
+
+/* Estilos Gerais do Corpo */
+body {
+    font-family: 'Inter', sans-serif;
+    background-color: var(--background-color);
+    color: var(--text-color);
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+main.container {
+    flex-grow: 1;
+    padding-bottom: 2rem;
+}
+
+/* Estilização do Card Principal */
+.card {
+    border: 1px solid var(--border-color);
+    border-radius: 0.75rem;
+}
+
+.card-title {
+    color: var(--text-color);
+    font-weight: 700;
+}
+
+/* Ícone do Tutorial */
+.tutorial-icon {
+    color: var(--primary-color);
+    cursor: pointer;
+    vertical-align: middle;
+    font-size: 1rem;
+    opacity: 0.7;
+    transition: opacity 0.2s;
+}
+
+.tutorial-icon:hover {
+    opacity: 1;
+}
+
+/* Botões */
+.btn-primary {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+}
+
+/*
+  CORREÇÃO: Ajustes para o Bootstrap-Select dentro do Form-Floating.
+  O plugin bootstrap-select cria um <div> extra ao redor do <select> original.
+  Quando usamos .form-floating, esse <div> herda a classe .form-control,
+  o que causa um padding e borda indesejados (o efeito de "dropdown duplo").
+  O código abaixo remove o estilo desse <div> extra e aplica o estilo correto
+  diretamente no botão que o plugin gera.
+*/
+
+/* 1. Remove o estilo do container extra criado pelo plugin */
+.form-floating>div.bootstrap-select.form-control {
+    padding: 0;
+    border: 0;
+}
+
+/* 2. Estiliza o botão gerado para se parecer com um input de form-floating */
+.form-floating>div.bootstrap-select>.btn.dropdown-toggle {
+    /* O padding é crucial para alinhar o texto corretamente com o label flutuante */
+    padding: 1rem 0.75rem;
+    /* Remove o fundo e a borda padrão do botão para que ele se integre ao .form-floating */
+    background: none !important;
+    border: none !important;
+    box-shadow: none !important;
+    /* Garante que o botão ocupe todo o espaço */
+    width: 100%;
+    height: calc(3.5rem + 2px);
+    text-align: left;
+}
+
+/* 3. Garante que o label se comporte corretamente */
+.form-floating>.bootstrap-select~label {
+    z-index: 2;
+    pointer-events: none;
+    /* Permite que os cliques "passem" pelo label e atinjam o botão */
+}
+
+/* Resultados */
+#results h2 {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: var(--primary-color);
+}
+
+/* Legenda do Calendário */
+.label-start {
+    color: var(--cal-start);
+    text-shadow: 0 0 1px #000;
+}
+
+.label-count {
+    color: var(--cal-count);
+    text-shadow: 0 0 1px #000;
+}
+
+.label-end {
+    color: var(--cal-end);
+    text-shadow: 0 0 1px #000;
+}
+
+.label-weekend {
+    color: var(--cal-weekend);
+    text-shadow: 0 0 1px #000;
+}
+
+.label-holiday {
+    color: var(--cal-holiday);
+    text-shadow: 0 0 1px #000;
+}
+
+.label-prorogation {
+    color: var(--cal-prorogation);
+    text-shadow: 0 0 1px #000;
+}
+
+/* Estilos do Datepicker (Sobrescrevendo o padrão para usar nossas cores) */
+.datepicker-cell.selected {
+    background-color: var(--primary-color) !important;
+}
+
+/* Classes personalizadas para os dias no calendário inline */
+.datepicker-day.cal-start {
+    background-color: var(--cal-start) !important;
+    border-radius: 50%;
+}
+
+.datepicker-day.cal-count {
+    background-color: var(--cal-count) !important;
+    border-radius: 0;
+}
+
+.datepicker-day.cal-end {
+    background-color: var(--cal-end) !important;
+    color: white !important;
+    border-radius: 50%;
+    font-weight: bold;
+}
+
+.datepicker-day.cal-holiday {
+    background-color: var(--cal-holiday) !important;
+    border-radius: 50%;
+}
+
+.datepicker-day.cal-prorogation {
+    background-color: var(--cal-prorogation) !important;
+    border-radius: 50%;
+}
+
+.datepicker-day.weekend,
+.datepicker-day.cal-weekend {
+    background-color: var(--cal-weekend) !important;
+    border-radius: 0;
+}
+
+/* Estilos para impressão */
+@media print {
+
+    body,
+    .card {
+        box-shadow: none !important;
+        border: none !important;
+    }
+
+    .btn,
+    nav,
+    .toast,
+    .tutorial-icon {
+        display: none !important;
+    }
+
+    #results {
+        display: block !important;
+    }
+}
