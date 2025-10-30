@@ -21,7 +21,8 @@
         /* Oculta elementos por padrão */
         #dashboard-view,
         #modal-backdrop,
-        #article-form-modal {
+        #article-form-modal,
+        #category-form-modal {
             display: none;
         }
 
@@ -34,12 +35,60 @@
 
 <body class="bg-gray-100">
 
+    <!-- ==== MAPA DE ÍCONES (PARA SELEÇÃO) ==== -->
+    <script>
+        // Este mapa centraliza os SVGs. Usaremos ele para popular a seleção de ícones.
+        const iconMap = {
+            'default': {
+                name: 'Padrão (Lista)',
+                svg: '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-10 h-10 mb-3"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 12h16.5m-16.5 3.75h16.5M3.75 19.5h16.5M5.625 4.5h12.75a1.875 1.875 0 010 3.75H5.625a1.875 1.875 0 010-3.75z" /></svg>'
+            },
+            'comunicado': {
+                name: 'Comunicado (Grid)',
+                svg: '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-10 h-10 mb-3"><path stroke-linecap="round" stroke-linejoin="round" d="M10.34 15.84c-.688 0-1.25-.561-1.25-1.25 0-.688.562-1.25 1.25-1.25s1.25.562 1.25 1.25c0 .688-.562 1.25-1.25 1.25zm0 0H7.5v4.5h5.688M19.5 12h-9.25V7.5h9.25V12zM18 18.75h-5.25v-4.5h5.25v4.5zM12.75 6H18v5.25h-5.25V6zM12.75 18.75H18V13.5h-5.25v5.25zM6 13.5H4.5v-3H6v3zM6 7.5H4.5V6H6v1.5zM6 19.5H4.5v-1.5H6v1.5zM4.5 4.5H6V3H4.5v1.5zM19.5 3v.008h.008V3h-.008zM4.5 21v.008h.008V21h-.008zM21 21v.008h.008V21h-.008zM21 3v.008h.008V3h-.008z" /></svg>'
+            },
+            'provimento': {
+                name: 'Provimento (Livro)',
+                svg: '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-10 h-10 mb-3"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18c-2.305 0-4.408.867-6 2.292m0-14.25v14.25" /></svg>'
+            },
+            'ti': {
+                name: 'TI (Computador)',
+                svg: '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-10 h-10 mb-3"><path stroke-linecap="round" stroke-linejoin="round" d="M9 17.25v1.007a3 3 0 01-.879 2.122L7.5 21h9l-.621-.621A3 3 0 0115 18.257V17.25m6-12V15a2.25 2.25 0 01-2.25 2.25H5.25A2.25 2.25 0 013 15V5.25m18 0A2.25 2.25 0 0018.75 3H5.25A2.25 2.25 0 003 5.25m18 0V12a2.25 2.25 0 01-2.25 2.25H5.25A2.25 2.25 0 013 12V5.25" /></svg>'
+            },
+            'rh': {
+                name: 'RH (Pessoas)',
+                svg: '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-10 h-10 mb-3"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.003A9.337 9.337 0 0012 21a9.337 9.337 0 00-3-1.872v-.003c0-1.113.285-2.16.786-3.07M12 21v-4.877M12 21c-1.282 0-2.47-.303-3.536-.84M12 21c1.282 0 2.47.303 3.536.84m0 0a4.125 4.125 0 00-7.533-2.493M15 4.877c-.413.2-1.56.34-2.755.34-1.196 0-2.342-.14-2.755-.34m4.39 0a4.125 4.125 0 00-4.39 0m4.39 0a4.125 4.125 0 00-4.39 0M9 8.25c.413.2 1.56.34 2.755.34 1.196 0 2.342-.14 2.755-.34m-4.39 0a4.125 4.125 0 004.39 0m-4.39 0a4.125 4.125 0 004.39 0" /></svg>'
+            }
+        };
+    </script>
+
     <!-- ==== TELA DE LOGIN ==== -->
     <div id="login-view" class="flex items-center justify-center min-h-screen">
         <div class="w-full max-w-md p-8 space-y-6 bg-white rounded-lg shadow-md">
             <h2 class="text-3xl font-bold text-center text-gray-900">Login do Admin</h2>
+
+            <!-- Botão para ir ao site -->
+            <a href="./index.html" target="_blank"
+                class="w-full flex justify-center items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-blue-700 bg-white hover:bg-gray-50">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                    stroke="currentColor" class="w-5 h-5 mr-2">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                        d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
+                </svg>
+                Ir para o Site
+            </a>
+
+            <div class="relative">
+                <div class="absolute inset-0 flex items-center">
+                    <div class="w-full border-t border-gray-300"></div>
+                </div>
+                <div class="relative flex justify-center text-sm"><span class="px-2 bg-white text-gray-500">Login</span>
+                </div>
+            </div>
+
             <!-- Formulário de Login Email/Senha -->
             <form id="login-form" class="space-y-6">
+                <!-- ... (inputs de email/senha) ... -->
                 <div>
                     <label for="email" class="text-sm font-medium text-gray-700">Email</label>
                     <input id="login-email" type="email" required
@@ -87,32 +136,64 @@
     <div id="dashboard-view" class="container mx-auto p-4 md:p-8">
         <header class="flex justify-between items-center mb-6">
             <h1 class="text-3xl font-bold text-gray-900">Painel Admin</h1>
-            <button id="logout-btn"
-                class="px-4 py-2 text-sm font-medium text-red-600 bg-red-100 rounded-md hover:bg-red-200">Sair</button>
+            <div class="flex items-center space-x-4">
+                <a href="./index.html" target="_blank"
+                    class="px-4 py-2 text-sm font-medium text-blue-600 bg-blue-100 rounded-md hover:bg-blue-200">
+                    Ver Site
+                </a>
+                <button id="logout-btn"
+                    class="px-4 py-2 text-sm font-medium text-red-600 bg-red-100 rounded-md hover:bg-red-200">Sair</button>
+            </div>
         </header>
 
-        <div class="mb-6">
-            <button id="add-article-btn"
-                class="px-5 py-3 text-white bg-blue-600 rounded-lg shadow-md hover:bg-blue-700">
-                + Adicionar Novo Artigo
-            </button>
-        </div>
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
-        <!-- Lista de Artigos -->
-        <div class="bg-white rounded-lg shadow-md overflow-hidden">
-            <h2 class="text-xl font-semibold p-5 border-b">Artigos Publicados</h2>
-            <div id="admin-articles-list" class="divide-y divide-gray-200">
-                <!-- Artigos serão carregados aqui -->
-                <p class="p-5 text-gray-500">Carregando artigos...</p>
+            <!-- Coluna de Artigos -->
+            <div class="lg:col-span-2">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-2xl font-bold text-gray-900">Artigos</h2>
+                    <button id="add-article-btn"
+                        class="px-5 py-3 text-white bg-blue-600 rounded-lg shadow-md hover:bg-blue-700">
+                        + Adicionar Novo Artigo
+                    </button>
+                </div>
+
+                <div class="bg-white rounded-lg shadow-md overflow-hidden">
+                    <div id="admin-articles-list" class="divide-y divide-gray-200">
+                        <!-- Artigos serão carregados aqui -->
+                        <p class="p-5 text-gray-500">Carregando artigos...</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Coluna de Categorias -->
+            <div class="lg:col-span-1">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-2xl font-bold text-gray-900">Categorias</h2>
+                    <button id="add-category-btn"
+                        class="px-4 py-2 text-sm text-white bg-green-600 rounded-lg shadow-md hover:bg-green-700">
+                        + Nova
+                    </button>
+                </div>
+
+                <div class="bg-white rounded-lg shadow-md overflow-hidden">
+                    <div id="admin-categories-list" class="divide-y divide-gray-200">
+                        <!-- Categorias serão carregadas aqui -->
+                        <p class="p-5 text-gray-500">Carregando categorias...</p>
+                    </div>
+                </div>
             </div>
         </div>
+
     </div>
 
-    <!-- ==== MODAL DE ADICIONAR/EDITAR ARTIGO ==== -->
+    <!-- ==== FUNDO MODAL (Backdrop) ==== -->
     <div id="modal-backdrop" class="fixed inset-0 bg-black bg-opacity-60 z-40"></div>
+
+    <!-- ==== MODAL DE ADICIONAR/EDITAR ARTIGO ==== -->
     <div id="article-form-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4">
         <div class="bg-white rounded-lg shadow-2xl max-w-4xl w-full max-h-[90vh] flex flex-col">
-            <h3 class="text-2xl font-bold p-5 border-b">Adicionar/Editar Artigo</h3>
+            <h3 id="article-modal-title" class="text-2xl font-bold p-5 border-b">Adicionar Novo Artigo</h3>
 
             <form id="article-form" class="p-6 space-y-4 overflow-y-auto">
                 <input type="hidden" id="article-id">
@@ -127,17 +208,21 @@
                     <textarea id="article-summary" rows="3" required
                         class="w-full px-3 py-2 mt-1 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"></textarea>
                 </div>
-                <div>
-                    <label for="article-category" class="block text-sm font-medium text-gray-700">Categoria</label>
-                    <select id="article-category" required
-                        class="w-full px-3 py-2 mt-1 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
-                        <!-- Categorias do index.html -->
-                        <option value="COMUNICADOS">Comunicados</option>
-                        <option value="PROVIMENTOS">Provimentos</option>
-                        <option value="ORIENTACOES">Orientações TI</option>
-                        <option value="RH">Recursos Humanos</option>
-                        <!-- Adicione mais se necessário -->
-                    </select>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label for="article-category" class="block text-sm font-medium text-gray-700">Categoria</label>
+                        <select id="article-category" required
+                            class="w-full px-3 py-2 mt-1 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                            <!-- Categorias do Firebase virão aqui -->
+                        </select>
+                    </div>
+                    <div>
+                        <label for="article-tags" class="block text-sm font-medium text-gray-700">Tags (separadas por
+                            vírgula)</label>
+                        <input type="text" id="article-tags"
+                            class="w-full px-3 py-2 mt-1 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                            placeholder="ex: urgente, TI, rh">
+                    </div>
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700">Conteúdo Principal</label>
@@ -146,10 +231,57 @@
             </form>
 
             <div class="flex justify-end p-4 border-t bg-gray-50 rounded-b-lg">
-                <button id="cancel-btn"
+                <button id="article-cancel-btn"
                     class="px-4 py-2 mr-3 text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200">Cancelar</button>
-                <button id="save-article-btn"
+                <button id="article-save-btn"
                     class="px-4 py-2 text-white bg-blue-600 rounded-md hover:bg-blue-700">Salvar Artigo</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==== MODAL DE ADICIONAR/EDITAR CATEGORIA ==== -->
+    <div id="category-form-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-lg shadow-2xl max-w-lg w-full max-h-[90vh] flex flex-col">
+            <h3 id="category-modal-title" class="text-2xl font-bold p-5 border-b">Adicionar Nova Categoria</h3>
+
+            <form id="category-form" class="p-6 space-y-4 overflow-y-auto">
+                <input type="hidden" id="category-id">
+                <div>
+                    <label for="category-name" class="block text-sm font-medium text-gray-700">Nome da Categoria</label>
+                    <input type="text" id="category-name" required
+                        class="w-full px-3 py-2 mt-1 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label for="category-color" class="block text-sm font-medium text-gray-700">Cor
+                            (Tailwind)</label>
+                        <select id="category-color" required
+                            class="w-full px-3 py-2 mt-1 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                            <option value="blue">Azul (blue)</option>
+                            <option value="indigo">Índigo (indigo)</option>
+                            <option value="emerald">Esmeralda (emerald)</option>
+                            <option value="amber">Âmbar (amber)</option>
+                            <option value="rose">Rosa (rose)</option>
+                            <option value="gray">Cinza (gray)</option>
+                            <option value="purple">Roxo (purple)</option>
+                            <option value="cyan">Ciano (cyan)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="category-icon" class="block text-sm font-medium text-gray-700">Ícone</label>
+                        <select id="category-icon" required
+                            class="w-full px-3 py-2 mt-1 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                            <!-- Ícones do iconMap serão populados aqui -->
+                        </select>
+                    </div>
+                </div>
+            </form>
+
+            <div class="flex justify-end p-4 border-t bg-gray-50 rounded-b-lg">
+                <button id="category-cancel-btn"
+                    class="px-4 py-2 mr-3 text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200">Cancelar</button>
+                <button id="category-save-btn"
+                    class="px-4 py-2 text-white bg-green-600 rounded-md hover:bg-green-700">Salvar Categoria</button>
             </div>
         </div>
     </div>
@@ -160,7 +292,7 @@
         // Importar funções do Firebase
         import { initializeApp, setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, addDoc, onSnapshot, doc, updateDoc, deleteDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, onSnapshot, doc, updateDoc, deleteDoc, serverTimestamp, query, orderBy } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         // Configuração do Firebase (fornecida por você)
         const firebaseConfig = {
@@ -178,30 +310,46 @@
         const db = getFirestore(app);
         setLogLevel('Debug'); // Para ver logs no console
 
-        // Coleção de artigos
+        // Coleções de dados
         const articlesCol = collection(db, "artigos");
+        const categoriesCol = collection(db, "categorias");
 
         // Referências do DOM
         const loginView = document.getElementById('login-view');
         const dashboardView = document.getElementById('dashboard-view');
         const modalBackdrop = document.getElementById('modal-backdrop');
-        const modalForm = document.getElementById('article-form-modal');
+
+        // --- DOM do Modal de Artigo ---
+        const articleModal = document.getElementById('article-form-modal');
+        const articleModalTitle = document.getElementById('article-modal-title');
         const articlesListDiv = document.getElementById('admin-articles-list');
-
-        // Botões
-        const loginForm = document.getElementById('login-form');
-        const loginGoogleBtn = document.getElementById('login-google-btn');
-        const logoutBtn = document.getElementById('logout-btn');
         const addArticleBtn = document.getElementById('add-article-btn');
-        const saveArticleBtn = document.getElementById('save-article-btn');
-        const cancelBtn = document.getElementById('cancel-btn');
-
-        // Formulário
+        const saveArticleBtn = document.getElementById('article-save-btn');
+        const cancelArticleBtn = document.getElementById('article-cancel-btn');
         const articleForm = document.getElementById('article-form');
         const articleIdInput = document.getElementById('article-id');
         const articleTitleInput = document.getElementById('article-title');
         const articleSummaryInput = document.getElementById('article-summary');
         const articleCategoryInput = document.getElementById('article-category');
+        const articleTagsInput = document.getElementById('article-tags');
+
+        // --- DOM do Modal de Categoria ---
+        const categoryModal = document.getElementById('category-form-modal');
+        const categoryModalTitle = document.getElementById('category-modal-title');
+        const categoriesListDiv = document.getElementById('admin-categories-list');
+        const addCategoryBtn = document.getElementById('add-category-btn');
+        const saveCategoryBtn = document.getElementById('category-save-btn');
+        const cancelCategoryBtn = document.getElementById('category-cancel-btn');
+        const categoryForm = document.getElementById('category-form');
+        const categoryIdInput = document.getElementById('category-id');
+        const categoryNameInput = document.getElementById('category-name');
+        const categoryColorInput = document.getElementById('category-color');
+        const categoryIconInput = document.getElementById('category-icon');
+
+        // Botões de Login/Logout
+        const loginForm = document.getElementById('login-form');
+        const loginGoogleBtn = document.getElementById('login-google-btn');
+        const logoutBtn = document.getElementById('logout-btn');
 
         // Editor Quill
         const quill = new Quill('#editor', {
@@ -216,18 +364,28 @@
             }
         });
 
-        // Cache local para editar
+        // Cache local
         let articlesMap = new Map();
+        let categoriesMap = new Map();
+
+        // --- INICIALIZAÇÃO ---
+        function initAdmin() {
+            // Popula o dropdown de ícones
+            categoryIconInput.innerHTML = '';
+            for (const [key, iconData] of Object.entries(iconMap)) {
+                categoryIconInput.innerHTML += `<option value="${key}">${iconData.name}</option>`;
+            }
+        }
 
         // --- CONTROLE DE AUTENTICAÇÃO ---
-
-        // Observador de estado de login
         onAuthStateChanged(auth, (user) => {
             if (user) {
                 // Usuário está logado
                 loginView.style.display = 'none';
                 dashboardView.style.display = 'block';
-                loadArticles(); // Carrega os artigos
+                loadCategories(); // Carrega categorias primeiro
+                loadArticles(); // Carrega artigos
+                initAdmin(); // Inicializa os formulários
             } else {
                 // Usuário está deslogado
                 loginView.style.display = 'flex';
@@ -235,6 +393,7 @@
             }
         });
 
+        // ... (Funções de login/logout com email/Google - sem alteração) ...
         // Login com Email/Senha
         loginForm.addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -244,7 +403,6 @@
                 await signInWithEmailAndPassword(auth, email, password);
             } catch (error) {
                 console.error("Erro ao fazer login:", error);
-                // Você pode adicionar uma mensagem de erro na tela aqui
             }
         });
 
@@ -263,71 +421,189 @@
             await signOut(auth);
         });
 
-        // --- CONTROLE DO MODAL (FORMULÁRIO) ---
 
-        function openModal(article = null) {
-            articleForm.reset(); // Limpa o formulário
+        // --- FUNÇÕES DE MODAL GENÉRICAS ---
+        function openModal(modal) {
+            modalBackdrop.style.display = 'block';
+            modal.style.display = 'flex';
+        }
+        function closeModal(modal) {
+            modalBackdrop.style.display = 'none';
+            modal.style.display = 'none';
+        }
+
+        // --- CONTROLE DE CATEGORIAS (CRUD) ---
+
+        // Abrir modal de Categoria (nova ou edição)
+        function openCategoryModal(category = null) {
+            categoryForm.reset();
+            if (category) {
+                // Modo Edição
+                categoryModalTitle.textContent = "Editar Categoria";
+                categoryIdInput.value = category.id;
+                categoryNameInput.value = category.name;
+                categoryColorInput.value = category.color;
+                categoryIconInput.value = category.icon;
+            } else {
+                // Modo Adição
+                categoryModalTitle.textContent = "Adicionar Nova Categoria";
+                categoryIdInput.value = "";
+            }
+            openModal(categoryModal);
+        }
+
+        // Carregar Categorias
+        function loadCategories() {
+            // Ordena por nome
+            const q = query(categoriesCol, orderBy("name"));
+
+            onSnapshot(q, (snapshot) => {
+                categoriesListDiv.innerHTML = ''; // Limpa a lista
+                articleCategoryInput.innerHTML = ''; // Limpa o dropdown do form de artigos
+                categoriesMap.clear();
+
+                if (snapshot.empty) {
+                    categoriesListDiv.innerHTML = '<p class="p-5 text-gray-500">Nenhuma categoria encontrada.</p>';
+                    return;
+                }
+
+                snapshot.forEach(doc => {
+                    const category = { id: doc.id, ...doc.data() };
+                    categoriesMap.set(category.id, category);
+
+                    // Adiciona na lista do Admin
+                    const categoryEl = document.createElement('div');
+                    categoryEl.className = 'flex justify-between items-center p-5';
+                    // Usa a cor para identificar
+                    const colorClass = `bg-${category.color}-500`;
+                    categoryEl.innerHTML = `
+                        <div class="flex items-center">
+                            <span class="w-4 h-4 rounded-full ${colorClass} mr-3"></span>
+                            <span class="font-medium">${category.name}</span>
+                        </div>
+                        <div class="space-x-2">
+                            <button class="edit-category-btn px-3 py-1 text-sm text-blue-600 bg-blue-100 rounded-md" data-id="${category.id}">Editar</button>
+                            <button class="delete-category-btn px-3 py-1 text-sm text-red-600 bg-red-100 rounded-md" data-id="${category.id}">Excluir</button>
+                        </div>
+                    `;
+                    categoriesListDiv.appendChild(categoryEl);
+
+                    // Adiciona no <select> do formulário de artigos
+                    articleCategoryInput.innerHTML += `<option value="${category.id}">${category.name}</option>`;
+                });
+            });
+        }
+
+        // Salvar Categoria (Create/Update)
+        saveCategoryBtn.addEventListener('click', async () => {
+            const id = categoryIdInput.value;
+            const categoryData = {
+                name: categoryNameInput.value,
+                color: categoryColorInput.value,
+                icon: categoryIconInput.value,
+            };
+
+            if (!categoryData.name) return;
+
+            try {
+                if (id) {
+                    // Update
+                    await updateDoc(doc(db, "categorias", id), categoryData);
+                } else {
+                    // Create
+                    await addDoc(categoriesCol, categoryData);
+                }
+                closeModal(categoryModal);
+            } catch (error) {
+                console.error("Erro ao salvar categoria:", error);
+            }
+        });
+
+        // Event Listeners para Categorias
+        addCategoryBtn.addEventListener('click', () => openCategoryModal(null));
+        cancelCategoryBtn.addEventListener('click', () => closeModal(categoryModal));
+
+        categoriesListDiv.addEventListener('click', async (e) => {
+            const target = e.target;
+
+            // Botão Editar Categoria
+            if (target.classList.contains('edit-category-btn')) {
+                const id = target.dataset.id;
+                const category = categoriesMap.get(id);
+                if (category) {
+                    openCategoryModal(category);
+                }
+            }
+
+            // Botão Excluir Categoria
+            if (target.classList.contains('delete-category-btn')) {
+                // TODO: Adicionar confirmação
+                const id = target.dataset.id;
+                try {
+                    await deleteDoc(doc(db, "categorias", id));
+                } catch (error) {
+                    console.error("Erro ao excluir categoria:", error);
+                    // Adicionar alerta se a categoria estiver em uso?
+                }
+            }
+        });
+
+        // --- CONTROLE DE ARTIGOS (CRUD) ---
+
+        // Abrir modal de Artigo (novo ou edição)
+        function openArticleModal(article = null) {
+            articleForm.reset();
 
             if (article) {
                 // Modo Edição
+                articleModalTitle.textContent = "Editar Artigo";
                 articleIdInput.value = article.id;
                 articleTitleInput.value = article.title;
                 articleSummaryInput.value = article.summary;
-                articleCategoryInput.value = article.category;
-                quill.root.innerHTML = article.content || ""; // Carrega conteúdo no editor
+                articleCategoryInput.value = article.categoryId; // Salva o ID da categoria
+                articleTagsInput.value = article.tags ? article.tags.join(', ') : ''; // Junta o array
+                quill.root.innerHTML = article.content || "";
             } else {
                 // Modo Adição
-                articleIdInput.value = ""; // Limpa o ID
-                quill.root.innerHTML = ""; // Limpa o editor
+                articleModalTitle.textContent = "Adicionar Novo Artigo";
+                articleIdInput.value = "";
+                quill.root.innerHTML = "";
             }
-
-            modalBackdrop.style.display = 'block';
-            modalForm.style.display = 'flex';
+            openModal(articleModal);
         }
 
-        function closeModal() {
-            modalBackdrop.style.display = 'none';
-            modalForm.style.display = 'none';
-        }
-
-        addArticleBtn.addEventListener('click', () => openModal(null));
-        cancelBtn.addEventListener('click', closeModal);
-        modalBackdrop.addEventListener('click', closeModal);
-
-        // --- LÓGICA CRUD (Create, Read, Update, Delete) ---
-
-        // R: Read (Carregar Artigos no Admin)
+        // Carregar Artigos
         function loadArticles() {
-            onSnapshot(articlesCol, (snapshot) => {
+            // Ordena por data (a ser salva no artigo)
+            const q = query(articlesCol, orderBy("date", "desc"));
+
+            onSnapshot(q, (snapshot) => {
                 articlesListDiv.innerHTML = ''; // Limpa a lista
-                articlesMap.clear(); // Limpa o cache
+                articlesMap.clear();
 
                 if (snapshot.empty) {
                     articlesListDiv.innerHTML = '<p class="p-5 text-gray-500">Nenhum artigo encontrado.</p>';
                     return;
                 }
 
-                const articles = [];
                 snapshot.forEach(doc => {
                     const article = { id: doc.id, ...doc.data() };
-                    articles.push(article);
                     articlesMap.set(article.id, article); // Salva no cache
-                });
 
-                // Ordena (opcional, pode ser por data)
-                // articles.sort((a, b) => b.date.localeCompare(a.date));
+                    // Pega o nome da categoria do cache
+                    const category = categoriesMap.get(article.categoryId);
+                    const categoryName = category ? category.name : "Sem Categoria";
 
-                articles.forEach(article => {
                     const articleEl = document.createElement('div');
                     articleEl.className = 'flex justify-between items-center p-5';
                     articleEl.innerHTML = `
                         <div>
                             <h4 class="font-semibold text-lg">${article.title}</h4>
-                            <span class="text-sm text-gray-600">${article.category}</span>
+                            <span class="text-sm text-gray-600">${categoryName}</span>
                         </div>
                         <div class="space-x-2">
-                            <button class="edit-btn px-3 py-1 text-sm text-blue-600 bg-blue-100 rounded-md" data-id="${article.id}">Editar</button>
-                            <button class="delete-btn px-3 py-1 text-sm text-red-600 bg-red-100 rounded-md" data-id="${article.id}">Excluir</button>
+                            <button class="edit-article-btn px-3 py-1 text-sm text-blue-600 bg-blue-100 rounded-md" data-id="${article.id}">Editar</button>
+                            <button class="delete-article-btn px-3 py-1 text-sm text-red-600 bg-red-100 rounded-md" data-id="${article.id}">Excluir</button>
                         </div>
                     `;
                     articlesListDiv.appendChild(articleEl);
@@ -335,63 +611,69 @@
             });
         }
 
-        // C/U: Create/Update (Salvar Artigo)
+        // Salvar Artigo (Create/Update)
         saveArticleBtn.addEventListener('click', async () => {
             const id = articleIdInput.value;
             const title = articleTitleInput.value;
             const summary = articleSummaryInput.value;
-            const category = articleCategoryInput.value;
-            const content = quill.root.innerHTML; // Pega o HTML do editor
+            const categoryId = articleCategoryInput.value; // Agora é o ID
+            const content = quill.root.innerHTML;
             const date = new Date().toISOString().split('T')[0]; // Formato YYYY-MM-DD
 
-            if (!title || !summary || !category || content === '<p><br></p>') {
-                console.error("Preencha todos os campos!"); // Adicione um alerta visual se desejar
+            // Processamento das Tags
+            const tagsInput = articleTagsInput.value;
+            const tags = tagsInput.split(',')
+                .map(tag => tag.trim()) // Limpa espaços
+                .filter(tag => tag.length > 0); // Remove tags vazias
+
+            if (!title || !summary || !categoryId || content === '<p><br></p>') {
+                console.error("Preencha todos os campos obrigatórios!");
                 return;
             }
 
             const articleData = {
                 title,
                 summary,
-                category,
+                categoryId, // Salva o ID da categoria
                 content,
-                date, // Data para ordenação e exibição
+                tags, // Salva o array de tags
+                date,
                 updatedAt: serverTimestamp()
             };
 
             try {
                 if (id) {
                     // Update
-                    const articleRef = doc(db, "artigos", id);
-                    await updateDoc(articleRef, articleData);
+                    await updateDoc(doc(db, "artigos", id), articleData);
                 } else {
                     // Create
-                    articleData.createdAt = serverTimestamp(); // Adiciona data de criação
+                    articleData.createdAt = serverTimestamp();
                     await addDoc(articlesCol, articleData);
                 }
-                closeModal();
+                closeModal(articleModal);
             } catch (error) {
                 console.error("Erro ao salvar artigo:", error);
             }
         });
 
-        // D: Delete (Excluir Artigo)
+        // Event Listeners para Artigos
+        addArticleBtn.addEventListener('click', () => openArticleModal(null));
+        cancelArticleBtn.addEventListener('click', () => closeModal(articleModal));
+
         articlesListDiv.addEventListener('click', async (e) => {
             const target = e.target;
 
-            // Botão Editar
-            if (target.classList.contains('edit-btn')) {
+            // Botão Editar Artigo
+            if (target.classList.contains('edit-article-btn')) {
                 const id = target.dataset.id;
-                const article = articlesMap.get(id); // Pega do cache
+                const article = articlesMap.get(id);
                 if (article) {
-                    openModal(article);
+                    openArticleModal(article);
                 }
             }
 
-            // Botão Excluir
-            if (target.classList.contains('delete-btn')) {
-                // NÃO USE window.confirm() pois é bloqueado
-                // Para simplificar, vamos excluir direto. 
-                // O ideal seria um segundo modal de confirmação.
+            // Botão Excluir Artigo
+            if (target.classList.contains('delete-article-btn')) {
                 const id = target.dataset.id;
                 try {
                     await deleteDoc(doc(db, "artigos", id));
@@ -399,6 +681,12 @@
                     console.error("Erro ao excluir artigo:", error);
                 }
             }
+        });
+
+        // Fechar modals genéricos
+        modalBackdrop.addEventListener('click', () => {
+            closeModal(articleModal);
+            closeModal(categoryModal);
         });
 
     </script>
