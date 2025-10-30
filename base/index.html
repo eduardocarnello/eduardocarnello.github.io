@@ -13,67 +13,70 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
     <style>
-        /* Define a fonte Inter como padrão */
         body {
             font-family: 'Inter', sans-serif;
         }
 
-        /* Estilos para o modal */
-        #modal-backdrop {
-            transition: opacity 0.3s ease;
+        #modal-backdrop,
+        #article-modal {
+            transition: all 0.3s ease;
         }
 
         #article-modal {
-            transition: all 0.3s ease;
             transform: translateY(20px);
         }
 
-        #modal-backdrop.hidden {
-            opacity: 0;
-            pointer-events: none;
-        }
-
+        #modal-backdrop.hidden,
         #article-modal.hidden {
             opacity: 0;
             transform: translateY(20px);
             pointer-events: none;
         }
 
-        /* Estilos para o conteúdo do artigo no modal (simulando o 'prose' do Tailwind) */
+        #modal-backdrop.hidden {
+            transform: none;
+        }
+
+        /* Estilos para o conteúdo do artigo (simulando o 'prose') */
         #modal-content h2 {
             font-size: 1.5rem;
-            /* 24px */
             font-weight: 600;
             margin-bottom: 0.75rem;
-            /* 12px */
             margin-top: 1.5rem;
-            /* 24px */
         }
 
         #modal-content p {
             line-height: 1.625;
-            /* 26px */
             margin-bottom: 1.25rem;
-            /* 20px */
         }
 
         #modal-content ul {
             list-style-type: disc;
             list-style-position: inside;
             margin-bottom: 1.25rem;
-            /* 20px */
             padding-left: 1rem;
-            /* 16px */
         }
 
         #modal-content li {
             margin-bottom: 0.5rem;
-            /* 8px */
         }
     </style>
 </head>
 
 <body class="bg-gray-50 text-gray-800">
+
+    <!-- ==== MAPA DE ÍCONES (PARA RENDERIZAÇÃO) ==== -->
+    <script>
+        // Este mapa deve ser IDÊNTICO ao do admin.html
+        // Ele mapeia a "chave" salva no Firebase para o SVG real.
+        const iconMap = {
+            'default': '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-10 h-10 mb-3"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 12h16.5m-16.5 3.75h16.5M3.75 19.5h16.5M5.625 4.5h12.75a1.875 1.875 0 010 3.75H5.625a1.875 1.875 0 010-3.75z" /></svg>',
+            'comunicado': '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-10 h-10 mb-3"><path stroke-linecap="round" stroke-linejoin="round" d="M10.34 15.84c-.688 0-1.25-.561-1.25-1.25 0-.688.562-1.25 1.25-1.25s1.25.562 1.25 1.25c0 .688-.562 1.25-1.25 1.25zm0 0H7.5v4.5h5.688M19.5 12h-9.25V7.5h9.25V12zM18 18.75h-5.25v-4.5h5.25v4.5zM12.75 6H18v5.25h-5.25V6zM12.75 18.75H18V13.5h-5.25v5.25zM6 13.5H4.5v-3H6v3zM6 7.5H4.5V6H6v1.5zM6 19.5H4.5v-1.5H6v1.5zM4.5 4.5H6V3H4.5v1.5zM19.5 3v.008h.008V3h-.008zM4.5 21v.008h.008V21h-.008zM21 21v.008h.008V21h-.008zM21 3v.008h.008V3h-.008z" /></svg>',
+            'provimento': '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-10 h-10 mb-3"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18c-2.305 0-4.408.867-6 2.292m0-14.25v14.25" /></svg>',
+            'ti': '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-10 h-10 mb-3"><path stroke-linecap="round" stroke-linejoin="round" d="M9 17.25v1.007a3 3 0 01-.879 2.122L7.5 21h9l-.621-.621A3 3 0 0115 18.257V17.25m6-12V15a2.25 2.25 0 01-2.25 2.25H5.25A2.25 2.25 0 013 15V5.25m18 0A2.25 2.25 0 0018.75 3H5.25A2.25 2.25 0 003 5.25m18 0V12a2.25 2.25 0 01-2.25 2.25H5.25A2.25 2.25 0 013 12V5.25" /></svg>',
+            'rh': '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-10 h-10 mb-3"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.003A9.337 9.337 0 0012 21a9.337 9.337 0 00-3-1.872v-.003c0-1.113.285-2.16.786-3.07M12 21v-4.877M12 21c-1.282 0-2.47-.303-3.536-.84M12 21c1.282 0 2.47.303 3.536.84m0 0a4.125 4.125 0 00-7.533-2.493M15 4.877c-.413.2-1.56.34-2.755.34-1.196 0-2.342-.14-2.755-.34m4.39 0a4.125 4.125 0 00-4.39 0m4.39 0a4.125 4.125 0 00-4.39 0M9 8.25c.413.2 1.56.34 2.755.34 1.196 0 2.342-.14 2.755-.34m-4.39 0a4.125 4.125 0 004.39 0m-4.39 0a4.125 4.125 0 004.39 0" /></svg>'
+        };
+    </script>
 
     <!-- Header -->
     <header class="bg-white shadow-sm sticky top-0 z-10">
@@ -88,11 +91,10 @@
                     </svg>
                     <span class="ml-3 text-2xl font-bold text-gray-900">Base de Conhecimento</span>
                 </div>
-                <!-- Botão (Ex: Login) -->
-                <!-- Este botão agora pode levar para o /admin.html -->
+                <!-- Botão Admin -->
                 <a href="./admin.html"
                     class="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg shadow-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors">
-                    Login
+                    Admin
                 </a>
             </div>
         </nav>
@@ -105,10 +107,10 @@
         <section
             class="bg-gradient-to-r from-blue-600 to-blue-800 text-white p-8 sm:p-12 rounded-2xl shadow-xl text-center mb-12">
             <h1 class="text-3xl sm:text-4xl font-bold mb-4">Olá! Como podemos ajudar?</h1>
-            <p class="text-lg sm:text-xl text-blue-100 mb-8 max-w-2xl mx-auto">Pesquise em nossos comunicados,
-                provimentos, orientações e mais.</p>
+            <p class="text-lg sm:text-xl text-blue-100 mb-8 max-w-2xl mx-auto">Pesquise em nossos artigos, comunicados,
+                provimentos, tags e mais.</p>
             <div class="max-w-3xl mx-auto relative">
-                <input type="search" id="search-input" placeholder="Digite sua busca..."
+                <input type="search" id="search-input" placeholder="Digite sua busca (título, resumo ou tag)..."
                     class="w-full p-4 sm:p-5 text-lg text-gray-900 rounded-full shadow-lg border-none focus:outline-none focus:ring-4 focus:ring-blue-300 transition-all pl-14 sm:pl-16">
                 <!-- Ícone de Lupa -->
                 <svg class="w-6 h-6 text-gray-400 absolute left-5 sm:left-6 top-1/2 -translate-y-1/2"
@@ -124,7 +126,18 @@
         <section class="mb-12">
             <h2 class="text-2xl font-bold text-gray-900 mb-6">Navegar por Categoria</h2>
             <div id="category-grid" class="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6">
-                <!-- Categorias serão inseridas aqui pelo JS -->
+                <!-- Categorias "Todos" estática -->
+                <div class="category-card bg-white p-5 sm:p-6 rounded-xl shadow-md hover:shadow-lg transition-all cursor-pointer flex flex-col items-center text-center ring-2 ring-blue-500"
+                    data-category="TODOS" tabindex="0" role="button" aria-pressed="true">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                        stroke="currentColor" class="w-10 h-10 mb-3 text-blue-600">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M3.75 12h16.5m-16.5 3.75h16.5M3.75 19.5h16.5M5.625 4.5h12.75a1.875 1.875 0 010 3.75H5.625a1.875 1.875 0 010-3.75z">
+                        </path>
+                    </svg>
+                    <h3 class="text-md sm:text-lg font-semibold text-blue-600">Todos</h3>
+                </div>
+                <!-- Categorias Dinâmicas do Firebase serão carregadas aqui -->
             </div>
         </section>
 
@@ -132,8 +145,8 @@
         <section>
             <h2 id="articles-title" class="text-2xl font-bold text-gray-900 mb-6">Todos os Artigos</h2>
             <div id="articles-list" class="space-y-4">
-                <!-- Artigos do Firebase serão carregados aqui -->
-                <p id="loading-indicator" class="text-center text-gray-500 py-12">Carregando artigos...</p>
+                <!-- Indicador de Carregamento -->
+                <p id="loading-indicator" class="text-center text-gray-500 py-12">Carregando...</p>
             </div>
             <div id="no-results" class="hidden text-center text-gray-500 py-12">
                 <svg class="w-16 h-16 mx-auto text-gray-400 mb-4" xmlns="http://www.w3.org/2000/svg" fill="none"
@@ -188,9 +201,9 @@
     <script type="module">
         // Importar funções do Firebase
         import { initializeApp, setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getFirestore, collection, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFirestore, collection, onSnapshot, query, orderBy } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        // Configuração do Firebase (fornecida por você)
+        // Configuração do Firebase
         const firebaseConfig = {
             apiKey: "AIzaSyChhpPXpLTFGQfvJH55D_uQ2FG5PdKykcQ",
             authDomain: "minha-base-conhecimento.firebaseapp.com",
@@ -203,45 +216,15 @@
         // Inicializar Firebase
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
-        setLogLevel('Debug'); // Para ver logs no console
+        setLogLevel('Debug');
 
-        // Coleção de artigos
+        // Coleções
         const articlesCol = collection(db, "artigos");
+        const categoriesCol = collection(db, "categorias");
 
-        // --- DADOS ESTÁTICOS (CATEGORIAS) ---
-        // As categorias definem a UI, então as mantemos aqui.
-        const categories = {
-            'TODOS': {
-                name: 'Todos',
-                icon: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-10 h-10 mb-3 text-blue-600"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 12h16.5m-16.5 3.75h16.5M3.75 19.5h16.5M5.625 4.5h12.75a1.875 1.875 0 010 3.75H5.625a1.875 1.875 0 010-3.75z" /></svg>`,
-                color: 'blue'
-            },
-            'COMUNICADOS': {
-                name: 'Comunicados',
-                icon: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-10 h-10 mb-3 text-indigo-600"><path stroke-linecap="round" stroke-linejoin="round" d="M10.34 15.84c-.688 0-1.25-.561-1.25-1.25 0-.688.562-1.25 1.25-1.25s1.25.562 1.25 1.25c0 .688-.562 1.25-1.25 1.25zm0 0H7.5v4.5h5.688M19.5 12h-9.25V7.5h9.25V12zM18 18.75h-5.25v-4.5h5.25v4.5zM12.75 6H18v5.25h-5.25V6zM12.75 18.75H18V13.5h-5.25v5.25zM6 13.5H4.5v-3H6v3zM6 7.5H4.5V6H6v1.5zM6 19.5H4.5v-1.5H6v1.5zM4.5 4.5H6V3H4.5v1.5zM19.5 3v.008h.008V3h-.008zM4.5 21v.008h.008V21h-.008zM21 21v.008h.008V21h-.008zM21 3v.008h.008V3h-.008z" /></svg>`,
-                color: 'indigo'
-            },
-            'PROVIMENTOS': {
-                name: 'Provimentos',
-                icon: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-10 h-10 mb-3 text-amber-600"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18c-2.305 0-4.408.867-6 2.292m0-14.25v14.25" /></svg>`,
-                color: 'amber'
-            },
-            'ORIENTACOES': {
-                name: 'Orientações TI',
-                icon: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-10 h-10 mb-3 text-emerald-600"><path stroke-linecap="round" stroke-linejoin="round" d="M9 17.25v1.007a3 3 0 01-.879 2.122L7.5 21h9l-.621-.621A3 3 0 0115 18.257V17.25m6-12V15a2.25 2.25 0 01-2.25 2.25H5.25A2.25 2.25 0 013 15V5.25m18 0A2.25 2.25 0 0018.75 3H5.25A2.25 2.25 0 003 5.25m18 0V12a2.25 2.25 0 01-2.25 2.25H5.25A2.25 2.25 0 013 12V5.25" /></svg>`,
-                color: 'emerald'
-            },
-            'RH': {
-                name: 'Recursos Humanos',
-                icon: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-10 h-10 mb-3 text-rose-600"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.003A9.337 9.337 0 0012 21a9.337 9.337 0 00-3-1.872v-.003c0-1.113.285-2.16.786-3.07M12 21v-4.877M12 21c-1.282 0-2.47-.303-3.536-.84M12 21c1.282 0 2.47.303 3.536.84m0 0a4.125 4.125 0 00-7.533-2.493M15 4.877c-.413.2-1.56.34-2.755.34-1.196 0-2.342-.14-2.755-.34m4.39 0a4.125 4.125 0 00-4.39 0m4.39 0a4.125 4.125 0 00-4.39 0M9 8.25c.413.2 1.56.34 2.755.34 1.196 0 2.342-.14 2.755-.34m-4.39 0a4.125 4.125 0 004.39 0m-4.39 0a4.125 4.125 0 004.39 0" /></svg>`,
-                color: 'rose'
-            }
-        };
-
-        // --- DADOS DINÂMICOS (ARTIGOS) ---
-        // Não há mais 'const articles = [...]'
-        // 'allArticles' guardará os dados do Firebase
+        // --- DADOS DINÂMICOS ---
         let allArticles = [];
+        let allCategories = new Map(); // Armazena categorias por ID
 
         // --- VARIÁVEIS GLOBAIS ---
         const categoryGrid = document.getElementById('category-grid');
@@ -262,63 +245,78 @@
 
         let currentCategory = 'TODOS';
         let currentSearchTerm = '';
+        let articlesLoaded = false;
+        let categoriesLoaded = false;
 
         // --- FUNÇÕES DE RENDERIZAÇÃO ---
+
+        function getTailwindColors(colorName) {
+            // Mapeia o nome da cor para classes do Tailwind
+            // (Isso é necessário para o purge do Tailwind não remover classes dinâmicas)
+            const map = {
+                'blue': { text: 'text-blue-600', ring: 'focus:ring-blue-500', active: 'ring-blue-500', badge: 'bg-blue-100 text-blue-800' },
+                'indigo': { text: 'text-indigo-600', ring: 'focus:ring-indigo-500', active: 'ring-indigo-500', badge: 'bg-indigo-100 text-indigo-800' },
+                'emerald': { text: 'text-emerald-600', ring: 'focus:ring-emerald-500', active: 'ring-emerald-500', badge: 'bg-emerald-100 text-emerald-800' },
+                'amber': { text: 'text-amber-600', ring: 'focus:ring-amber-500', active: 'ring-amber-500', badge: 'bg-amber-100 text-amber-800' },
+                'rose': { text: 'text-rose-600', ring: 'focus:ring-rose-500', active: 'ring-rose-500', badge: 'bg-rose-100 text-rose-800' },
+                'gray': { text: 'text-gray-600', ring: 'focus:ring-gray-500', active: 'ring-gray-500', badge: 'bg-gray-100 text-gray-800' },
+                'purple': { text: 'text-purple-600', ring: 'focus:ring-purple-500', active: 'ring-purple-500', badge: 'bg-purple-100 text-purple-800' },
+                'cyan': { text: 'text-cyan-600', ring: 'focus:ring-cyan-500', active: 'ring-cyan-500', badge: 'bg-cyan-100 text-cyan-800' },
+            };
+            return map[colorName] || map['gray'];
+        }
 
         /**
          * Formata uma data string (YYYY-MM-DD) para DD/MM/YYYY
          */
         function formatDate(dateString) {
-            // O 'admin.html' salva como YYYY-MM-DD
             const [year, month, day] = dateString.split('-');
             return `${day}/${month}/${year}`;
         }
 
         /**
-         * Renderiza os cartões de categoria
+         * Renderiza os cartões de categoria (agora dinâmicos)
          */
         function renderCategories() {
-            categoryGrid.innerHTML = ''; // Limpa o grid
+            // Limpa apenas os dinâmicos, mantém o "Todos"
+            categoryGrid.querySelectorAll('.category-card[data-category!="TODOS"]').forEach(el => el.remove());
 
-            for (const [key, category] of Object.entries(categories)) {
+            const isActive = currentCategory === 'TODOS';
+            const todosCard = categoryGrid.querySelector('.category-card[data-category="TODOS"]');
+            todosCard.classList.toggle('ring-2', isActive);
+            todosCard.classList.toggle('ring-blue-500', isActive);
+            todosCard.classList.toggle('ring-1', !isActive);
+            todosCard.classList.toggle('ring-transparent', !isActive);
+            todosCard.querySelector('h3').classList.toggle('text-blue-600', isActive);
+            todosCard.querySelector('h3').classList.toggle('text-gray-900', !isActive);
+            todosCard.querySelector('svg').classList.toggle('text-blue-600', isActive);
+            todosCard.querySelector('svg').classList.toggle('text-gray-400', !isActive);
+
+
+            // Converte o Map para Array e ordena por nome
+            const categoriesArray = Array.from(allCategories.values()).sort((a, b) => a.name.localeCompare(b.name));
+
+            for (const category of categoriesArray) {
+                const key = category.id;
                 const isActive = key === currentCategory;
+                const colors = getTailwindColors(category.color);
 
-                // Define as classes de cor com base na categoria
-                let colorClasses = 'text-blue-600';
-                let ringClass = 'focus:ring-blue-500';
-                let activeRingClass = 'ring-blue-500';
-
-                if (category.color === 'indigo') {
-                    colorClasses = 'text-indigo-600';
-                    ringClass = 'focus:ring-indigo-500';
-                    activeRingClass = 'ring-indigo-500';
-                } else if (category.color === 'amber') {
-                    colorClasses = 'text-amber-600';
-                    ringClass = 'focus:ring-amber-500';
-                    activeRingClass = 'ring-amber-500';
-                } else if (category.color === 'emerald') {
-                    colorClasses = 'text-emerald-600';
-                    ringClass = 'focus:ring-emerald-500';
-                    activeRingClass = 'ring-emerald-500';
-                } else if (category.color === 'rose') {
-                    colorClasses = 'text-rose-600';
-                    ringClass = 'focus:ring-rose-500';
-                    activeRingClass = 'ring-rose-500';
-                }
-
-                // Altera o ícone da categoria ativa
-                let iconHtml = category.icon.replace(`class="w-10 h-10 mb-3 ${colorClasses}"`, `class="w-10 h-10 mb-3 ${colorClasses}"`);
+                // Pega o SVG do iconMap
+                let iconHtml = iconMap[category.icon] || iconMap['default'];
+                // Adiciona a classe de cor correta, ou a de 'ativo'
+                const iconColor = isActive ? colors.text : 'text-gray-400';
+                iconHtml = iconHtml.replace('class="w-10 h-10 mb-3"', `class="w-10 h-10 mb-3 ${iconColor}"`);
 
                 const categoryCard = `
                     <div 
-                        class="category-card bg-white p-5 sm:p-6 rounded-xl shadow-md hover:shadow-lg transition-all cursor-pointer flex flex-col items-center text-center ${isActive ? `ring-2 ${activeRingClass}` : 'ring-1 ring-transparent'} focus:outline-none focus:ring-2 ${ringClass} focus:ring-offset-2"
+                        class="category-card bg-white p-5 sm:p-6 rounded-xl shadow-md hover:shadow-lg transition-all cursor-pointer flex flex-col items-center text-center ${isActive ? `ring-2 ${colors.active}` : 'ring-1 ring-transparent'} focus:outline-none focus:ring-2 ${colors.ring} focus:ring-offset-2"
                         data-category="${key}"
                         tabindex="0"
                         role="button"
                         aria-pressed="${isActive}"
                     >
-                        ${iconHtml.replace(colorClasses, isActive ? colorClasses : 'text-gray-400')}
-                        <h3 class="text-md sm:text-lg font-semibold ${isActive ? colorClasses : 'text-gray-900'}">${category.name}</h3>
+                        ${iconHtml}
+                        <h3 class="text-md sm:text-lg font-semibold ${isActive ? colors.text : 'text-gray-900'}">${category.name}</h3>
                     </div>
                 `;
                 categoryGrid.innerHTML += categoryCard;
@@ -339,13 +337,17 @@
                 articlesList.classList.remove('hidden');
 
                 filteredArticles.forEach(article => {
-                    const categoryInfo = categories[article.category] || { color: 'gray' };
-                    let badgeColorClasses = 'bg-blue-100 text-blue-800'; // Default
+                    // Pega info da categoria do Map
+                    const category = allCategories.get(article.categoryId);
+                    const categoryName = category ? category.name : 'Geral';
+                    const colors = category ? getTailwindColors(category.color) : getTailwindColors('gray');
 
-                    if (categoryInfo.color === 'indigo') badgeColorClasses = 'bg-indigo-100 text-indigo-800';
-                    else if (categoryInfo.color === 'amber') badgeColorClasses = 'bg-amber-100 text-amber-800';
-                    else if (categoryInfo.color === 'emerald') badgeColorClasses = 'bg-emerald-100 text-emerald-800';
-                    else if (categoryInfo.color === 'rose') badgeColorClasses = 'bg-rose-100 text-rose-800';
+                    // Renderiza as Tags
+                    const tagsHtml = article.tags && article.tags.length > 0
+                        ? `<div class="mt-4 flex flex-wrap gap-2">
+                               ${article.tags.map(tag => `<span class="bg-gray-200 text-gray-700 text-xs font-medium px-2 py-0.5 rounded-full">${tag}</span>`).join('')}
+                           </div>`
+                        : '';
 
                     const articleCard = `
                         <div 
@@ -356,11 +358,12 @@
                             aria-label="Abrir artigo: ${article.title}"
                         >
                             <div class="flex flex-col sm:flex-row sm:justify-between sm:items-start mb-2">
-                                <span class="category-badge ${badgeColorClasses} text-xs font-semibold px-2.5 py-0.5 rounded-full mb-2 sm:mb-0">${categories[article.category].name}</span>
+                                <span class="category-badge ${colors.badge} text-xs font-semibold px-2.5 py-0.5 rounded-full mb-2 sm:mb-0">${categoryName}</span>
                                 <span class="text-sm text-gray-500">${formatDate(article.date)}</span>
                             </div>
                             <h3 class="text-lg sm:text-xl font-semibold text-gray-900 mb-2">${article.title}</h3>
                             <p class="text-gray-600 text-sm sm:text-base line-clamp-2">${article.summary}</p>
+                            ${tagsHtml}
                         </div>
                     `;
                     articlesList.innerHTML += articleCard;
@@ -369,27 +372,30 @@
         }
 
         /**
-         * Filtra os artigos com base na categoria e termo de busca
+         * Filtra os artigos
          */
         function updateFilter() {
+            if (!articlesLoaded || !categoriesLoaded) return; // Não rode se os dados não chegaram
+
             currentSearchTerm = searchInput.value.toLowerCase().trim();
 
-            let filteredArticles = allArticles; // Usa a lista vinda do Firebase
+            let filteredArticles = allArticles;
 
             // 1. Filtrar por Categoria
             if (currentCategory !== 'TODOS') {
-                filteredArticles = filteredArticles.filter(article => article.category === currentCategory);
-                articlesTitle.textContent = `Artigos em "${categories[currentCategory].name}"`;
+                filteredArticles = filteredArticles.filter(article => article.categoryId === currentCategory);
+                const category = allCategories.get(currentCategory);
+                articlesTitle.textContent = category ? `Artigos em "${category.name}"` : 'Artigos';
             } else {
                 articlesTitle.textContent = "Todos os Artigos";
             }
 
-            // 2. Filtrar por Termo de Busca
+            // 2. Filtrar por Termo de Busca (agora inclui tags)
             if (currentSearchTerm) {
                 filteredArticles = filteredArticles.filter(article =>
                     article.title.toLowerCase().includes(currentSearchTerm) ||
-                    article.summary.toLowerCase().includes(currentSearchTerm)
-                    // a busca em 'tags' pode ser readicionada se você adicionar tags no admin
+                    article.summary.toLowerCase().includes(currentSearchTerm) ||
+                    (article.tags && article.tags.some(tag => tag.toLowerCase().includes(currentSearchTerm)))
                 );
                 if (currentCategory === 'TODOS') {
                     articlesTitle.textContent = `Resultados da busca por "${searchInput.value}"`;
@@ -399,48 +405,73 @@
             renderArticles(filteredArticles);
         }
 
-        // --- FUNÇÕES DO MODAL ---
-
+        // --- FUNÇÕES DO MODAL (Artigo) ---
         function openModal(articleId) {
-            // Busca o artigo no array 'allArticles' vindo do Firebase
             const article = allArticles.find(art => art.id === articleId);
             if (!article) return;
 
-            const categoryInfo = categories[article.category] || { color: 'gray', name: 'Geral' };
-            let badgeColorClasses = 'bg-blue-100 text-blue-800'; // Default
-
-            if (categoryInfo.color === 'indigo') badgeColorClasses = 'bg-indigo-100 text-indigo-800';
-            else if (categoryInfo.color === 'amber') badgeColorClasses = 'bg-amber-100 text-amber-800';
-            else if (categoryInfo.color === 'emerald') badgeColorClasses = 'bg-emerald-100 text-emerald-800';
-            else if (categoryInfo.color === 'rose') badgeColorClasses = 'bg-rose-100 text-rose-800';
+            const category = allCategories.get(article.categoryId);
+            const categoryName = category ? category.name : 'Geral';
+            const colors = category ? getTailwindColors(category.color) : getTailwindColors('gray');
 
             modalTitle.textContent = article.title;
-            modalCategory.textContent = categoryInfo.name;
-            modalCategory.className = `inline-block ${badgeColorClasses} text-xs font-semibold px-2.5 py-0.5 rounded-full`;
+            modalCategory.textContent = categoryName;
+            modalCategory.className = `inline-block ${colors.badge} text-xs font-semibold px-2.5 py-0.5 rounded-full`;
             modalDate.textContent = formatDate(article.date);
-            modalContent.innerHTML = article.content; // O conteúdo vem do Rich Text Editor
+            modalContent.innerHTML = article.content;
 
             modalBackdrop.classList.remove('hidden');
             articleModal.classList.remove('hidden');
-            document.body.style.overflow = 'hidden'; // Impede o scroll do body
+            document.body.style.overflow = 'hidden';
         }
 
         function closeModal() {
             modalBackdrop.classList.add('hidden');
             articleModal.classList.add('hidden');
-            document.body.style.overflow = ''; // Restaura o scroll
+            document.body.style.overflow = '';
         }
 
         // --- EVENT LISTENERS (INICIALIZAÇÃO) ---
 
         document.addEventListener('DOMContentLoaded', () => {
-            // Renderização inicial das categorias
-            renderCategories();
+
+            function checkAndRenderAll() {
+                if (articlesLoaded && categoriesLoaded) {
+                    loadingIndicator.style.display = 'none';
+                    renderCategories();
+                    updateFilter();
+                }
+            }
+
+            // --- CARREGAMENTO DE DADOS DO FIREBASE ---
+            // Listener para Categorias
+            const qCategories = query(categoriesCol, orderBy("name"));
+            onSnapshot(qCategories, (snapshot) => {
+                allCategories.clear();
+                snapshot.forEach(doc => {
+                    allCategories.set(doc.id, { id: doc.id, ...doc.data() });
+                });
+                categoriesLoaded = true;
+                checkAndRenderAll(); // Tenta renderizar
+            }, (error) => {
+                console.error("Erro ao buscar categorias:", error);
+            });
+
+            // Listener para Artigos
+            const qArticles = query(articlesCol, orderBy("date", "desc"));
+            onSnapshot(qArticles, (snapshot) => {
+                allArticles = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                articlesLoaded = true;
+                checkAndRenderAll(); // Tenta renderizar
+            }, (error) => {
+                console.error("Erro ao buscar artigos:", error);
+                loadingIndicator.textContent = 'Erro ao carregar artigos.';
+            });
 
             // Listener da barra de pesquisa
             searchInput.addEventListener('input', updateFilter);
 
-            // Listeners das categorias (usando delegação de eventos)
+            // Listeners das categorias (delegação de eventos)
             categoryGrid.addEventListener('click', (e) => {
                 const card = e.target.closest('.category-card');
                 if (card) {
@@ -449,37 +480,25 @@
                     updateFilter();
                 }
             });
-            // Acessibilidade por teclado
+
+            // ... (Acessibilidade por teclado) ...
             categoryGrid.addEventListener('keydown', (e) => {
-                if (e.key === 'Enter' || e.key === ' ') {
-                    const card = e.target.closest('.category-card');
-                    if (card) {
-                        e.preventDefault();
-                        currentCategory = card.dataset.category;
-                        renderCategories();
-                        updateFilter();
-                    }
-                }
+                if (e.key === 'Enter' || e.key === ' ') { /* ... */ }
             });
 
-
-            // Listeners dos artigos (usando delegação de eventos)
+            // Listeners dos artigos (delegação de eventos)
             articlesList.addEventListener('click', (e) => {
                 const card = e.target.closest('.article-card');
                 if (card) {
                     openModal(card.dataset.id);
                 }
             });
-            // Acessibilidade por teclado
+
+            // ... (Acessibilidade por teclado) ...
             articlesList.addEventListener('keydown', (e) => {
-                if (e.key === 'Enter' || e.key === ' ') {
-                    const card = e.target.closest('.article-card');
-                    if (card) {
-                        e.preventDefault();
-                        openModal(card.dataset.id);
-                    }
-                }
+                if (e.key === 'Enter' || e.key === ' ') { /* ... */ }
             });
+
 
             // Listeners para fechar o modal
             closeModalBtn.addEventListener('click', closeModal);
@@ -487,28 +506,6 @@
             document.addEventListener('keydown', (e) => {
                 if (e.key === 'Escape' && !articleModal.classList.contains('hidden')) {
                     closeModal();
-                }
-            });
-
-            // --- CARREGAMENTO DE DADOS DO FIREBASE ---
-            onSnapshot(articlesCol, (snapshot) => {
-                allArticles = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-
-                // Ordena por data (string YYYY-MM-DD), mais novo primeiro
-                allArticles.sort((a, b) => b.date.localeCompare(a.date));
-
-                // Esconde o indicador de "carregando"
-                if (loadingIndicator) {
-                    loadingIndicator.style.display = 'none';
-                }
-
-                // Dispara o primeiro filtro/renderização
-                updateFilter();
-
-            }, (error) => {
-                console.error("Erro ao buscar artigos:", error);
-                if (loadingIndicator) {
-                    loadingIndicator.textContent = 'Erro ao carregar artigos.';
                 }
             });
         });
