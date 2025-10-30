@@ -279,7 +279,8 @@
          */
         function renderCategories() {
             // Limpa apenas os dinâmicos, mantém o "Todos"
-            categoryGrid.querySelectorAll('.category-card[data-category!="TODOS"]').forEach(el => el.remove());
+            // CORREÇÃO: Trocado [data-category!="TODOS"] por :not([data-category="TODOS"])
+            categoryGrid.querySelectorAll('.category-card:not([data-category="TODOS"])').forEach(el => el.remove());
 
             const isActive = currentCategory === 'TODOS';
             const todosCard = categoryGrid.querySelector('.category-card[data-category="TODOS"]');
