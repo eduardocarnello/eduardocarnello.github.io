@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel de Administração</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts - Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Quill Rich Text Editor -->
+    <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
+    <script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
+
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+
+        /* Oculta elementos por padrão */
+        #dashboard-view,
+        #modal-backdrop,
+        #article-form-modal {
+            display: none;
+        }
+
+        /* Estilo para o editor Quill */
+        #editor {
+            height: 300px;
+        }
+    </style>
+</head>
+
+<body class="bg-gray-100">
+
+    <!-- ==== TELA DE LOGIN ==== -->
+    <div id="login-view" class="flex items-center justify-center min-h-screen">
+        <div class="w-full max-w-md p-8 space-y-6 bg-white rounded-lg shadow-md">
+            <h2 class="text-3xl font-bold text-center text-gray-900">Login do Admin</h2>
+            <!-- Formulário de Login Email/Senha -->
+            <form id="login-form" class="space-y-6">
+                <div>
+                    <label for="email" class="text-sm font-medium text-gray-700">Email</label>
+                    <input id="login-email" type="email" required
+                        class="w-full px-3 py-2 mt-1 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                </div>
+                <div>
+                    <label for="password" class="text-sm font-medium text-gray-700">Senha</label>
+                    <input id="login-password" type="password" required
+                        class="w-full px-3 py-2 mt-1 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                </div>
+                <button id="login-email-btn" type="submit"
+                    class="w-full px-4 py-2 text-white bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">Entrar</button>
+            </form>
+            <div class="relative">
+                <div class="absolute inset-0 flex items-center">
+                    <div class="w-full border-t border-gray-300"></div>
+                </div>
+                <div class="relative flex justify-center text-sm"><span class="px-2 bg-white text-gray-500">Ou</span>
+                </div>
+            </div>
+            <!-- Botão de Login Google -->
+            <button id="login-google-btn"
+                class="w-full flex justify-center items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
+                <svg class="w-5 h-5 mr-2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48">
+                    <path fill="#4285F4"
+                        d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z">
+                    </path>
+                    <path fill="#34A853"
+                        d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v8.51h12.8c-.57 2.83-2.3 5.23-4.81 6.84l7.98 6.19c4.63-4.26 7.4-10.4 7.4-17z">
+                    </path>
+                    <path fill="#FBBC05"
+                        d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z">
+                    </path>
+                    <path fill="#EA4335"
+                        d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.98-6.19c-2.11 1.45-4.79 2.3-7.91 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z">
+                    </path>
+                    <path fill="none" d="M0 0h48v48H0z"></path>
+                </svg>
+                Entrar com Google
+            </button>
+        </div>
+    </div>
+
+    <!-- ==== PAINEL DO DASHBOARD ==== -->
+    <div id="dashboard-view" class="container mx-auto p-4 md:p-8">
+        <header class="flex justify-between items-center mb-6">
+            <h1 class="text-3xl font-bold text-gray-900">Painel Admin</h1>
+            <button id="logout-btn"
+                class="px-4 py-2 text-sm font-medium text-red-600 bg-red-100 rounded-md hover:bg-red-200">Sair</button>
+        </header>
+
+        <div class="mb-6">
+            <button id="add-article-btn"
+                class="px-5 py-3 text-white bg-blue-600 rounded-lg shadow-md hover:bg-blue-700">
+                + Adicionar Novo Artigo
+            </button>
+        </div>
+
+        <!-- Lista de Artigos -->
+        <div class="bg-white rounded-lg shadow-md overflow-hidden">
+            <h2 class="text-xl font-semibold p-5 border-b">Artigos Publicados</h2>
+            <div id="admin-articles-list" class="divide-y divide-gray-200">
+                <!-- Artigos serão carregados aqui -->
+                <p class="p-5 text-gray-500">Carregando artigos...</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==== MODAL DE ADICIONAR/EDITAR ARTIGO ==== -->
+    <div id="modal-backdrop" class="fixed inset-0 bg-black bg-opacity-60 z-40"></div>
+    <div id="article-form-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-lg shadow-2xl max-w-4xl w-full max-h-[90vh] flex flex-col">
+            <h3 class="text-2xl font-bold p-5 border-b">Adicionar/Editar Artigo</h3>
+
+            <form id="article-form" class="p-6 space-y-4 overflow-y-auto">
+                <input type="hidden" id="article-id">
+                <div>
+                    <label for="article-title" class="block text-sm font-medium text-gray-700">Título</label>
+                    <input type="text" id="article-title" required
+                        class="w-full px-3 py-2 mt-1 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                </div>
+                <div>
+                    <label for="article-summary" class="block text-sm font-medium text-gray-700">Resumo (o que aparece
+                        no card)</label>
+                    <textarea id="article-summary" rows="3" required
+                        class="w-full px-3 py-2 mt-1 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"></textarea>
+                </div>
+                <div>
+                    <label for="article-category" class="block text-sm font-medium text-gray-700">Categoria</label>
+                    <select id="article-category" required
+                        class="w-full px-3 py-2 mt-1 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                        <!-- Categorias do index.html -->
+                        <option value="COMUNICADOS">Comunicados</option>
+                        <option value="PROVIMENTOS">Provimentos</option>
+                        <option value="ORIENTACOES">Orientações TI</option>
+                        <option value="RH">Recursos Humanos</option>
+                        <!-- Adicione mais se necessário -->
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Conteúdo Principal</label>
+                    <div id="editor" class="mt-1"></div>
+                </div>
+            </form>
+
+            <div class="flex justify-end p-4 border-t bg-gray-50 rounded-b-lg">
+                <button id="cancel-btn"
+                    class="px-4 py-2 mr-3 text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200">Cancelar</button>
+                <button id="save-article-btn"
+                    class="px-4 py-2 text-white bg-blue-600 rounded-md hover:bg-blue-700">Salvar Artigo</button>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- ==== SCRIPT PRINCIPAL ==== -->
+    <script type="module">
+        // Importar funções do Firebase
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, setLogLevel, onAuthStateChanged, signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, addDoc, onSnapshot, doc, updateDoc, deleteDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // Configuração do Firebase (fornecida por você)
+        const firebaseConfig = {
+            apiKey: "AIzaSyChhpPXpLTFGQfvJH55D_uQ2FG5PdKykcQ",
+            authDomain: "minha-base-conhecimento.firebaseapp.com",
+            projectId: "minha-base-conhecimento",
+            storageBucket: "minha-base-conhecimento.firebasestorage.app",
+            messagingSenderId: "586899421039",
+            appId: "1:586899421039:web:99be661136602118175a9a"
+        };
+
+        // Inicializar Firebase
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        setLogLevel('Debug'); // Para ver logs no console
+
+        // Coleção de artigos
+        const articlesCol = collection(db, "artigos");
+
+        // Referências do DOM
+        const loginView = document.getElementById('login-view');
+        const dashboardView = document.getElementById('dashboard-view');
+        const modalBackdrop = document.getElementById('modal-backdrop');
+        const modalForm = document.getElementById('article-form-modal');
+        const articlesListDiv = document.getElementById('admin-articles-list');
+
+        // Botões
+        const loginForm = document.getElementById('login-form');
+        const loginGoogleBtn = document.getElementById('login-google-btn');
+        const logoutBtn = document.getElementById('logout-btn');
+        const addArticleBtn = document.getElementById('add-article-btn');
+        const saveArticleBtn = document.getElementById('save-article-btn');
+        const cancelBtn = document.getElementById('cancel-btn');
+
+        // Formulário
+        const articleForm = document.getElementById('article-form');
+        const articleIdInput = document.getElementById('article-id');
+        const articleTitleInput = document.getElementById('article-title');
+        const articleSummaryInput = document.getElementById('article-summary');
+        const articleCategoryInput = document.getElementById('article-category');
+
+        // Editor Quill
+        const quill = new Quill('#editor', {
+            theme: 'snow',
+            modules: {
+                toolbar: [
+                    [{ 'header': [1, 2, 3, false] }],
+                    ['bold', 'italic', 'underline', 'link'],
+                    [{ 'list': 'ordered' }, { 'list': 'bullet' }],
+                    ['clean']
+                ]
+            }
+        });
+
+        // Cache local para editar
+        let articlesMap = new Map();
+
+        // --- CONTROLE DE AUTENTICAÇÃO ---
+
+        // Observador de estado de login
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                // Usuário está logado
+                loginView.style.display = 'none';
+                dashboardView.style.display = 'block';
+                loadArticles(); // Carrega os artigos
+            } else {
+                // Usuário está deslogado
+                loginView.style.display = 'flex';
+                dashboardView.style.display = 'none';
+            }
+        });
+
+        // Login com Email/Senha
+        loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('login-email').value;
+            const password = document.getElementById('login-password').value;
+            try {
+                await signInWithEmailAndPassword(auth, email, password);
+            } catch (error) {
+                console.error("Erro ao fazer login:", error);
+                // Você pode adicionar uma mensagem de erro na tela aqui
+            }
+        });
+
+        // Login com Google
+        loginGoogleBtn.addEventListener('click', async () => {
+            const provider = new GoogleAuthProvider();
+            try {
+                await signInWithPopup(auth, provider);
+            } catch (error) {
+                console.error("Erro ao logar com Google:", error);
+            }
+        });
+
+        // Logout
+        logoutBtn.addEventListener('click', async () => {
+            await signOut(auth);
+        });
+
+        // --- CONTROLE DO MODAL (FORMULÁRIO) ---
+
+        function openModal(article = null) {
+            articleForm.reset(); // Limpa o formulário
+
+            if (article) {
+                // Modo Edição
+                articleIdInput.value = article.id;
+                articleTitleInput.value = article.title;
+                articleSummaryInput.value = article.summary;
+                articleCategoryInput.value = article.category;
+                quill.root.innerHTML = article.content || ""; // Carrega conteúdo no editor
+            } else {
+                // Modo Adição
+                articleIdInput.value = ""; // Limpa o ID
+                quill.root.innerHTML = ""; // Limpa o editor
+            }
+
+            modalBackdrop.style.display = 'block';
+            modalForm.style.display = 'flex';
+        }
+
+        function closeModal() {
+            modalBackdrop.style.display = 'none';
+            modalForm.style.display = 'none';
+        }
+
+        addArticleBtn.addEventListener('click', () => openModal(null));
+        cancelBtn.addEventListener('click', closeModal);
+        modalBackdrop.addEventListener('click', closeModal);
+
+        // --- LÓGICA CRUD (Create, Read, Update, Delete) ---
+
+        // R: Read (Carregar Artigos no Admin)
+        function loadArticles() {
+            onSnapshot(articlesCol, (snapshot) => {
+                articlesListDiv.innerHTML = ''; // Limpa a lista
+                articlesMap.clear(); // Limpa o cache
+
+                if (snapshot.empty) {
+                    articlesListDiv.innerHTML = '<p class="p-5 text-gray-500">Nenhum artigo encontrado.</p>';
+                    return;
+                }
+
+                const articles = [];
+                snapshot.forEach(doc => {
+                    const article = { id: doc.id, ...doc.data() };
+                    articles.push(article);
+                    articlesMap.set(article.id, article); // Salva no cache
+                });
+
+                // Ordena (opcional, pode ser por data)
+                // articles.sort((a, b) => b.date.localeCompare(a.date));
+
+                articles.forEach(article => {
+                    const articleEl = document.createElement('div');
+                    articleEl.className = 'flex justify-between items-center p-5';
+                    articleEl.innerHTML = `
+                        <div>
+                            <h4 class="font-semibold text-lg">${article.title}</h4>
+                            <span class="text-sm text-gray-600">${article.category}</span>
+                        </div>
+                        <div class="space-x-2">
+                            <button class="edit-btn px-3 py-1 text-sm text-blue-600 bg-blue-100 rounded-md" data-id="${article.id}">Editar</button>
+                            <button class="delete-btn px-3 py-1 text-sm text-red-600 bg-red-100 rounded-md" data-id="${article.id}">Excluir</button>
+                        </div>
+                    `;
+                    articlesListDiv.appendChild(articleEl);
+                });
+            });
+        }
+
+        // C/U: Create/Update (Salvar Artigo)
+        saveArticleBtn.addEventListener('click', async () => {
+            const id = articleIdInput.value;
+            const title = articleTitleInput.value;
+            const summary = articleSummaryInput.value;
+            const category = articleCategoryInput.value;
+            const content = quill.root.innerHTML; // Pega o HTML do editor
+            const date = new Date().toISOString().split('T')[0]; // Formato YYYY-MM-DD
+
+            if (!title || !summary || !category || content === '<p><br></p>') {
+                console.error("Preencha todos os campos!"); // Adicione um alerta visual se desejar
+                return;
+            }
+
+            const articleData = {
+                title,
+                summary,
+                category,
+                content,
+                date, // Data para ordenação e exibição
+                updatedAt: serverTimestamp()
+            };
+
+            try {
+                if (id) {
+                    // Update
+                    const articleRef = doc(db, "artigos", id);
+                    await updateDoc(articleRef, articleData);
+                } else {
+                    // Create
+                    articleData.createdAt = serverTimestamp(); // Adiciona data de criação
+                    await addDoc(articlesCol, articleData);
+                }
+                closeModal();
+            } catch (error) {
+                console.error("Erro ao salvar artigo:", error);
+            }
+        });
+
+        // D: Delete (Excluir Artigo)
+        articlesListDiv.addEventListener('click', async (e) => {
+            const target = e.target;
+
+            // Botão Editar
+            if (target.classList.contains('edit-btn')) {
+                const id = target.dataset.id;
+                const article = articlesMap.get(id); // Pega do cache
+                if (article) {
+                    openModal(article);
+                }
+            }
+
+            // Botão Excluir
+            if (target.classList.contains('delete-btn')) {
+                // NÃO USE window.confirm() pois é bloqueado
+                // Para simplificar, vamos excluir direto. 
+                // O ideal seria um segundo modal de confirmação.
+                const id = target.dataset.id;
+                try {
+                    await deleteDoc(doc(db, "artigos", id));
+                } catch (error) {
+                    console.error("Erro ao excluir artigo:", error);
+                }
+            }
+        });
+
+    </script>
+</body>
+
+</html>
