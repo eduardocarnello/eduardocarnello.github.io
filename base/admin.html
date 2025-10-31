@@ -606,7 +606,7 @@
         async function loadCategories() {
             categoriesLoadingMsg.classList.remove('hidden');
             try {
-                const categories = await fetchWithToken('/api/getCategorias');
+                const categories = await fetchWithToken('api/getCategorias');
 
                 categoriesLoadingMsg.classList.add('hidden');
                 categoryListAdmin.innerHTML = '';
@@ -767,7 +767,7 @@
             articlesLoadingMsg.classList.remove('hidden');
             try {
                 // Admin pode carregar todos os artigos de uma vez para gerenciar
-                const articles = await fetchWithToken('/api/getArtigos?limit=1000');
+                const articles = await fetchWithToken('api/getArtigos?limit=1000');
 
                 articlesLoadingMsg.classList.add('hidden');
                 articlesListAdmin.innerHTML = '';
@@ -830,7 +830,7 @@
             try {
                 // A lista de artigos (loadArticles) não tem o 'content'.
                 // Precisamos buscar o artigo completo na API de detalhes.
-                const article = await fetchWithToken(`/api/getArtigoDetalhe?id=${id}`);
+                const article = await fetchWithToken(`api/getArtigoDetalhe?id=${id}`);
 
                 articleFormTitle.textContent = 'Editar Artigo';
                 articleIdInput.value = id;
