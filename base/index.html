@@ -1,209 +1,390 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-BR" class="scroll-smooth">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Base de Conhecimento</title>
-    <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Google Fonts - Inter -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         body {
             font-family: 'Inter', sans-serif;
+            background-color: #f8fafc;
+            /* bg-slate-50 */
         }
 
-        #modal-backdrop,
-        #article-modal {
-            transition: all 0.3s ease;
+        /* Cor da barra de rolagem */
+        ::-webkit-scrollbar {
+            width: 8px;
         }
 
-        #article-modal {
-            transform: translateY(20px);
+        ::-webkit-scrollbar-track {
+            background: #f1f5f9;
+            /* bg-slate-100 */
         }
 
-        #modal-backdrop.hidden,
-        #article-modal.hidden {
-            opacity: 0;
-            transform: translateY(20px);
-            pointer-events: none;
+        ::-webkit-scrollbar-thumb {
+            background: #94a3b8;
+            /* bg-slate-400 */
+            border-radius: 4px;
         }
 
-        #modal-backdrop.hidden {
-            transform: none;
+        ::-webkit-scrollbar-thumb:hover {
+            background: #64748b;
+            /* bg-slate-500 */
         }
 
-        /* Estilos para o conteúdo do artigo (simulando o 'prose') */
-        #modal-content h2 {
+        /* Estilo para o conteúdo do artigo no modal */
+        .article-content h2 {
             font-size: 1.5rem;
-            font-weight: 600;
-            margin-bottom: 0.75rem;
+            /* 24px */
+            font-weight: 700;
             margin-top: 1.5rem;
-        }
-
-        #modal-content p {
-            line-height: 1.625;
-            margin-bottom: 1.25rem;
-        }
-
-        #modal-content ul {
-            list-style-type: disc;
-            list-style-position: inside;
-            margin-bottom: 1.25rem;
-            padding-left: 1rem;
-        }
-
-        #modal-content li {
+            /* 24px */
             margin-bottom: 0.5rem;
+            /* 8px */
+        }
+
+        .article-content h3 {
+            font-size: 1.25rem;
+            /* 20px */
+            font-weight: 600;
+            margin-top: 1.25rem;
+            /* 20px */
+            margin-bottom: 0.5rem;
+            /* 8px */
+        }
+
+        .article-content p {
+            margin-bottom: 1rem;
+            /* 16px */
+            line-height: 1.625;
+            /* 26px */
+        }
+
+        .article-content ul,
+        .article-content ol {
+            margin-bottom: 1rem;
+            /* 16px */
+            margin-left: 1.5rem;
+            /* 24px */
+        }
+
+        .article-content ul {
+            list-style-type: disc;
+        }
+
+        .article-content ol {
+            list-style-type: decimal;
+        }
+
+        .article-content li {
+            margin-bottom: 0.5rem;
+            /* 8px */
+        }
+
+        .article-content a {
+            color: #2563eb;
+            /* text-blue-600 */
+            text-decoration: underline;
+        }
+
+        .article-content pre {
+            background-color: #f1f5f9;
+            /* bg-slate-100 */
+            padding: 1rem;
+            /* 16px */
+            border-radius: 0.5rem;
+            /* 8px */
+            overflow-x: auto;
+            margin-bottom: 1rem;
+            /* 16px */
+            font-family: 'Courier New', Courier, monospace;
+        }
+
+        .article-content blockquote {
+            border-left: 4px solid #94a3b8;
+            /* border-slate-400 */
+            padding-left: 1rem;
+            /* 16px */
+            margin-left: 0;
+            margin-bottom: 1rem;
+            /* 16px */
+            font-style: italic;
+            color: #475569;
+            /* text-slate-600 */
+        }
+
+        /* Estilos para imagens coladas ou inseridas por URL */
+        .article-content img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 0.5rem;
+            /* 8px */
+            margin-top: 1.5rem;
+            /* 24px */
+            margin-bottom: 1.5rem;
+            /* 24px */
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+        }
+
+        /* Foco personalizado para acessibilidade */
+        .focus-ring-visible:focus-visible {
+            outline: 2px solid #2563eb;
+            outline-offset: 2px;
+        }
+
+        header.flex.justify-between.items-center.p-4.sm\:p-6.border-b.border-slate-200 {
+            padding: 1rem;
+        }
+
+        div#modal-meta {
+            padding: 1rem;
         }
     </style>
 </head>
 
-<body class="bg-gray-50 text-gray-800">
+<body class="text-slate-800">
 
-    <!-- ==== MAPA DE ÍCONES (PARA RENDERIZAÇÃO) ==== -->
-    <script>
-        // Este mapa deve ser IDÊNTICO ao do admin.html
-        // Ele mapeia a "chave" salva no Firebase para o SVG real.
-        const iconMap = {
-            'default': '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-10 h-10 mb-3"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 12h16.5m-16.5 3.75h16.5M3.75 19.5h16.5M5.625 4.5h12.75a1.875 1.875 0 010 3.75H5.625a1.875 1.875 0 010-3.75z" /></svg>',
-            'comunicado': '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-10 h-10 mb-3"><path stroke-linecap="round" stroke-linejoin="round" d="M10.34 15.84c-.688 0-1.25-.561-1.25-1.25 0-.688.562-1.25 1.25-1.25s1.25.562 1.25 1.25c0 .688-.562 1.25-1.25 1.25zm0 0H7.5v4.5h5.688M19.5 12h-9.25V7.5h9.25V12zM18 18.75h-5.25v-4.5h5.25v4.5zM12.75 6H18v5.25h-5.25V6zM12.75 18.75H18V13.5h-5.25v5.25zM6 13.5H4.5v-3H6v3zM6 7.5H4.5V6H6v1.5zM6 19.5H4.5v-1.5H6v1.5zM4.5 4.5H6V3H4.5v1.5zM19.5 3v.008h.008V3h-.008zM4.5 21v.008h.008V21h-.008zM21 21v.008h.008V21h-.008zM21 3v.008h.008V3h-.008z" /></svg>',
-            'provimento': '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-10 h-10 mb-3"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18c-2.305 0-4.408.867-6 2.292m0-14.25v14.25" /></svg>',
-            'ti': '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-10 h-10 mb-3"><path stroke-linecap="round" stroke-linejoin="round" d="M9 17.25v1.007a3 3 0 01-.879 2.122L7.5 21h9l-.621-.621A3 3 0 0115 18.257V17.25m6-12V15a2.25 2.25 0 01-2.25 2.25H5.25A2.25 2.25 0 013 15V5.25m18 0A2.25 2.25 0 0018.75 3H5.25A2.25 2.25 0 003 5.25m18 0V12a2.25 2.25 0 01-2.25 2.25H5.25A2.25 2.25 0 013 12V5.25" /></svg>',
-            'rh': '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-10 h-10 mb-3"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.003A9.337 9.337 0 0012 21a9.337 9.337 0 00-3-1.872v-.003c0-1.113.285-2.16.786-3.07M12 21v-4.877M12 21c-1.282 0-2.47-.303-3.536-.84M12 21c1.282 0 2.47.303 3.536.84m0 0a4.125 4.125 0 00-7.533-2.493M15 4.877c-.413.2-1.56.34-2.755.34-1.196 0-2.342-.14-2.755-.34m4.39 0a4.125 4.125 0 00-4.39 0m4.39 0a4.125 4.125 0 00-4.39 0M9 8.25c.413.2 1.56.34 2.755.34 1.196 0 2.342-.14 2.755-.34m-4.39 0a4.125 4.125 0 004.39 0m-4.39 0a4.125 4.125 0 004.39 0" /></svg>'
-        };
-    </script>
-
-    <!-- Header -->
-    <header class="bg-white shadow-sm sticky top-0 z-10">
-        <nav class="container mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between items-center h-16">
-                <!-- Logo/Título -->
-                <div class="flex-shrink-0 flex items-center">
-                    <svg class="h-8 w-8 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none"
-                        viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round"
-                            d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18c-2.305 0-4.408.867-6 2.292m0-14.25v14.25" />
-                    </svg>
-                    <span class="ml-3 text-2xl font-bold text-gray-900">Base de Conhecimento</span>
-                </div>
-                <!-- Botão Admin -->
-                <a href="./admin.html"
-                    class="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg shadow-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors">
-                    Admin
-                </a>
-            </div>
-        </nav>
-    </header>
-
-    <!-- Main Content -->
-    <main class="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
-
-        <!-- Seção de Pesquisa -->
-        <section
-            class="bg-gradient-to-r from-blue-600 to-blue-800 text-white p-8 sm:p-12 rounded-2xl shadow-xl text-center mb-12">
-            <h1 class="text-3xl sm:text-4xl font-bold mb-4">Olá! Como podemos ajudar?</h1>
-            <p class="text-lg sm:text-xl text-blue-100 mb-8 max-w-2xl mx-auto">Pesquise em nossos artigos, comunicados,
-                provimentos, tags e mais.</p>
-            <div class="max-w-3xl mx-auto relative">
-                <input type="search" id="search-input" placeholder="Digite sua busca (título, resumo ou tag)..."
-                    class="w-full p-4 sm:p-5 text-lg text-gray-900 rounded-full shadow-lg border-none focus:outline-none focus:ring-4 focus:ring-blue-300 transition-all pl-14 sm:pl-16">
-                <!-- Ícone de Lupa -->
-                <svg class="w-6 h-6 text-gray-400 absolute left-5 sm:left-6 top-1/2 -translate-y-1/2"
-                    xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-                    stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round"
-                        d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
-                </svg>
-            </div>
-        </section>
-
-        <!-- Seção de Categorias -->
-        <section class="mb-12">
-            <h2 class="text-2xl font-bold text-gray-900 mb-6">Navegar por Categoria</h2>
-            <div id="category-grid" class="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6">
-                <!-- Categorias "Todos" estática -->
-                <div class="category-card bg-white p-5 sm:p-6 rounded-xl shadow-md hover:shadow-lg transition-all cursor-pointer flex flex-col items-center text-center ring-2 ring-blue-500"
-                    data-category="TODOS" tabindex="0" role="button" aria-pressed="true">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-                        stroke="currentColor" class="w-10 h-10 mb-3 text-blue-600">
-                        <path stroke-linecap="round" stroke-linejoin="round"
-                            d="M3.75 12h16.5m-16.5 3.75h16.5M3.75 19.5h16.5M5.625 4.5h12.75a1.875 1.875 0 010 3.75H5.625a1.875 1.875 0 010-3.75z">
-                        </path>
-                    </svg>
-                    <h3 class="text-md sm:text-lg font-semibold text-blue-600">Todos</h3>
-                </div>
-                <!-- Categorias Dinâmicas do Firebase serão carregadas aqui -->
-            </div>
-        </section>
-
-        <!-- Seção de Artigos -->
-        <section>
-            <h2 id="articles-title" class="text-2xl font-bold text-gray-900 mb-6">Todos os Artigos</h2>
-            <div id="articles-list" class="space-y-4">
-                <!-- Indicador de Carregamento -->
-                <p id="loading-indicator" class="text-center text-gray-500 py-12">Carregando...</p>
-            </div>
-            <div id="no-results" class="hidden text-center text-gray-500 py-12">
-                <svg class="w-16 h-16 mx-auto text-gray-400 mb-4" xmlns="http://www.w3.org/2000/svg" fill="none"
+    <!-- *** NOVO: Seção de Login (Visível por padrão) *** -->
+    <section id="login-section"
+        class="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+        <div class="max-w-md w-full space-y-8 bg-white p-10 rounded-2xl shadow-xl">
+            <div>
+                <svg class="mx-auto h-12 w-auto text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none"
                     viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round"
-                        d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
+                        d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18c-2.305 0-4.408.867-6 2.292m0-14.25v14.25" />
                 </svg>
-                <h3 class="text-xl font-semibold">Nenhum resultado encontrado</h3>
-                <p class="mt-2">Tente ajustar sua busca ou filtros.</p>
+                <h2 class="mt-6 text-center text-3xl font-extrabold text-gray-900">
+                    Base de Conhecimento
+                </h2>
+                <p class="mt-2 text-center text-sm text-gray-600">
+                    Por favor, faça login para continuar.
+                </p>
             </div>
-        </section>
 
-    </main>
+            <!-- Mensagem de Erro/Status -->
+            <div id="login-status" class="text-center text-red-500 font-medium"></div>
 
-    <!-- Footer -->
-    <footer class="bg-white border-t border-gray-200 mt-16">
-        <div class="container mx-auto px-4 sm:px-6 lg:px-8 py-6 text-center text-gray-500 text-sm">
-            &copy; 2025 Sua Empresa. Todos os direitos reservados.
-        </div>
-    </footer>
-
-    <!-- Modal para Visualização do Artigo -->
-    <div id="modal-backdrop" class="fixed inset-0 bg-black bg-opacity-60 z-40 hidden" aria-hidden="true"></div>
-
-    <div id="article-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 hidden">
-        <div class="bg-white rounded-2xl shadow-2xl max-w-3xl w-full max-h-[90vh] flex flex-col">
-            <!-- Header do Modal -->
-            <div class="flex justify-between items-center p-5 border-b border-gray-200">
-                <div>
-                    <h3 id="modal-title" class="text-2xl font-bold text-gray-900"></h3>
-                    <div class="flex items-center space-x-4 mt-2">
-                        <span id="modal-category"
-                            class="inline-block bg-blue-100 text-blue-800 text-xs font-semibold px-2.5 py-0.5 rounded-full"></span>
-                        <span id="modal-date" class="text-sm text-gray-500"></span>
+            <!-- Formulário de Login -->
+            <form id="login-form" class="mt-8 space-y-6">
+                <div class="rounded-md shadow-sm -space-y-px">
+                    <div>
+                        <label for="login-email" class="sr-only">Email</label>
+                        <input id="login-email" name="email" type="email" autocomplete="email" required
+                            class="appearance-none rounded-none relative block w-full px-3 py-3 border border-gray-300 placeholder-gray-500 text-gray-900  focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
+                            placeholder="Endereço de e-mail">
+                    </div>
+                    <div>
+                        <label for="login-password" class="sr-only">Senha</label>
+                        <input id="login-password" name="password" type="password" autocomplete="current-password"
+                            required
+                            class="appearance-none rounded-none relative block w-full px-3 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
+                            placeholder="Senha">
                     </div>
                 </div>
-                <button id="close-modal-btn" class="text-gray-400 hover:text-gray-600 transition-colors">
-                    <svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+
+                <div>
+                    <button type="submit"
+                        class="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors">
+                        Entrar
+                    </button>
+                </div>
+            </form>
+
+            <!-- Divisor "OU" -->
+            <div class="relative flex py-3 items-center">
+                <div class="flex-grow border-t border-gray-300"></div>
+                <span class="flex-shrink mx-4 text-gray-500">OU</span>
+                <div class="flex-grow border-t border-gray-300"></div>
+            </div>
+
+            <!-- Botão Login Google -->
+            <div>
+                <button id="google-login-btn"
+                    class="group relative w-full flex justify-center py-3 px-4 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors">
+                    <img class="w-5 h-5 mr-2" src="https://www.svgrepo.com/show/475656/google-color.svg"
+                        alt="Google icon">
+                    Entrar com Google
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- *** NOVO: Seção de Conteúdo (Oculta por padrão) *** -->
+    <section id="content-section" class="hidden">
+
+        <!-- Header -->
+        <header class="bg-white shadow-sm sticky top-0 z-40">
+            <nav class="container mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="flex justify-between items-center h-16">
+                    <!-- Logo -->
+                    <div class="flex-shrink-0 flex items-center">
+                        <svg class="h-8 w-auto text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none"
+                            viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18c-2.305 0-4.408.867-6 2.292m0-14.25v14.25" />
+                        </svg>
+                        <span class="ml-3 text-2xl font-bold text-slate-800">Base de Conhecimento</span>
+                    </div>
+                    <!-- Links Admin e Sair -->
+                    <div class="flex items-center gap-4">
+                        <span id="user-email" class="text-sm text-slate-600 hidden sm:block"></span>
+                        <a href="admin.html" id="admin-link"
+                            class="text-sm font-medium text-slate-600 hover:text-blue-600 transition-colors focus-ring-visible rounded-md p-1">
+                            Painel Admin
+                        </a>
+                        <button id="logout-btn"
+                            class="text-sm font-medium text-red-600 hover:text-red-800 transition-colors focus-ring-visible rounded-md p-1">
+                            Sair
+                        </button>
+                    </div>
+                </div>
+            </nav>
+        </header>
+
+        <!-- Conteúdo Principal -->
+        <main class="container mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
+
+            <!-- Seção de Pesquisa -->
+            <section
+                class="bg-gradient-to-r from-blue-600 to-blue-800 text-white p-8 sm:p-12 rounded-2xl shadow-xl text-center mb-12">
+                <h1 class="text-3xl sm:text-4xl font-bold mb-4">Olá! Como podemos ajudar?</h1>
+                <p class="text-lg sm:text-xl text-blue-100 mb-8 max-w-2xl mx-auto">Pesquise em nossos artigos,
+                    comunicados, provimentos, tags e mais.</p>
+
+                <!-- Input de Pesquisa -->
+                <div class="max-w-3xl mx-auto relative">
+                    <input type="search" id="search-input" placeholder="Digite sua busca..."
+                        class="w-full p-4 sm:p-5 text-lg text-gray-900 rounded-full shadow-lg border-none focus:outline-none focus:ring-4 focus:ring-blue-300 transition-all pl-14 sm:pl-16">
+                    <!-- Ícone de Lupa -->
+                    <svg class="w-6 h-6 text-gray-400 absolute left-5 sm:left-6 top-1/2 -translate-y-1/2"
+                        xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                        stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
+                    </svg>
+                </div>
+
+                <!-- Seletor de Escopo da Busca -->
+                <div class="max-w-xs mx-auto mt-4">
+                    <label for="search-scope" class="sr-only">Delimitar pesquisa em:</label>
+                    <select id="search-scope"
+                        class="w-full p-2 text-sm text-gray-700 bg-white bg-opacity-80 rounded-full border-none focus:outline-none focus:ring-2 focus:ring-blue-300 focus-ring-visible">
+                        <option value="all">Pesquisar em Todos os Campos</option>
+                        <option value="title">Apenas no Título</option>
+                        <option value="summary">Apenas no Resumo</option>
+                        <option value="tags">Apenas nas Tags</option>
+                    </select>
+                </div>
+            </section>
+
+            <!-- Seção de Categorias -->
+            <section class="mb-12">
+                <h2 class="text-2xl sm:text-3xl font-bold mb-6 text-slate-800">Navegar por Categoria</h2>
+                <div id="category-grid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
+                    <!-- Categorias serão inseridas aqui pelo JS -->
+                </div>
+            </section>
+
+            <!-- Seção de Artigos -->
+            <section>
+                <h2 id="articles-title" class="text-2xl sm:text-3xl font-bold mb-6 text-slate-800">Todos os Artigos</h2>
+
+                <!-- Indicador de Carregamento -->
+                <div id="loading-indicator" class="text-center py-10">
+                    <div class="inline-block h-10 w-10 animate-spin rounded-full border-4 border-solid border-blue-600 border-r-transparent"
+                        role="status">
+                        <span class="sr-only">Carregando...</span>
+                    </div>
+                    <p class="mt-4 text-lg text-slate-600">Carregando artigos...</p>
+                </div>
+
+                <!-- Lista de Artigos -->
+                <div id="articles-list" class="space-y-6">
+                    <!-- Artigos serão inseridos aqui pelo JS -->
+                </div>
+
+                <!-- Mensagem de "Sem Resultados" -->
+                <div id="no-results" class="hidden text-center py-10 px-6 bg-white rounded-2xl shadow-lg">
+                    <svg class="w-16 h-16 text-blue-400 mx-auto mb-4" xmlns="http://www.w3.org/2000/svg" fill="none"
+                        viewBox="0 0 24 24" stroke-width="1" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
+                    </svg>
+                    <h3 class="text-2xl font-semibold text-slate-800 mb-2">Nenhum resultado encontrado</h3>
+                    <p class="text-slate-600">Tente ajustar sua busca ou filtro de categoria.</p>
+                </div>
+            </section>
+        </main>
+
+        <!-- Footer -->
+        <footer class="mt-16 bg-slate-800 text-slate-400 py-8">
+            <div class="container mx-auto px-4 sm:px-6 lg:px-8 text-center">
+                <p>&copy; 2024 Base de Conhecimento. Todos os direitos reservados.</p>
+            </div>
+        </footer>
+
+    </section> <!-- Fim da #content-section -->
+
+
+    <!-- Modal do Artigo -->
+    <div id="article-modal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50  hidden"
+        aria-labelledby="modal-title" role="dialog" aria-modal="true">
+
+        <!-- Conteúdo do Modal -->
+        <div id="modal-content"
+            class="bg-white w-full h-full flex flex-col transition-all duration-0 ease-out-cubic scale-95 opacity-0 -translate-y-4">
+
+            <!-- Header do Modal -->
+            <header class="flex justify-between items-center p-4 sm:p-6 border-b border-slate-200">
+                <h2 id="modal-title" class="text-xl sm:text-2xl font-bold text-slate-800"></h2>
+                <button id="close-modal-btn"
+                    class="text-slate-500 hover:text-red-600 transition-colors focus-ring-visible rounded-full p-1"
+                    aria-label="Fechar modal">
+                    <svg class="w-7 h-7" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
                         stroke-width="2" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
                     </svg>
                 </button>
+            </header>
+
+            <!-- Seção de Metadados -->
+            <div id="modal-meta" class="p-4 sm:p-6 border-b border-slate-200 bg-slate-50">
+                <!-- Metadados (Categoria, Data, Resumo, Tags) serão inseridos aqui -->
             </div>
-            <!-- Conteúdo do Modal -->
-            <div id="modal-content" class="p-6 sm:p-8 overflow-y-auto">
-                <!-- Conteúdo do artigo será inserido aqui -->
+
+            <!-- Corpo do Modal (com rolagem) -->
+            <div id="modal-body" class="p-4 sm:p-6 overflow-y-auto article-content">
+                <!-- Conteúdo do Artigo será inserido aqui -->
             </div>
+
+            <!-- Footer do Modal -->
+            <footer id="modal-footer" class="p-4 sm:p-6 border-t border-slate-200 bg-slate-50 rounded-b-2xl">
+                <!-- Link de Referência será inserido aqui -->
+            </footer>
         </div>
     </div>
 
 
+    <!-- Firebase SDKs -->
     <script type="module">
-        // Importar funções do Firebase
+        // Importações do Firebase
         import { initializeApp, setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getFirestore, collection, onSnapshot, query, orderBy } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        // *** NOVO: Importações de Autenticação ***
+        import {
+            getAuth,
+            onAuthStateChanged,
+            signInWithEmailAndPassword,
+            signInWithPopup,
+            GoogleAuthProvider,
+            signOut
+        } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, query, onSnapshot, doc, getDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        // Configuração do Firebase
+        // Configuração do Firebase (COLE A SUA AQUI)
         const firebaseConfig = {
             apiKey: "AIzaSyChhpPXpLTFGQfvJH55D_uQ2FG5PdKykcQ",
             authDomain: "minha-base-conhecimento.firebaseapp.com",
@@ -215,162 +396,247 @@
 
         // Inicializar Firebase
         const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
         const db = getFirestore(app);
-        setLogLevel('Debug');
+        const googleProvider = new GoogleAuthProvider(); // *** NOVO: Provedor Google ***
+        setLogLevel('Debug'); // Habilita logs detalhados no console
 
-        // Coleções
-        const articlesCol = collection(db, "artigos");
-        const categoriesCol = collection(db, "categorias");
+        // --- VARIÁVEIS DE ESTADO GLOBAL ---
+        let allArticles = []; // Array com todos os artigos
+        let allCategories = new Map(); // Map para acesso rápido por ID
+        let currentCategory = 'TODOS'; // Categoria selecionada
+        let currentSearchTerm = ''; // Termo de busca atual
+        let articlesLoaded = false;
+        let categoriesLoaded = false;
 
-        // --- DADOS DINÂMICOS ---
-        let allArticles = [];
-        let allCategories = new Map(); // Armazena categorias por ID
+        // --- REFERÊNCIAS DE ELEMENTOS DO DOM ---
+        // *** NOVO: Referências de Login e Conteúdo ***
+        const loginSection = document.getElementById('login-section');
+        const contentSection = document.getElementById('content-section');
+        const loginForm = document.getElementById('login-form');
+        const loginEmail = document.getElementById('login-email');
+        const loginPassword = document.getElementById('login-password');
+        const loginStatus = document.getElementById('login-status');
+        const googleLoginBtn = document.getElementById('google-login-btn');
+        const logoutBtn = document.getElementById('logout-btn');
+        const userEmailSpan = document.getElementById('user-email');
 
-        // --- VARIÁVEIS GLOBAIS ---
         const categoryGrid = document.getElementById('category-grid');
         const articlesList = document.getElementById('articles-list');
         const articlesTitle = document.getElementById('articles-title');
         const searchInput = document.getElementById('search-input');
+        const searchScopeInput = document.getElementById('search-scope');
         const noResultsDiv = document.getElementById('no-results');
         const loadingIndicator = document.getElementById('loading-indicator');
 
-        // Modal elements
-        const modalBackdrop = document.getElementById('modal-backdrop');
-        const articleModal = document.getElementById('article-modal');
-        const closeModalBtn = document.getElementById('close-modal-btn');
-        const modalTitle = document.getElementById('modal-title');
-        const modalCategory = document.getElementById('modal-category');
-        const modalDate = document.getElementById('modal-date');
-        const modalContent = document.getElementById('modal-content');
+        // --- *** NOVO: LÓGICA DE AUTENTICAÇÃO PRINCIPAL *** ---
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                // Usuário está logado
+                loginSection.classList.add('hidden'); // Esconde login
+                contentSection.classList.remove('hidden'); // Mostra conteúdo
+                userEmailSpan.textContent = user.email; // Mostra email no header
 
-        let currentCategory = 'TODOS';
-        let currentSearchTerm = '';
-        let articlesLoaded = false;
-        let categoriesLoaded = false;
+                // Carrega os dados APENAS se estiver logado
+                loadCategories();
+                loadArticles();
+
+                // Configura os listeners de interação (busca, categorias)
+                setupEventListeners();
+
+            } else {
+                // Usuário está deslogado
+                loginSection.classList.remove('hidden'); // Mostra login
+                contentSection.classList.add('hidden'); // Esconde conteúdo
+                userEmailSpan.textContent = '';
+
+                // Limpa dados antigos para segurança
+                allArticles = [];
+                allCategories.clear();
+                articlesList.innerHTML = '';
+                categoryGrid.innerHTML = '';
+                articlesLoaded = false;
+                categoriesLoaded = false;
+            }
+        });
+
+        // Login com E-mail/Senha
+        loginForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            loginStatus.textContent = 'Entrando...';
+            signInWithEmailAndPassword(auth, loginEmail.value, loginPassword.value)
+                .then((userCredential) => {
+                    loginStatus.textContent = '';
+                    loginForm.reset();
+                })
+                .catch((error) => {
+                    console.error("Erro de login:", error.code, error.message);
+                    if (error.code === 'auth/invalid-credential') {
+                        loginStatus.textContent = 'E-mail ou senha inválidos.';
+                    } else {
+                        loginStatus.textContent = 'Erro ao tentar fazer login.';
+                    }
+                });
+        });
+
+        // Login com Google
+        googleLoginBtn.addEventListener('click', () => {
+            loginStatus.textContent = 'Abrindo popup do Google...';
+            signInWithPopup(auth, googleProvider)
+                .then((result) => {
+                    loginStatus.textContent = '';
+                })
+                .catch((error) => {
+                    console.error("Erro ao logar com Google:", error);
+                    if (error.code === 'auth/popup-closed-by-user') {
+                        loginStatus.textContent = 'Popup de login fechado.';
+                    } else {
+                        loginStatus.textContent = 'Erro ao logar com Google.';
+                    }
+                });
+        });
+
+        // Logout
+        logoutBtn.addEventListener('click', () => {
+            if (confirm('Tem certeza que deseja sair?')) {
+                signOut(auth).catch((error) => {
+                    console.error("Erro ao sair:", error);
+                });
+            }
+        });
+        // --- FIM DA LÓGICA DE AUTENTICAÇÃO ---
+
 
         // --- FUNÇÕES DE RENDERIZAÇÃO ---
 
-        function getTailwindColors(colorName) {
-            // Mapeia o nome da cor para classes do Tailwind
-            // (Isso é necessário para o purge do Tailwind não remover classes dinâmicas)
-            const map = {
-                'blue': { text: 'text-blue-600', ring: 'focus:ring-blue-500', active: 'ring-blue-500', badge: 'bg-blue-100 text-blue-800' },
-                'indigo': { text: 'text-indigo-600', ring: 'focus:ring-indigo-500', active: 'ring-indigo-500', badge: 'bg-indigo-100 text-indigo-800' },
-                'emerald': { text: 'text-emerald-600', ring: 'focus:ring-emerald-500', active: 'ring-emerald-500', badge: 'bg-emerald-100 text-emerald-800' },
-                'amber': { text: 'text-amber-600', ring: 'focus:ring-amber-500', active: 'ring-amber-500', badge: 'bg-amber-100 text-amber-800' },
-                'rose': { text: 'text-rose-600', ring: 'focus:ring-rose-500', active: 'ring-rose-500', badge: 'bg-rose-100 text-rose-800' },
-                'gray': { text: 'text-gray-600', ring: 'focus:ring-gray-500', active: 'ring-gray-500', badge: 'bg-gray-100 text-gray-800' },
-                'purple': { text: 'text-purple-600', ring: 'focus:ring-purple-500', active: 'ring-purple-500', badge: 'bg-purple-100 text-purple-800' },
-                'cyan': { text: 'text-cyan-600', ring: 'focus:ring-cyan-500', active: 'ring-cyan-500', badge: 'bg-cyan-100 text-cyan-800' },
+        /**
+         * Renderiza as categorias na grid
+         */
+        function renderCategories(categoriesMap) {
+            categoryGrid.innerHTML = ''; // Limpa a grid
+
+            // Adiciona o card "Todos" manualmente
+            const allCard = createCategoryCard({ id: 'TODOS', name: 'Todos', color: 'slate', icon: 'list' });
+            categoryGrid.appendChild(allCard);
+
+            // Adiciona as categorias do Firebase
+            categoriesMap.forEach(category => {
+                const card = createCategoryCard(category);
+                categoryGrid.appendChild(card);
+            });
+
+            // Ativa o card 'TODOS' por padrão
+            document.querySelector('.category-card[data-category="TODOS"]').classList.add('ring-2', 'ring-blue-600');
+        }
+
+        /**
+         * Cria o HTML para um card de categoria
+         */
+        function createCategoryCard(category) {
+            const el = document.createElement('button');
+            el.className = `category-card group flex items-center p-4 sm:p-6 rounded-2xl shadow-md bg-white border border-slate-200 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 focus-ring-visible`;
+            el.dataset.category = category.id;
+
+            // Cores e Ícones
+            const colors = {
+                blue: 'bg-blue-100 text-blue-700',
+                green: 'bg-green-100 text-green-700',
+                yellow: 'bg-yellow-100 text-yellow-700',
+                red: 'bg-red-100 text-red-700',
+                purple: 'bg-purple-100 text-purple-700',
+                pink: 'bg-pink-100 text-pink-700',
+                indigo: 'bg-indigo-100 text-indigo-700',
+                slate: 'bg-slate-100 text-slate-700',
+                orange: 'bg-orange-100 text-orange-700',
             };
-            return map[colorName] || map['gray'];
+            const icons = {
+                book: '<path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18c-2.305 0-4.408.867-6 2.292m0-14.25v14.25" />',
+                bolt: '<path stroke-linecap="round" stroke-linejoin="round" d="M3.75 13.5l10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75z" />',
+                list: '<path stroke-linecap="round" stroke-linejoin="round" d="M8.25 6.75h12M8.25 12h12m-12 5.25h12M3.75 6.75h.007v.008H3.75V6.75zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zM3.75 12h.007v.008H3.75V12zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm-.375 5.25h.007v.008H3.75v-.008zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />',
+                gavel: '<path stroke-linecap="round" stroke-linejoin="round" d="M11.412 15.655 9.75 17.312l-1.414-1.414M11.412 15.655l.707.707M11.412 15.655 7.636 11.879l-1.415 1.414M3 6.065A2.25 2.25 0 0 1 3 10.249v2.218a2.25 2.25 0 0 0 3.242 2.023l3.636-2.148a2.25 2.25 0 0 0 0-4.046L6.242 6.264A2.25 2.25 0 0 0 3 8.287v-2.222ZM11.412 15.655A2.25 2.25 0 0 1 14.75 13.5v-2.218a2.25 2.25 0 0 0-3.242-2.023L7.872 11.41a2.25 2.25 0 0 0 0 4.046l3.54 2.095ZM18.75 6.065A2.25 2.25 0 0 1 18.75 10.25v2.218a2.25 2.25 0 0 0 3.242 2.023l3.636-2.148a2.25 2.25 0 0 0 0-4.046L21.992 6.264a2.25 2.25 0 0 0-3.242-2.023v-2.222Z" />',
+                alert: '<path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0" />',
+                info: '<path stroke-linecap="round" stroke-linejoin="round" d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z" />',
+                users: '<path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />',
+            };
+
+            const colorClass = colors[category.color] || colors.slate;
+            const iconSvg = icons[category.icon] || icons.book;
+
+            el.innerHTML = `
+                <div class="icon-wrapper w-12 h-12 rounded-full ${colorClass} flex items-center justify-center flex-shrink-0 mr-4 transition-transform duration-300 group-hover:scale-110">
+                    <svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                        ${iconSvg}
+                    </svg>
+                </div>
+                <span class="text-lg font-semibold text-slate-700 group-hover:text-blue-600 transition-colors">${category.name}</span>
+            `;
+            return el;
         }
 
-        /**
-         * Formata uma data string (YYYY-MM-DD) para DD/MM/YYYY
-         */
-        function formatDate(dateString) {
-            const [year, month, day] = dateString.split('-');
-            return `${day}/${month}/${year}`;
-        }
 
         /**
-         * Renderiza os cartões de categoria (agora dinâmicos)
+         * Renderiza os artigos na lista
          */
-        function renderCategories() {
-            // Limpa apenas os dinâmicos, mantém o "Todos"
-            // CORREÇÃO: Trocado [data-category!="TODOS"] por :not([data-category="TODOS"])
-            categoryGrid.querySelectorAll('.category-card:not([data-category="TODOS"])').forEach(el => el.remove());
-
-            const isActive = currentCategory === 'TODOS';
-            const todosCard = categoryGrid.querySelector('.category-card[data-category="TODOS"]');
-            todosCard.classList.toggle('ring-2', isActive);
-            todosCard.classList.toggle('ring-blue-500', isActive);
-            todosCard.classList.toggle('ring-1', !isActive);
-            todosCard.classList.toggle('ring-transparent', !isActive);
-            todosCard.querySelector('h3').classList.toggle('text-blue-600', isActive);
-            todosCard.querySelector('h3').classList.toggle('text-gray-900', !isActive);
-            todosCard.querySelector('svg').classList.toggle('text-blue-600', isActive);
-            todosCard.querySelector('svg').classList.toggle('text-gray-400', !isActive);
-
-
-            // Converte o Map para Array e ordena por nome
-            const categoriesArray = Array.from(allCategories.values()).sort((a, b) => a.name.localeCompare(b.name));
-
-            for (const category of categoriesArray) {
-                const key = category.id;
-                const isActive = key === currentCategory;
-                const colors = getTailwindColors(category.color);
-
-                // Pega o SVG do iconMap
-                let iconHtml = iconMap[category.icon] || iconMap['default'];
-                // Adiciona a classe de cor correta, ou a de 'ativo'
-                const iconColor = isActive ? colors.text : 'text-gray-400';
-                iconHtml = iconHtml.replace('class="w-10 h-10 mb-3"', `class="w-10 h-10 mb-3 ${iconColor}"`);
-
-                const categoryCard = `
-                    <div 
-                        class="category-card bg-white p-5 sm:p-6 rounded-xl shadow-md hover:shadow-lg transition-all cursor-pointer flex flex-col items-center text-center ${isActive ? `ring-2 ${colors.active}` : 'ring-1 ring-transparent'} focus:outline-none focus:ring-2 ${colors.ring} focus:ring-offset-2"
-                        data-category="${key}"
-                        tabindex="0"
-                        role="button"
-                        aria-pressed="${isActive}"
-                    >
-                        ${iconHtml}
-                        <h3 class="text-md sm:text-lg font-semibold ${isActive ? colors.text : 'text-gray-900'}">${category.name}</h3>
-                    </div>
-                `;
-                categoryGrid.innerHTML += categoryCard;
-            }
-        }
-
-        /**
-         * Renderiza a lista de artigos filtrada
-         */
-        function renderArticles(filteredArticles) {
+        function renderArticles(articles) {
             articlesList.innerHTML = ''; // Limpa a lista
 
-            if (filteredArticles.length === 0) {
-                noResultsDiv.classList.remove('hidden');
+            if (articles.length === 0) {
+                noResultsDiv.classList.remove('hidden'); // Mostra "Sem resultados"
                 articlesList.classList.add('hidden');
             } else {
-                noResultsDiv.classList.add('hidden');
+                noResultsDiv.classList.add('hidden'); // Esconde "Sem resultados"
                 articlesList.classList.remove('hidden');
 
-                filteredArticles.forEach(article => {
-                    // Pega info da categoria do Map
+                articles.forEach(article => {
+                    const el = document.createElement('article');
+                    el.className = "article-card bg-white rounded-2xl shadow-lg border border-slate-200 overflow-hidden hover:shadow-xl transition-all duration-300 flex flex-col sm:flex-row";
+                    el.dataset.id = article.id;
+
+                    // Pega a categoria e cor
                     const category = allCategories.get(article.categoryId);
-                    const categoryName = category ? category.name : 'Geral';
-                    const colors = category ? getTailwindColors(category.color) : getTailwindColors('gray');
+                    const color = category ? category.color : 'slate';
+                    const categoryName = category ? category.name : 'Sem Categoria';
+                    const borderColors = {
+                        blue: 'border-t-blue-500', green: 'border-t-green-500', yellow: 'border-t-yellow-500',
+                        red: 'border-t-red-500', purple: 'border-t-purple-500', pink: 'border-t-pink-500',
+                        indigo: 'border-t-indigo-500', slate: 'border-t-slate-500', orange: 'border-t-orange-500'
+                    };
+                    const borderColorClass = borderColors[color] || borderColors.slate;
 
-                    // Renderiza as Tags
-                    const tagsHtml = article.tags && article.tags.length > 0
-                        ? `<div class="mt-4 flex flex-wrap gap-2">
-                               ${article.tags.map(tag => `<span class="bg-gray-200 text-gray-700 text-xs font-medium px-2 py-0.5 rounded-full">${tag}</span>`).join('')}
-                           </div>`
-                        : '';
+                    el.classList.add('border-t-4', borderColorClass);
 
-                    const articleCard = `
-                        <div 
-                            class="article-card bg-white p-5 sm:p-6 rounded-xl shadow-md hover:shadow-lg transition-all cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-                            data-id="${article.id}"
-                            tabindex="0"
-                            role="button"
-                            aria-label="Abrir artigo: ${article.title}"
-                        >
-                            <div class="flex flex-col sm:flex-row sm:justify-between sm:items-start mb-2">
-                                <span class="category-badge ${colors.badge} text-xs font-semibold px-2.5 py-0.5 rounded-full mb-2 sm:mb-0">${categoryName}</span>
-                                <span class="text-sm text-gray-500">${formatDate(article.date)}</span>
-                            </div>
-                            <h3 class="text-lg sm:text-xl font-semibold text-gray-900 mb-2">${article.title}</h3>
-                            <p class="text-gray-600 text-sm sm:text-base line-clamp-2">${article.summary}</p>
-                            ${tagsHtml}
+                    // Usa 'publishedAt' e verifica se existe antes de formatar
+                    const date = article.publishedAt ? new Date(article.publishedAt.seconds * 1000).toLocaleDateString() : '';
+
+                    el.innerHTML = `
+                        <div class="p-6 sm:p-8 flex-1">
+                            <header class="mb-4">
+                                <!-- Categoria e Data -->
+                                <div class="flex justify-between items-center mb-2">
+                                    <span class="text-sm font-bold uppercase ${'text-' + color + '-600'}">${categoryName}</span>
+                                    <span class="text-sm text-slate-500">${date}</span>
+                                </div>
+                                <!-- Título -->
+                                <h3 class="text-2xl font-bold text-slate-800 hover:text-blue-600 transition-colors cursor-pointer">${article.title}</h3>
+                            </header>
+                            <!-- Resumo -->
+                            <p class="text-slate-600 mb-6 line-clamp-3">${article.summary}</p>
+                            
+                            <!-- Tags -->
+                            ${article.tags && article.tags.length > 0 ? `
+                                <footer class="flex flex-wrap gap-2">
+                                    ${article.tags.map(tag => `<span class="text-xs font-medium bg-slate-100 text-slate-600 px-3 py-1 rounded-full">${tag}</span>`).join('')}
+                                </footer>
+                            ` : ''}
                         </div>
                     `;
-                    articlesList.innerHTML += articleCard;
+                    articlesList.appendChild(el);
                 });
             }
         }
+
+
+        // --- FUNÇÕES DE FILTRAGEM ---
 
         /**
          * Filtra os artigos
@@ -379,6 +645,7 @@
             if (!articlesLoaded || !categoriesLoaded) return; // Não rode se os dados não chegaram
 
             currentSearchTerm = searchInput.value.toLowerCase().trim();
+            const searchScope = searchScopeInput.value; // Pega o valor do dropdown
 
             let filteredArticles = allArticles;
 
@@ -391,13 +658,50 @@
                 articlesTitle.textContent = "Todos os Artigos";
             }
 
-            // 2. Filtrar por Termo de Busca (agora inclui tags)
+            // 2. Filtrar por Termo de Busca (LÓGICA ATUALIZADA com 'E' e "Aspas")
             if (currentSearchTerm) {
-                filteredArticles = filteredArticles.filter(article =>
-                    article.title.toLowerCase().includes(currentSearchTerm) ||
-                    article.summary.toLowerCase().includes(currentSearchTerm) ||
-                    (article.tags && article.tags.some(tag => tag.toLowerCase().includes(currentSearchTerm)))
-                );
+
+                let isExactPhrase = currentSearchTerm.startsWith('"') && currentSearchTerm.endsWith('"');
+                let searchTerms = [];
+
+                if (isExactPhrase) {
+                    // Busca por Frase Exata: Remove as aspas e usa como um termo único
+                    const term = currentSearchTerm.substring(1, currentSearchTerm.length - 1);
+                    if (term) searchTerms.push(term);
+                } else {
+                    // Busca por 'E' (AND): Divide por espaços
+                    searchTerms = currentSearchTerm.split(' ').filter(t => t.length > 0);
+                }
+
+                if (searchTerms.length > 0) {
+                    filteredArticles = filteredArticles.filter(article => {
+                        // 1. Define o texto completo onde a busca será realizada
+                        let textToSearch = '';
+                        switch (searchScope) {
+                            case 'title':
+                                textToSearch = article.title.toLowerCase();
+                                break;
+                            case 'summary':
+                                textToSearch = article.summary.toLowerCase();
+                                break;
+                            case 'tags':
+                                textToSearch = (article.tags || []).join(' ').toLowerCase();
+                                break;
+                            case 'all':
+                            default:
+                                textToSearch = [
+                                    article.title,
+                                    article.summary,
+                                    (article.tags || []).join(' ')
+                                ].join(' ').toLowerCase();
+                        }
+
+                        // 2. Aplica a lógica de busca
+                        // .every() garante que TODOS os termos (seja 1 ou vários) estejam no texto
+                        return searchTerms.every(term => textToSearch.includes(term));
+                    });
+                }
+
                 if (currentCategory === 'TODOS') {
                     articlesTitle.textContent = `Resultados da busca por "${searchInput.value}"`;
                 }
@@ -407,109 +711,219 @@
         }
 
         // --- FUNÇÕES DO MODAL (Artigo) ---
-        function openModal(articleId) {
-            const article = allArticles.find(art => art.id === articleId);
-            if (!article) return;
+        const modal = document.getElementById('article-modal');
+        const modalContent = document.getElementById('modal-content');
+        const modalTitle = document.getElementById('modal-title');
+        const modalMeta = document.getElementById('modal-meta');
+        const modalBody = document.getElementById('modal-body');
+        const modalFooter = document.getElementById('modal-footer');
+        const closeModalBtn = document.getElementById('close-modal-btn');
 
-            const category = allCategories.get(article.categoryId);
-            const categoryName = category ? category.name : 'Geral';
-            const colors = category ? getTailwindColors(category.color) : getTailwindColors('gray');
+        // Abrir modal (usando delegação de eventos)
+        articlesList.addEventListener('click', async (e) => {
+            const card = e.target.closest('.article-card');
+            const title = e.target.closest('h3');
 
-            modalTitle.textContent = article.title;
-            modalCategory.textContent = categoryName;
-            modalCategory.className = `inline-block ${colors.badge} text-xs font-semibold px-2.5 py-0.5 rounded-full`;
-            modalDate.textContent = formatDate(article.date);
-            modalContent.innerHTML = article.content;
-
-            modalBackdrop.classList.remove('hidden');
-            articleModal.classList.remove('hidden');
-            document.body.style.overflow = 'hidden';
-        }
-
-        function closeModal() {
-            modalBackdrop.classList.add('hidden');
-            articleModal.classList.add('hidden');
-            document.body.style.overflow = '';
-        }
-
-        // --- EVENT LISTENERS (INICIALIZAÇÃO) ---
-
-        document.addEventListener('DOMContentLoaded', () => {
-
-            function checkAndRenderAll() {
-                if (articlesLoaded && categoriesLoaded) {
-                    loadingIndicator.style.display = 'none';
-                    renderCategories();
-                    updateFilter();
-                }
+            if (card && title) { // Só abre se clicar no título dentro do card
+                const articleId = card.dataset.id;
+                showArticleModal(articleId);
             }
+        });
 
-            // --- CARREGAMENTO DE DADOS DO FIREBASE ---
-            // Listener para Categorias
-            const qCategories = query(categoriesCol, orderBy("name"));
-            onSnapshot(qCategories, (snapshot) => {
-                allCategories.clear();
-                snapshot.forEach(doc => {
-                    allCategories.set(doc.id, { id: doc.id, ...doc.data() });
+        // Fechar modal
+        function hideModal() {
+            modalContent.classList.add('scale-95', 'opacity-0', '-translate-y-4');
+            modal.classList.add('hidden');
+            document.body.style.overflow = ''; // Restaura scroll do body
+        }
+
+        closeModalBtn.addEventListener('click', hideModal);
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) { // Fecha se clicar no fundo
+                hideModal();
+            }
+        });
+
+        // Buscar e mostrar o artigo no modal
+        async function showArticleModal(articleId) {
+            try {
+                // Busca o artigo completo (incluindo o 'content')
+                const articleRef = doc(db, 'artigos', articleId);
+                const docSnap = await getDoc(articleRef);
+
+                if (docSnap.exists()) {
+                    const article = docSnap.data();
+
+                    modalTitle.textContent = article.title;
+
+                    // Renderiza os metadados
+                    const category = allCategories.get(article.categoryId);
+                    const categoryName = category ? category.name : 'Sem Categoria';
+                    const color = category ? category.color : 'slate';
+                    const date = article.publishedAt ? new Date(article.publishedAt.seconds * 1000).toLocaleDateString() : '';
+
+                    modalMeta.innerHTML = `
+                        <div class="flex flex-wrap items-center gap-x-4 gap-y-2 mb-4">
+                            <span class="text-sm font-bold uppercase ${'text-' + color + '-600'}">${categoryName}</span>
+                            <span class="text-sm text-slate-500">${date}</span>
+                        </div>
+                        <p class="text-slate-600 italic mb-4">${article.summary}</p>
+                        ${article.tags && article.tags.length > 0 ? `
+                            <div class="flex flex-wrap gap-2">
+                                ${article.tags.map(tag => `<span class="text-xs font-medium bg-slate-200 text-slate-700 px-3 py-1 rounded-full">${tag}</span>`).join('')}
+                            </div>
+                        ` : ''}
+                    `;
+
+                    modalBody.innerHTML = article.content || '<p>Este artigo não possui conteúdo adicional.</p>';
+
+                    // Adiciona o Link de Referência
+                    modalFooter.innerHTML = ''; // Limpa o footer
+                    if (article.link) {
+                        // Tenta extrair o domínio
+                        let domain = '';
+                        try {
+                            domain = new URL(article.link).hostname.replace('www.', '');
+                        } catch (e) {
+                            domain = article.link.split('/')[0]; // fallback
+                        }
+
+                        modalFooter.innerHTML = `
+                            <a href="${article.link}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2 text-sm font-medium text-blue-600 hover:text-blue-800 transition-colors group focus-ring-visible rounded-md p-1">
+                                <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M13.19 8.688a4.5 4.5 0 011.242 7.244l-4.5 4.5a4.5 4.5 0 01-6.364-6.364l1.757-1.757m13.35-.622l1.757-1.757a4.5 4.5 0 00-6.364-6.364l-4.5 4.5a4.5 4.5 0 001.242 7.244" /></svg>
+                                <span>Ver fonte original (${domain})</span>
+                                <svg class="w-4 h-4 transition-transform group-hover:translate-x-0.5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M17.25 8.25L21 12m0 0l-3.75 3.75M21 12H3" /></svg>
+                            </a>
+                        `;
+                    }
+
+                    // Mostra o modal com animação
+                    document.body.style.overflow = 'hidden'; // Trava scroll do body
+                    modal.classList.remove('hidden');
+                    // Pequeno delay para a animação de entrada funcionar
+                    setTimeout(() => {
+                        modalContent.classList.remove('scale-95', 'opacity-0', '-translate-y-4');
+                    }, 10);
+
+                } else {
+                    console.error("Artigo não encontrado!");
+                    alert("Erro: Artigo não encontrado.");
+                }
+            } catch (error) {
+                console.error("Erro ao buscar artigo:", error);
+                alert("Erro ao carregar o artigo.");
+            }
+        }
+
+
+        // --- CARREGAMENTO INICIAL DE DADOS ---
+
+        /**
+         * Checa se ambos os listeners carregaram os dados iniciais
+         */
+        function checkAndRenderAll() {
+            if (articlesLoaded && categoriesLoaded) {
+                loadingIndicator.classList.add('hidden'); // Esconde o loading
+                updateFilter(); // Renderiza os artigos filtrados
+            }
+        }
+
+        /**
+         * Listener de Categorias
+         */
+        function loadCategories() {
+            const q = query(collection(db, "categorias"));
+            // *** ATUALIZADO: Usando 'onSnapshot' para tempo real ***
+            onSnapshot(q, (querySnapshot) => {
+                const tempMap = new Map();
+                querySnapshot.forEach((doc) => {
+                    tempMap.set(doc.id, { id: doc.id, ...doc.data() });
                 });
-                categoriesLoaded = true;
-                checkAndRenderAll(); // Tenta renderizar
-            }, (error) => {
-                console.error("Erro ao buscar categorias:", error);
-            });
 
-            // Listener para Artigos
-            const qArticles = query(articlesCol, orderBy("date", "desc"));
-            onSnapshot(qArticles, (snapshot) => {
-                allArticles = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                articlesLoaded = true;
-                checkAndRenderAll(); // Tenta renderizar
+                // Ordena pelo nome antes de salvar
+                const sortedCategories = [...tempMap.values()].sort((a, b) => a.name.localeCompare(b.name));
+                allCategories = new Map(sortedCategories.map(cat => [cat.id, cat]));
+
+                renderCategories(allCategories);
+                categoriesLoaded = true;
+                checkAndRenderAll();
             }, (error) => {
-                console.error("Erro ao buscar artigos:", error);
-                loadingIndicator.textContent = 'Erro ao carregar artigos.';
+                console.error("Erro ao carregar categorias: ", error);
+                loadingIndicator.textContent = "Erro ao carregar categorias.";
+                // *** NOVO: Se der erro de permissão, desloga o usuário ***
+                if (error.code === 'permission-denied') {
+                    alert("Sua sessão expirou ou você não tem permissão. Por favor, faça login novamente.");
+                    signOut(auth);
+                }
             });
+        }
+
+        /**
+         * Listener de Artigos
+         */
+        function loadArticles() {
+            const q = query(collection(db, "artigos"));
+            // *** ATUALIZADO: Usando 'onSnapshot' para tempo real ***
+            onSnapshot(q, (querySnapshot) => {
+                const tempArticles = [];
+                querySnapshot.forEach((doc) => {
+                    // Importante: NÃO estamos baixando o 'content' aqui para economizar dados
+                    const { content, ...articleSummary } = doc.data();
+                    tempArticles.push({ id: doc.id, ...articleSummary });
+                });
+
+                // Ordena por 'publishedAt' (data de publicação) e checa se existe
+                allArticles = tempArticles.sort((a, b) => (b.publishedAt?.seconds || 0) - (a.publishedAt?.seconds || 0));
+
+                articlesLoaded = true;
+                checkAndRenderAll();
+            }, (error) => {
+                console.error("Erro ao carregar artigos: ", error);
+                loadingIndicator.textContent = "Erro ao carregar artigos.";
+                // *** NOVO: Se der erro de permissão, desloga o usuário ***
+                if (error.code === 'permission-denied') {
+                    alert("Sua sessão expirou ou você não tem permissão. Por favor, faça login novamente.");
+                    signOut(auth);
+                }
+            });
+        }
+
+        // --- INICIALIZAÇÃO E EVENT LISTENERS ---
+        // *** NOVO: Listeners de interação são configurados apenas 1 vez ***
+
+        let listenersConfigurados = false;
+        function setupEventListeners() {
+            // Evita re-adicionar listeners se o auth mudar (ex: refresh de token)
+            if (listenersConfigurados) return;
 
             // Listener da barra de pesquisa
             searchInput.addEventListener('input', updateFilter);
+
+            // Listener para o seletor de escopo
+            searchScopeInput.addEventListener('change', updateFilter);
 
             // Listeners das categorias (delegação de eventos)
             categoryGrid.addEventListener('click', (e) => {
                 const card = e.target.closest('.category-card');
                 if (card) {
+                    // Remove o anel de todos
+                    categoryGrid.querySelectorAll('.category-card').forEach(c => {
+                        c.classList.remove('ring-2', 'ring-blue-600');
+                    });
+                    // Adiciona o anel no clicado
+                    card.classList.add('ring-2', 'ring-blue-600');
+
+                    // Atualiza o estado e filtra
                     currentCategory = card.dataset.category;
-                    renderCategories(); // Re-renderiza para mostrar o estado ativo
                     updateFilter();
                 }
             });
 
-            // ... (Acessibilidade por teclado) ...
-            categoryGrid.addEventListener('keydown', (e) => {
-                if (e.key === 'Enter' || e.key === ' ') { /* ... */ }
-            });
+            listenersConfigurados = true;
+        }
 
-            // Listeners dos artigos (delegação de eventos)
-            articlesList.addEventListener('click', (e) => {
-                const card = e.target.closest('.article-card');
-                if (card) {
-                    openModal(card.dataset.id);
-                }
-            });
-
-            // ... (Acessibilidade por teclado) ...
-            articlesList.addEventListener('keydown', (e) => {
-                if (e.key === 'Enter' || e.key === ' ') { /* ... */ }
-            });
-
-
-            // Listeners para fechar o modal
-            closeModalBtn.addEventListener('click', closeModal);
-            modalBackdrop.addEventListener('click', closeModal);
-            document.addEventListener('keydown', (e) => {
-                if (e.key === 'Escape' && !articleModal.classList.contains('hidden')) {
-                    closeModal();
-                }
-            });
-        });
+        // A checagem de auth (onAuthStateChanged) é o ponto de entrada principal
+        // e vai disparar o carregamento dos dados e setup dos listeners.
 
     </script>
 </body>
