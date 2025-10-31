@@ -589,7 +589,7 @@
             }
 
             try {
-                await fetchWithToken('/api/admin/salvarCategoria', {
+                await fetchWithToken('api/admin/salvarCategoria', {
                     method: 'POST',
                     body: JSON.stringify(categoryData)
                 });
@@ -683,7 +683,7 @@
             const category = allCategoriesMap.get(id);
             if (confirm(`Tem certeza que quer deletar a categoria "${category.name}"?\nATENÇÃO: Artigos nesta categoria ficarão órfãos.`)) {
                 try {
-                    await fetchWithToken('/api/admin/deletarCategoria', {
+                    await fetchWithToken('api/admin/deletarCategoria', {
                         method: 'POST',
                         body: JSON.stringify({ id })
                     });
@@ -749,7 +749,7 @@
             }
 
             try {
-                await fetchWithToken('/api/admin/salvarArtigo', {
+                await fetchWithToken('api/admin/salvarArtigo', {
                     method: 'POST',
                     body: JSON.stringify(articleData)
                 });
@@ -866,7 +866,7 @@
         async function deleteArticle(id, title) {
             if (confirm(`Tem certeza que quer deletar o artigo "${title}"?`)) {
                 try {
-                    await fetchWithToken('/api/admin/deletarArtigo', {
+                    await fetchWithToken('api/admin/deletarArtigo', {
                         method: 'POST',
                         body: JSON.stringify({ id })
                     });
