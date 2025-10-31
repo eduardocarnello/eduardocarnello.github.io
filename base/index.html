@@ -334,7 +334,7 @@
                     <!-- Botão Carregar Mais -->
                     <div id="load-more-container" class="text-center mt-12 hidden">
                         <button id="load-more-btn"
-                            class_="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-full shadow-lg transition-transform transform hover:scale-105 focus-ring-visible">
+                            class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-full shadow-lg transition-transform transform hover:scale-105 focus-ring-visible">
                             Carregar Mais 10 Artigos
                         </button>
                     </div>
@@ -352,7 +352,7 @@
     <div id="modal-container" class="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-0 hidden"
         role="dialog" aria-modal="true">
 
-        <!-- Painel do Modal -->
+        <!-- Painel do Modal (VISUAL REVERTIDO PARA JANELA) -->
         <div id="modal-panel"
             class="bg-white rounded-2xl shadow-xl w-full max-w-3xl max-h-[90vh] flex flex-col transform transition-all duration-300 ease-out scale-95 opacity-0">
             <!-- Cabeçalho do Modal -->
@@ -404,7 +404,8 @@
                     <!-- Resumo -->
                     <p id="modal-summary" class="text-base text-slate-600 italic"></p>
                     <!-- Tags -->
-                    <div id="modal-tags-container" class="flex flex-wrap gap-2 items-center text-sm text-slate-500">
+                    <div id="modal-tags-container"
+                        class="hidden flex flex-wrap gap-2 items-center text-sm text-slate-500">
                         <svg class="w-4 h-4 flex-shrink-0" xmlns="http://www.w3.org/2000/svg" fill="none"
                             viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round"
@@ -529,7 +530,7 @@
 
         // --- NOVA FUNÇÃO: fetchWithToken ---
         /*
-         * Função helper para fazer chamadas à nossa API //api/*
+         * Função helper para fazer chamadas à nossa API /api/*
          * Ela automaticamente pega o Token do usuário logado e o adiciona no Header.
          */
         async function fetchWithToken(url, options = {}) {
@@ -547,11 +548,21 @@
                 'Content-Type': 'application/json'
             };
 
-            const response = await fetch(url, { ...options, headers });
+            // CORREÇÃO: Remove a barra inicial para tornar o caminho relativo
+            const relativeUrl = url.startsWith('/') ? url.substring(1) : url;
+
+            const response = await fetch(relativeUrl, { ...options, headers }); // Usa relativeUrl
 
             // Tratamento de Erros
             if (!response.ok) {
-                const errorData = await response.json();
+                let errorData;
+                try {
+                    errorData = await response.json(); // Tenta ler o erro como JSON
+                } catch (e) {
+                    // Se falhar (ex: 404 retorna HTML), cria um erro genérico
+                    errorData = { error: `Erro ${response.status}: ${response.statusText}` };
+                }
+
                 console.error(`Erro na API (${response.status}):`, errorData.error);
 
                 // Se o token expirou, força o logout
@@ -561,6 +572,11 @@
                 }
 
                 throw new Error(errorData.error || 'Erro na requisição');
+            }
+
+            // Se a resposta for 204 No Content (ex: delete), não tenta ler JSON
+            if (response.status === 204) {
+                return null;
             }
 
             return response.json();
@@ -639,7 +655,8 @@
             allArticles = [];
             currentCategory = 'TODOS';
             currentArticleCount = 0;
-            categoryGrid.innerHTML = ''; // Limpa categorias (exceto "Todos")
+            // Limpa categorias (exceto "Todos")
+            categoryGrid.querySelectorAll('.category-card:not([data-category="TODOS"])').forEach(el => el.remove());
             articlesGrid.innerHTML = ''; // Limpa artigos
             articlesStatus.textContent = 'Você precisa estar logado para ver o conteúdo.';
             articlesStatus.classList.remove('hidden');
@@ -673,13 +690,14 @@
             categoriesLoading.classList.remove('hidden');
 
             try {
-                const categories = await fetchWithToken('/api/getCategorias');
+                const categories = await fetchWithToken('api/getCategorias'); // Caminho relativo
                 allCategories = categories; // Salva no cache
                 renderCategories(categories);
                 categoriesLoading.classList.add('hidden');
             } catch (error) {
                 console.error("Erro ao buscar categorias:", error);
                 categoriesLoading.textContent = 'Erro ao carregar.';
+                // O erro de querySelectorAll estava aqui, vamos ver se ainda ocorre
             }
         }
 
@@ -711,7 +729,7 @@
             loadMoreBtn.disabled = true;
 
             try {
-                const articles = await fetchWithToken(`/api/getArtigos?limit=${limit}`);
+                const articles = await fetchWithToken(`api/getArtigos?limit=${limit}`); // Caminho relativo
 
                 // Filtra os *novos* artigos que chegaram
                 const newArticles = articles.filter(a => !allArticles.some(existing => existing.id === a.id));
@@ -720,11 +738,6 @@
                 // Atualiza a contagem
                 currentArticleCount = articles.length;
 
-                // Mostra/Esconde o botão "Carregar Mais"
-                // Se a contagem de artigos for igual ao limite (ex: 10 = 10),
-                // assumimos que pode haver mais. Se for menor (ex: 7 < 10),
-                // ou se for igual ao número anterior (0 novos artigos),
-                // significa que chegamos ao fim.
                 if (newArticles.length === 0 || articles.length < limit) {
                     loadMoreContainer.classList.add('hidden');
                 } else {
@@ -757,8 +770,9 @@
 
         // Renderizar Categorias
         function renderCategories(categories) {
+            // **CORREÇÃO AQUI**
             // Limpa o grid (exceto o botão "Todos")
-            categoryGrid.querySelectorAll('.category-card[data-category!="TODOS"]').forEach(el => el.remove());
+            categoryGrid.querySelectorAll('.category-card:not([data-category="TODOS"])').forEach(el => el.remove());
 
             categories.forEach(category => {
                 const { name, color, icon, slug } = category;
@@ -828,11 +842,12 @@
                 // Atualiza o visual dos botões
                 document.querySelectorAll('.category-card').forEach(btn => {
                     btn.classList.remove('bg-blue-600', 'text-white', 'shadow-lg');
-                    const colors = getCategoryColors(allCategories.find(c => c.id === btn.dataset.category)?.color);
-                    btn.classList.add(colors.bgHover || 'hover:bg-slate-100', colors.text || 'text-slate-700');
+                    const category = allCategories.find(c => c.id === btn.dataset.category);
+                    const colors = getCategoryColors(category ? category.color : 'slate');
+                    btn.classList.add(colors.bgHover, colors.text);
                 });
                 card.classList.add('bg-blue-600', 'text-white', 'shadow-lg');
-                card.classList.remove('hover:bg-slate-100', 'text-slate-700'); // Remove hover do ativo
+                card.classList.remove(getCategoryColors(allCategories.find(c => c.id === card.dataset.category)?.color).bgHover, 'text-slate-700'); // Remove hover do ativo
 
                 updateFilter();
             }
@@ -844,7 +859,7 @@
 
             // Separa termos exatos (aspas) de termos normais
             const exactMatches = [...rawSearchText.matchAll(/"([^"]+)"/g)].map(m => m[1]);
-            const normalSearchText = rawSearchText.replace(/"[^"]+"/g, '').trim(); // <-- CORRIGIDO AQUI
+            const normalSearchText = rawSearchText.replace(/"[^"]+"/g, '').trim();
             const normalSearchTerms = normalSearchText.split(' ').filter(t => t.length > 0);
 
             let hasVisibleArticles = false;
@@ -928,7 +943,7 @@
 
             try {
                 // Busca o conteúdo COMPLETO do artigo na API
-                const article = await fetchWithToken(`/api/getArtigoDetalhe?id=${id}`);
+                const article = await fetchWithToken(`api/getArtigoDetalhe?id=${id}`); // Caminho relativo
 
                 // Preenche o modal com os dados
                 modalTitle.textContent = article.title;
@@ -948,6 +963,7 @@
 
                 // Data
                 if (article.publishedAt) {
+                    // A API agora retorna { seconds: ..., nanoseconds: ... }
                     const date = new Date(article.publishedAt.seconds * 1000).toLocaleDateString('pt-BR', {
                         day: '2-digit', month: 'long', year: 'numeric'
                     });
@@ -991,8 +1007,8 @@
 
             } catch (error) {
                 console.error("Erro ao abrir modal (fetchWithToken):", error);
-                // **NOVO: Tratamento de erro de permissão (token expirado)**
-                if (error.message.includes('expirado') || error.message.includes('não autorizado')) {
+                // Tratamento de erro (token expirado ou 500)
+                if (error.message.includes('expirou') || error.message.includes('não autorizado')) {
                     modalTitle.textContent = 'Sessão Expirada';
                     modalContent.innerHTML = '<p class="text-red-500">Sua sessão expirou e não foi possível carregar o artigo. Por favor, faça login novamente.</p>';
                 } else {
@@ -1020,7 +1036,6 @@
 
         // Retorna o SVG do ícone
         function getIconSvg(iconName) {
-            // (Esta função é maior, mas necessária para desacoplar os SVGs)
             switch (iconName) {
                 case 'book':
                     return '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18c-2.305 0-4.408.867-6 2.292m0-14.25v14.25"></path></svg>';
