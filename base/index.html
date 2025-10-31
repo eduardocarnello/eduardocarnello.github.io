@@ -673,7 +673,7 @@
             categoriesLoading.classList.remove('hidden');
 
             try {
-                const categories = await fetchWithToken('/api/getCategorias');
+                const categories = await fetchWithToken('api/getCategorias');
                 allCategories = categories; // Salva no cache
                 renderCategories(categories);
                 categoriesLoading.classList.add('hidden');
@@ -711,7 +711,7 @@
             loadMoreBtn.disabled = true;
 
             try {
-                const articles = await fetchWithToken(`/api/getArtigos?limit=${limit}`);
+                const articles = await fetchWithToken(`api/getArtigos?limit=${limit}`);
 
                 // Filtra os *novos* artigos que chegaram
                 const newArticles = articles.filter(a => !allArticles.some(existing => existing.id === a.id));
@@ -928,7 +928,7 @@
 
             try {
                 // Busca o conteúdo COMPLETO do artigo na API
-                const article = await fetchWithToken(`/api/getArtigoDetalhe?id=${id}`);
+                const article = await fetchWithToken(`api/getArtigoDetalhe?id=${id}`);
 
                 // Preenche o modal com os dados
                 modalTitle.textContent = article.title;
