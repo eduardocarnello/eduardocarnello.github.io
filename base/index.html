@@ -548,10 +548,8 @@
                 'Content-Type': 'application/json'
             };
 
-            // CORREÇÃO: Remove a barra inicial para tornar o caminho relativo
-            const relativeUrl = url.startsWith('/') ? url.substring(1) : url;
-
-            const response = await fetch(relativeUrl, { ...options, headers }); // Usa relativeUrl
+            // CORREÇÃO: Usa o caminho /api/ (assumindo que Vercel Root Dir = 'base')
+            const response = await fetch(url, { ...options, headers });
 
             // Tratamento de Erros
             if (!response.ok) {
@@ -560,6 +558,8 @@
                     errorData = await response.json(); // Tenta ler o erro como JSON
                 } catch (e) {
                     // Se falhar (ex: 404 retorna HTML), cria um erro genérico
+                    const errorText = await response.text(); // Lê o HTML do 404
+                    console.error("Vercel 404 Response:", errorText); // Loga o HTML do 404
                     errorData = { error: `Erro ${response.status}: ${response.statusText}` };
                 }
 
@@ -690,14 +690,14 @@
             categoriesLoading.classList.remove('hidden');
 
             try {
-                const categories = await fetchWithToken('api/getCategorias'); // Caminho relativo
+                const categories = await fetchWithToken('/api/getCategorias'); // Caminho com /
                 allCategories = categories; // Salva no cache
                 renderCategories(categories);
                 categoriesLoading.classList.add('hidden');
             } catch (error) {
                 console.error("Erro ao buscar categorias:", error);
                 categoriesLoading.textContent = 'Erro ao carregar.';
-                // O erro de querySelectorAll estava aqui, vamos ver se ainda ocorre
+                // O erro de querySelectorAll estava aqui
             }
         }
 
@@ -729,7 +729,7 @@
             loadMoreBtn.disabled = true;
 
             try {
-                const articles = await fetchWithToken(`api/getArtigos?limit=${limit}`); // Caminho relativo
+                const articles = await fetchWithToken(`/api/getArtigos?limit=${limit}`); // Caminho com /
 
                 // Filtra os *novos* artigos que chegaram
                 const newArticles = articles.filter(a => !allArticles.some(existing => existing.id === a.id));
@@ -803,12 +803,16 @@
             const fragment = document.createDocumentFragment();
             articlesToRender.forEach(article => {
                 const { id, title, summary, categoryId } = article;
+
+                // **NOVA FUNCIONALIDADE: Borda Colorida**
                 const category = allCategories.find(c => c.id === categoryId);
+                const colors = getCategoryColors(category ? category.color : 'slate');
                 const categoryName = category ? category.name : 'Sem Categoria';
-                const categoryColor = category ? getCategoryColors(category.color).text : 'text-slate-500';
+                const categoryTextColor = colors.text;
+                const categoryBorderColor = colors.border;
 
                 const card = document.createElement('div');
-                card.className = "article-card bg-white rounded-2xl shadow-lg overflow-hidden transition-transform transform hover:-translate-y-1 hover:shadow-xl cursor-pointer flex flex-col";
+                card.className = `article-card bg-white rounded-2xl shadow-lg overflow-hidden transition-transform transform hover:-translate-y-1 hover:shadow-xl cursor-pointer flex flex-col ${categoryBorderColor} border-t-4`;
                 card.dataset.id = id;
                 card.dataset.title = title.toLowerCase();
                 card.dataset.summary = summary.toLowerCase();
@@ -817,7 +821,7 @@
 
                 card.innerHTML = `
                     <div class="p-6 flex-grow">
-                        <span class="text-sm font-semibold ${categoryColor}">${categoryName.toUpperCase()}</span>
+                        <span class="text-sm font-semibold ${categoryTextColor}">${categoryName.toUpperCase()}</span>
                         <h3 class="mt-2 text-xl font-bold text-slate-800">${title}</h3>
                         <p class="mt-3 text-base text-slate-600 line-clamp-3">${summary}</p>
                     </div>
@@ -847,7 +851,8 @@
                     btn.classList.add(colors.bgHover, colors.text);
                 });
                 card.classList.add('bg-blue-600', 'text-white', 'shadow-lg');
-                card.classList.remove(getCategoryColors(allCategories.find(c => c.id === card.dataset.category)?.color).bgHover, 'text-slate-700'); // Remove hover do ativo
+                const activeColors = getCategoryColors(allCategories.find(c => c.id === card.dataset.category)?.color);
+                card.classList.remove(activeColors.bgHover, activeColors.text);
 
                 updateFilter();
             }
@@ -943,7 +948,7 @@
 
             try {
                 // Busca o conteúdo COMPLETO do artigo na API
-                const article = await fetchWithToken(`api/getArtigoDetalhe?id=${id}`); // Caminho relativo
+                const article = await fetchWithToken(`/api/getArtigoDetalhe?id=${id}`); // Caminho com /
 
                 // Preenche o modal com os dados
                 modalTitle.textContent = article.title;
@@ -1064,20 +1069,20 @@
             }
         }
 
-        // Retorna as classes de cor do Tailwind
+        // Retorna as classes de cor do Tailwind (COM BORDAS)
         function getCategoryColors(colorName) {
             switch (colorName) {
-                case 'red': return { text: 'text-red-700', bg: 'bg-red-100', iconText: 'text-red-600', bgHover: 'hover:bg-red-50' };
-                case 'orange': return { text: 'text-orange-700', bg: 'bg-orange-100', iconText: 'text-orange-600', bgHover: 'hover:bg-orange-50' };
-                case 'yellow': return { text: 'text-yellow-700', bg: 'bg-yellow-100', iconText: 'text-yellow-600', bgHover: 'hover:bg-yellow-50' };
-                case 'green': return { text: 'text-green-700', bg: 'bg-green-100', iconText: 'text-green-600', bgHover: 'hover:bg-green-50' };
-                case 'blue': return { text: 'text-blue-700', bg: 'bg-blue-100', iconText: 'text-blue-600', bgHover: 'hover:bg-blue-50' };
-                case 'indigo': return { text: 'text-indigo-700', bg: 'bg-indigo-100', iconText: 'text-indigo-600', bgHover: 'hover:bg-indigo-50' };
-                case 'purple': return { text: 'text-purple-700', bg: 'bg-purple-100', iconText: 'text-purple-600', bgHover: 'hover:bg-purple-50' };
-                case 'pink': return { text: 'text-pink-700', bg: 'bg-pink-100', iconText: 'text-pink-600', bgHover: 'hover:bg-pink-50' };
+                case 'red': return { text: 'text-red-700', bg: 'bg-red-100', iconText: 'text-red-600', bgHover: 'hover:bg-red-50', border: 'border-red-500' };
+                case 'orange': return { text: 'text-orange-700', bg: 'bg-orange-100', iconText: 'text-orange-600', bgHover: 'hover:bg-orange-50', border: 'border-orange-500' };
+                case 'yellow': return { text: 'text-yellow-700', bg: 'bg-yellow-100', iconText: 'text-yellow-600', bgHover: 'hover:bg-yellow-50', border: 'border-yellow-500' };
+                case 'green': return { text: 'text-green-700', bg: 'bg-green-100', iconText: 'text-green-600', bgHover: 'hover:bg-green-50', border: 'border-green-500' };
+                case 'blue': return { text: 'text-blue-700', bg: 'bg-blue-100', iconText: 'text-blue-600', bgHover: 'hover:bg-blue-50', border: 'border-blue-500' };
+                case 'indigo': return { text: 'text-indigo-700', bg: 'bg-indigo-100', iconText: 'text-indigo-600', bgHover: 'hover:bg-indigo-50', border: 'border-indigo-500' };
+                case 'purple': return { text: 'text-purple-700', bg: 'bg-purple-100', iconText: 'text-purple-600', bgHover: 'hover:bg-purple-50', border: 'border-purple-500' };
+                case 'pink': return { text: 'text-pink-700', bg: 'bg-pink-100', iconText: 'text-pink-600', bgHover: 'hover:bg-pink-50', border: 'border-pink-500' };
                 case 'slate':
                 default:
-                    return { text: 'text-slate-700', bg: 'bg-slate-200', iconText: 'text-slate-600', bgHover: 'hover:bg-slate-100' };
+                    return { text: 'text-slate-700', bg: 'bg-slate-200', iconText: 'text-slate-600', bgHover: 'hover:bg-slate-100', border: 'border-slate-400' };
             }
         }
 
