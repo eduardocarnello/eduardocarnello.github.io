@@ -844,7 +844,7 @@
 
             // Separa termos exatos (aspas) de termos normais
             const exactMatches = [...rawSearchText.matchAll(/"([^"]+)"/g)].map(m => m[1]);
-            const normalSearchText = rawSearchText.replace(/"[^"]+"g, '').trim();
+            const normalSearchText = rawSearchText.replace(/"[^"]+"/g, '').trim(); // <-- CORRIGIDO AQUI
             const normalSearchTerms = normalSearchText.split(' ').filter(t => t.length > 0);
 
             let hasVisibleArticles = false;
