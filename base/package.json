@@ -1,0 +1,9 @@
+{
+    "name": "base-conhecimento-proxy",
+    "version": "1.0.0",
+    "private": true,
+    "description": "Proxy serverless para a Base de Conhecimento no Firebase",
+    "dependencies": {
+        "firebase-admin": "^12.0.0"
+    }
+}

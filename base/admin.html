@@ -243,6 +243,8 @@
 
                             <!-- ID Oculto (para edição) -->
                             <input type="hidden" id="article-id">
+                            <!-- Data Original Oculta (para edição) -->
+                            <input type="hidden" id="article-original-published-at">
 
                             <!-- Botões -->
                             <div class="flex gap-4">
@@ -262,7 +264,17 @@
                     <div class="bg-white p-6 sm:p-8 rounded-2xl shadow-lg">
                         <h2 class="text-2xl font-bold text-slate-800 mb-6">Artigos Publicados</h2>
                         <div id="articles-list-admin" class="space-y-4">
-                            <p id="articles-loading-msg">Carregando artigos...</p>
+                            <p id="articles-loading-msg" class="text-slate-500">
+                                <svg class="inline w-5 h-5 animate-spin mr-2" xmlns="http://www.w3.org/2000/svg"
+                                    fill="none" viewBox="0 0 24 24">
+                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor"
+                                        stroke-width="4"></circle>
+                                    <path class="opacity-75" fill="currentColor"
+                                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+                                    </path>
+                                </svg>
+                                Carregando artigos...
+                            </p>
                             <!-- Lista preenchida pelo JS -->
                         </div>
                     </div>
@@ -309,11 +321,15 @@
                                         class="w-full p-3 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
                                         <option value="book">Livro (book)</option>
                                         <option value="bolt">Raio (bolt)</option>
-                                        <option value="gavel">Martelo (gavel)</option>
+                                        <option value="gavel">Conformidade (gavel)</option>
                                         <option value="alert">Alerta (alert)</option>
                                         <option value="info">Info (info)</option>
                                         <option value="users">Usuários (users)</option>
                                         <option value="list">Lista (list)</option>
+                                        <option value="file">Arquivo (file)</option>
+                                        <option value="chart-bar">Gráfico (chart-bar)</option>
+                                        <option value="chat-alt">Chat (chat-alt)</option>
+                                        <option value="cog">Engrenagem (cog)</option>
                                     </select>
                                 </div>
                             </div>
@@ -337,7 +353,17 @@
                         <!-- Lista de Categorias -->
                         <h3 class="text-lg font-bold text-slate-800 mb-4">Categorias Atuais</h3>
                         <div id="category-list-admin" class="space-y-3">
-                            <p id="categories-loading-msg">Carregando categorias...</p>
+                            <p id="categories-loading-msg" class="text-slate-500">
+                                <svg class="inline w-5 h-5 animate-spin mr-2" xmlns="http://www.w3.org/2000/svg"
+                                    fill="none" viewBox="0 0 24 24">
+                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor"
+                                        stroke-width="4"></circle>
+                                    <path class="opacity-75" fill="currentColor"
+                                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+                                    </path>
+                                </svg>
+                                Carregando categorias...
+                            </p>
                             <!-- Lista preenchida pelo JS -->
                         </div>
                     </div>
@@ -349,7 +375,7 @@
 
     <!-- Firebase SDKs -->
     <script type="module">
-        // Importações do Firebase
+        // Importações do Firebase (APENAS AUTH)
         import { initializeApp, setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import {
             getAuth,
@@ -357,22 +383,13 @@
             signInWithEmailAndPassword,
             signInWithPopup,
             GoogleAuthProvider,
-            signOut
+            signOut,
+            getIdToken
         } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import {
-            getFirestore,
-            collection,
-            addDoc,
-            setDoc,
-            doc,
-            getDoc,
-            deleteDoc,
-            query,
-            onSnapshot,
-            serverTimestamp
-        } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        // Configuração do Firebase (COLE A SUA AQUI)
+        // ** Firestore NÃO é mais importado aqui **
+
+        // Configuração do Firebase
         const firebaseConfig = {
             apiKey: "AIzaSyChhpPXpLTFGQfvJH55D_uQ2FG5PdKykcQ",
             authDomain: "minha-base-conhecimento.firebaseapp.com",
@@ -385,11 +402,10 @@
         // Inicializar Firebase
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
-        const db = getFirestore(app);
         const googleProvider = new GoogleAuthProvider();
         setLogLevel('Debug'); // Habilita logs detalhados no console
 
-        // *** NOVO: Lista de E-mails Admin ***
+        // E-mails Admin (para proteção de rota)
         const adminEmails = ['eduardocarnello@gmail.com', 'mariliajec@tjsp.jus.br'];
 
         // --- REFERÊNCIAS DO DOM ---
@@ -412,6 +428,7 @@
         const articleSummary = document.getElementById('article-summary');
         const articleLink = document.getElementById('article-link');
         const articlePublishedAt = document.getElementById('article-published-at');
+        const articleOriginalPublishedAt = document.getElementById('article-original-published-at');
         const articleTags = document.getElementById('article-tags');
         const articleIdInput = document.getElementById('article-id');
         const cancelEditBtn = document.getElementById('cancel-edit-btn');
@@ -431,6 +448,8 @@
 
         // Editor Quill
         let quill;
+        let currentUser = null; // Armazena o usuário logado
+
         function initializeQuill() {
             if (!quill) {
                 const toolbarOptions = [
@@ -450,11 +469,40 @@
             }
         }
 
+        // --- NOVA FUNÇÃO: fetchWithToken ---
+        async function fetchWithToken(url, options = {}) {
+            if (!currentUser) {
+                throw new Error("Usuário não autenticado.");
+            }
+
+            const token = await getIdToken(currentUser);
+            const headers = {
+                ...options.headers,
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            };
+
+            const response = await fetch(url, { ...options, headers });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                console.error(`Erro na API (${response.status}):`, errorData.error);
+                if (response.status === 401) {
+                    alert('Sua sessão expirou ou você não é um administrador. Por favor, faça login novamente.');
+                    await signOut(auth);
+                }
+                throw new Error(errorData.error || 'Erro na requisição');
+            }
+            return response.json();
+        }
+
+
         // --- AUTENTICAÇÃO (COM PROTEÇÃO DE ROTA) ---
 
         onAuthStateChanged(auth, (user) => {
+            currentUser = user; // Armazena o usuário globalmente
             if (user) {
-                // *** NOVO: Checagem de permissão ***
+                // Checagem de permissão de Admin
                 if (adminEmails.includes(user.email)) {
                     // É Admin: Mostra o painel
                     loginSection.classList.add('hidden');
@@ -476,7 +524,7 @@
                 adminDashboard.classList.add('hidden');
                 userEmailSpan.textContent = '';
                 if (quill) {
-                    quill = null; // Destrói a instância se deslogar
+                    quill.root.innerHTML = ''; // Limpa o editor
                 }
             }
         });
@@ -486,8 +534,7 @@
             e.preventDefault();
             loginStatus.textContent = 'Entrando...';
             signInWithEmailAndPassword(auth, loginEmail.value, loginPassword.value)
-                .then((userCredential) => {
-                    // A checagem de admin será feita pelo onAuthStateChanged
+                .then(() => {
                     loginStatus.textContent = '';
                     loginForm.reset();
                 })
@@ -505,20 +552,9 @@
         googleLoginBtn.addEventListener('click', () => {
             loginStatus.textContent = 'Abrindo popup do Google...';
             signInWithPopup(auth, googleProvider)
-                .then((result) => {
-                    // A checagem de admin será feita pelo onAuthStateChanged
-                    loginStatus.textContent = '';
-                })
                 .catch((error) => {
                     console.error("Erro ao logar com Google:", error);
-                    if (error.code === 'auth/popup-closed-by-user') {
-                        loginStatus.textContent = 'Popup de login fechado.';
-                    } else if (error.code === 'auth/unauthorized-domain') {
-                        loginStatus.textContent = 'Erro: Domínio não autorizado. (Verifique o console do Firebase)';
-                        alert("ERRO: O domínio do seu site não está autorizado. \n\nPor favor, vá ao Console do Firebase > Authentication > Settings > Authorized domains e adicione o domínio onde este site está hospedado.");
-                    } else {
-                        loginStatus.textContent = 'Erro ao logar com Google.';
-                    }
+                    loginStatus.textContent = 'Erro ao logar com Google.';
                 });
         });
 
@@ -533,7 +569,7 @@
         });
 
 
-        // --- GERENCIAMENTO DE CATEGORIAS (CRUD) ---
+        // --- GERENCIAMENTO DE CATEGORIAS (CRUD via API) ---
 
         let allCategoriesMap = new Map();
 
@@ -548,40 +584,34 @@
                 slug: slugify(categoryName.value)
             };
 
+            if (id) {
+                categoryData.id = id; // Inclui o ID para atualização
+            }
+
             try {
-                if (id) {
-                    // Atualizar
-                    const catRef = doc(db, 'categorias', id);
-                    await setDoc(catRef, categoryData);
-                    showStatusMessage('Categoria atualizada com sucesso!');
-                } else {
-                    // Criar
-                    await addDoc(collection(db, 'categorias'), categoryData);
-                    showStatusMessage('Categoria salva com sucesso!');
-                }
+                await fetchWithToken('/api/admin/salvarCategoria', {
+                    method: 'POST',
+                    body: JSON.stringify(categoryData)
+                });
+                showStatusMessage(id ? 'Categoria atualizada com sucesso!' : 'Categoria salva com sucesso!');
                 resetCategoryForm();
+                await loadCategories(); // Recarrega as categorias
             } catch (error) {
                 console.error("Erro ao salvar categoria: ", error);
-                showStatusMessage('Erro ao salvar categoria.', true);
+                showStatusMessage(`Erro ao salvar categoria: ${error.message}`, true);
             }
         });
 
         // Carregar Categorias
-        function loadCategories() {
-            const q = query(collection(db, "categorias"));
-            onSnapshot(q, (querySnapshot) => {
+        async function loadCategories() {
+            categoriesLoadingMsg.classList.remove('hidden');
+            try {
+                const categories = await fetchWithToken('/api/getCategorias');
+
                 categoriesLoadingMsg.classList.add('hidden');
                 categoryListAdmin.innerHTML = '';
                 articleCategory.innerHTML = '<option value="">-- Selecione uma categoria --</option>';
                 allCategoriesMap.clear();
-
-                const categories = [];
-                querySnapshot.forEach((doc) => {
-                    categories.push({ id: doc.id, ...doc.data() });
-                });
-
-                // Ordena por nome
-                categories.sort((a, b) => a.name.localeCompare(b.name));
 
                 categories.forEach(category => {
                     allCategoriesMap.set(category.id, category);
@@ -613,7 +643,10 @@
                     categoriesLoadingMsg.textContent = 'Nenhuma categoria encontrada.';
                     categoriesLoadingMsg.classList.remove('hidden');
                 }
-            });
+            } catch (error) {
+                console.error("Erro ao carregar categorias:", error);
+                categoriesLoadingMsg.textContent = `Erro ao carregar categorias: ${error.message}`;
+            }
         }
 
         // Delegação de Eventos para botões de Categoria
@@ -650,12 +683,16 @@
             const category = allCategoriesMap.get(id);
             if (confirm(`Tem certeza que quer deletar a categoria "${category.name}"?\nATENÇÃO: Artigos nesta categoria ficarão órfãos.`)) {
                 try {
-                    await deleteDoc(doc(db, 'categorias', id));
+                    await fetchWithToken('/api/admin/deletarCategoria', {
+                        method: 'POST',
+                        body: JSON.stringify({ id })
+                    });
                     showStatusMessage('Categoria deletada.');
                     resetCategoryForm(); // Caso estivesse editando
+                    await loadCategories(); // Recarrega
                 } catch (error) {
                     console.error("Erro ao deletar categoria: ", error);
-                    showStatusMessage('Erro ao deletar categoria.', true);
+                    showStatusMessage(`Erro ao deletar categoria: ${error.message}`, true);
                 }
             }
         }
@@ -670,13 +707,14 @@
         cancelCategoryEditBtn.addEventListener('click', resetCategoryForm);
 
 
-        // --- GERENCIAMENTO DE ARTIGOS (CRUD) ---
+        // --- GERENCIAMENTO DE ARTIGOS (CRUD via API) ---
 
         // Salvar/Atualizar Artigo
         articleForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             const id = articleIdInput.value;
             const publishedDate = articlePublishedAt.value;
+            const originalPublishedDate = articleOriginalPublishedAt.value; // Pega a data original (se houver)
 
             // Processa as tags: string -> array
             const tagsArray = articleTags.value
@@ -692,61 +730,55 @@
                 tags: tagsArray,
                 content: quill.root.innerHTML, // Pega o HTML do Quill
                 slug: slugify(articleTitle.value),
-                updatedAt: serverTimestamp() // Sempre atualiza "última modificação"
             };
 
             // Lógica da Data de Publicação
             if (publishedDate) {
-                // Adiciona T12:00:00 para evitar problemas de fuso horário
-                articleData.publishedAt = new Date(publishedDate + 'T12:00:00');
+                // Se uma data foi explicitamente setada, usa ela (com ajuste de fuso)
+                articleData.publishedAt = new Date(publishedDate + 'T12:00:00').toISOString();
+            } else if (id && originalPublishedDate) {
+                // Se é uma EDIÇÃO e a data foi APAGADA, mantém a data original
+                articleData.publishedAt = originalPublishedDate;
             } else if (!id) {
-                // Se é um NOVO artigo e a data está VAZIA, usa a data atual
-                articleData.publishedAt = serverTimestamp();
+                // Se é uma CRIAÇÃO e a data está VAZIA, o servidor usará a data atual
+                // Não enviamos 'publishedAt', a API vai tratar
             }
-            // Se for um artigo EXISTENTE e a data estiver VAZIA,
-            // 'publishedAt' não é adicionado, e o { merge: true } abaixo
-            // garantirá que o valor antigo seja mantido.
+
+            if (id) {
+                articleData.id = id; // Inclui o ID para atualização
+            }
 
             try {
-                if (id) {
-                    // Atualizar
-                    const articleRef = doc(db, 'artigos', id);
-                    await setDoc(articleRef, articleData, { merge: true });
-                    showStatusMessage('Artigo atualizado com sucesso!');
-                } else {
-                    // Criar
-                    articleData.createdAt = serverTimestamp(); // Adiciona data de criação
-                    await addDoc(collection(db, 'artigos'), articleData);
-                    showStatusMessage('Artigo salvo com sucesso!');
-                }
+                await fetchWithToken('/api/admin/salvarArtigo', {
+                    method: 'POST',
+                    body: JSON.stringify(articleData)
+                });
+                showStatusMessage(id ? 'Artigo atualizado com sucesso!' : 'Artigo salvo com sucesso!');
                 resetArticleForm();
+                await loadArticles(); // Recarrega os artigos
             } catch (error) {
                 console.error("Erro ao salvar artigo: ", error);
-                showStatusMessage('Erro ao salvar artigo.', true);
+                showStatusMessage(`Erro ao salvar artigo: ${error.message}`, true);
             }
         });
 
         // Carregar Artigos (para o Admin)
-        function loadArticles() {
-            const q = query(collection(db, "artigos"));
-            onSnapshot(q, (querySnapshot) => {
+        async function loadArticles() {
+            articlesLoadingMsg.classList.remove('hidden');
+            try {
+                // Admin pode carregar todos os artigos de uma vez para gerenciar
+                const articles = await fetchWithToken('/api/getArtigos?limit=1000');
+
                 articlesLoadingMsg.classList.add('hidden');
                 articlesListAdmin.innerHTML = '';
-
-                const articles = [];
-                querySnapshot.forEach((doc) => {
-                    articles.push({ id: doc.id, ...doc.data() });
-                });
-
-                // Ordena por 'publishedAt' (já corrigido para null-safety)
-                articles.sort((a, b) => (b.publishedAt?.seconds || 0) - (a.publishedAt?.seconds || 0));
 
                 articles.forEach(article => {
                     const category = allCategoriesMap.get(article.categoryId);
                     const categoryName = category ? category.name : 'Sem Categoria';
 
-                    // Exibe 'publishedAt' (já corrigido para null-safety)
-                    const date = article.publishedAt ? new Date(article.publishedAt.seconds * 1000).toLocaleDateString() : 'Salvando...';
+                    const date = article.publishedAt
+                        ? new Date(article.publishedAt.seconds * 1000).toLocaleDateString('pt-BR')
+                        : 'Salvando...';
 
                     const el = document.createElement('div');
                     el.className = 'flex justify-between items-center p-4 bg-slate-50 rounded-lg';
@@ -771,7 +803,10 @@
                     articlesLoadingMsg.textContent = 'Nenhum artigo encontrado.';
                     articlesLoadingMsg.classList.remove('hidden');
                 }
-            });
+            } catch (error) {
+                console.error("Erro ao carregar artigos:", error);
+                articlesLoadingMsg.textContent = `Erro ao carregar artigos: ${error.message}`;
+            }
         }
 
         // Delegação de Eventos para botões de Artigo
@@ -793,34 +828,37 @@
         // Preencher formulário de Artigo para edição
         async function populateArticleForm(id) {
             try {
-                const docRef = doc(db, 'artigos', id);
-                const docSnap = await getDoc(docRef);
-                if (docSnap.exists()) {
-                    const article = docSnap.data();
-                    articleFormTitle.textContent = 'Editar Artigo';
-                    articleIdInput.value = id;
-                    articleTitle.value = article.title;
-                    articleCategory.value = article.categoryId;
-                    articleSummary.value = article.summary;
-                    articleLink.value = article.link || '';
-                    articleTags.value = (article.tags || []).join(', ');
+                // A lista de artigos (loadArticles) não tem o 'content'.
+                // Precisamos buscar o artigo completo na API de detalhes.
+                const article = await fetchWithToken(`/api/getArtigoDetalhe?id=${id}`);
 
-                    if (article.publishedAt) {
-                        const date = article.publishedAt.toDate();
-                        articlePublishedAt.value = date.toISOString().split('T')[0];
-                    } else {
-                        articlePublishedAt.value = '';
-                    }
+                articleFormTitle.textContent = 'Editar Artigo';
+                articleIdInput.value = id;
+                articleTitle.value = article.title;
+                articleCategory.value = article.categoryId;
+                articleSummary.value = article.summary;
+                articleLink.value = article.link || '';
+                articleTags.value = (article.tags || []).join(', ');
 
-                    quill.root.innerHTML = article.content; // Carrega o conteúdo no Quill
-                    cancelEditBtn.classList.remove('hidden');
-                    window.scrollTo({ top: articleForm.offsetTop, behavior: 'smooth' });
+                if (article.publishedAt) {
+                    // Converte o timestamp (segundos) para o formato YYYY-MM-DD
+                    const date = new Date(article.publishedAt.seconds * 1000);
+                    const dateString = date.toISOString().split('T')[0];
+                    articlePublishedAt.value = dateString;
+                    // Armazena a data original (em formato ISO)
+                    articleOriginalPublishedAt.value = date.toISOString();
                 } else {
-                    showStatusMessage('Artigo não encontrado.', true);
+                    articlePublishedAt.value = '';
+                    articleOriginalPublishedAt.value = '';
                 }
+
+                quill.root.innerHTML = article.content; // Carrega o conteúdo no Quill
+                cancelEditBtn.classList.remove('hidden');
+                window.scrollTo({ top: articleForm.offsetTop, behavior: 'smooth' });
+
             } catch (error) {
-                console.error("Erro ao buscar artigo:", error);
-                showStatusMessage('Erro ao carregar artigo para edição.', true);
+                console.error("Erro ao buscar artigo para edição:", error);
+                showStatusMessage(`Erro ao carregar artigo: ${error.message}`, true);
             }
         }
 
@@ -828,12 +866,16 @@
         async function deleteArticle(id, title) {
             if (confirm(`Tem certeza que quer deletar o artigo "${title}"?`)) {
                 try {
-                    await deleteDoc(doc(db, 'artigos', id));
+                    await fetchWithToken('/api/admin/deletarArtigo', {
+                        method: 'POST',
+                        body: JSON.stringify({ id })
+                    });
                     showStatusMessage('Artigo deletado.');
                     resetArticleForm(); // Caso estivesse editando
+                    await loadArticles(); // Recarrega
                 } catch (error) {
                     console.error("Erro ao deletar artigo: ", error);
-                    showStatusMessage('Erro ao deletar artigo.', true);
+                    showStatusMessage(`Erro ao deletar artigo: ${error.message}`, true);
                 }
             }
         }
@@ -842,6 +884,7 @@
         function resetArticleForm() {
             articleForm.reset(); // Isso limpa todos os inputs, incluindo a data
             articleIdInput.value = '';
+            articleOriginalPublishedAt.value = '';
             quill.root.innerHTML = ''; // Limpa o editor
             articleFormTitle.textContent = 'Adicionar Novo Artigo';
             cancelEditBtn.classList.add('hidden');
@@ -864,6 +907,7 @@
 
         // Criar slug (para URLs amigáveis, se necessário no futuro)
         function slugify(text) {
+            if (!text) return '';
             return text.toString().toLowerCase().trim()
                 .normalize('NFD') // remove acentos
                 .replace(/[\u0300-\u036f]/g, '')
