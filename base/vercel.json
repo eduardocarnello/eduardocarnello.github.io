@@ -37,7 +37,7 @@
         {
             "source": "/api/getArtigos",
             "destination": "/api/getArtigos.js"
-      _
+       
         },
         {
             "source": "/api/getCategorias",
