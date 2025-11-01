@@ -30,9 +30,19 @@ export default async function handler(req, res) {
         // 4. Processar os dados do artigo
         const { id, ...articleData } = req.body;
 
+        // **MÚLTIPLOS LINKS: Validação**
+        if (articleData.links && (!Array.isArray(articleData.links) || articleData.links.length > 5)) {
+            return res.status(400).json({ error: 'Formato de links inválido ou limite de 5 excedido.' });
+        }
+        // Remove o 'link' antigo (do formulário antigo) se ele ainda estiver sendo enviado
+        if (articleData.link) {
+            delete articleData.link;
+        }
+
         // Converte a string de data (se existir) para Timestamp do Firebase
         if (articleData.publishedAt) {
-            articleData.publishedAt = admin.firestore.Timestamp.fromDate(new Date(articleData.publishedAt));
+            // A data vem como 'YYYY-MM-DD'. Adicionamos T12:00:00 para evitar problemas de fuso.
+            articleData.publishedAt = admin.firestore.Timestamp.fromDate(new Date(articleData.publishedAt + 'T12:00:00Z'));
         }
 
         // Adiciona timestamps do servidor
@@ -62,3 +72,4 @@ export default async function handler(req, res) {
         return res.status(500).json({ error: 'Erro interno do servidor.' });
     }
 }
+
