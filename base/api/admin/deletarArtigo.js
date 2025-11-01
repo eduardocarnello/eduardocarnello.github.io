@@ -16,7 +16,7 @@ export default async function handler(req, res) {
   try {
     const token = req.headers.authorization?.split('Bearer ')[1];
     if (!token) return res.status(401).json({ error: 'Nenhum token fornecido.' });
-    
+
     const decodedToken = await auth.verifyIdToken(token);
     if (!ADMIN_EMAILS.includes(decodedToken.email)) {
       return res.status(403).json({ error: 'Acesso negado. Você não é um administrador.' });
@@ -28,13 +28,13 @@ export default async function handler(req, res) {
     }
 
     await db.collection('artigos').doc(id).delete();
-    
+
     return res.status(200).json({ message: 'Artigo deletado com sucesso.' });
 
   } catch (error) {
     console.error('Erro em /api/admin/deletarArtigo:', error);
     if (error.code === 'auth/id-token-expired') {
-        return res.status(401).json({ error: 'Token expirado. Faça login novamente.' });
+      return res.status(401).json({ error: 'Token expirado. Faça login novamente.' });
     }
     return res.status(500).json({ error: 'Erro interno do servidor.' });
   }
