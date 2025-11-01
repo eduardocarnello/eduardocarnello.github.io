@@ -1,19 +1,39 @@
 {
-    "version": 2,
     "functions": {
-        "api/**/*.js": {
-            "memory": 1024,
-            "maxDuration": 10
+        "api/getArtigos.js": {
+            "runtime": "nodejs18.x"
+        },
+        "api/getArtigoDetalhe.js": {
+            "runtime": "nodejs18.x"
+        },
+        "api/getCategorias.js": {
+            "runtime": "nodejs18.x"
+        },
+        "api/admin/salvarArtigo.js": {
+            "runtime": "nodejs18.x"
+        },
+        "api/admin/salvarCategoria.js": {
+            "runtime": "nodejs18.x"
+        },
+        "api/admin/deletarArtigo.js": {
+            "runtime": "nodejs18.x"
+        },
+        "api/admin/deletarCategoria.js": {
+            "runtime": "nodejs18.x"
         }
     },
     "rewrites": [
         {
-            "source": "/api/admin/deletarArtigo",
-            "destination": "/api/admin/deletarArtigo.js"
+            "source": "/api/getArtigos",
+            "destination": "/api/getArtigos.js"
         },
         {
-            "source": "/api/admin/deletarCategoria",
-            "destination": "/api/admin/deletarCategoria.js"
+            "source": "/api/getArtigoDetalhe",
+            "destination": "/api/getArtigoDetalhe.js"
+        },
+        {
+            "source": "/api/getCategorias",
+            "destination": "/api/getCategorias.js"
         },
         {
             "source": "/api/admin/salvarArtigo",
@@ -24,16 +44,12 @@
             "destination": "/api/admin/salvarCategoria.js"
         },
         {
-            "source": "/api/getArtigoDetalhe",
-            "destination": "/api/getArtigoDetalhe.js"
+            "source": "/api/admin/deletarArtigo",
+            "destination": "/api/admin/deletarArtigo.js"
         },
         {
-            "source": "/api/getArtigos",
-            "destination": "/api/getArtigos.js"
-        },
-        {
-            "source": "/api/getCategorias",
-            "destination": "/api/getCategorias.js"
+            "source": "/api/admin/deletarCategoria",
+            "destination": "/api/admin/deletarCategoria.js"
         }
     ]
 }
