@@ -548,7 +548,8 @@
                 'Content-Type': 'application/json'
             };
 
-            // CORREÇÃO: Usa o caminho /api/ (assumindo que Vercel Root Dir = 'base')
+            // **CORREÇÃO: Caminho relativo (sem / inicial)**
+            // Isso assume que o index.html está em /base/ e a api está em /base/api/
             const response = await fetch(url, { ...options, headers });
 
             // Tratamento de Erros
@@ -558,8 +559,8 @@
                     errorData = await response.json(); // Tenta ler o erro como JSON
                 } catch (e) {
                     // Se falhar (ex: 404 retorna HTML), cria um erro genérico
-                    const errorText = await response.text(); // Lê o HTML do 404
-                    console.error("Vercel 404 Response:", errorText); // Loga o HTML do 404
+                    const errorText = await response.text();
+                    console.error("Erro HTML/Texto (não-JSON) recebido:", errorText);
                     errorData = { error: `Erro ${response.status}: ${response.statusText}` };
                 }
 
@@ -690,14 +691,14 @@
             categoriesLoading.classList.remove('hidden');
 
             try {
-                const categories = await fetchWithToken('/api/getCategorias'); // Caminho com /
+                // **CORREÇÃO: Caminho relativo (sem / inicial)**
+                const categories = await fetchWithToken('api/getCategorias');
                 allCategories = categories; // Salva no cache
                 renderCategories(categories);
                 categoriesLoading.classList.add('hidden');
             } catch (error) {
                 console.error("Erro ao buscar categorias:", error);
                 categoriesLoading.textContent = 'Erro ao carregar.';
-                // O erro de querySelectorAll estava aqui
             }
         }
 
@@ -729,7 +730,8 @@
             loadMoreBtn.disabled = true;
 
             try {
-                const articles = await fetchWithToken(`/api/getArtigos?limit=${limit}`); // Caminho com /
+                // **CORREÇÃO: Caminho relativo (sem / inicial)**
+                const articles = await fetchWithToken(`api/getArtigos?limit=${limit}`);
 
                 // Filtra os *novos* artigos que chegaram
                 const newArticles = articles.filter(a => !allArticles.some(existing => existing.id === a.id));
@@ -770,7 +772,7 @@
 
         // Renderizar Categorias
         function renderCategories(categories) {
-            // **CORREÇÃO AQUI**
+            // **CORREÇÃO DO BUG do querySelectorAll**
             // Limpa o grid (exceto o botão "Todos")
             categoryGrid.querySelectorAll('.category-card:not([data-category="TODOS"])').forEach(el => el.remove());
 
@@ -812,7 +814,7 @@
                 const categoryBorderColor = colors.border;
 
                 const card = document.createElement('div');
-                card.className = `article-card bg-white rounded-2xl shadow-lg overflow-hidden transition-transform transform hover:-translate-y-1 hover:shadow-xl cursor-pointer flex flex-col ${categoryBorderColor} border-t-4`;
+                card.className = `article-card bg-white rounded-2xl shadow-lg overflow-hidden transition-transform transform hover:-translate-y-1 hover:shadow-xl cursor-pointer flex flex-col ${categoryBorderColor} border-t-4`; // Borda aqui
                 card.dataset.id = id;
                 card.dataset.title = title.toLowerCase();
                 card.dataset.summary = summary.toLowerCase();
@@ -947,8 +949,8 @@
             }, 10);
 
             try {
-                // Busca o conteúdo COMPLETO do artigo na API
-                const article = await fetchWithToken(`/api/getArtigoDetalhe?id=${id}`); // Caminho com /
+                // **CORREÇÃO: Caminho relativo (sem / inicial)**
+                const article = await fetchWithToken(`api/getArtigoDetalhe?id=${id}`);
 
                 // Preenche o modal com os dados
                 modalTitle.textContent = article.title;
