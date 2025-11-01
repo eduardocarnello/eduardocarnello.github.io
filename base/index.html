@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="pt-BR" class="scroll-smooth">
+<html lang="pt-BR" class="h-full">
 
 <head>
     <meta charset="UTF-8">
@@ -8,89 +8,135 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
-        body {
+        body,
+        html {
             font-family: 'Inter', sans-serif;
+            scroll-behavior: smooth;
         }
 
-        /* Estilo para o conteúdo do Quill (para corresponder ao editor) */
-        .ql-snow .ql-editor h1 {
-            font-size: 2em;
-            font-weight: 700;
-            margin-bottom: 0.5em;
+        /* Webkit Scrollbar */
+        ::-webkit-scrollbar {
+            width: 12px;
+            height: 12px;
         }
 
-        .ql-snow .ql-editor h2 {
-            font-size: 1.5em;
-            font-weight: 700;
-            margin-top: 1em;
-            margin-bottom: 0.5em;
+        ::-webkit-scrollbar-track {
+            background: #f1f5f9;
+            border-radius: 10px;
         }
 
-        .ql-snow .ql-editor h3 {
-            font-size: 1.17em;
-            font-weight: 700;
-            margin-top: 1em;
-            margin-bottom: 0.5em;
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 10px;
         }
 
-        .ql-snow .ql-editor p,
-        .ql-snow .ql-editor ol,
-        .ql-snow .ql-editor ul {
-            font-size: 1rem;
-            line-height: 1.6;
-            margin-bottom: 1em;
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
         }
 
-        .ql-snow .ql-editor ol,
-        .ql-snow .ql-editor ul {
-            padding-left: 1.5em;
-        }
-
-        .ql-snow .ql-editor a {
-            color: #2563eb;
-            text-decoration: underline;
-        }
-
-        .ql-snow .ql-editor blockquote {
-            border-left: 4px solid #e5e7eb;
-            margin-bottom: 1em;
-            padding-left: 1em;
-            font-style: italic;
-            color: #6b7280;
-        }
-
-        .ql-snow .ql-editor pre.ql-syntax {
-            background-color: #f3f4f6;
-            color: #1f2937;
-            padding: 1em;
-            border-radius: 0.5rem;
-            overflow-x: auto;
-            font-family: 'Courier New', Courier, monospace;
-        }
-
-        .ql-snow .ql-editor img {
-            max-width: 100%;
-            border-radius: 0.5rem;
-        }
-
-        /* Foco personalizado para acessibilidade */
+        /* Foco personalizado */
         .focus-ring-visible:focus-visible {
             outline: 2px solid #2563eb;
             outline-offset: 2px;
         }
 
-        /* Esconde o conteúdo até o JS decidir o que mostrar */
-        .fouc-hidden {
-            display: none;
+        /* Estilos do Conteúdo do Artigo (Modal) */
+        #modal-content h1 {
+            font-size: 1.875rem;
+            /* 3xl */
+            font-weight: 700;
+            margin-top: 1.5rem;
+            margin-bottom: 0.75rem;
+        }
+
+        #modal-content h2 {
+            font-size: 1.5rem;
+            /* 2xl */
+            font-weight: 600;
+            margin-top: 1.25rem;
+            margin-bottom: 0.5rem;
+        }
+
+        #modal-content h3 {
+            font-size: 1.25rem;
+            /* xl */
+            font-weight: 600;
+            margin-top: 1rem;
+            margin-bottom: 0.5rem;
+        }
+
+        #modal-content p {
+            margin-bottom: 1rem;
+            line-height: 1.6;
+        }
+
+        #modal-content ul {
+            list-style-type: disc;
+            margin-left: 1.5rem;
+            margin-bottom: 1rem;
+            padding-left: 0.5rem;
+        }
+
+        #modal-content ol {
+            list-style-type: decimal;
+            margin-left: 1.5rem;
+            margin-bottom: 1rem;
+            padding-left: 0.5rem;
+        }
+
+        #modal-content li {
+            margin-bottom: 0.5rem;
+        }
+
+        #modal-content a {
+            color: #2563eb;
+            /* blue-600 */
+            text-decoration: underline;
+        }
+
+        #modal-content a:hover {
+            color: #1d4ed8;
+            /* blue-700 */
+        }
+
+        #modal-content blockquote {
+            border-left: 4px solid #94a3b8;
+            /* slate-400 */
+            padding-left: 1rem;
+            margin-left: 0;
+            margin-bottom: 1rem;
+            font-style: italic;
+            color: #475569;
+            /* slate-600 */
+        }
+
+        #modal-content pre.ql-syntax {
+            background-color: #1e293b;
+            /* slate-800 */
+            color: #e2e8f0;
+            /* slate-200 */
+            padding: 1rem;
+            border-radius: 0.5rem;
+            overflow-x: auto;
+            margin-bottom: 1rem;
+            font-family: monospace;
+        }
+
+        #modal-content img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 0.5rem;
+            margin-top: 1rem;
+            margin-bottom: 1rem;
         }
     </style>
 </head>
 
-<body class="bg-gray-50">
+<body class="bg-slate-100 h-full flex flex-col">
 
-    <!-- Seção de Login (Começa oculta para evitar "piscada") -->
+    <!-- Seção de Login (Visível por padrão) -->
     <section id="login-section"
-        class="fouc-hidden min-h-screen items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+        class="min-h-full flex-grow flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
         <div class="max-w-md w-full space-y-8 bg-white p-10 rounded-2xl shadow-xl">
             <div>
                 <svg class="mx-auto h-12 w-auto text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none"
@@ -99,10 +145,10 @@
                         d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18c-2.305 0-4.408.867-6 2.292m0-14.25v14.25" />
                 </svg>
                 <h2 class="mt-6 text-center text-3xl font-extrabold text-gray-900">
-                    Acessar a Base de Conhecimento
+                    Acessar Base de Conhecimento
                 </h2>
                 <p class="mt-2 text-center text-sm text-gray-600">
-                    Este é um portal privado. Por favor, faça login.
+                    Este é um portal privado.
                 </p>
             </div>
 
@@ -152,37 +198,39 @@
                 </button>
             </div>
 
-            <!-- Link para o Admin -->
+            <!-- Link para o Admin (se for admin) -->
             <div class="text-center mt-6">
                 <a href="admin.html"
                     class="text-sm font-medium text-blue-600 hover:text-blue-500 transition-colors focus-ring-visible rounded-md">
-                    Painel do Administrador &rarr;
+                    Painel de Administração &rarr;
                 </a>
             </div>
+
         </div>
     </section>
 
-    <!-- Conteúdo Principal (Começa oculto para evitar "piscada") -->
-    <section id="content-section" class="fouc-hidden">
+    <!-- Seção de Conteúdo (Oculta por padrão) -->
+    <section id="content-section" class="hidden flex-grow">
         <!-- Header -->
-        <header class="bg-white shadow-sm sticky top-0 z-30">
+        <header class="bg-white shadow-md sticky top-0 z-40">
             <div class="container mx-auto px-4 sm:px-6 lg:px-8">
                 <div class="flex justify-between items-center h-20">
                     <!-- Logo e Título -->
-                    <div class="flex items-center gap-3">
-                        <svg class="h-10 w-10 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none"
+                    <div class="flex-shrink-0 flex items-center">
+                        <svg class="h-10 w-auto text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none"
                             viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round"
                                 d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18c-2.305 0-4.408.867-6 2.292m0-14.25v14.25" />
                         </svg>
-                        <div>
-                            <h1 class="text-2xl font-bold text-gray-900">Base de Conhecimento</h1>
-                            <p class="text-sm text-gray-500">Seu portal central de informações.</p>
-                        </div>
+                        <span class="ml-3 text-2xl font-bold text-slate-800">Base de Conhecimento</span>
                     </div>
-                    <!-- Info Usuário e Botão Sair -->
+
+                    <!-- Botões de Admin e Sair -->
                     <div class="flex items-center gap-4">
-                        <span id="user-email-display" class="text-sm text-slate-600 hidden sm:block"></span>
+                        <a href="admin.html" id="admin-btn"
+                            class="hidden text-sm font-medium text-blue-600 hover:text-blue-800 transition-colors focus-ring-visible rounded-md p-1">
+                            Painel Admin
+                        </a>
                         <button id="logout-btn"
                             class="text-sm font-medium text-red-600 hover:text-red-800 transition-colors focus-ring-visible rounded-md p-1">
                             Sair
@@ -192,27 +240,33 @@
             </div>
         </header>
 
-        <!-- Barra de Busca -->
-        <div class="bg-blue-600 text-white">
-            <div class="container mx-auto px-4 sm:px-6 lg:px-8 py-12">
-                <h2 class="text-3xl font-bold text-center mb-6">Como podemos ajudar?</h2>
-                <div class="max-w-2xl mx-auto">
+        <!-- Seção de Busca -->
+        <div class="bg-slate-800 py-12 sm:py-16">
+            <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="max-w-3xl mx-auto text-center">
+                    <h1 class="text-3xl sm:text-4xl font-extrabold text-white">Como podemos ajudar?</h1>
+                    <p class="mt-4 text-lg text-slate-300">
+                        Pesquise comunicados, provimentos, orientações e mais.
+                    </p>
+                </div>
+                <!-- Barra de Busca -->
+                <div class="max-w-3xl mx-auto mt-8">
                     <div class="relative">
-                        <input type="search" id="search-input"
-                            class="w-full p-4 pl-12 text-lg text-gray-900 rounded-xl shadow-lg border-none focus:ring-4 focus:ring-blue-300"
-                            placeholder="Pesquise por termos, frases, tags...">
-                        <div class="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none">
-                            <svg class="w-6 h-6 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none"
+                        <input type="search" id="search-input" placeholder="Pesquisar artigos..."
+                            class="w-full p-4 pl-12 text-lg text-slate-900 bg-white rounded-full shadow-lg focus:outline-none focus:ring-4 focus:ring-blue-500 focus:ring-opacity-50 transition-shadow">
+                        <div class="absolute left-4 top-1/2 -translate-y-1/2">
+                            <svg class="w-6 h-6 text-slate-400" xmlns="http://www.w3.org/2000/svg" fill="none"
                                 viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round"
-                                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                                    d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
                             </svg>
                         </div>
                     </div>
-                    <div class="flex items-center gap-4 mt-4">
-                        <label for="search-scope" class="text-blue-100 font-medium">Pesquisar em:</label>
-                        <select id="search-scope"
-                            class="bg-blue-700 border border-blue-500 text-white text-sm rounded-lg focus:ring-blue-300 focus:border-blue-300 block p-2.5">
+                    <!-- Filtro de Campo de Busca -->
+                    <div class="max-w-xs mx-auto mt-4">
+                        <label for="search-field" class="sr-only">Pesquisar em:</label>
+                        <select id="search-field"
+                            class="w-full py-2 px-3 bg-slate-700 border border-slate-600 text-white text-sm rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus-ring-visible">
                             <option value="all">Todos os Campos</option>
                             <option value="title">Apenas no Título</option>
                             <option value="summary">Apenas no Resumo</option>
@@ -224,83 +278,92 @@
         </div>
 
         <!-- Conteúdo Principal -->
-        <main class="container mx-auto px-4 sm:px-6 lg:px-8 py-10">
+        <main class="container mx-auto px-4 sm:px-6 lg:px-8 py-12 flex-grow">
+            <div class="flex flex-col lg:flex-row gap-8 lg:gap-12">
 
-            <!-- Filtro de Categorias -->
-            <div id="category-grid" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-4 mb-10">
-                <!-- Card "TODOS" -->
-                <button
-                    class="category-card active-category flex flex-col items-center justify-center p-4 bg-white rounded-2xl shadow-md cursor-pointer transform transition-all duration-300 hover:shadow-lg hover:-translate-y-1 focus-ring-visible ring-blue-500"
-                    data-category="TODOS">
-                    <div class="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center mb-2">
-                        <svg class="w-6 h-6 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none"
-                            viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round"
-                                d="M3.75 12h16.5m-16.5 3.75h16.5M3.75 19.5h16.5M5.625 4.5h12.75a1.875 1.875 0 010 3.75H5.625a1.875 1.875 0 010-3.75z" />
+                <!-- Sidebar de Categorias (Lateral) -->
+                <aside class="w-full lg:w-1/4 xl:w-1/5">
+                    <h2 class="text-xl font-bold text-slate-800 mb-4">Categorias</h2>
+                    <nav id="category-grid" class="space-y-2">
+                        <!-- Botão "Todos" -->
+                        <button
+                            class="category-card w-full flex items-center gap-3 p-3 rounded-lg text-left font-medium transition-colors duration-150 focus-ring-visible bg-blue-600 text-white shadow-lg"
+                            data-category="TODOS">
+                            <div
+                                class="w-8 h-8 flex-shrink-0 flex items-center justify-center rounded-lg bg-white bg-opacity-20">
+                                <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                    stroke-width="2" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                        d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+                                </svg>
+                            </div>
+                            <span>Todos</span>
+                        </button>
+
+                        <!-- Mensagem de Carregamento de Categorias -->
+                        <div id="categories-loading" class="text-slate-500">Carregando categorias...</div>
+
+                        <!-- Categorias dinâmicas vêm aqui -->
+                    </nav>
+                </aside>
+
+                <!-- Grid de Artigos (Principal) -->
+                <section class="w-full lg:w-3/4 xl:w-4/5">
+                    <h2 class="text-2xl font-bold text-slate-800 mb-6">
+                        Artigos Recentes
+                    </h2>
+
+                    <!-- Mensagem de Status (Carregando, Erro, Vazio) -->
+                    <div id="articles-status" class="text-center text-slate-500 py-10">
+                        <svg class="mx-auto h-12 w-12 text-slate-400 animate-spin" xmlns="http://www.w3.org/2000/svg"
+                            fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4">
+                            </circle>
+                            <path class="opacity-75" fill="currentColor"
+                                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+                            </path>
                         </svg>
+                        <p class="mt-4 text-lg font-medium">Carregando artigos...</p>
                     </div>
-                    <span class="font-bold text-gray-800 text-center text-sm">Todos</span>
-                </button>
-                <!-- Outras categorias serão inseridas aqui pelo JS -->
-                <div id="categories-loading" class="text-center text-gray-500 col-span-full">
-                    Carregando categorias...
-                </div>
-            </div>
 
-            <!-- Grid de Artigos -->
-            <div id="articles-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                <!-- Artigos serão inseridos aqui pelo JS -->
-            </div>
+                    <!-- Container dos Cards de Artigo -->
+                    <div id="articles-grid" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <!-- Cards de artigo vêm aqui -->
+                    </div>
 
-            <!-- Mensagem de "Nenhum resultado" -->
-            <div id="no-results" class="hidden text-center py-20">
-                <svg class="w-16 h-16 text-gray-400 mx-auto mb-4" xmlns="http://www.w3.org/2000/svg" fill="none"
-                    viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round"
-                        d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
-                </svg>
-                <h3 class="text-2xl font-bold text-gray-700 mb-2">Nenhum artigo encontrado</h3>
-                <p class="text-gray-500">Tente ajustar seus termos de busca ou filtros.</p>
-            </div>
+                    <!-- Botão Carregar Mais -->
+                    <div id="load-more-container" class="text-center mt-12 hidden">
+                        <button id="load-more-btn"
+                            class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-full shadow-lg transition-transform transform hover:scale-105 focus-ring-visible">
+                            Carregar Mais 10 Artigos
+                        </button>
+                    </div>
 
-            <!-- Botão Carregar Mais -->
-            <div id="load-more-container" class="text-center mt-12 hidden">
-                <button id="load-more-btn"
-                    class="py-3 px-8 border border-transparent text-base font-medium rounded-lg text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors">
-                    Carregar Mais 10 Artigos
-                </button>
+                </section>
             </div>
-
         </main>
-
-        <!-- Footer -->
-        <footer class="bg-white border-t border-gray-200 mt-16">
-            <div class="container mx-auto px-4 sm:px-6 lg:px-8 py-6 text-center text-gray-500 text-sm">
-                &copy; <span id="footer-year"></span> Base de Conhecimento. Todos os direitos reservados.
-            </div>
-            <script>document.getElementById('footer-year').textContent = new Date().getFullYear();</script>
-        </footer>
     </section>
 
     <!-- Modal de Artigo (Começa oculto) -->
-    <div id="modal-backdrop" class="fixed inset-0 bg-black bg-opacity-75 z-40 hidden" aria-hidden="true"></div>
+    <div id="modal-backdrop"
+        class="fixed inset-0 bg-black bg-opacity-75 z-50 hidden transition-opacity duration-300 ease-out"
+        aria-hidden="true"></div>
 
     <div id="modal-container" class="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-0 hidden"
-        role="dialog" aria-modal="true" aria-labelledby="modal-title">
+        role="dialog" aria-modal="true">
 
-        <!-- Painel do Modal (a janela) -->
+        <!-- Painel do Modal (VISUAL REVERTIDO PARA JANELA) -->
         <div id="modal-panel"
-            class="bg-white rounded-2xl shadow-xl transform transition-all w-full max-w-3xl max-h-[90vh] flex flex-col">
-
-            <!-- Cabeçalho do Modal com botão Fechar -->
+            class="bg-white rounded-2xl shadow-xl w-full max-w-3xl max-h-[90vh] flex flex-col transform transition-all duration-300 ease-out scale-95 opacity-0">
+            <!-- Cabeçalho do Modal -->
             <header
-                class="sticky top-0 bg-white p-4 sm:p-6 border-b border-gray-200 rounded-t-2xl flex justify-between items-center">
-                <h2 id="modal-title" class="text-2xl font-bold text-gray-900 truncate pr-4">
-                    Carregando...
-                </h2>
+                class="sticky top-0 bg-white p-4 sm:p-6 border-b border-slate-200 rounded-t-2xl flex justify-between items-center">
+                <h3 id="modal-title" class="text-xl sm:text-2xl font-bold text-slate-800 break-words pr-4">
+                    Carregando Título...
+                </h3>
                 <button id="modal-close-btn"
-                    class="p-2 rounded-full text-gray-400 hover:bg-gray-100 hover:text-gray-600 focus-ring-visible"
-                    aria-label="Fechar modal">
+                    class="p-2 -m-2 rounded-full text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors focus-ring-visible">
+                    <span class="sr-only">Fechar</span>
                     <svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
                         stroke-width="2" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
@@ -310,604 +373,722 @@
 
             <!-- Conteúdo do Modal (com scroll) -->
             <div id="modal-body" class="overflow-y-auto p-6 space-y-4">
-                <!-- Carregando... -->
-                <p id="modal-loading-text">Carregando conteúdo do artigo...</p>
+                <!-- Carregador do Modal -->
+                <div id="modal-loading-spinner" class="text-center py-10">
+                    <svg class="mx-auto h-8 w-8 text-slate-400 animate-spin" xmlns="http://www.w3.org/2000/svg"
+                        fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4">
+                        </circle>
+                        <path class="opacity-75" fill="currentColor"
+                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+                        </path>
+                    </svg>
+                    <p class="mt-3 text-slate-500">Carregando conteúdo...</p>
+                </div>
 
-                <!-- Metadados do Artigo (preenchidos pelo JS) -->
-                <div id="modal-meta" class="hidden space-y-3 pb-4 border-b border-gray-200">
-                    <!-- Categoria e Data -->
-                    <div class="flex flex-wrap items-center gap-x-4 gap-y-2">
-                        <span id="modal-category" class="font-medium text-sm px-3 py-1 rounded-full"></span>
-                        <span id="modal-date" class="text-sm text-gray-500"></span>
+                <!-- Metadados do Artigo -->
+                <div id="modal-metadata" class="hidden border-b border-slate-200 pb-4 mb-4 space-y-3">
+                    <!-- Categoria -->
+                    <div id="modal-category-badge" class="flex items-center gap-2">
+                        <!-- Badge vem aqui -->
+                    </div>
+                    <!-- Data -->
+                    <div class="flex items-center gap-2 text-sm text-slate-500">
+                        <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                            stroke-width="1.5" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" />
+                        </svg>
+                        Publicado em: <span id="modal-date">--</span>
                     </div>
                     <!-- Resumo -->
-                    <p id="modal-summary" class="text-gray-600 italic"></p>
+                    <p id="modal-summary" class="text-base text-slate-600 italic"></p>
                     <!-- Tags -->
-                    <div id="modal-tags-container" class="flex flex-wrap items-center gap-2">
-                        <!-- Ícone de Etiqueta (NOVO) -->
-                        <svg class="w-5 h-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none"
+                    <div id="modal-tags-container"
+                        class="hidden flex flex-wrap gap-2 items-center text-sm text-slate-500">
+                        <svg class="w-4 h-4 flex-shrink-0" xmlns="http://www.w3.org/2000/svg" fill="none"
                             viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round"
-                                d="M9.568 3H5.25A2.25 2.25 0 003 5.25v4.318c0 .597.237 1.17.659 1.591l9.581 9.581c.699.699 1.78.872 2.737.51l.004.004 2.73 1.018a.75.75 0 00.966-.965l-1.018-2.73a2.25 2.25 0 00-.51-2.737L5.16 3.66A2.25 2.25 0 003 5.25v.003z" />
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M6 6h.008v.008H6V6z" />
+                                d="M9.568 3H5.25A2.25 2.25 0 003 5.25v4.318c0 .597.237 1.17.659 1.591l9.581 9.581c.699.699 1.78.872 2.737.517l.07-.035c1.171-.625 1.846-1.85 1.846-3.142V6.118c0-1.292-.675-2.517-1.846-3.142a2.997 2.997 0 00-2.737-.517l-9.581 9.58L9.568 3z" />
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M6 9h.008v.008H6V9z" />
                         </svg>
-                        <div id="modal-tags-list" class="flex flex-wrap gap-2">
-                            <!-- Tags preenchidas pelo JS -->
-                        </div>
+                        <span id="modal-tags-list">
+                            <!-- Tags vêm aqui -->
+                        </span>
                     </div>
                 </div>
 
                 <!-- Conteúdo do Artigo (do Quill) -->
-                <div id="modal-content" class="ql-snow">
-                    <div class="ql-editor">
-                        <!-- Conteúdo do artigo preenchido pelo JS -->
-                    </div>
+                <div id="modal-content">
+                    <!-- Conteúdo vem aqui -->
                 </div>
 
-                <!-- Links de Referência (MÚLTIPLOS LINKS) -->
-                <div id="modal-links-container" class="hidden pt-4 border-t border-gray-200 space-y-3">
-                    <h4 class="font-semibold text-gray-700">Links de Referência:</h4>
-                    <ul id="modal-links-list" class="list-disc list-inside space-y-2">
-                        <!-- Links preenchidos pelo JS -->
-                    </ul>
+                <!-- Link de Referência -->
+                <div id="modal-link-container" class="hidden pt-4 border-t border-slate-200">
+                    <h4 class="font-semibold text-slate-700 mb-2">Link de Referência:</h4>
+                    <a id="modal-link" href="#" target="_blank" rel="noopener noreferrer"
+                        class="flex items-center gap-2 text-blue-600 hover:text-blue-700 hover:underline break-all">
+                        <svg class="w-4 h-4 flex-shrink-0" xmlns="http://www.w3.org/2000/svg" fill="none"
+                            viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M13.19 8.688a4.5 4.5 0 011.242 7.244l-4.5 4.5a4.5 4.5 0 01-6.364-6.364l1.757-1.757m13.35-.622l1.757-1.757a4.5 4.5 0 00-6.364-6.364l-4.5 4.5a4.5 4.5 0 001.242 7.244" />
+                        </svg>
+                        <span id="modal-link-text"></span>
+                    </a>
                 </div>
-
             </div>
-            </header>
         </div>
+    </div>
 
 
-        <!-- Firebase SDKs -->
-        <script type="module">
-            // Importações do Firebase
-            import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-            import {
-                getAuth,
-                onAuthStateChanged,
-                signInWithEmailAndPassword,
-                signInWithPopup,
-                GoogleAuthProvider,
-                signOut,
-                getIdToken
-            } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+    <!-- Firebase SDKs -->
+    <script type="module">
+        // Importações do Firebase (APENAS AUTH)
+        import { initializeApp, setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import {
+            getAuth,
+            onAuthStateChanged,
+            signInWithEmailAndPassword,
+            signInWithPopup,
+            GoogleAuthProvider,
+            signOut,
+            getIdToken
+        } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
 
-            // ***************************************************************
-            // ** COLE A SUA CONFIGURAÇÃO DO FIREBASE AQUI **
-            // ***************************************************************
-            const firebaseConfig = {
-                apiKey: "AIzaSyChhpPXpLTFGQfvJH55D_uQ2FG5PdKykcQ",
-                authDomain: "minha-base-conhecimento.firebaseapp.com",
-                projectId: "minha-base-conhecimento",
-                storageBucket: "minha-base-conhecimento.firebasestorage.app",
-                messagingSenderId: "586899421039",
-                appId: "1:586899421039:web:99be661136602118175a9a"
-            };
-            // ***************************************************************
-            // ***************************************************************
+        // ** Firestore NÃO é mais importado aqui **
 
-            // Inicializar Firebase
-            const app = initializeApp(firebaseConfig);
-            const auth = getAuth(app);
-            const googleProvider = new GoogleAuthProvider();
+        // Configuração do Firebase
+        const firebaseConfig = {
+            apiKey: "AIzaSyChhpPXpLTFGQfvJH55D_uQ2FG5PdKykcQ",
+            authDomain: "minha-base-conhecimento.firebaseapp.com",
+            projectId: "minha-base-conhecimento",
+            storageBucket: "minha-base-conhecimento.firebasestorage.app",
+            messagingSenderId: "586899421039",
+            appId: "1:586899421039:web:99be661136602118175a9a"
+        };
 
-            // --- REFERÊNCIAS DO DOM ---
-            const loginSection = document.getElementById('login-section');
-            const contentSection = document.getElementById('content-section');
-            const loginForm = document.getElementById('login-form');
-            const loginEmail = document.getElementById('login-email');
-            const loginPassword = document.getElementById('login-password');
-            const loginStatus = document.getElementById('login-status');
-            const googleLoginBtn = document.getElementById('google-login-btn');
-            const logoutBtn = document.getElementById('logout-btn');
-            const userEmailDisplay = document.getElementById('user-email-display');
+        // Inicializar Firebase
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const googleProvider = new GoogleAuthProvider();
+        setLogLevel('Debug');
 
-            const searchInput = document.getElementById('search-input');
-            const searchScope = document.getElementById('search-scope');
-            const categoryGrid = document.getElementById('category-grid');
-            const categoriesLoading = document.getElementById('categories-loading');
-            const articlesGrid = document.getElementById('articles-grid');
-            const noResults = document.getElementById('no-results');
+        // E-mails de Admin (para mostrar o botão de admin)
+        const adminEmails = ['eduardocarnello@gmail.com', 'mariliajec@tjsp.jus.br'];
 
-            // Paginação
-            const loadMoreContainer = document.getElementById('load-more-container');
-            const loadMoreBtn = document.getElementById('load-more-btn');
-            let currentArticleLimit = 10;
-            let allArticles = [];
-            let allCategories = [];
-            let currentCategory = 'TODOS';
+        // --- REFERÊNCIAS DO DOM ---
+        // Seções
+        const loginSection = document.getElementById('login-section');
+        const contentSection = document.getElementById('content-section');
+        // Login
+        const loginForm = document.getElementById('login-form');
+        const loginEmail = document.getElementById('login-email');
+        const loginPassword = document.getElementById('login-password');
+        const loginStatus = document.getElementById('login-status');
+        const googleLoginBtn = document.getElementById('google-login-btn');
+        // Header (Conteúdo)
+        const logoutBtn = document.getElementById('logout-btn');
+        const adminBtn = document.getElementById('admin-btn');
+        // Busca
+        const searchInput = document.getElementById('search-input');
+        const searchField = document.getElementById('search-field');
+        // Categorias
+        const categoryGrid = document.getElementById('category-grid');
+        const categoriesLoading = document.getElementById('categories-loading');
+        // Artigos
+        const articlesGrid = document.getElementById('articles-grid');
+        const articlesStatus = document.getElementById('articles-status');
+        const loadMoreContainer = document.getElementById('load-more-container');
+        const loadMoreBtn = document.getElementById('load-more-btn');
+        // Modal
+        const modalBackdrop = document.getElementById('modal-backdrop');
+        const modalContainer = document.getElementById('modal-container');
+        const modalPanel = document.getElementById('modal-panel');
+        const modalCloseBtn = document.getElementById('modal-close-btn');
+        const modalTitle = document.getElementById('modal-title');
+        const modalBody = document.getElementById('modal-body');
+        const modalLoadingSpinner = document.getElementById('modal-loading-spinner');
+        const modalMetadata = document.getElementById('modal-metadata');
+        const modalCategoryBadge = document.getElementById('modal-category-badge');
+        const modalDate = document.getElementById('modal-date');
+        const modalSummary = document.getElementById('modal-summary');
+        const modalTagsContainer = document.getElementById('modal-tags-container');
+        const modalTagsList = document.getElementById('modal-tags-list');
+        const modalContent = document.getElementById('modal-content');
+        const modalLinkContainer = document.getElementById('modal-link-container');
+        const modalLink = document.getElementById('modal-link');
+        const modalLinkText = document.getElementById('modal-link-text');
 
-            // Modal
-            const modalBackdrop = document.getElementById('modal-backdrop');
-            const modalContainer = document.getElementById('modal-container');
-            const modalPanel = document.getElementById('modal-panel');
-            const modalCloseBtn = document.getElementById('modal-close-btn');
-            const modalTitle = document.getElementById('modal-title');
-            const modalLoadingText = document.getElementById('modal-loading-text');
-            const modalMeta = document.getElementById('modal-meta');
-            const modalCategory = document.getElementById('modal-category');
-            const modalDate = document.getElementById('modal-date');
-            const modalSummary = document.getElementById('modal-summary');
-            const modalTagsContainer = document.getElementById('modal-tags-container');
-            const modalTagsList = document.getElementById('modal-tags-list');
-            const modalContent = document.getElementById('modal-content').querySelector('.ql-editor');
-            const modalLinksContainer = document.getElementById('modal-links-container');
-            const modalLinksList = document.getElementById('modal-links-list');
+        // --- ESTADO GLOBAL ---
+        let allCategories = []; // Cache de categorias
+        let allArticles = []; // Cache de artigos
+        let currentUser = null; // Usuário logado
+        let currentCategory = 'TODOS'; // Categoria filtrada
+        let currentArticleCount = 0; // Contagem para paginação
+        const ARTICLES_PER_PAGE = 10;
+        let isLoadingMore = false; // Trava para evitar cliques duplos
 
-            // --- FUNÇÃO DE FETCH COM TOKEN ---
-            // (Modificada para caminhos relativos e melhor tratamento de erro)
-
-            async function fetchWithToken(url, options = {}) {
-                const user = auth.currentUser;
-                if (!user) {
-                    // Se o usuário for nulo, tenta deslogar para forçar o login
-                    signOut(auth);
-                    throw new Error("Usuário não autenticado. Por favor, faça login novamente.");
-                }
-
-                let token;
-                try {
-                    token = await getIdToken(user);
-                } catch (error) {
-                    console.error("Erro ao obter token, deslogando:", error);
-                    signOut(auth);
-                    throw new Error("Sua sessão expirou. Por favor, faça login novamente.");
-                }
-
-                const headers = {
-                    ...options.headers,
-                    'Authorization': `Bearer ${token}`,
-                };
-
-                const response = await fetch(url, { ...options, headers });
-
-                if (!response.ok) {
-                    let errorText = `Erro ${response.status}: `;
-                    try {
-                        // Tenta ler o erro como JSON (enviado pela nossa API)
-                        const errorJson = await response.json();
-                        errorText = errorJson.error || `Erro desconhecido da API.`;
-                    } catch (e) {
-                        // Se falhar (ex: 404 da Vercel), lê como texto
-                        try {
-                            const errorHtml = await response.text();
-                            console.error("Erro HTML/Texto (não-JSON) recebido:", errorHtml);
-                            errorText += "A API não foi encontrada ou retornou um erro inesperado."
-                        } catch (textError) {
-                            errorText += "Não foi possível ler a resposta de erro."
-                        }
-                    }
-
-                    console.error(`Erro na API (${response.status}):`, errorText);
-
-                    // Erro de autenticação específico (token expirado)
-                    if (response.status === 401 || response.status === 403) {
-                        signOut(auth);
-                        throw new Error("Sua sessão expirou ou não é válida. Por favor, faça login novamente.");
-                    }
-
-                    throw new Error(errorText);
-                }
-
-                return response.json();
+        // --- NOVA FUNÇÃO: fetchWithToken ---
+        /*
+         * Função helper para fazer chamadas à nossa API /api/*
+         * Ela automaticamente pega o Token do usuário logado e o adiciona no Header.
+         */
+        async function fetchWithToken(url, options = {}) {
+            if (!currentUser) {
+                throw new Error("Usuário não autenticado.");
             }
 
-            // --- AUTENTICAÇÃO (COM CORREÇÃO DE "PISCADA") ---
+            // Pega o token mais recente do usuário
+            const token = await getIdToken(currentUser);
 
-            onAuthStateChanged(auth, (user) => {
-                if (user) {
-                    // Usuário está logado
-                    contentSection.style.display = 'block';
-                    loginSection.style.display = 'none';
-                    userEmailDisplay.textContent = user.email;
+            // Adiciona o token ao header
+            const headers = {
+                ...options.headers,
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            };
 
-                    // Carrega os dados iniciais
-                    checkAndRenderAll();
-                } else {
-                    // Usuário está deslogado
-                    loginSection.style.display = 'flex';
-                    contentSection.style.display = 'none';
-                    userEmailDisplay.textContent = '';
+            // **CORREÇÃO: Caminho relativo (sem / inicial)**
+            // Isso assume que o index.html está em /base/ e a api está em /base/api/
+            const response = await fetch(url, { ...options, headers });
+
+            // Tratamento de Erros
+            if (!response.ok) {
+                let errorData;
+                try {
+                    errorData = await response.json(); // Tenta ler o erro como JSON
+                } catch (e) {
+                    // Se falhar (ex: 404 retorna HTML), cria um erro genérico
+                    const errorText = await response.text();
+                    console.error("Erro HTML/Texto (não-JSON) recebido:", errorText);
+                    errorData = { error: `Erro ${response.status}: ${response.statusText}` };
                 }
-            });
 
-            // Login com E-mail/Senha
-            loginForm.addEventListener('submit', (e) => {
-                e.preventDefault();
-                loginStatus.textContent = 'Entrando...';
-                signInWithEmailAndPassword(auth, loginEmail.value, loginPassword.value)
-                    .then((userCredential) => {
-                        loginStatus.textContent = '';
-                        loginForm.reset();
-                    })
-                    .catch((error) => {
-                        console.error("Erro de login:", error.code, error.message);
-                        if (error.code === 'auth/invalid-credential') {
-                            loginStatus.textContent = 'E-mail ou senha inválidos.';
-                        } else {
-                            loginStatus.textContent = 'Erro ao tentar fazer login.';
-                        }
-                    });
-            });
+                console.error(`Erro na API (${response.status}):`, errorData.error);
 
-            // Login com Google
-            googleLoginBtn.addEventListener('click', () => {
-                loginStatus.textContent = 'Abrindo popup do Google...';
-                signInWithPopup(auth, googleProvider)
-                    .then((result) => {
-                        loginStatus.textContent = '';
-                    })
-                    .catch((error) => {
-                        console.error("Erro ao logar com Google:", error);
-                        loginStatus.textContent = 'Erro ao logar com Google.';
-                    });
-            });
+                // Se o token expirou, força o logout
+                if (response.status === 401) {
+                    alert('Sua sessão expirou. Por favor, faça login novamente.');
+                    await signOut(auth);
+                }
 
-            // Logout
-            logoutBtn.addEventListener('click', () => {
+                throw new Error(errorData.error || 'Erro na requisição');
+            }
+
+            // Se a resposta for 204 No Content (ex: delete), não tenta ler JSON
+            if (response.status === 204) {
+                return null;
+            }
+
+            return response.json();
+        }
+
+
+        // --- AUTENTICAÇÃO ---
+
+        onAuthStateChanged(auth, (user) => {
+            currentUser = user; // Armazena o usuário globalmente
+            if (user) {
+                // Usuário está logado
+                loginSection.classList.add('hidden');
+                contentSection.classList.remove('hidden');
+
+                // Mostra o botão de Admin se o e-mail estiver na lista
+                if (adminEmails.includes(user.email)) {
+                    adminBtn.classList.remove('hidden');
+                } else {
+                    adminBtn.classList.add('hidden');
+                }
+
+                // Inicia o carregamento dos dados da página
+                checkAndRenderAll();
+            } else {
+                // Usuário está deslogado
+                loginSection.classList.remove('hidden');
+                contentSection.classList.add('hidden');
+                adminBtn.classList.add('hidden');
+                // Limpa os dados antigos
+                resetContent();
+            }
+        });
+
+        // Login com E-mail/Senha
+        loginForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            loginStatus.textContent = 'Entrando...';
+            signInWithEmailAndPassword(auth, loginEmail.value, loginPassword.value)
+                .then(() => {
+                    loginStatus.textContent = '';
+                    loginForm.reset();
+                })
+                .catch((error) => {
+                    console.error("Erro de login:", error.code, error.message);
+                    if (error.code === 'auth/invalid-credential') {
+                        loginStatus.textContent = 'E-mail ou senha inválidos.';
+                    } else {
+                        loginStatus.textContent = 'Erro ao tentar fazer login.';
+                    }
+                });
+        });
+
+        // Login com Google
+        googleLoginBtn.addEventListener('click', () => {
+            loginStatus.textContent = 'Abrindo popup do Google...';
+            signInWithPopup(auth, googleProvider)
+                .catch((error) => {
+                    console.error("Erro ao logar com Google:", error);
+                    loginStatus.textContent = 'Erro ao logar com Google.';
+                });
+        });
+
+        // Logout
+        logoutBtn.addEventListener('click', () => {
+            if (confirm('Tem certeza que deseja sair?')) {
                 signOut(auth).catch((error) => {
                     console.error("Erro ao sair:", error);
-                    alert('Erro ao tentar sair.');
                 });
-            });
+            }
+        });
 
-            // --- LÓGICA DA APLICAÇÃO ---
+        // Limpa o conteúdo ao deslogar
+        function resetContent() {
+            allCategories = [];
+            allArticles = [];
+            currentCategory = 'TODOS';
+            currentArticleCount = 0;
+            // Limpa categorias (exceto "Todos")
+            categoryGrid.querySelectorAll('.category-card:not([data-category="TODOS"])').forEach(el => el.remove());
+            articlesGrid.innerHTML = ''; // Limpa artigos
+            articlesStatus.textContent = 'Você precisa estar logado para ver o conteúdo.';
+            articlesStatus.classList.remove('hidden');
+            loadMoreContainer.classList.add('hidden');
+        }
 
-            // Função para carregar tudo (chamada após o login)
-            async function checkAndRenderAll() {
-                try {
-                    // Carrega categorias e artigos em paralelo
-                    await Promise.all([
-                        loadCategories(),
-                        loadArticles(currentArticleLimit)
-                    ]);
-                    // Filtra os artigos com base nos filtros (se houver)
-                    updateFilter();
-                } catch (error) {
-                    console.error("Erro fatal ao carregar dados:", error);
-                    // Se o erro for de autenticação, o onAuthStateChanged vai redirecionar
-                    if (!error.message.includes("login")) {
-                        alert("Erro crítico ao carregar a base de conhecimento: " + error.message);
-                    }
+        // --- CARREGAMENTO DE DADOS (VIA /api) ---
+
+        // Função para checar o que precisa ser carregado
+        async function checkAndRenderAll() {
+            try {
+                // Carrega categorias (só uma vez, elas são cacheadas)
+                if (allCategories.length === 0) {
+                    await loadCategories();
                 }
+
+                // Carrega a primeira página de artigos (só uma vez)
+                if (allArticles.length === 0) {
+                    await loadArticles(ARTICLES_PER_PAGE, true); // true = resetar
+                }
+            } catch (error) {
+                console.error("Falha ao carregar dados iniciais:", error);
+                articlesStatus.textContent = `Erro ao carregar dados: ${error.message}`;
+                articlesStatus.classList.remove('hidden');
+            }
+        }
+
+        // 1. Carregar Categorias
+        async function loadCategories() {
+            categoriesLoading.textContent = 'Carregando categorias...';
+            categoriesLoading.classList.remove('hidden');
+
+            try {
+                // **CORREÇÃO: Caminho relativo (sem / inicial)**
+                const categories = await fetchWithToken('api/getCategorias');
+                allCategories = categories; // Salva no cache
+                renderCategories(categories);
+                categoriesLoading.classList.add('hidden');
+            } catch (error) {
+                console.error("Erro ao buscar categorias:", error);
+                categoriesLoading.textContent = 'Erro ao carregar.';
+            }
+        }
+
+        // 2. Carregar Artigos (com paginação)
+        loadMoreBtn.addEventListener('click', () => {
+            if (!isLoadingMore) {
+                loadArticles(currentArticleCount + ARTICLES_PER_PAGE);
+            }
+        });
+
+        async function loadArticles(limit, reset = false) {
+            if (isLoadingMore) return;
+            isLoadingMore = true;
+
+            if (reset) {
+                allArticles = [];
+                articlesGrid.innerHTML = '';
+                currentArticleCount = 0;
             }
 
-            // Carregar Categorias
-            async function loadCategories() {
-                try {
-                    const categories = await fetchWithToken('api/getCategorias');
-                    allCategories = categories; // Salva no cache
-                    renderCategories(categories);
-                } catch (error) {
-                    console.error("Erro ao buscar categorias:", error);
-                    categoriesLoading.textContent = 'Erro ao carregar categorias.';
+            articlesStatus.classList.remove('hidden');
+            articlesStatus.innerHTML = `
+                <svg class="mx-auto h-12 w-12 text-slate-400 animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                <p class="mt-4 text-lg font-medium">Carregando artigos...</p>`;
+            loadMoreBtn.textContent = 'Carregando...';
+            loadMoreBtn.disabled = true;
+
+            try {
+                // **CORREÇÃO: Caminho relativo (sem / inicial)**
+                const articles = await fetchWithToken(`api/getArtigos?limit=${limit}`);
+
+                // Filtra os *novos* artigos que chegaram
+                const newArticles = articles.filter(a => !allArticles.some(existing => existing.id === a.id));
+                allArticles = articles; // Atualiza o cache completo
+
+                // Atualiza a contagem
+                currentArticleCount = articles.length;
+
+                if (newArticles.length === 0 || articles.length < limit) {
+                    loadMoreContainer.classList.add('hidden');
+                } else {
+                    loadMoreContainer.classList.remove('hidden');
                 }
-            }
 
-            // Carregar Artigos
-            async function loadArticles(limit) {
-                try {
-                    const articles = await fetchWithToken(`api/getArtigos?limit=${limit}`);
-                    allArticles = articles; // Salva no cache
+                // Renderiza apenas os novos artigos
+                renderArticles(newArticles);
 
-                    // Esconde/mostra o botão "Carregar Mais"
-                    if (articles.length === limit) {
-                        loadMoreContainer.classList.remove('hidden');
-                    } else {
-                        loadMoreContainer.classList.add('hidden');
-                    }
-
-                } catch (error) {
-                    console.error("Erro ao buscar artigos:", error);
-                    noResults.classList.remove('hidden');
-                    articlesGrid.innerHTML = '';
+                // Atualiza o status
+                if (allArticles.length === 0) {
+                    articlesStatus.textContent = 'Nenhum artigo encontrado.';
+                    articlesStatus.classList.remove('hidden');
+                } else {
+                    articlesStatus.classList.add('hidden');
                 }
-            }
 
-            // Botão Carregar Mais 10
-            loadMoreBtn.addEventListener('click', async () => {
-                loadMoreBtn.textContent = 'Carregando...';
-                loadMoreBtn.disabled = true;
-
-                currentArticleLimit += 10; // Aumenta o limite
-                await loadArticles(currentArticleLimit); // Busca os artigos
-                updateFilter(); // Re-renderiza a lista com o filtro atual
-
+            } catch (error) {
+                console.error("Erro ao buscar artigos:", error);
+                articlesStatus.textContent = `Erro ao carregar artigos: ${error.message}`;
+            } finally {
+                isLoadingMore = false;
                 loadMoreBtn.textContent = 'Carregar Mais 10 Artigos';
                 loadMoreBtn.disabled = false;
+            }
+        }
+
+
+        // --- RENDERIZAÇÃO (Interface) ---
+
+        // Renderizar Categorias
+        function renderCategories(categories) {
+            // **CORREÇÃO DO BUG do querySelectorAll**
+            // Limpa o grid (exceto o botão "Todos")
+            categoryGrid.querySelectorAll('.category-card:not([data-category="TODOS"])').forEach(el => el.remove());
+
+            categories.forEach(category => {
+                const { name, color, icon, slug } = category;
+                const colors = getCategoryColors(color); // Pega as classes de cor
+
+                const btn = document.createElement('button');
+                btn.className = `category-card w-full flex items-center gap-3 p-3 rounded-lg text-left font-medium transition-colors duration-150 focus-ring-visible ${colors.bgHover} ${colors.text}`;
+                btn.dataset.category = category.id;
+
+                btn.innerHTML = `
+                    <div class="w-8 h-8 flex-shrink-0 flex items-center justify-center rounded-lg ${colors.bg} ${colors.iconText}">
+                        ${getIconSvg(icon)}
+                    </div>
+                    <span>${name}</span>
+                `;
+                categoryGrid.appendChild(btn);
             });
+        }
 
-            // --- RENDERIZAÇÃO E FILTROS ---
-
-            // Renderizar os cards de Categoria
-            function renderCategories(categories) {
-                // Limpa categorias antigas (exceto o botão "TODOS")
-                categoryGrid.querySelectorAll(':not([data-category="TODOS"])').forEach(el => el.remove());
-                categoriesLoading.classList.add('hidden');
-
-                categories.forEach(category => {
-                    const { name, color, icon } = category;
-                    const colorClasses = getCategoryColors(color);
-
-                    const button = document.createElement('button');
-                    button.className = `category-card flex flex-col items-center justify-center p-4 bg-white rounded-2xl shadow-md cursor-pointer transform transition-all duration-300 hover:shadow-lg hover:-translate-y-1 focus-ring-visible ring-blue-500`;
-                    button.dataset.category = category.id;
-                    button.innerHTML = `
-                    <div class="w-12 h-12 rounded-full ${colorClasses.bg} flex items-center justify-center mb-2">
-                        ${getIconSvg(icon, colorClasses.text)}
-                    </div>
-                    <span class="font-bold text-gray-800 text-center text-sm">${name}</span>
-                `;
-                    categoryGrid.appendChild(button);
-                });
+        // Renderizar Artigos
+        function renderArticles(articlesToRender) {
+            if (articlesToRender.length === 0 && allArticles.length === 0) {
+                articlesStatus.textContent = 'Nenhum artigo encontrado para esta categoria ou busca.';
+                articlesStatus.classList.remove('hidden');
+                return;
             }
 
-            // Renderizar os cards de Artigo
-            function renderArticles(articles) {
-                articlesGrid.innerHTML = ''; // Limpa o grid
+            const fragment = document.createDocumentFragment();
+            articlesToRender.forEach(article => {
+                const { id, title, summary, categoryId } = article;
 
-                if (articles.length === 0) {
-                    noResults.classList.remove('hidden');
-                } else {
-                    noResults.classList.add('hidden');
-                }
+                // **NOVA FUNCIONALIDADE: Borda Colorida**
+                const category = allCategories.find(c => c.id === categoryId);
+                const colors = getCategoryColors(category ? category.color : 'slate');
+                const categoryName = category ? category.name : 'Sem Categoria';
+                const categoryTextColor = colors.text;
+                const categoryBorderColor = colors.border;
 
-                articles.forEach(article => {
-                    const category = allCategories.find(c => c.id === article.categoryId);
-                    const color = category ? category.color : 'slate';
-                    const colorClasses = getCategoryColors(color);
+                const card = document.createElement('div');
+                card.className = `article-card bg-white rounded-2xl shadow-lg overflow-hidden transition-transform transform hover:-translate-y-1 hover:shadow-xl cursor-pointer flex flex-col ${categoryBorderColor} border-t-4`; // Borda aqui
+                card.dataset.id = id;
+                card.dataset.title = title.toLowerCase();
+                card.dataset.summary = summary.toLowerCase();
+                card.dataset.category = categoryId;
+                card.dataset.tags = (article.tags || []).join(' ').toLowerCase();
 
-                    const card = document.createElement('div');
-                    card.className = `article-card bg-white rounded-2xl shadow-lg overflow-hidden flex flex-col transform transition-all duration-300 hover:shadow-xl hover:-translate-y-1 cursor-pointer border-t-4 ${colorClasses.border}`; // BORDA COLORIDA
-                    card.dataset.id = article.id;
-                    card.setAttribute('role', 'button');
-                    card.setAttribute('tabindex', '0');
-
-                    // Formata a data (string ISO)
-                    const date = new Date(article.publishedAtISO).toLocaleDateString();
-
-                    card.innerHTML = `
+                card.innerHTML = `
                     <div class="p-6 flex-grow">
-                        <div class="flex justify-between items-center mb-2">
-                            <span class="text-sm font-medium px-3 py-1 rounded-full ${colorClasses.bg} ${colorClasses.text}">
-                                ${category ? category.name : 'Sem Categoria'}
-                            </span>
-                        </div>
-                        <h3 class="text-xl font-bold text-gray-900 mb-2">${article.title}</h3>
-                        <p class="text-gray-600 text-sm mb-4 line-clamp-3">${article.summary}</p>
+                        <span class="text-sm font-semibold ${categoryTextColor}">${categoryName.toUpperCase()}</span>
+                        <h3 class="mt-2 text-xl font-bold text-slate-800">${title}</h3>
+                        <p class="mt-3 text-base text-slate-600 line-clamp-3">${summary}</p>
                     </div>
-                    <div class="px-6 py-4 bg-gray-50 border-t border-gray-100 flex justify-between items-center">
-                         <span class="text-sm text-gray-500">${date}</span>
-                         <span class="text-sm font-medium text-blue-600">Ver mais &rarr;</span>
-                    </div>
+                    <footer class="bg-slate-50 px-6 py-4">
+                        <span class="text-sm font-medium text-blue-600 hover:text-blue-700">Ver artigo completo &rarr;</span>
+                    </footer>
                 `;
-                    articlesGrid.appendChild(card);
-                });
-            }
+                fragment.appendChild(card);
+            });
+            articlesGrid.appendChild(fragment);
+            // Re-aplica o filtro atual (caso um novo artigo tenha sido carregado)
+            updateFilter();
+        }
 
-            // --- LÓGICA DE BUSCA E FILTRO ---
-
-            // Event Listeners para filtros
-            searchInput.addEventListener('input', () => updateFilter());
-            searchScope.addEventListener('change', () => updateFilter());
-            categoryGrid.addEventListener('click', (e) => {
-                const card = e.target.closest('.category-card');
-                if (!card) return;
-
+        // --- FILTRAGEM E BUSCA ---
+        searchInput.addEventListener('input', () => updateFilter());
+        searchField.addEventListener('change', () => updateFilter());
+        categoryGrid.addEventListener('click', (e) => {
+            const card = e.target.closest('.category-card');
+            if (card) {
                 currentCategory = card.dataset.category;
-
-                // Atualiza o visual do botão ativo
-                categoryGrid.querySelectorAll('.category-card').forEach(c => c.classList.remove('active-category', 'ring-4'));
-                card.classList.add('active-category', 'ring-4');
+                // Atualiza o visual dos botões
+                document.querySelectorAll('.category-card').forEach(btn => {
+                    btn.classList.remove('bg-blue-600', 'text-white', 'shadow-lg');
+                    const category = allCategories.find(c => c.id === btn.dataset.category);
+                    const colors = getCategoryColors(category ? category.color : 'slate');
+                    btn.classList.add(colors.bgHover, colors.text);
+                });
+                card.classList.add('bg-blue-600', 'text-white', 'shadow-lg');
+                const activeColors = getCategoryColors(allCategories.find(c => c.id === card.dataset.category)?.color);
+                card.classList.remove(activeColors.bgHover, activeColors.text);
 
                 updateFilter();
-            });
-
-            // Função principal que filtra e re-renderiza os artigos
-            function updateFilter() {
-                const searchTerm = searchInput.value.toLowerCase().trim();
-                const scope = searchScope.value;
-
-                // Lógica de busca (com "E" e "Termo Exato")
-                const searchTerms = [];
-                const exactTerms = [];
-
-                // Extrai termos exatos (entre aspas)
-                searchTerm.replace(/"([^"]+)"/g, (match, exactTerm) => {
-                    exactTerms.push(exactTerm);
-                    return ''; // Remove o termo exato da string principal
-                })
-                    .split(/\s+/) // Separa os termos restantes por espaço
-                    .forEach(term => {
-                        if (term) searchTerms.push(term);
-                    });
-
-                // 1. Filtra por Categoria
-                let filtered = allArticles;
-                if (currentCategory !== 'TODOS') {
-                    filtered = allArticles.filter(article => article.categoryId === currentCategory);
-                }
-
-                // 2. Filtra por Busca
-                if (searchTerm) {
-                    filtered = filtered.filter(article => {
-                        const title = (article.title || '').toLowerCase();
-                        const summary = (article.summary || '').toLowerCase();
-                        const tags = (article.tags || []).join(' ').toLowerCase();
-
-                        // Define onde a busca deve ocorrer
-                        let targetText = '';
-                        if (scope === 'all') targetText = `${title} ${summary} ${tags}`;
-                        if (scope === 'title') targetText = title;
-                        if (scope === 'summary') targetText = summary;
-                        if (scope === 'tags') targetText = tags;
-
-                        // Checa todos os termos (lógica "E")
-                        const hasAllTerms = searchTerms.every(term => targetText.includes(term));
-                        // Checa todos os termos exatos (lógica "E")
-                        const hasAllExactTerms = exactTerms.every(term => targetText.includes(term));
-
-                        return hasAllTerms && hasAllExactTerms;
-                    });
-                }
-
-                // 3. Re-renderiza a lista
-                renderArticles(filtered);
             }
+        });
 
-            // --- LÓGICA DO MODAL ---
+        function updateFilter() {
+            const rawSearchText = searchInput.value.toLowerCase().trim();
+            const searchScope = searchField.value;
 
-            // Abrir Modal (com delegação de evento)
-            articlesGrid.addEventListener('click', (e) => {
-                const card = e.target.closest('.article-card');
-                if (card) {
-                    openModal(card.dataset.id);
+            // Separa termos exatos (aspas) de termos normais
+            const exactMatches = [...rawSearchText.matchAll(/"([^"]+)"/g)].map(m => m[1]);
+            const normalSearchText = rawSearchText.replace(/"[^"]+"/g, '').trim();
+            const normalSearchTerms = normalSearchText.split(' ').filter(t => t.length > 0);
+
+            let hasVisibleArticles = false;
+
+            articlesGrid.querySelectorAll('.article-card').forEach(card => {
+                const title = card.dataset.title;
+                const summary = card.dataset.summary;
+                const tags = card.dataset.tags;
+
+                // 1. Filtro de Categoria
+                const categoryMatch = (currentCategory === 'TODOS' || card.dataset.category === currentCategory);
+                if (!categoryMatch) {
+                    card.classList.add('hidden');
+                    return;
+                }
+
+                // 2. Filtro de Busca (Texto)
+                let textMatch = true;
+                const textToSearch = {
+                    'all': `${title} ${summary} ${tags}`,
+                    'title': title,
+                    'summary': summary,
+                    'tags': tags
+                }[searchScope];
+
+                // Checa termos normais (E)
+                if (normalSearchTerms.length > 0) {
+                    textMatch = normalSearchTerms.every(term => textToSearch.includes(term));
+                }
+
+                // Checa termos exatos (E)
+                if (textMatch && exactMatches.length > 0) {
+                    textMatch = exactMatches.every(term => textToSearch.includes(term));
+                }
+
+                // Exibe ou esconde
+                if (categoryMatch && textMatch) {
+                    card.classList.remove('hidden');
+                    hasVisibleArticles = true;
+                } else {
+                    card.classList.add('hidden');
                 }
             });
 
-            // Permite abrir com Enter (Acessibilidade)
-            articlesGrid.addEventListener('keydown', (e) => {
-                if (e.key === 'Enter') {
-                    const card = e.target.closest('.article-card');
-                    if (card) {
-                        openModal(card.dataset.id);
-                    }
+            // Mostra/Esconde a mensagem de "Nenhum resultado"
+            if (!hasVisibleArticles && allArticles.length > 0) {
+                articlesStatus.textContent = 'Nenhum artigo encontrado para esta categoria ou busca.';
+                articlesStatus.classList.remove('hidden');
+            } else if (allArticles.length > 0) {
+                articlesStatus.classList.add('hidden');
+            }
+        }
+
+
+        // --- MODAL (Janela do Artigo) ---
+
+        // Abrir Modal
+        articlesGrid.addEventListener('click', (e) => {
+            const card = e.target.closest('.article-card');
+            if (card) {
+                const articleId = card.dataset.id;
+                openModal(articleId);
+            }
+        });
+
+        async function openModal(id) {
+            // Reseta o estado do modal
+            modalTitle.textContent = 'Carregando Título...';
+            modalContent.innerHTML = '';
+            modalMetadata.classList.add('hidden');
+            modalLinkContainer.classList.add('hidden');
+            modalLoadingSpinner.classList.remove('hidden');
+
+            // Exibe o modal
+            modalBackdrop.classList.remove('hidden');
+            modalContainer.classList.remove('hidden');
+            setTimeout(() => { // Delay para permitir a transição
+                modalBackdrop.classList.add('opacity-100');
+                modalPanel.classList.add('scale-100', 'opacity-100');
+            }, 10);
+
+            try {
+                // **CORREÇÃO: Caminho relativo (sem / inicial)**
+                const article = await fetchWithToken(`api/getArtigoDetalhe?id=${id}`);
+
+                // Preenche o modal com os dados
+                modalTitle.textContent = article.title;
+
+                // Categoria
+                const category = allCategories.find(c => c.id === article.categoryId);
+                if (category) {
+                    const colors = getCategoryColors(category.color);
+                    modalCategoryBadge.innerHTML = `
+                        <span class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-sm font-semibold ${colors.bg} ${colors.iconText}">
+                            ${getIconSvg(category.icon)}
+                            ${category.name}
+                        </span>`;
+                } else {
+                    modalCategoryBadge.innerHTML = '';
                 }
-            });
 
-            async function openModal(id) {
-                // Mostra o modal e o backdrop
-                modalBackdrop.classList.remove('hidden');
-                modalContainer.classList.remove('hidden');
+                // Data
+                if (article.publishedAt) {
+                    // A API agora retorna { seconds: ..., nanoseconds: ... }
+                    const date = new Date(article.publishedAt.seconds * 1000).toLocaleDateString('pt-BR', {
+                        day: '2-digit', month: 'long', year: 'numeric'
+                    });
+                    modalDate.textContent = date;
+                } else {
+                    modalDate.textContent = '--';
+                }
 
-                // Reseta o estado
-                modalTitle.textContent = 'Carregando...';
-                modalContent.innerHTML = '';
-                modalMeta.classList.add('hidden');
-                modalLoadingText.classList.remove('hidden');
-                modalLinksContainer.classList.add('hidden');
-                modalLinksList.innerHTML = '';
-                modalTagsList.innerHTML = '';
+                // Resumo
+                modalSummary.textContent = article.summary;
 
-                try {
-                    // Busca os dados completos do artigo
-                    const article = await fetchWithToken(`api/getArtigoDetalhe?id=${id}`);
+                // Tags
+                if (article.tags && article.tags.length > 0) {
+                    modalTagsList.innerHTML = article.tags.map(tag =>
+                        `<span class="inline-block bg-slate-200 text-slate-700 px-2 py-0.5 rounded-md">${tag}</span>`
+                    ).join(' ');
+                    modalTagsContainer.classList.remove('hidden');
+                } else {
+                    modalTagsContainer.classList.add('hidden');
+                }
 
-                    // Encontra a categoria correspondente
-                    const category = allCategories.find(c => c.id === article.categoryId);
-                    const colorClasses = category ? getCategoryColors(category.color) : getCategoryColors('slate');
+                // Conteúdo
+                modalContent.innerHTML = article.content;
 
-                    // Preenche o conteúdo
-                    modalLoadingText.classList.add('hidden');
-                    modalMeta.classList.remove('hidden');
-
-                    modalTitle.textContent = article.title;
-                    modalCategory.textContent = category ? category.name : 'Sem Categoria';
-                    modalCategory.className = `font-medium text-sm px-3 py-1 rounded-full ${colorClasses.bg} ${colorClasses.text}`;
-                    modalDate.textContent = new Date(article.publishedAtISO).toLocaleDateString();
-                    modalSummary.textContent = article.summary;
-
-                    // Preenche as Tags (se existirem)
-                    if (article.tags && article.tags.length > 0) {
-                        modalTagsContainer.classList.remove('hidden');
-                        article.tags.forEach(tag => {
-                            const tagEl = document.createElement('span');
-                            tagEl.className = 'text-xs font-medium bg-gray-100 text-gray-700 px-2.5 py-0.5 rounded-full';
-                            tagEl.textContent = tag;
-                            modalTagsList.appendChild(tagEl);
-                        });
-                    } else {
-                        modalTagsContainer.classList.add('hidden');
+                // Link
+                if (article.link) {
+                    modalLink.href = article.link;
+                    // Tenta extrair um nome de domínio amigável
+                    try {
+                        const url = new URL(article.link);
+                        modalLinkText.textContent = url.hostname;
+                    } catch (e) {
+                        modalLinkText.textContent = article.link;
                     }
+                    modalLinkContainer.classList.remove('hidden');
+                }
 
-                    // Preenche o conteúdo principal
-                    modalContent.innerHTML = article.content;
+                // Exibe os metadados e esconde o spinner
+                modalMetadata.classList.remove('hidden');
+                modalLoadingSpinner.classList.add('hidden');
 
-                    // Preenche os Links (MÚLTIPLOS LINKS)
-                    if (article.links && article.links.length > 0) {
-                        modalLinksContainer.classList.remove('hidden');
-                        article.links.forEach(link => {
-                            const li = document.createElement('li');
-                            try {
-                                const url = new URL(link);
-                                li.innerHTML = `<a href="${link}" target="_blank" rel="noopener noreferrer" class="text-blue-600 hover:underline">${url.hostname}</a>`;
-                            } catch (e) {
-                                li.innerHTML = `<a href="${link}" target="_blank" rel="noopener noreferrer" class="text-blue-600 hover:underline">${link}</a>`;
-                            }
-                            modalLinksList.appendChild(li);
-                        });
-                    }
-
-                } catch (error) {
-                    console.error("Erro ao abrir modal (fetchWithToken):", error);
+            } catch (error) {
+                console.error("Erro ao abrir modal (fetchWithToken):", error);
+                // Tratamento de erro (token expirado ou 500)
+                if (error.message.includes('expirou') || error.message.includes('não autorizado')) {
+                    modalTitle.textContent = 'Sessão Expirada';
+                    modalContent.innerHTML = '<p class="text-red-500">Sua sessão expirou e não foi possível carregar o artigo. Por favor, faça login novamente.</p>';
+                } else {
                     modalTitle.textContent = 'Erro ao Carregar';
-                    modalContent.innerHTML = `<p class="text-red-600">Não foi possível carregar o conteúdo deste artigo. ${error.message}</p>`;
-                    // Se o erro for de autenticação, o fetchWithToken já cuida do signOut.
+                    modalContent.innerHTML = '<p class="text-red-500">Não foi possível carregar o conteúdo deste artigo. Tente novamente mais tarde.</p>';
                 }
+                modalLoadingSpinner.classList.add('hidden');
             }
+        }
 
-            // Fechar Modal
-            function closeModal() {
+        // Fechar Modal
+        function closeModal() {
+            modalPanel.classList.remove('scale-100', 'opacity-100');
+            modalBackdrop.classList.remove('opacity-100');
+            setTimeout(() => { // Delay para permitir a transição
                 modalBackdrop.classList.add('hidden');
                 modalContainer.classList.add('hidden');
+            }, 300);
+        }
+        modalCloseBtn.addEventListener('click', closeModal);
+        modalBackdrop.addEventListener('click', closeModal);
+
+
+        // --- FUNÇÕES UTILITÁRIAS ---
+
+        // Retorna o SVG do ícone
+        function getIconSvg(iconName) {
+            switch (iconName) {
+                case 'book':
+                    return '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18c-2.305 0-4.408.867-6 2.292m0-14.25v14.25"></path></svg>';
+                case 'bolt':
+                    return '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>';
+                case 'gavel': // Novo ícone de Conformidade
+                    return '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>';
+                case 'alert':
+                    return '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>';
+                case 'info':
+                    return '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>';
+                case 'users':
+                    return '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 016-6h6m6 3v-1a6 6 0 00-6-6h-1.5m-1.5 0l-3.5 3.5m0 0l3.5 3.5m-3.5-3.5h5.5"></path></svg>';
+                case 'list':
+                    return '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"></path></svg>';
+                case 'file': // Novo
+                    return '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 13h6m-3-3v6m5 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>';
+                case 'chart-bar': // Novo
+                    return '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>';
+                case 'chat-alt': // Novo
+                    return '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path></svg>';
+                case 'cog': // Novo
+                    return '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>';
+                default:
+                    return '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path></svg>';
             }
-            modalCloseBtn.addEventListener('click', closeModal);
-            modalBackdrop.addEventListener('click', closeModal);
-            modalContainer.addEventListener('click', (e) => {
-                // Fecha se clicar fora do 'modal-panel'
-                if (e.target === modalContainer) {
-                    closeModal();
-                }
-            });
+        }
 
-            // Fechar com ESC
-            document.addEventListener('keydown', (e) => {
-                if (e.key === 'Escape' && !modalContainer.classList.contains('hidden')) {
-                    closeModal();
-                }
-            });
-
-
-            // --- FUNÇÕES UTILITÁRIAS DE COR E ÍCONE ---
-
-            function getCategoryColors(colorName) {
-                const colors = {
-                    slate: { bg: 'bg-slate-100', text: 'text-slate-700', border: 'border-slate-500' },
-                    red: { bg: 'bg-red-100', text: 'text-red-700', border: 'border-red-500' },
-                    orange: { bg: 'bg-orange-100', text: 'text-orange-700', border: 'border-orange-500' },
-                    yellow: { bg: 'bg-yellow-100', text: 'text-yellow-700', border: 'border-yellow-500' },
-                    green: { bg: 'bg-green-100', text: 'text-green-700', border: 'border-green-500' },
-                    blue: { bg: 'bg-blue-100', text: 'text-blue-700', border: 'border-blue-500' },
-                    indigo: { bg: 'bg-indigo-100', text: 'text-indigo-700', border: 'border-indigo-500' },
-                    purple: { bg: 'bg-purple-100', text: 'text-purple-700', border: 'border-purple-500' },
-                    pink: { bg: 'bg-pink-100', text: 'text-pink-700', border: 'border-pink-500' },
-                    // NOVAS CORES
-                    cyan: { bg: 'bg-cyan-100', text: 'text-cyan-700', border: 'border-cyan-500' },
-                    teal: { bg: 'bg-teal-100', text: 'text-teal-700', border: 'border-teal-500' },
-                    lime: { bg: 'bg-lime-100', text: 'text-lime-700', border: 'border-lime-500' },
-                    fuchsia: { bg: 'bg-fuchsia-100', text: 'text-fuchsia-700', border: 'border-fuchsia-500' },
-                    sky: { bg: 'bg-sky-100', text: 'text-sky-700', border: 'border-sky-500' }
-                };
-                return colors[colorName] || colors.slate;
+        // Retorna as classes de cor do Tailwind (COM BORDAS)
+        function getCategoryColors(colorName) {
+            switch (colorName) {
+                case 'red': return { text: 'text-red-700', bg: 'bg-red-100', iconText: 'text-red-600', bgHover: 'hover:bg-red-50', border: 'border-red-500' };
+                case 'orange': return { text: 'text-orange-700', bg: 'bg-orange-100', iconText: 'text-orange-600', bgHover: 'hover:bg-orange-50', border: 'border-orange-500' };
+                case 'yellow': return { text: 'text-yellow-700', bg: 'bg-yellow-100', iconText: 'text-yellow-600', bgHover: 'hover:bg-yellow-50', border: 'border-yellow-500' };
+                case 'green': return { text: 'text-green-700', bg: 'bg-green-100', iconText: 'text-green-600', bgHover: 'hover:bg-green-50', border: 'border-green-500' };
+                case 'blue': return { text: 'text-blue-700', bg: 'bg-blue-100', iconText: 'text-blue-600', bgHover: 'hover:bg-blue-50', border: 'border-blue-500' };
+                case 'indigo': return { text: 'text-indigo-700', bg: 'bg-indigo-100', iconText: 'text-indigo-600', bgHover: 'hover:bg-indigo-50', border: 'border-indigo-500' };
+                case 'purple': return { text: 'text-purple-700', bg: 'bg-purple-100', iconText: 'text-purple-600', bgHover: 'hover:bg-purple-50', border: 'border-purple-500' };
+                case 'pink': return { text: 'text-pink-700', bg: 'bg-pink-100', iconText: 'text-pink-600', bgHover: 'hover:bg-pink-50', border: 'border-pink-500' };
+                case 'slate':
+                default:
+                    return { text: 'text-slate-700', bg: 'bg-slate-200', iconText: 'text-slate-600', bgHover: 'hover:bg-slate-100', border: 'border-slate-400' };
             }
+        }
 
-            function getIconSvg(iconName, textClass = 'text-gray-600') {
-                const icons = {
-                    book: `<svg class="${textClass} w-6 h-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18c-2.305 0-4.408.867-6 2.292m0-14.25v14.25" /></svg>`,
-                    bolt: `<svg class="${textClass} w-6 h-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 13.5l10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75z" /></svg>`,
-                    gavel: `<svg class="${textClass} w-6 h-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>`,
-                    alert: `<svg class="${textClass} w-6 h-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" /></svg>`,
-                    info: `<svg class="${textClass} w-6 h-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z" /></svg>`,
-                    user: `<svg class="${textClass} w-6 h-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" /></svg>`, // ÍCONE ATUALIZADO
-                    list: `<svg class="${textClass} w-6 h-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 6.75h12M8.25 12h12m-12 5.25h12M3.75 6.75h.007v.008H3.75V6.75zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zM3.75 12h.007v.008H3.75V12zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm-.375 5.25h.007v.008H3.75v-.008zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" /></svg>`,
-                    file: `<svg class="${textClass} w-6 h-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9 13.5l3 3m0 0l3-3m-3 3v-6m1.06-4.19l-2.12-2.12a1.5 1.5 0 00-1.061-.44H4.5A2.25 2.25 0 002.25 6v12a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9a2.25 2.25 0 00-2.25-2.25h-5.379a1.5 1.5 0 01-1.06-.44z" /></svg>`,
-                    'chart-bar': `<svg class="${textClass} w-6 h-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25A1.125 1.125 0 019.75 19.875V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z" /></svg>`,
-                    'chat-alt': `<svg class="${textClass} w-6 h-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M8.625 12a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H8.25m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H12m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0h-.375M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" /></svg>`,
-                    cog: `<svg class="${textClass} w-6 h-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12a7.5 7.5 0 0015 0m-15 0a7.5 7.5 0 1115 0m-15 0H3m18 0h-1.5m-15 0a7.5 7.5 0 1115 0m-15 0H3m18 0h-1.5m-15 0a7.5 7.5 0 1115 0m-15 0H3m18 0h-1.5M12 9.75v-4.5m0 13.5v-4.5m0-4.5a3 3 0 110 6 3 3 0 010-6zm0 13.5a3 3 0 110-6 3 3 0 010 6z" /></svg>`
-                };
-                return icons[iconName] || icons.book; // Retorna 'book' como padrão
-            }
-
-        </script>
+    </script>
 </body>
 
 </html>
