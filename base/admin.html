@@ -457,28 +457,38 @@
                 'Content-Type': 'application/json'
             };
 
-            // **CORREÇÃO: Caminho relativo (sem / inicial)**
             const response = await fetch(url, { ...options, headers });
 
             if (!response.ok) {
-                let errorData;
+                let errorJson;
+                let errorText; // Variável para guardar o texto do erro
                 try {
-                    errorData = await response.json();
+                    // 1. Pega o texto da resposta primeiro. Isso consome a stream.
+                    errorText = await response.text();
+                    // 2. Tenta fazer o parse como JSON
+                    errorJson = JSON.parse(errorText);
                 } catch (e) {
-                    const errorText = await response.text();
+                    // Falha no parse. O erro é o próprio texto (ex: a página 404 da Vercel)
                     console.error("Erro HTML/Texto (não-JSON) recebido:", errorText);
-                    errorData = { error: `Erro ${response.status}: ${response.statusText}` };
                 }
-                console.error(`Erro na API (${response.status}):`, errorData.error);
+
+                // Usa o erro do JSON se disponível, senão usa o status text
+                const errorMessage = errorJson?.error || `Erro ${response.status}: ${response.statusText}`;
+
+                console.error(`Erro na API (${response.status}):`, errorMessage);
+
                 if (response.status === 401) {
                     alert('Sua sessão expirou. Por favor, faça login novamente.');
                     await signOut(auth);
                 }
-                throw new Error(errorData.error || 'Erro na requisição');
+                throw new Error(errorMessage);
             }
-            if (response.status === 204) {
+
+            if (response.status === 204) { // No Content
                 return null;
             }
+
+            // Se a resposta for OK, faz o parse do JSON
             return response.json();
         }
 
