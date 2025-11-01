@@ -2,7 +2,8 @@
  * /api/getArtigos
  * Busca os artigos com paginação.
  * Protegido por Token.
- * CORRIGIDO: Agora filtra por 'categoryId' se ela for fornecida.
+ * CORRIGIDO: Removida a consulta de índice composto.
+ * O filtro de categoria agora é feito no servidor (em JS).
  */
 import { db, auth } from './firebaseAdmin.js';
 
@@ -34,21 +35,14 @@ export default async function handler(req, res) {
             return res.status(401).json({ error: 'Token inválido ou expirado. Faça login novamente.' });
         }
 
-        // 2. Buscar Dados (COM LÓGICA DE FILTRO DE CATEGORIA)
+        // 2. Buscar Dados
         const limit = parseInt(req.query.limit || 10, 10);
         const category = req.query.category; // Pega a categoria da URL
 
-        let query = db.collection('artigos');
-
-        // *** A CORREÇÃO ESTÁ AQUI ***
-        // Adiciona o filtro de categoria, se não for "TODOS"
-        if (category && category !== 'TODOS') {
-            query = query.where('categoryId', '==', category);
-        }
-        // **************************
-
-        // Aplica a ordenação e o limite
-        query = query.orderBy('publishedAt', 'desc').limit(limit);
+        // --- CORREÇÃO DO ERRO 500 ---
+        // 1. Buscamos TODOS os artigos, ordenados por data.
+        //    (Não filtramos por categoria no 'where' para evitar o índice composto)
+        let query = db.collection('artigos').orderBy('publishedAt', 'desc');
 
         const snapshot = await query.get();
 
@@ -58,18 +52,30 @@ export default async function handler(req, res) {
 
         const articles = [];
         snapshot.forEach(doc => {
-            const { content, ...articleSummary } = doc.data();
-            // Converte os timestamps aninhados
-            const convertedData = convertTimestamps(articleSummary);
-            articles.push({ id: doc.id, ...convertedData });
+            const article = doc.data();
+
+            // 2. Filtramos a categoria AQUI (no JavaScript), se necessário
+            const categoryMatch = (!category || category === 'TODOS' || article.categoryId === category);
+
+            if (categoryMatch) {
+                const { content, ...articleSummary } = article;
+                const convertedData = convertTimestamps(articleSummary);
+                articles.push({ id: doc.id, ...convertedData });
+            }
         });
 
-        // 3. Retornar Dados
-        return res.status(200).json(articles);
+        // 3. Aplicamos o limite DEPOIS de filtrar
+        const limitedArticles = articles.slice(0, limit);
+        // --- FIM DA CORREÇÃO ---
+
+
+        // 4. Retornar Dados
+        return res.status(200).json(limitedArticles); // Retorna os artigos com limite
 
     } catch (error) {
         console.error('Erro em /api/getArtigos:', error);
-        if (error.code === 5) { // FAILED_PRECONDITION (erro de índice)
+        // O erro de índice não deve mais acontecer, mas mantemos o 'catch'
+        if (error.code === 5) {
             return res.status(500).json({
                 error: 'Erro no servidor: O índice do Firestore provavelmente está sendo criado. Tente novamente em alguns minutos.'
             });
