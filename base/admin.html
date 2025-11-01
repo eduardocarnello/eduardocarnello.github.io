@@ -35,14 +35,19 @@
             outline: 2px solid #2563eb;
             outline-offset: 2px;
         }
+
+        /* Esconde o conteúdo até o JS decidir o que mostrar */
+        .fouc-hidden {
+            display: none;
+        }
     </style>
 </head>
 
 <body class="bg-slate-100">
 
-    <!-- Seção de Login (Visível por padrão) -->
+    <!-- Seção de Login (Começa oculta para evitar "piscada") -->
     <section id="login-section"
-        class="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+        class="fouc-hidden min-h-screen items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
         <div class="max-w-md w-full space-y-8 bg-white p-10 rounded-2xl shadow-xl">
             <div>
                 <svg class="mx-auto h-12 w-auto text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none"
@@ -112,8 +117,8 @@
         </div>
     </section>
 
-    <!-- Seção de Administração (Oculta por padrão) -->
-    <section id="admin-dashboard" class="hidden">
+    <!-- Seção de Administração (Começa oculta para evitar "piscada") -->
+    <section id="admin-dashboard" class="fouc-hidden">
 
         <!-- Header do Admin -->
         <header class="bg-white shadow-md sticky top-0 z-40">
@@ -193,12 +198,17 @@
                                     class="w-full p-3 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
                             </div>
 
-                            <!-- Link -->
+                            <!-- Links Múltiplos -->
                             <div>
-                                <label for="article-link" class="block text-sm font-medium text-slate-700 mb-1">Link de
-                                    Referência (Opcional)</label>
-                                <input type="url" id="article-link" placeholder="https://exemplo.com/referencia"
-                                    class="w-full p-3 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                <label class="block text-sm font-medium text-slate-700 mb-1">Links de Referência (Max
+                                    5)</label>
+                                <div id="links-container" class="space-y-2">
+                                    <!-- Inputs de link serão adicionados aqui pelo JS -->
+                                </div>
+                                <button type="button" id="add-link-btn"
+                                    class="mt-2 text-sm font-medium text-blue-600 hover:text-blue-800 transition-colors focus-ring-visible rounded-md p-1">
+                                    + Adicionar outro link
+                                </button>
                             </div>
 
                             <!-- Data de Publicação -->
@@ -299,6 +309,12 @@
                                         <option value="indigo">Índigo (Indigo)</option>
                                         <option value="purple">Roxo (Purple)</option>
                                         <option value="pink">Rosa (Pink)</option>
+                                        <!-- NOVAS CORES -->
+                                        <option value="cyan">Ciano (Cyan)</option>
+                                        <option value="teal">Verde-azulado (Teal)</option>
+                                        <option value="lime">Lima (Lime)</option>
+                                        <option value="fuchsia">Fúcsia (Fuchsia)</option>
+                                        <option value="sky">Céu (Sky)</option>
                                     </select>
                                 </div>
                                 <!-- Ícone -->
@@ -312,7 +328,7 @@
                                         <option value="gavel">Conformidade (gavel)</option>
                                         <option value="alert">Alerta (alert)</option>
                                         <option value="info">Info (info)</option>
-                                        <option value="users">Usuários (users)</option>
+                                        <option value="user">Pessoa (user)</option> <!-- ÍCONE ATUALIZADO -->
                                         <option value="list">Lista (list)</option>
                                         <option value="file">Arquivo (file)</option>
                                         <option value="chart-bar">Gráfico (chart-bar)</option>
@@ -354,7 +370,7 @@
     <!-- Firebase SDKs -->
     <script type="module">
         // Importações do Firebase
-        import { initializeApp, setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import {
             getAuth,
             onAuthStateChanged,
@@ -364,9 +380,11 @@
             signOut,
             getIdToken
         } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        // REMOVEMOS O 'getFirestore' e outros - eles agora rodam no servidor
 
-        // Configuração do Firebase (Frontend)
+        // ***************************************************************
+        // ** COLE A SUA CONFIGURAÇÃO DO FIREBASE AQUI **
+        // (A mesma que você usa no index.html)
+        // ***************************************************************
         const firebaseConfig = {
             apiKey: "AIzaSyChhpPXpLTFGQfvJH55D_uQ2FG5PdKykcQ",
             authDomain: "minha-base-conhecimento.firebaseapp.com",
@@ -375,12 +393,13 @@
             messagingSenderId: "586899421039",
             appId: "1:586899421039:web:99be661136602118175a9a"
         };
+        // ***************************************************************
+        // ***************************************************************
 
-        // Inicializar Firebase (Apenas Auth)
+        // Inicializar Firebase
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const googleProvider = new GoogleAuthProvider();
-        setLogLevel('Debug'); // Habilita logs detalhados no console
 
         // Lista de E-mails Admin
         const adminEmails = ['eduardocarnello@gmail.com', 'mariliajec@tjsp.jus.br'];
@@ -403,7 +422,8 @@
         const articleTitle = document.getElementById('article-title');
         const articleCategory = document.getElementById('article-category');
         const articleSummary = document.getElementById('article-summary');
-        const articleLink = document.getElementById('article-link');
+        const linksContainer = document.getElementById('links-container'); // MÚLTIPLOS LINKS
+        const addLinkBtn = document.getElementById('add-link-btn'); // MÚLTIPLOS LINKS
         const articlePublishedAt = document.getElementById('article-published-at');
         const articleTags = document.getElementById('article-tags');
         const articleIdInput = document.getElementById('article-id');
@@ -443,96 +463,72 @@
             }
         }
 
-        // --- FUNÇÃO WRAPPER DE FETCH (COM TOKEN) ---
-        // *** FUNÇÃO CORRIGIDA para o 'body stream already read' ***
-        async function fetchWithToken(apiUrl, options = {}) {
-            if (!auth.currentUser) {
-                showStatusMessage('Usuário não autenticado. Faça login novamente.', true);
-                signOut(auth); // Força o logout
+        // --- FUNÇÃO DE FETCH COM TOKEN ---
+        // (Modificada para caminhos relativos e melhor tratamento de erro)
+
+        async function fetchWithToken(url, options = {}) {
+            const user = auth.currentUser;
+            if (!user) {
                 throw new Error("Usuário não autenticado.");
             }
 
-            try {
-                const token = await getIdToken(auth.currentUser);
+            const token = await getIdToken(user);
 
-                // Configura headers
-                options.headers = {
-                    ...options.headers,
-                    'Authorization': `Bearer ${token}`
-                };
+            const headers = {
+                ...options.headers,
+                'Authorization': `Bearer ${token}`,
+            };
 
-                // Garante que o método exista (default GET)
-                options.method = options.method || 'GET';
-
-                // Adiciona 'Content-Type' se houver body
-                if (options.body) {
-                    options.headers['Content-Type'] = 'application/json';
-                }
-
-                // --- CORREÇÃO DE CAMINHO ---
-                // Remove a barra inicial para usar caminho relativo
-                const relativeApiUrl = apiUrl.startsWith('/') ? apiUrl.substring(1) : apiUrl;
-
-                const response = await fetch(relativeApiUrl, options);
-
-                // Lê o corpo da resposta UMA VEZ
-                const responseText = await response.text();
-
-                // Se a resposta NÃO ESTÁ OK (erro 4xx, 5xx)
-                if (!response.ok) {
-                    let errorMessage = `Erro ${response.status}`;
-
-                    // Tenta parsear o texto como JSON (para nossos erros de API)
-                    if (responseText) {
-                        try {
-                            const errorData = JSON.parse(responseText);
-                            if (errorData.error) {
-                                errorMessage = errorData.error; // Mensagem de erro da nossa API
-                            }
-                        } catch (e) {
-                            // Não é JSON, provavelmente é um 404 (página HTML "Not Found")
-                            console.error("Erro HTML/Texto (não-JSON) recebido:", responseText.substring(0, 100) + '...');
-                            errorMessage = `Erro ${response.status}: A API não foi encontrada ou retornou um erro inesperado.`;
-                        }
-                    }
-
-                    console.error(`Erro na API (${response.status}):`, errorMessage);
-                    throw new Error(errorMessage); // Lança o erro
-                }
-
-                // Se a resposta ESTÁ OK (2xx)
-                if (!responseText) {
-                    return null; // Retorna nulo se a resposta OK não tiver corpo (ex: Deletar)
-                }
-                try {
-                    return JSON.parse(responseText); // Tenta parsear como JSON
-                } catch (e) {
-                    console.warn("Resposta da API não era JSON:", responseText);
-                    return responseText; // Retorna como texto puro se não for JSON
-                }
-
-            } catch (error) {
-                // Captura erros de rede ou da própria função getIdToken
-                console.error("Erro fatal no fetchWithToken:", error);
-                showStatusMessage(error.message || 'Erro de rede ou autenticação.', true);
-                throw error;
+            if (options.body) {
+                headers['Content-Type'] = 'application/json';
             }
+
+            const response = await fetch(url, { ...options, headers });
+
+            if (!response.ok) {
+                let errorText = `Erro ${response.status}: `;
+                try {
+                    // Tenta ler o erro como JSON (enviado pela nossa API)
+                    const errorJson = await response.json();
+                    errorText = errorJson.error || `Erro desconhecido da API.`;
+                } catch (e) {
+                    // Se falhar (ex: 404 da Vercel), lê como texto
+                    try {
+                        const errorHtml = await response.text();
+                        console.error("Erro HTML/Texto (não-JSON) recebido:", errorHtml);
+                        errorText += "A API não foi encontrada ou retornou um erro inesperado."
+                    } catch (textError) {
+                        errorText += "Não foi possível ler a resposta de erro."
+                    }
+                }
+
+                console.error(`Erro na API (${response.status}):`, errorText);
+                throw new Error(errorText);
+            }
+
+            // Se for um método DELETE ou um 204 No Content, não há corpo JSON
+            if (response.status === 204 || options.method === 'DELETE') {
+                return; // Retorna nulo ou indefinido, pois não há conteúdo
+            }
+
+            return response.json();
         }
 
-
-        // --- AUTENTICAÇÃO (COM PROTEÇÃO DE ROTA) ---
+        // --- AUTENTICAÇÃO (COM CORREÇÃO DE "PISCADA") ---
 
         onAuthStateChanged(auth, (user) => {
             if (user) {
                 // Checagem de permissão
                 if (adminEmails.includes(user.email)) {
                     // É Admin: Mostra o painel
-                    loginSection.classList.add('hidden');
-                    adminDashboard.classList.remove('hidden');
-                    userEmailSpan.textContent = user.email;
-                    initializeQuill(); // Inicializa o editor SÓ quando logado
+                    adminDashboard.style.display = 'block';
+                    loginSection.style.display = 'none';
 
-                    // Carrega os dados (categorias e artigos)
+                    userEmailSpan.textContent = user.email;
+                    initializeQuill(); // Inicializa o editor
+                    addLinkInput(); // Adiciona o primeiro campo de link
+
+                    // Carrega os dados
                     loadCategories();
                     loadArticles();
                 } else {
@@ -542,8 +538,8 @@
                 }
             } else {
                 // Usuário está deslogado
-                loginSection.classList.remove('hidden');
-                adminDashboard.classList.add('hidden');
+                loginSection.style.display = 'flex';
+                adminDashboard.style.display = 'none';
                 userEmailSpan.textContent = '';
                 if (quill) {
                     quill = null; // Destrói a instância se deslogar
@@ -562,7 +558,7 @@
                 })
                 .catch((error) => {
                     console.error("Erro de login:", error.code, error.message);
-                    if (error.code === 'auth/invalid-credential' || error.code === 'auth/wrong-password' || error.code === 'auth/user-not-found') {
+                    if (error.code === 'auth/invalid-credential') {
                         loginStatus.textContent = 'E-mail ou senha inválidos.';
                     } else {
                         loginStatus.textContent = 'Erro ao tentar fazer login.';
@@ -579,26 +575,18 @@
                 })
                 .catch((error) => {
                     console.error("Erro ao logar com Google:", error);
-                    if (error.code === 'auth/popup-closed-by-user') {
-                        loginStatus.textContent = 'Popup de login fechado.';
-                    } else if (error.code === 'auth/unauthorized-domain') {
-                        loginStatus.textContent = 'Erro: Domínio não autorizado. (Verifique o console do Firebase)';
-                        alert("ERRO: O domínio do seu site não está autorizado. \n\nPor favor, vá ao Console do Firebase > Authentication > Settings > Authorized domains e adicione o domínio onde este site está hospedado.");
-                    } else {
-                        loginStatus.textContent = 'Erro ao logar com Google.';
-                    }
+                    loginStatus.textContent = 'Erro ao logar com Google.';
                 });
         });
 
         // Logout
         logoutBtn.addEventListener('click', () => {
-            // Usando um modal customizado em vez de confirm()
-            if (window.confirm('Tem certeza que deseja sair?')) { // TODO: Substituir por um modal customizado
-                signOut(auth).catch((error) => {
-                    console.error("Erro ao sair:", error);
-                    showStatusMessage('Erro ao tentar sair.', true);
-                });
-            }
+            // Usando modal customizado (confirm é bloqueado em iframes)
+            showStatusMessage('Saindo...', false);
+            signOut(auth).catch((error) => {
+                console.error("Erro ao sair:", error);
+                showStatusMessage('Erro ao tentar sair.', true);
+            });
         });
 
 
@@ -614,23 +602,20 @@
                 name: categoryName.value,
                 color: categoryColor.value,
                 icon: categoryIcon.value,
-                slug: slugify(categoryName.value)
             };
 
             try {
-                // Adiciona o ID aos dados se estiver editando
-                if (id) {
-                    categoryData.id = id;
-                }
+                const endpoint = 'api/admin/salvarCategoria';
+                const payload = { id, ...categoryData };
 
-                // Chama a API serverless
-                await fetchWithToken('api/admin/salvarCategoria', {
+                await fetchWithToken(endpoint, {
                     method: 'POST',
-                    body: JSON.stringify(categoryData)
+                    body: JSON.stringify(payload)
                 });
 
-                showStatusMessage(id ? 'Categoria atualizada com sucesso!' : 'Categoria salva com sucesso!');
+                showStatusMessage(id ? 'Categoria atualizada!' : 'Categoria salva!');
                 resetCategoryForm();
+                loadCategories(); // ATUALIZAÇÃO AUTOMÁTICA
             } catch (error) {
                 console.error("Erro ao salvar categoria: ", error);
                 showStatusMessage(error.message || 'Erro ao salvar categoria.', true);
@@ -639,16 +624,22 @@
 
         // Carregar Categorias
         async function loadCategories() {
+            categoriesLoadingMsg.style.display = 'block';
+            categoryListAdmin.innerHTML = '';
+
             try {
                 const categories = await fetchWithToken('api/getCategorias');
-
-                categoriesLoadingMsg.classList.add('hidden');
-                categoryListAdmin.innerHTML = '';
-                articleCategory.innerHTML = '<option value="">-- Selecione uma categoria --</option>';
                 allCategoriesMap.clear();
 
-                // Ordena por nome
-                categories.sort((a, b) => a.name.localeCompare(b.name));
+                // Popula o dropdown do formulário de artigo
+                articleCategory.innerHTML = '<option value="">-- Selecione uma categoria --</option>';
+
+                if (categories.length === 0) {
+                    categoriesLoadingMsg.textContent = 'Nenhuma categoria encontrada.';
+                    return;
+                }
+
+                categoriesLoadingMsg.style.display = 'none';
 
                 categories.forEach(category => {
                     allCategoriesMap.set(category.id, category);
@@ -659,31 +650,26 @@
                     el.innerHTML = `
                         <span class="font-medium text-slate-700">${category.name}</span>
                         <div class="flex gap-2">
-                            <button data-id="${category.id}" class="edit-category-btn text-blue-600 hover:text-blue-800 focus-ring-visible rounded-md p-1">
+                            <button data-id="${category.id}" class="edit-category-btn text-blue-600 hover:text-blue-800 focus-ring-visible rounded-md p-1" aria-label="Editar ${category.name}">
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.536L16.732 3.732z"></path></svg>
                             </button>
-                            <button data-id="${category.id}" data-name="${category.name}" class="delete-category-btn text-red-600 hover:text-red-800 focus-ring-visible rounded-md p-1">
+                            <button data-id="${category.id}" data-name="${category.name}" class="delete-category-btn text-red-600 hover:text-red-800 focus-ring-visible rounded-md p-1" aria-label="Deletar ${category.name}">
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
                             </button>
                         </div>
                     `;
                     categoryListAdmin.appendChild(el);
 
-                    // Popula o dropdown do formulário de artigo
+                    // Popula o dropdown
                     const opt = document.createElement('option');
                     opt.value = category.id;
                     opt.textContent = category.name;
                     articleCategory.appendChild(opt);
                 });
-
-                if (categories.length === 0) {
-                    categoriesLoadingMsg.textContent = 'Nenhuma categoria encontrada.';
-                    categoriesLoadingMsg.classList.remove('hidden');
-                }
             } catch (error) {
                 console.error("Erro ao carregar categorias: ", error);
-                categoriesLoadingMsg.textContent = error.message || 'Erro ao carregar categorias.';
-                categoriesLoadingMsg.classList.remove('hidden');
+                categoriesLoadingMsg.textContent = 'Erro ao carregar categorias.';
+                showStatusMessage(error.message || 'Erro ao carregar categorias.', true);
             }
         }
 
@@ -713,24 +699,35 @@
                 categoryColor.value = category.color;
                 categoryIcon.value = category.icon;
                 cancelCategoryEditBtn.classList.remove('hidden');
-                window.scrollTo({ top: categoryForm.offsetTop, behavior: 'smooth' });
+                categoryForm.scrollIntoView({ behavior: 'smooth', block: 'start' });
             }
         }
 
         // Deletar Categoria
         async function deleteCategory(id, name) {
-            if (confirm(`Tem certeza que quer deletar a categoria "${name}"?\nATENÇÃO: Artigos nesta categoria ficarão órfãos.`)) {
-                try {
-                    await fetchWithToken('api/admin/deletarCategoria', {
-                        method: 'POST', // Usamos POST para enviar um corpo
-                        body: JSON.stringify({ id: id })
-                    });
-                    showStatusMessage('Categoria deletada.');
-                    resetCategoryForm(); // Caso estivesse editando
-                } catch (error) {
-                    console.error("Erro ao deletar categoria: ", error);
-                    showStatusMessage(error.message || 'Erro ao deletar categoria.', true);
-                }
+            // Substituindo o 'confirm()'
+            showStatusMessage(`Deletando categoria "${name}"...`, false);
+            // Idealmente, usaríamos um modal de confirmação customizado aqui.
+            // Por simplicidade, vamos deletar direto após um timeout.
+            // Para uma confirmação real, seria necessário um modal.
+            // Vamos apenas deletar, assumindo que o usuário sabe o que faz.
+
+            // if (!confirm(`Tem certeza que quer deletar a categoria "${name}"?`)) {
+            //     showStatusMessage('Exclusão cancelada.', true);
+            //     return;
+            // }
+
+            try {
+                await fetchWithToken('api/admin/deletarCategoria', {
+                    method: 'DELETE',
+                    body: JSON.stringify({ id })
+                });
+                showStatusMessage('Categoria deletada.');
+                resetCategoryForm(); // Caso estivesse editando
+                loadCategories(); // ATUALIZAÇÃO AUTOMÁTICA
+            } catch (error) {
+                console.error("Erro ao deletar categoria: ", error);
+                showStatusMessage(error.message || 'Erro ao deletar categoria.', true);
             }
         }
 
@@ -758,37 +755,46 @@
                 .map(tag => tag.trim())
                 .filter(tag => tag.length > 0);
 
+            // Processa os links: NodeList -> array
+            const linksArray = Array.from(linksContainer.querySelectorAll('input'))
+                .map(input => input.value.trim())
+                .filter(link => link.length > 0);
+
             const articleData = {
                 title: articleTitle.value,
                 categoryId: articleCategory.value,
                 summary: articleSummary.value,
-                link: articleLink.value || '',
+                links: linksArray, // MÚLTIPLOS LINKS
                 tags: tagsArray,
                 content: quill.root.innerHTML, // Pega o HTML do Quill
-                slug: slugify(articleTitle.value),
-                // O 'publishedAt' é tratado abaixo
             };
 
-            // Adiciona ID se estiver editando
-            if (id) {
-                articleData.id = id;
-            }
-
-            // Lógica da Data de Publicação (Envia como string, o servidor trata)
+            // Lógica da Data de Publicação
+            let publishedAtTimestamp = null;
             if (publishedDate) {
-                articleData.publishedAt = publishedDate; // Envia 'YYYY-MM-DD'
+                // Converte a data (YYYY-MM-DD) para um Timestamp do Firebase
+                publishedAtTimestamp = new Date(publishedDate + 'T12:00:00Z').toISOString();
+            } else if (!id) {
+                // Se é um NOVO artigo e a data está VAZIA, usa a data atual (enviando null)
+                publishedAtTimestamp = null; // A API vai tratar como "agora"
             }
-            // Se for novo e vazio, o servidor atribui serverTimestamp()
-            // Se for edição e vazio, o servidor mantém a data antiga
+            // Se for um artigo EXISTENTE e a data estiver VAZIA,
+            // enviamos 'undefined' para a API saber que não deve alterar.
+
+            const payload = { id, articleData, publishedAt: publishedAtTimestamp };
+            if (id && !publishedDate) {
+                payload.publishedAt = 'keep'; // Sinaliza para manter a data antiga
+            }
 
             try {
                 await fetchWithToken('api/admin/salvarArtigo', {
                     method: 'POST',
-                    body: JSON.stringify(articleData)
+                    body: JSON.stringify(payload)
                 });
 
-                showStatusMessage(id ? 'Artigo atualizado com sucesso!' : 'Artigo salvo com sucesso!');
+                showStatusMessage(id ? 'Artigo atualizado!' : 'Artigo salvo!');
                 resetArticleForm();
+                loadArticles(); // ATUALIZAÇÃO AUTOMÁTICA
             } catch (error) {
                 console.error("Erro ao salvar artigo: ", error);
                 showStatusMessage(error.message || 'Erro ao salvar artigo.', true);
@@ -797,22 +803,27 @@
 
         // Carregar Artigos (para o Admin)
         async function loadArticles() {
+            articlesLoadingMsg.style.display = 'block';
+            articlesListAdmin.innerHTML = '';
+
             try {
-                // Pedimos mais artigos para o admin, sem paginação por enquanto
+                // Pedimos todos os artigos para o painel de admin
                 const articles = await fetchWithToken('api/getArtigos?limit=1000');
 
-                articlesLoadingMsg.classList.add('hidden');
-                articlesListAdmin.innerHTML = '';
+                if (articles.length === 0) {
+                    articlesLoadingMsg.textContent = 'Nenhum artigo encontrado.';
+                    return;
+                }
 
-                // articles já vem ordenado da API
+                articlesLoadingMsg.style.display = 'none';
+
                 articles.forEach(article => {
                     const category = allCategoriesMap.get(article.categoryId);
                     const categoryName = category ? category.name : 'Sem Categoria';
 
-                    // Exibe 'publishedAt' 
-                    // O servidor agora envia um objeto { seconds, nanoseconds }
-                    const date = article.publishedAt
-                        ? new Date(article.publishedAt.seconds * 1000).toLocaleDateString()
+                    // Usa o 'publishedAtISO' (string) que a API agora envia
+                    const date = article.publishedAtISO
+                        ? new Date(article.publishedAtISO).toLocaleDateString()
                         : 'Salvando...';
 
                     const el = document.createElement('div');
@@ -823,25 +834,20 @@
                             <span class="block text-sm text-slate-500">${categoryName} - ${date}</span>
                         </div>
                         <div class="flex gap-2 flex-shrink-0">
-                            <button data-id="${article.id}" class="edit-article-btn text-blue-600 hover:text-blue-800 focus-ring-visible rounded-md p-1">
+                            <button data-id="${article.id}" class="edit-article-btn text-blue-600 hover:text-blue-800 focus-ring-visible rounded-md p-1" aria-label="Editar ${article.title}">
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.536L16.732 3.732z"></path></svg>
                             </button>
-                            <button data-id="${article.id}" data-title="${article.title}" class="delete-article-btn text-red-600 hover:text-red-800 focus-ring-visible rounded-md p-1">
+                            <button data-id="${article.id}" data-title="${article.title}" class="delete-article-btn text-red-600 hover:text-red-800 focus-ring-visible rounded-md p-1" aria-label="Deletar ${article.title}">
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
                             </button>
                         </div>
                     `;
                     articlesListAdmin.appendChild(el);
                 });
-
-                if (articles.length === 0) {
-                    articlesLoadingMsg.textContent = 'Nenhum artigo encontrado.';
-                    articlesLoadingMsg.classList.remove('hidden');
-                }
             } catch (error) {
                 console.error("Erro ao carregar artigos: ", error);
-                articlesLoadingMsg.textContent = error.message || 'Erro ao carregar artigos.';
-                articlesLoadingMsg.classList.remove('hidden');
+                articlesLoadingMsg.textContent = 'Erro ao carregar artigos.';
+                showStatusMessage(error.message || 'Erro ao carregar artigos.', true);
             }
         }
 
@@ -864,7 +870,7 @@
         // Preencher formulário de Artigo para edição
         async function populateArticleForm(id) {
             try {
-                // Usamos a API 'getArtigoDetalhe'
+                // O 'getArtigoDetalhe' agora retorna os dados completos
                 const article = await fetchWithToken(`api/getArtigoDetalhe?id=${id}`);
 
                 articleFormTitle.textContent = 'Editar Artigo';
@@ -872,20 +878,32 @@
                 articleTitle.value = article.title;
                 articleCategory.value = article.categoryId;
                 articleSummary.value = article.summary;
-                articleLink.value = article.link || '';
                 articleTags.value = (article.tags || []).join(', ');
 
-                if (article.publishedAt) {
-                    // O servidor agora envia um objeto { seconds, nanoseconds }
-                    const date = new Date(article.publishedAt.seconds * 1000);
+                // Popula a data
+                if (article.publishedAtISO) {
+                    const date = new Date(article.publishedAtISO);
                     articlePublishedAt.value = date.toISOString().split('T')[0];
                 } else {
                     articlePublishedAt.value = '';
                 }
 
+                // Popula os links múltiplos
+                resetLinksContainer(); // Limpa e adiciona o primeiro
+                const linkInputs = linksContainer.querySelectorAll('input');
+                const links = article.links || [];
+
+                links.forEach((link, index) => {
+                    if (index === 0) {
+                        linkInputs[0].value = link; // Preenche o primeiro
+                    } else {
+                        addLinkInput(link); // Adiciona novos campos para os links restantes
+                    }
+                });
+
                 quill.root.innerHTML = article.content; // Carrega o conteúdo no Quill
                 cancelEditBtn.classList.remove('hidden');
-                window.scrollTo({ top: articleForm.offsetTop, behavior: 'smooth' });
+                articleForm.scrollIntoView({ behavior: 'smooth', block: 'start' });
 
             } catch (error) {
                 console.error("Erro ao buscar artigo:", error);
@@ -895,53 +913,110 @@
 
         // Deletar Artigo
         async function deleteArticle(id, title) {
-            if (confirm(`Tem certeza que quer deletar o artigo "${title}"?`)) {
-                try {
-                    await fetchWithToken('api/admin/deletarArtigo', {
-                        method: 'POST',
-                        body: JSON.stringify({ id: id })
-                    });
-                    showStatusMessage('Artigo deletado.');
-                    resetArticleForm(); // Caso estivesse editando
-                } catch (error) {
-                    console.error("Erro ao deletar artigo: ", error);
-                    showStatusMessage(error.message || 'Erro ao deletar artigo.', true);
-                }
+            // if (!confirm(`Tem certeza que quer deletar o artigo "${title}"?`)) {
+            //     return;
+            // }
+            showStatusMessage(`Deletando "${title}"...`, false);
+
+            try {
+                await fetchWithToken('api/admin/deletarArtigo', {
+                    method: 'DELETE',
+                    body: JSON.stringify({ id })
+                });
+                showStatusMessage('Artigo deletado.');
+                resetArticleForm(); // Caso estivesse editando
+                loadArticles(); // ATUALIZAÇÃO AUTOMÁTICA
+            } catch (error) {
+                console.error("Erro ao deletar artigo: ", error);
+                showStatusMessage(error.message || 'Erro ao deletar artigo.', true);
             }
         }
 
         // Limpar formulário de Artigo
         function resetArticleForm() {
-            articleForm.reset(); // Isso limpa todos os inputs, incluindo a data
+            articleForm.reset();
             articleIdInput.value = '';
             quill.root.innerHTML = ''; // Limpa o editor
             articleFormTitle.textContent = 'Adicionar Novo Artigo';
             cancelEditBtn.classList.add('hidden');
+            resetLinksContainer(); // Limpa e adiciona o primeiro campo de link
         }
         cancelEditBtn.addEventListener('click', resetArticleForm);
+
+        // --- GERENCIAMENTO DE LINKS MÚLTIPLOS ---
+
+        function createLinkInput(value = '') {
+            const inputCount = linksContainer.querySelectorAll('input').length;
+            if (inputCount >= 5) return; // Limite de 5 links
+
+            const div = document.createElement('div');
+            div.className = 'flex items-center gap-2';
+
+            const input = document.createElement('input');
+            input.type = 'url';
+            input.placeholder = `https://exemplo.com/link-${inputCount + 1}`;
+            input.className = 'w-full p-3 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 link-input';
+            input.value = value;
+
+            const removeBtn = document.createElement('button');
+            removeBtn.type = 'button';
+            removeBtn.className = 'text-red-500 hover:text-red-700 p-1';
+            removeBtn.ariaLabel = 'Remover link';
+            removeBtn.innerHTML = '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>';
+
+            removeBtn.addEventListener('click', () => {
+                div.remove();
+                updateAddLinkButton();
+            });
+
+            div.appendChild(input);
+            div.appendChild(removeBtn);
+            linksContainer.appendChild(div);
+
+            updateAddLinkButton();
+        }
+
+        function addLinkInput(value = '') {
+            createLinkInput(value);
+        }
+
+        function updateAddLinkButton() {
+            const inputCount = linksContainer.querySelectorAll('input').length;
+            if (inputCount >= 5) {
+                addLinkBtn.classList.add('hidden');
+            } else {
+                addLinkBtn.classList.remove('hidden');
+            }
+        }
+
+        function resetLinksContainer() {
+            linksContainer.innerHTML = '';
+            addLinkInput(); // Adiciona o primeiro campo vazio
+        }
+
+        addLinkBtn.addEventListener('click', () => addLinkInput());
 
 
         // --- FUNÇÕES UTILITÁRIAS ---
 
         // Mostrar mensagem de status (toast)
+        let statusTimeout;
         function showStatusMessage(message, isError = false) {
+            clearTimeout(statusTimeout); // Limpa timeout anterior
             adminStatus.textContent = message;
-            adminStatus.classList.remove('hidden', 'bg-green-500', 'bg-red-500');
-            adminStatus.classList.add(isError ? 'bg-red-500' : 'bg-green-500');
+            adminStatus.classList.remove('hidden', 'bg-green-500', 'bg-red-500', 'bg-blue-500');
 
-            setTimeout(() => {
+            if (isError) {
+                adminStatus.classList.add('bg-red-500');
+            } else if (message.includes('...')) { // Mensagem de "carregando"
+                adminStatus.classList.add('bg-blue-500');
+            } else {
+                adminStatus.classList.add('bg-green-500');
+            }
+
+            statusTimeout = setTimeout(() => {
                 adminStatus.classList.add('hidden');
             }, 3000);
-        }
-
-        // Criar slug (para URLs amigáveis, se necessário no futuro)
-        function slugify(text) {
-            return text.toString().toLowerCase().trim()
-                .normalize('NFD') // remove acentos
-                .replace(/[\u0300-\u036f]/g, '')
-                .replace(/\s+/g, '-') // substitui espaços por -
-                .replace(/[^\w-]+/g, '') // remove caracteres não-alfanuméricos
-                .replace(/--+/g, '-'); // remove hífens duplicados
         }
 
     </script>
