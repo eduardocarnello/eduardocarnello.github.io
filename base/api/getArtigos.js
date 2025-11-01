@@ -1,59 +1,67 @@
-/*
- * /api/getArtigos
- * Busca os artigos com paginação.
- * Protegido por Token.
- */
 import { db, auth } from './firebaseAdmin.js';
 
-// Lista de e-mails de administradores
-const ADMIN_EMAILS = ['eduardocarnello@gmail.com', 'mariliajec@tjsp.jus.br'];
-
-export default async function handler(req, res) {
+export default async (req, res) => {
     try {
-        // 1. Validar o Token do usuário
-        const token = req.headers.authorization?.split('Bearer ')[1];
-        if (!token) {
-            return res.status(401).json({ error: 'Nenhum token fornecido. Acesso não autorizado.' });
+        // 1. Autenticação: Verifica o token do usuário
+        const { authorization } = req.headers;
+        if (!authorization || !authorization.startsWith('Bearer ')) {
+            return res.status(401).json({ error: 'Não autorizado: Token não fornecido.' });
         }
-
+        const token = authorization.split('Bearer ')[1];
         // Verifica se o token é válido
-        // O Admin SDK (que bypassa regras) verifica a validade do token do *usuário*
-        let decodedToken;
-        try {
-            decodedToken = await auth.verifyIdToken(token);
-        } catch (error) {
-            return res.status(401).json({ error: 'Token inválido ou expirado. Faça login novamente.' });
+        await auth.verifyIdToken(token);
+
+        // 2. Lógica da API: Buscar o artigo
+        const { id } = req.query;
+        if (!id) {
+            return res.status(400).json({ error: 'ID do artigo é obrigatório.' });
         }
 
-        // 2. Buscar Dados
-        const limit = parseInt(req.query.limit || 10, 10);
+        const docRef = db.collection('artigos').doc(id);
+        const docSnap = await docRef.get();
 
-        const snapshot = await db.collection('artigos')
-            .orderBy('publishedAt', 'desc')
-            .limit(limit)
-            .get();
-
-        if (snapshot.empty) {
-            return res.status(200).json([]);
+        if (!docSnap.exists) {
+            return res.status(404).json({ error: 'Artigo não encontrado.' });
         }
 
-        const articles = [];
-        snapshot.forEach(doc => {
-            const { content, ...articleSummary } = doc.data();
-            articles.push({ id: doc.id, ...articleSummary });
-        });
+        // --- INÍCIO DA CORREÇÃO (Erro 500) ---
+        // Converte os Timestamps do Firebase (que não são JSON) para um formato serializável
+        const data = docSnap.data();
+        const convertTimestamps = (obj) => {
+            if (obj && typeof obj === 'object' && obj.toDate) { // Verifica se é um Timestamp
+                return {
+                    seconds: obj.seconds,
+                    nanoseconds: obj.nanoseconds
+                };
+            }
+            if (Array.isArray(obj)) {
+                return obj.map(convertTimestamps);
+            }
+            if (typeof obj === 'object' && obj !== null) {
+                const newObj = {};
+                for (const key in obj) {
+                    newObj[key] = convertTimestamps(obj[key]);
+                }
+                return newObj;
+            }
+            return obj;
+        };
 
-        // 3. Retornar Dados
-        return res.status(200).json(articles);
+        const serializableData = convertTimestamps(data);
+        serializableData.id = docSnap.id; // Adiciona o ID ao objeto final
+        // --- FIM DA CORREÇÃO ---
+
+        // Envia os dados convertidos
+        res.status(200).json(serializableData);
 
     } catch (error) {
-        console.error('Erro em /api/getArtigos:', error);
-        // Trata o erro de índice (comum nessa migração)
-        if (error.code === 5) { // 5 = FAILED_PRECONDITION (normalmente erro de índice)
-            return res.status(500).json({
-                error: 'Erro no servidor: O índice do Firestore provavelmente está sendo criado. Tente novamente em alguns minutos.'
-            });
+        // Trata erros de token
+        if (error.code === 'auth/id-token-expired' || error.code === 'auth/argument-error') {
+            return res.status(401).json({ error: 'Não autorizado: Token inválido ou expirado.' });
         }
-        return res.status(500).json({ error: 'Erro interno do servidor ao buscar artigos.' });
+        // Trata erros internos
+        console.error('Erro em getArtigoDetalhe:', error);
+        res.status(500).json({ error: 'Erro interno do servidor.' });
     }
-}
+};
+
