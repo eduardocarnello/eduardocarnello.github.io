@@ -353,7 +353,7 @@
 
     <!-- Firebase SDKs -->
     <script type="module">
-        // Importações do Firebase (APENAS AUTH)
+        // Importações do Firebase
         import { initializeApp, setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import {
             getAuth,
@@ -364,10 +364,9 @@
             signOut,
             getIdToken
         } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        // REMOVEMOS O 'getFirestore' e outros - eles agora rodam no servidor
 
-        // ** Firestore NÃO é mais importado aqui **
-
-        // Configuração do Firebase
+        // Configuração do Firebase (Frontend)
         const firebaseConfig = {
             apiKey: "AIzaSyChhpPXpLTFGQfvJH55D_uQ2FG5PdKykcQ",
             authDomain: "minha-base-conhecimento.firebaseapp.com",
@@ -377,15 +376,14 @@
             appId: "1:586899421039:web:99be661136602118175a9a"
         };
 
-        // Inicializar Firebase
+        // Inicializar Firebase (Apenas Auth)
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const googleProvider = new GoogleAuthProvider();
-        setLogLevel('Debug');
+        setLogLevel('Debug'); // Habilita logs detalhados no console
 
-        // E-mails de Admin (para proteger a rota)
+        // Lista de E-mails Admin
         const adminEmails = ['eduardocarnello@gmail.com', 'mariliajec@tjsp.jus.br'];
-        let currentUser = null; // Usuário logado
 
         // --- REFERÊNCIAS DO DOM ---
         const loginSection = document.getElementById('login-section');
@@ -445,58 +443,86 @@
             }
         }
 
-        // --- NOVA FUNÇÃO: fetchWithToken ---
-        async function fetchWithToken(url, options = {}) {
-            if (!currentUser) {
+        // --- FUNÇÃO WRAPPER DE FETCH (COM TOKEN) ---
+        // *** FUNÇÃO CORRIGIDA para o 'body stream already read' ***
+        async function fetchWithToken(apiUrl, options = {}) {
+            if (!auth.currentUser) {
+                showStatusMessage('Usuário não autenticado. Faça login novamente.', true);
+                signOut(auth); // Força o logout
                 throw new Error("Usuário não autenticado.");
             }
-            const token = await getIdToken(currentUser);
-            const headers = {
-                ...options.headers,
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json'
-            };
 
-            const response = await fetch(url, { ...options, headers });
+            try {
+                const token = await getIdToken(auth.currentUser);
 
-            if (!response.ok) {
-                let errorJson;
-                let errorText; // Variável para guardar o texto do erro
+                // Configura headers
+                options.headers = {
+                    ...options.headers,
+                    'Authorization': `Bearer ${token}`
+                };
+
+                // Garante que o método exista (default GET)
+                options.method = options.method || 'GET';
+
+                // Adiciona 'Content-Type' se houver body
+                if (options.body) {
+                    options.headers['Content-Type'] = 'application/json';
+                }
+
+                // --- CORREÇÃO DE CAMINHO ---
+                // Remove a barra inicial para usar caminho relativo
+                const relativeApiUrl = apiUrl.startsWith('/') ? apiUrl.substring(1) : apiUrl;
+
+                const response = await fetch(relativeApiUrl, options);
+
+                // Lê o corpo da resposta UMA VEZ
+                const responseText = await response.text();
+
+                // Se a resposta NÃO ESTÁ OK (erro 4xx, 5xx)
+                if (!response.ok) {
+                    let errorMessage = `Erro ${response.status}`;
+
+                    // Tenta parsear o texto como JSON (para nossos erros de API)
+                    if (responseText) {
+                        try {
+                            const errorData = JSON.parse(responseText);
+                            if (errorData.error) {
+                                errorMessage = errorData.error; // Mensagem de erro da nossa API
+                            }
+                        } catch (e) {
+                            // Não é JSON, provavelmente é um 404 (página HTML "Not Found")
+                            console.error("Erro HTML/Texto (não-JSON) recebido:", responseText.substring(0, 100) + '...');
+                            errorMessage = `Erro ${response.status}: A API não foi encontrada ou retornou um erro inesperado.`;
+                        }
+                    }
+
+                    console.error(`Erro na API (${response.status}):`, errorMessage);
+                    throw new Error(errorMessage); // Lança o erro
+                }
+
+                // Se a resposta ESTÁ OK (2xx)
+                if (!responseText) {
+                    return null; // Retorna nulo se a resposta OK não tiver corpo (ex: Deletar)
+                }
                 try {
-                    // 1. Pega o texto da resposta primeiro. Isso consome a stream.
-                    errorText = await response.text();
-                    // 2. Tenta fazer o parse como JSON
-                    errorJson = JSON.parse(errorText);
+                    return JSON.parse(responseText); // Tenta parsear como JSON
                 } catch (e) {
-                    // Falha no parse. O erro é o próprio texto (ex: a página 404 da Vercel)
-                    console.error("Erro HTML/Texto (não-JSON) recebido:", errorText);
+                    console.warn("Resposta da API não era JSON:", responseText);
+                    return responseText; // Retorna como texto puro se não for JSON
                 }
 
-                // Usa o erro do JSON se disponível, senão usa o status text
-                const errorMessage = errorJson?.error || `Erro ${response.status}: ${response.statusText}`;
-
-                console.error(`Erro na API (${response.status}):`, errorMessage);
-
-                if (response.status === 401) {
-                    alert('Sua sessão expirou. Por favor, faça login novamente.');
-                    await signOut(auth);
-                }
-                throw new Error(errorMessage);
+            } catch (error) {
+                // Captura erros de rede ou da própria função getIdToken
+                console.error("Erro fatal no fetchWithToken:", error);
+                showStatusMessage(error.message || 'Erro de rede ou autenticação.', true);
+                throw error;
             }
-
-            if (response.status === 204) { // No Content
-                return null;
-            }
-
-            // Se a resposta for OK, faz o parse do JSON
-            return response.json();
         }
 
 
         // --- AUTENTICAÇÃO (COM PROTEÇÃO DE ROTA) ---
 
         onAuthStateChanged(auth, (user) => {
-            currentUser = user; // Armazena o usuário globalmente
             if (user) {
                 // Checagem de permissão
                 if (adminEmails.includes(user.email)) {
@@ -504,7 +530,9 @@
                     loginSection.classList.add('hidden');
                     adminDashboard.classList.remove('hidden');
                     userEmailSpan.textContent = user.email;
-                    initializeQuill();
+                    initializeQuill(); // Inicializa o editor SÓ quando logado
+
+                    // Carrega os dados (categorias e artigos)
                     loadCategories();
                     loadArticles();
                 } else {
@@ -518,7 +546,7 @@
                 adminDashboard.classList.add('hidden');
                 userEmailSpan.textContent = '';
                 if (quill) {
-                    quill = null;
+                    quill = null; // Destrói a instância se deslogar
                 }
             }
         });
@@ -528,13 +556,13 @@
             e.preventDefault();
             loginStatus.textContent = 'Entrando...';
             signInWithEmailAndPassword(auth, loginEmail.value, loginPassword.value)
-                .then(() => {
+                .then((userCredential) => {
                     loginStatus.textContent = '';
                     loginForm.reset();
                 })
                 .catch((error) => {
                     console.error("Erro de login:", error.code, error.message);
-                    if (error.code === 'auth/invalid-credential') {
+                    if (error.code === 'auth/invalid-credential' || error.code === 'auth/wrong-password' || error.code === 'auth/user-not-found') {
                         loginStatus.textContent = 'E-mail ou senha inválidos.';
                     } else {
                         loginStatus.textContent = 'Erro ao tentar fazer login.';
@@ -546,15 +574,26 @@
         googleLoginBtn.addEventListener('click', () => {
             loginStatus.textContent = 'Abrindo popup do Google...';
             signInWithPopup(auth, googleProvider)
+                .then((result) => {
+                    loginStatus.textContent = '';
+                })
                 .catch((error) => {
                     console.error("Erro ao logar com Google:", error);
-                    loginStatus.textContent = 'Erro ao logar com Google.';
+                    if (error.code === 'auth/popup-closed-by-user') {
+                        loginStatus.textContent = 'Popup de login fechado.';
+                    } else if (error.code === 'auth/unauthorized-domain') {
+                        loginStatus.textContent = 'Erro: Domínio não autorizado. (Verifique o console do Firebase)';
+                        alert("ERRO: O domínio do seu site não está autorizado. \n\nPor favor, vá ao Console do Firebase > Authentication > Settings > Authorized domains e adicione o domínio onde este site está hospedado.");
+                    } else {
+                        loginStatus.textContent = 'Erro ao logar com Google.';
+                    }
                 });
         });
 
         // Logout
         logoutBtn.addEventListener('click', () => {
-            if (confirm('Tem certeza que deseja sair?')) {
+            // Usando um modal customizado em vez de confirm()
+            if (window.confirm('Tem certeza que deseja sair?')) { // TODO: Substituir por um modal customizado
                 signOut(auth).catch((error) => {
                     console.error("Erro ao sair:", error);
                     showStatusMessage('Erro ao tentar sair.', true);
@@ -572,7 +611,6 @@
             e.preventDefault();
             const id = categoryIdInput.value;
             const categoryData = {
-                id: id || null, // Envia o ID para a API (ou null se for novo)
                 name: categoryName.value,
                 color: categoryColor.value,
                 icon: categoryIcon.value,
@@ -580,26 +618,28 @@
             };
 
             try {
-                // **CORREÇÃO: Caminho relativo (sem / inicial)**
+                // Adiciona o ID aos dados se estiver editando
+                if (id) {
+                    categoryData.id = id;
+                }
+
+                // Chama a API serverless
                 await fetchWithToken('api/admin/salvarCategoria', {
                     method: 'POST',
                     body: JSON.stringify(categoryData)
                 });
 
-                showStatusMessage(id ? 'Categoria atualizada!' : 'Categoria salva!');
+                showStatusMessage(id ? 'Categoria atualizada com sucesso!' : 'Categoria salva com sucesso!');
                 resetCategoryForm();
             } catch (error) {
                 console.error("Erro ao salvar categoria: ", error);
-                showStatusMessage(`Erro ao salvar categoria: ${error.message}`, true);
+                showStatusMessage(error.message || 'Erro ao salvar categoria.', true);
             }
         });
 
         // Carregar Categorias
         async function loadCategories() {
-            categoriesLoadingMsg.classList.remove('hidden');
-            categoriesLoadingMsg.textContent = 'Carregando categorias...';
             try {
-                // **CORREÇÃO: Caminho relativo (sem / inicial)**
                 const categories = await fetchWithToken('api/getCategorias');
 
                 categoriesLoadingMsg.classList.add('hidden');
@@ -622,7 +662,7 @@
                             <button data-id="${category.id}" class="edit-category-btn text-blue-600 hover:text-blue-800 focus-ring-visible rounded-md p-1">
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.536L16.732 3.732z"></path></svg>
                             </button>
-                            <button data-id="${category.id}" class="delete-category-btn text-red-600 hover:text-red-800 focus-ring-visible rounded-md p-1">
+                            <button data-id="${category.id}" data-name="${category.name}" class="delete-category-btn text-red-600 hover:text-red-800 focus-ring-visible rounded-md p-1">
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
                             </button>
                         </div>
@@ -641,8 +681,9 @@
                     categoriesLoadingMsg.classList.remove('hidden');
                 }
             } catch (error) {
-                console.error("Erro ao carregar categorias:", error);
-                categoriesLoadingMsg.textContent = 'Erro ao carregar categorias.';
+                console.error("Erro ao carregar categorias: ", error);
+                categoriesLoadingMsg.textContent = error.message || 'Erro ao carregar categorias.';
+                categoriesLoadingMsg.classList.remove('hidden');
             }
         }
 
@@ -650,8 +691,16 @@
         categoryListAdmin.addEventListener('click', (e) => {
             const editBtn = e.target.closest('.edit-category-btn');
             const deleteBtn = e.target.closest('.delete-category-btn');
-            if (editBtn) populateCategoryForm(editBtn.dataset.id);
-            if (deleteBtn) deleteCategory(deleteBtn.dataset.id);
+
+            if (editBtn) {
+                const id = editBtn.dataset.id;
+                populateCategoryForm(id);
+            }
+            if (deleteBtn) {
+                const id = deleteBtn.dataset.id;
+                const name = deleteBtn.dataset.name;
+                deleteCategory(id, name);
+            }
         });
 
         // Preencher formulário de Categoria para edição
@@ -669,20 +718,18 @@
         }
 
         // Deletar Categoria
-        async function deleteCategory(id) {
-            const category = allCategoriesMap.get(id);
-            if (confirm(`Tem certeza que quer deletar a categoria "${category.name}"?\nATENÇÃO: Artigos nesta categoria ficarão órfãos.`)) {
+        async function deleteCategory(id, name) {
+            if (confirm(`Tem certeza que quer deletar a categoria "${name}"?\nATENÇÃO: Artigos nesta categoria ficarão órfãos.`)) {
                 try {
-                    // **CORREÇÃO: Caminho relativo (sem / inicial)**
                     await fetchWithToken('api/admin/deletarCategoria', {
-                        method: 'POST',
-                        body: JSON.stringify({ id })
+                        method: 'POST', // Usamos POST para enviar um corpo
+                        body: JSON.stringify({ id: id })
                     });
                     showStatusMessage('Categoria deletada.');
-                    resetCategoryForm();
+                    resetCategoryForm(); // Caso estivesse editando
                 } catch (error) {
                     console.error("Erro ao deletar categoria: ", error);
-                    showStatusMessage(`Erro ao deletar categoria: ${error.message}`, true);
+                    showStatusMessage(error.message || 'Erro ao deletar categoria.', true);
                 }
             }
         }
@@ -705,62 +752,75 @@
             const id = articleIdInput.value;
             const publishedDate = articlePublishedAt.value;
 
-            const tagsArray = articleTags.value.split(',').map(tag => tag.trim()).filter(tag => tag.length > 0);
+            // Processa as tags: string -> array
+            const tagsArray = articleTags.value
+                .split(',')
+                .map(tag => tag.trim())
+                .filter(tag => tag.length > 0);
 
             const articleData = {
-                id: id || null,
                 title: articleTitle.value,
                 categoryId: articleCategory.value,
                 summary: articleSummary.value,
                 link: articleLink.value || '',
                 tags: tagsArray,
-                content: quill.root.innerHTML,
+                content: quill.root.innerHTML, // Pega o HTML do Quill
                 slug: slugify(articleTitle.value),
-                publishedAt: publishedDate ? new Date(publishedDate + 'T12:00:00') : null // Envia como data
+                // O 'publishedAt' é tratado abaixo
             };
 
+            // Adiciona ID se estiver editando
+            if (id) {
+                articleData.id = id;
+            }
+
+            // Lógica da Data de Publicação (Envia como string, o servidor trata)
+            if (publishedDate) {
+                articleData.publishedAt = publishedDate; // Envia 'YYYY-MM-DD'
+            }
+            // Se for novo e vazio, o servidor atribui serverTimestamp()
+            // Se for edição e vazio, o servidor mantém a data antiga
+
             try {
-                // **CORREÇÃO: Caminho relativo (sem / inicial)**
                 await fetchWithToken('api/admin/salvarArtigo', {
                     method: 'POST',
                     body: JSON.stringify(articleData)
                 });
 
-                showStatusMessage(id ? 'Artigo atualizado!' : 'Artigo salvo!');
+                showStatusMessage(id ? 'Artigo atualizado com sucesso!' : 'Artigo salvo com sucesso!');
                 resetArticleForm();
             } catch (error) {
                 console.error("Erro ao salvar artigo: ", error);
-                showStatusMessage(`Erro ao salvar artigo: ${error.message}`, true);
+                showStatusMessage(error.message || 'Erro ao salvar artigo.', true);
             }
         });
 
         // Carregar Artigos (para o Admin)
         async function loadArticles() {
-            articlesLoadingMsg.classList.remove('hidden');
-            articlesLoadingMsg.textContent = 'Carregando artigos...';
-
             try {
-                // **CORREÇÃO: Caminho relativo (sem / inicial)**
-                // Pede todos os artigos para o admin, sem limite
+                // Pedimos mais artigos para o admin, sem paginação por enquanto
                 const articles = await fetchWithToken('api/getArtigos?limit=1000');
 
                 articlesLoadingMsg.classList.add('hidden');
                 articlesListAdmin.innerHTML = '';
 
-                // Ordena localmente (API já retorna ordenado, mas garantimos)
-                articles.sort((a, b) => (b.publishedAt?.seconds || 0) - (a.publishedAt?.seconds || 0));
-
+                // articles já vem ordenado da API
                 articles.forEach(article => {
                     const category = allCategoriesMap.get(article.categoryId);
-                    const categoryNameStr = category ? category.name : 'Sem Categoria';
-                    const dateStr = article.publishedAt ? new Date(article.publishedAt.seconds * 1000).toLocaleDateString() : 'Salvando...';
+                    const categoryName = category ? category.name : 'Sem Categoria';
+
+                    // Exibe 'publishedAt' 
+                    // O servidor agora envia um objeto { seconds, nanoseconds }
+                    const date = article.publishedAt
+                        ? new Date(article.publishedAt.seconds * 1000).toLocaleDateString()
+                        : 'Salvando...';
 
                     const el = document.createElement('div');
                     el.className = 'flex justify-between items-center p-4 bg-slate-50 rounded-lg';
                     el.innerHTML = `
                         <div>
                             <strong class="text-slate-800">${article.title}</strong>
-                            <span class="block text-sm text-slate-500">${categoryNameStr} - ${dateStr}</span>
+                            <span class="block text-sm text-slate-500">${categoryName} - ${date}</span>
                         </div>
                         <div class="flex gap-2 flex-shrink-0">
                             <button data-id="${article.id}" class="edit-article-btn text-blue-600 hover:text-blue-800 focus-ring-visible rounded-md p-1">
@@ -779,8 +839,9 @@
                     articlesLoadingMsg.classList.remove('hidden');
                 }
             } catch (error) {
-                console.error("Erro ao carregar artigos:", error);
-                articlesLoadingMsg.textContent = 'Erro ao carregar artigos.';
+                console.error("Erro ao carregar artigos: ", error);
+                articlesLoadingMsg.textContent = error.message || 'Erro ao carregar artigos.';
+                articlesLoadingMsg.classList.remove('hidden');
             }
         }
 
@@ -788,14 +849,22 @@
         articlesListAdmin.addEventListener('click', (e) => {
             const editBtn = e.target.closest('.edit-article-btn');
             const deleteBtn = e.target.closest('.delete-article-btn');
-            if (editBtn) populateArticleForm(editBtn.dataset.id);
-            if (deleteBtn) deleteArticle(deleteBtn.dataset.id, deleteBtn.dataset.title);
+
+            if (editBtn) {
+                const id = editBtn.dataset.id;
+                populateArticleForm(id);
+            }
+            if (deleteBtn) {
+                const id = deleteBtn.dataset.id;
+                const title = deleteBtn.dataset.title;
+                deleteArticle(id, title);
+            }
         });
 
         // Preencher formulário de Artigo para edição
         async function populateArticleForm(id) {
             try {
-                // **CORREÇÃO: Caminho relativo (sem / inicial)**
+                // Usamos a API 'getArtigoDetalhe'
                 const article = await fetchWithToken(`api/getArtigoDetalhe?id=${id}`);
 
                 articleFormTitle.textContent = 'Editar Artigo';
@@ -807,18 +876,20 @@
                 articleTags.value = (article.tags || []).join(', ');
 
                 if (article.publishedAt) {
+                    // O servidor agora envia um objeto { seconds, nanoseconds }
                     const date = new Date(article.publishedAt.seconds * 1000);
                     articlePublishedAt.value = date.toISOString().split('T')[0];
                 } else {
                     articlePublishedAt.value = '';
                 }
 
-                quill.root.innerHTML = article.content;
+                quill.root.innerHTML = article.content; // Carrega o conteúdo no Quill
                 cancelEditBtn.classList.remove('hidden');
                 window.scrollTo({ top: articleForm.offsetTop, behavior: 'smooth' });
+
             } catch (error) {
                 console.error("Erro ao buscar artigo:", error);
-                showStatusMessage('Erro ao carregar artigo para edição.', true);
+                showStatusMessage(error.message || 'Erro ao carregar artigo para edição.', true);
             }
         }
 
@@ -826,25 +897,24 @@
         async function deleteArticle(id, title) {
             if (confirm(`Tem certeza que quer deletar o artigo "${title}"?`)) {
                 try {
-                    // **CORREÇÃO: Caminho relativo (sem / inicial)**
                     await fetchWithToken('api/admin/deletarArtigo', {
                         method: 'POST',
-                        body: JSON.stringify({ id })
+                        body: JSON.stringify({ id: id })
                     });
                     showStatusMessage('Artigo deletado.');
-                    resetArticleForm();
+                    resetArticleForm(); // Caso estivesse editando
                 } catch (error) {
                     console.error("Erro ao deletar artigo: ", error);
-                    showStatusMessage(`Erro ao deletar artigo: ${error.message}`, true);
+                    showStatusMessage(error.message || 'Erro ao deletar artigo.', true);
                 }
             }
         }
 
         // Limpar formulário de Artigo
         function resetArticleForm() {
-            articleForm.reset();
+            articleForm.reset(); // Isso limpa todos os inputs, incluindo a data
             articleIdInput.value = '';
-            quill.root.innerHTML = '';
+            quill.root.innerHTML = ''; // Limpa o editor
             articleFormTitle.textContent = 'Adicionar Novo Artigo';
             cancelEditBtn.classList.add('hidden');
         }
@@ -864,7 +934,7 @@
             }, 3000);
         }
 
-        // Criar slug
+        // Criar slug (para URLs amigáveis, se necessário no futuro)
         function slugify(text) {
             return text.toString().toLowerCase().trim()
                 .normalize('NFD') // remove acentos
