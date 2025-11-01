@@ -35,14 +35,19 @@
             outline: 2px solid #2563eb;
             outline-offset: 2px;
         }
+
+        /* CORREÇÃO PISCADA (FOUC): Esconde o conteúdo até o JS decidir o que mostrar */
+        .fouc-hidden {
+            display: none;
+        }
     </style>
 </head>
 
 <body class="bg-slate-100">
 
-    <!-- Seção de Login (Visível por padrão) -->
+    <!-- Seção de Login (Começa oculta para evitar "piscada") -->
     <section id="login-section"
-        class="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+        class="fouc-hidden min-h-screen items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
         <div class="max-w-md w-full space-y-8 bg-white p-10 rounded-2xl shadow-xl">
             <div>
                 <svg class="mx-auto h-12 w-auto text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none"
@@ -112,8 +117,8 @@
         </div>
     </section>
 
-    <!-- Seção de Administração (Oculta por padrão) -->
-    <section id="admin-dashboard" class="hidden">
+    <!-- Seção de Administração (Começa oculta para evitar "piscada") -->
+    <section id="admin-dashboard" class="fouc-hidden">
 
         <!-- Header do Admin -->
         <header class="bg-white shadow-md sticky top-0 z-40">
@@ -193,12 +198,17 @@
                                     class="w-full p-3 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
                             </div>
 
-                            <!-- Link -->
+                            <!-- Links Múltiplos -->
                             <div>
-                                <label for="article-link" class="block text-sm font-medium text-slate-700 mb-1">Link de
-                                    Referência (Opcional)</label>
-                                <input type="url" id="article-link" placeholder="https://exemplo.com/referencia"
-                                    class="w-full p-3 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                <label class="block text-sm font-medium text-slate-700 mb-1">Links de Referência (Max
+                                    5)</label>
+                                <div id="links-container" class="space-y-2">
+                                    <!-- Inputs de link serão adicionados aqui pelo JS -->
+                                </div>
+                                <button type="button" id="add-link-btn"
+                                    class="mt-2 text-sm font-medium text-blue-600 hover:text-blue-800 transition-colors focus-ring-visible rounded-md p-1">
+                                    + Adicionar outro link
+                                </button>
                             </div>
 
                             <!-- Data de Publicação -->
@@ -299,6 +309,12 @@
                                         <option value="indigo">Índigo (Indigo)</option>
                                         <option value="purple">Roxo (Purple)</option>
                                         <option value="pink">Rosa (Pink)</option>
+                                        <!-- NOVAS CORES -->
+                                        <option value="cyan">Ciano (Cyan)</option>
+                                        <option value="teal">Verde-azulado (Teal)</option>
+                                        <option value="lime">Lima (Lime)</option>
+                                        <option value="fuchsia">Fúcsia (Fuchsia)</option>
+                                        <option value="sky">Céu (Sky)</option>
                                     </select>
                                 </div>
                                 <!-- Ícone -->
@@ -312,7 +328,7 @@
                                         <option value="gavel">Conformidade (gavel)</option>
                                         <option value="alert">Alerta (alert)</option>
                                         <option value="info">Info (info)</option>
-                                        <option value="users">Usuários (users)</option>
+                                        <option value="user">Pessoa (user)</option> <!-- ÍCONE ATUALIZADO -->
                                         <option value="list">Lista (list)</option>
                                         <option value="file">Arquivo (file)</option>
                                         <option value="chart-bar">Gráfico (chart-bar)</option>
@@ -364,9 +380,9 @@
             signOut,
             getIdToken
         } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        // REMOVEMOS O 'getFirestore' e outros - eles agora rodam no servidor
+        // REMOVEMOS O 'getFirestore' - ele agora roda no servidor
 
-        // Configuração do Firebase (Frontend)
+        // Configuração do Firebase
         const firebaseConfig = {
             apiKey: "AIzaSyChhpPXpLTFGQfvJH55D_uQ2FG5PdKykcQ",
             authDomain: "minha-base-conhecimento.firebaseapp.com",
@@ -376,7 +392,7 @@
             appId: "1:586899421039:web:99be661136602118175a9a"
         };
 
-        // Inicializar Firebase (Apenas Auth)
+        // Inicializar Firebase
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const googleProvider = new GoogleAuthProvider();
@@ -403,7 +419,10 @@
         const articleTitle = document.getElementById('article-title');
         const articleCategory = document.getElementById('article-category');
         const articleSummary = document.getElementById('article-summary');
-        const articleLink = document.getElementById('article-link');
+        // LINKS MÚLTIPLOS
+        const linksContainer = document.getElementById('links-container');
+        const addLinkBtn = document.getElementById('add-link-btn');
+        // const articleLink = document.getElementById('article-link'); // Removido
         const articlePublishedAt = document.getElementById('article-published-at');
         const articleTags = document.getElementById('article-tags');
         const articleIdInput = document.getElementById('article-id');
@@ -444,7 +463,7 @@
         }
 
         // --- FUNÇÃO WRAPPER DE FETCH (COM TOKEN) ---
-        // *** FUNÇÃO CORRIGIDA para o 'body stream already read' ***
+        // (Usa caminhos relativos e trata erros)
         async function fetchWithToken(apiUrl, options = {}) {
             if (!auth.currentUser) {
                 showStatusMessage('Usuário não autenticado. Faça login novamente.', true);
@@ -460,59 +479,46 @@
                     ...options.headers,
                     'Authorization': `Bearer ${token}`
                 };
-
-                // Garante que o método exista (default GET)
                 options.method = options.method || 'GET';
-
-                // Adiciona 'Content-Type' se houver body
                 if (options.body) {
                     options.headers['Content-Type'] = 'application/json';
                 }
 
-                // --- CORREÇÃO DE CAMINHO ---
-                // Remove a barra inicial para usar caminho relativo
+                // Usa caminho relativo (remove / inicial)
                 const relativeApiUrl = apiUrl.startsWith('/') ? apiUrl.substring(1) : apiUrl;
 
                 const response = await fetch(relativeApiUrl, options);
 
-                // Lê o corpo da resposta UMA VEZ
                 const responseText = await response.text();
 
-                // Se a resposta NÃO ESTÁ OK (erro 4xx, 5xx)
                 if (!response.ok) {
                     let errorMessage = `Erro ${response.status}`;
-
-                    // Tenta parsear o texto como JSON (para nossos erros de API)
                     if (responseText) {
                         try {
                             const errorData = JSON.parse(responseText);
                             if (errorData.error) {
-                                errorMessage = errorData.error; // Mensagem de erro da nossa API
+                                errorMessage = errorData.error;
                             }
                         } catch (e) {
-                            // Não é JSON, provavelmente é um 404 (página HTML "Not Found")
                             console.error("Erro HTML/Texto (não-JSON) recebido:", responseText.substring(0, 100) + '...');
                             errorMessage = `Erro ${response.status}: A API não foi encontrada ou retornou um erro inesperado.`;
                         }
                     }
-
                     console.error(`Erro na API (${response.status}):`, errorMessage);
-                    throw new Error(errorMessage); // Lança o erro
+                    throw new Error(errorMessage);
                 }
 
-                // Se a resposta ESTÁ OK (2xx)
                 if (!responseText) {
-                    return null; // Retorna nulo se a resposta OK não tiver corpo (ex: Deletar)
+                    return null; // Resposta OK sem corpo (ex: Deletar)
                 }
                 try {
-                    return JSON.parse(responseText); // Tenta parsear como JSON
+                    return JSON.parse(responseText);
                 } catch (e) {
                     console.warn("Resposta da API não era JSON:", responseText);
-                    return responseText; // Retorna como texto puro se não for JSON
+                    return responseText;
                 }
 
             } catch (error) {
-                // Captura erros de rede ou da própria função getIdToken
                 console.error("Erro fatal no fetchWithToken:", error);
                 showStatusMessage(error.message || 'Erro de rede ou autenticação.', true);
                 throw error;
@@ -520,17 +526,17 @@
         }
 
 
-        // --- AUTENTICAÇÃO (COM PROTEÇÃO DE ROTA) ---
-
+        // --- AUTENTICAÇÃO (COM PROTEÇÃO DE ROTA E CORREÇÃO DE "PISCADA") ---
         onAuthStateChanged(auth, (user) => {
             if (user) {
                 // Checagem de permissão
                 if (adminEmails.includes(user.email)) {
                     // É Admin: Mostra o painel
-                    loginSection.classList.add('hidden');
-                    adminDashboard.classList.remove('hidden');
+                    adminDashboard.style.display = 'block'; // Mostra o painel
+                    loginSection.style.display = 'none'; // Esconde o login
                     userEmailSpan.textContent = user.email;
                     initializeQuill(); // Inicializa o editor SÓ quando logado
+                    resetLinksContainer(); // Adiciona o primeiro campo de link
 
                     // Carrega os dados (categorias e artigos)
                     loadCategories();
@@ -542,8 +548,8 @@
                 }
             } else {
                 // Usuário está deslogado
-                loginSection.classList.remove('hidden');
-                adminDashboard.classList.add('hidden');
+                loginSection.style.display = 'flex'; // Mostra o login
+                adminDashboard.style.display = 'none'; // Esconde o painel
                 userEmailSpan.textContent = '';
                 if (quill) {
                     quill = null; // Destrói a instância se deslogar
@@ -579,6 +585,7 @@
                 })
                 .catch((error) => {
                     console.error("Erro ao logar com Google:", error);
+                    // (O tratamento de erro já estava aqui)
                     if (error.code === 'auth/popup-closed-by-user') {
                         loginStatus.textContent = 'Popup de login fechado.';
                     } else if (error.code === 'auth/unauthorized-domain') {
@@ -592,8 +599,7 @@
 
         // Logout
         logoutBtn.addEventListener('click', () => {
-            // Usando um modal customizado em vez de confirm()
-            if (window.confirm('Tem certeza que deseja sair?')) { // TODO: Substituir por um modal customizado
+            if (window.confirm('Tem certeza que deseja sair?')) {
                 signOut(auth).catch((error) => {
                     console.error("Erro ao sair:", error);
                     showStatusMessage('Erro ao tentar sair.', true);
@@ -618,19 +624,18 @@
             };
 
             try {
-                // Adiciona o ID aos dados se estiver editando
                 if (id) {
                     categoryData.id = id;
                 }
 
-                // Chama a API serverless
                 await fetchWithToken('api/admin/salvarCategoria', {
                     method: 'POST',
                     body: JSON.stringify(categoryData)
                 });
 
-                showStatusMessage(id ? 'Categoria atualizada com sucesso!' : 'Categoria salva com sucesso!');
+                showStatusMessage(id ? 'Categoria atualizada!' : 'Categoria salva!');
                 resetCategoryForm();
+                loadCategories(); // REFRESH AUTOMÁTICO
             } catch (error) {
                 console.error("Erro ao salvar categoria: ", error);
                 showStatusMessage(error.message || 'Erro ao salvar categoria.', true);
@@ -639,6 +644,7 @@
 
         // Carregar Categorias
         async function loadCategories() {
+            categoriesLoadingMsg.style.display = 'block'; // Mostra o loader
             try {
                 const categories = await fetchWithToken('api/getCategorias');
 
@@ -647,7 +653,6 @@
                 articleCategory.innerHTML = '<option value="">-- Selecione uma categoria --</option>';
                 allCategoriesMap.clear();
 
-                // Ordena por nome
                 categories.sort((a, b) => a.name.localeCompare(b.name));
 
                 categories.forEach(category => {
@@ -726,7 +731,8 @@
                         body: JSON.stringify({ id: id })
                     });
                     showStatusMessage('Categoria deletada.');
-                    resetCategoryForm(); // Caso estivesse editando
+                    resetCategoryForm();
+                    loadCategories(); // REFRESH AUTOMÁTICO
                 } catch (error) {
                     console.error("Erro ao deletar categoria: ", error);
                     showStatusMessage(error.message || 'Erro ao deletar categoria.', true);
@@ -752,34 +758,34 @@
             const id = articleIdInput.value;
             const publishedDate = articlePublishedAt.value;
 
-            // Processa as tags: string -> array
+            // Processa as tags
             const tagsArray = articleTags.value
                 .split(',')
                 .map(tag => tag.trim())
                 .filter(tag => tag.length > 0);
 
+            // Processa os links múltiplos
+            const linksArray = Array.from(linksContainer.querySelectorAll('input'))
+                .map(input => input.value.trim())
+                .filter(link => link.length > 0);
+
             const articleData = {
                 title: articleTitle.value,
                 categoryId: articleCategory.value,
                 summary: articleSummary.value,
-                link: articleLink.value || '',
+                links: linksArray, // Array de links
                 tags: tagsArray,
-                content: quill.root.innerHTML, // Pega o HTML do Quill
+                content: quill.root.innerHTML,
                 slug: slugify(articleTitle.value),
-                // O 'publishedAt' é tratado abaixo
             };
 
-            // Adiciona ID se estiver editando
             if (id) {
                 articleData.id = id;
             }
 
-            // Lógica da Data de Publicação (Envia como string, o servidor trata)
             if (publishedDate) {
-                articleData.publishedAt = publishedDate; // Envia 'YYYY-MM-DD'
+                articleData.publishedAt = publishedDate;
             }
-            // Se for novo e vazio, o servidor atribui serverTimestamp()
-            // Se for edição e vazio, o servidor mantém a data antiga
 
             try {
                 await fetchWithToken('api/admin/salvarArtigo', {
@@ -787,8 +793,9 @@
                     body: JSON.stringify(articleData)
                 });
 
-                showStatusMessage(id ? 'Artigo atualizado com sucesso!' : 'Artigo salvo com sucesso!');
+                showStatusMessage(id ? 'Artigo atualizado!' : 'Artigo salvo!');
                 resetArticleForm();
+                loadArticles(); // REFRESH AUTOMÁTICO
             } catch (error) {
                 console.error("Erro ao salvar artigo: ", error);
                 showStatusMessage(error.message || 'Erro ao salvar artigo.', true);
@@ -797,20 +804,18 @@
 
         // Carregar Artigos (para o Admin)
         async function loadArticles() {
+            articlesLoadingMsg.style.display = 'block'; // Mostra o loader
             try {
-                // Pedimos mais artigos para o admin, sem paginação por enquanto
                 const articles = await fetchWithToken('api/getArtigos?limit=1000');
 
                 articlesLoadingMsg.classList.add('hidden');
                 articlesListAdmin.innerHTML = '';
 
-                // articles já vem ordenado da API
+                // A API já deve retornar os artigos ordenados
                 articles.forEach(article => {
                     const category = allCategoriesMap.get(article.categoryId);
                     const categoryName = category ? category.name : 'Sem Categoria';
 
-                    // Exibe 'publishedAt' 
-                    // O servidor agora envia um objeto { seconds, nanoseconds }
                     const date = article.publishedAt
                         ? new Date(article.publishedAt.seconds * 1000).toLocaleDateString()
                         : 'Salvando...';
@@ -864,7 +869,6 @@
         // Preencher formulário de Artigo para edição
         async function populateArticleForm(id) {
             try {
-                // Usamos a API 'getArtigoDetalhe'
                 const article = await fetchWithToken(`api/getArtigoDetalhe?id=${id}`);
 
                 articleFormTitle.textContent = 'Editar Artigo';
@@ -872,18 +876,29 @@
                 articleTitle.value = article.title;
                 articleCategory.value = article.categoryId;
                 articleSummary.value = article.summary;
-                articleLink.value = article.link || '';
                 articleTags.value = (article.tags || []).join(', ');
 
                 if (article.publishedAt) {
-                    // O servidor agora envia um objeto { seconds, nanoseconds }
                     const date = new Date(article.publishedAt.seconds * 1000);
                     articlePublishedAt.value = date.toISOString().split('T')[0];
                 } else {
                     articlePublishedAt.value = '';
                 }
 
-                quill.root.innerHTML = article.content; // Carrega o conteúdo no Quill
+                // Popula os links múltiplos
+                resetLinksContainer(); // Limpa e adiciona o primeiro
+                const linkInputs = linksContainer.querySelectorAll('input');
+                const links = article.links || [];
+
+                links.forEach((link, index) => {
+                    if (index === 0) {
+                        linkInputs[0].value = link; // Preenche o primeiro
+                    } else {
+                        addLinkInput(link); // Adiciona novos campos para os links restantes
+                    }
+                });
+
+                quill.root.innerHTML = article.content;
                 cancelEditBtn.classList.remove('hidden');
                 window.scrollTo({ top: articleForm.offsetTop, behavior: 'smooth' });
 
@@ -902,7 +917,8 @@
                         body: JSON.stringify({ id: id })
                     });
                     showStatusMessage('Artigo deletado.');
-                    resetArticleForm(); // Caso estivesse editando
+                    resetArticleForm();
+                    loadArticles(); // REFRESH AUTOMÁTICO
                 } catch (error) {
                     console.error("Erro ao deletar artigo: ", error);
                     showStatusMessage(error.message || 'Erro ao deletar artigo.', true);
@@ -912,29 +928,88 @@
 
         // Limpar formulário de Artigo
         function resetArticleForm() {
-            articleForm.reset(); // Isso limpa todos os inputs, incluindo a data
+            articleForm.reset();
             articleIdInput.value = '';
-            quill.root.innerHTML = ''; // Limpa o editor
+            quill.root.innerHTML = '';
             articleFormTitle.textContent = 'Adicionar Novo Artigo';
             cancelEditBtn.classList.add('hidden');
+            resetLinksContainer(); // Limpa e adiciona o primeiro campo de link
         }
         cancelEditBtn.addEventListener('click', resetArticleForm);
+
+
+        // --- GERENCIAMENTO DE LINKS MÚLTIPLOS ---
+
+        function createLinkInput(value = '') {
+            const inputCount = linksContainer.querySelectorAll('input').length;
+            if (inputCount >= 5) return; // Limite de 5 links
+
+            const div = document.createElement('div');
+            div.className = 'flex items-center gap-2';
+
+            const input = document.createElement('input');
+            input.type = 'url';
+            input.placeholder = `https://exemplo.com/link-${inputCount + 1}`;
+            input.className = 'w-full p-3 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 link-input';
+            input.value = value;
+
+            const removeBtn = document.createElement('button');
+            removeBtn.type = 'button';
+            removeBtn.className = 'text-red-500 hover:text-red-700 p-1 rounded-full focus-ring-visible';
+            removeBtn.ariaLabel = 'Remover link';
+            removeBtn.innerHTML = '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>';
+
+            removeBtn.addEventListener('click', () => {
+                div.remove();
+                updateAddLinkButton();
+            });
+
+            div.appendChild(input);
+            div.appendChild(removeBtn);
+            linksContainer.appendChild(div);
+
+            updateAddLinkButton();
+        }
+
+        function addLinkInput(value = '') {
+            createLinkInput(value);
+        }
+
+        function updateAddLinkButton() {
+            const inputCount = linksContainer.querySelectorAll('input').length;
+            if (inputCount >= 5) {
+                addLinkBtn.classList.add('hidden');
+            } else {
+                addLinkBtn.classList.remove('hidden');
+            }
+        }
+
+        function resetLinksContainer() {
+            linksContainer.innerHTML = '';
+            addLinkInput(); // Adiciona o primeiro campo vazio
+        }
+
+        addLinkBtn.addEventListener('click', () => addLinkInput());
 
 
         // --- FUNÇÕES UTILITÁRIAS ---
 
         // Mostrar mensagem de status (toast)
+        let statusTimeout; // Variável para guardar o timeout
         function showStatusMessage(message, isError = false) {
+            clearTimeout(statusTimeout); // Limpa qualquer timeout anterior
+
             adminStatus.textContent = message;
             adminStatus.classList.remove('hidden', 'bg-green-500', 'bg-red-500');
             adminStatus.classList.add(isError ? 'bg-red-500' : 'bg-green-500');
 
-            setTimeout(() => {
+            // Esconde a mensagem depois de 3 segundos
+            statusTimeout = setTimeout(() => {
                 adminStatus.classList.add('hidden');
             }, 3000);
         }
 
-        // Criar slug (para URLs amigáveis, se necessário no futuro)
+        // Criar slug
         function slugify(text) {
             return text.toString().toLowerCase().trim()
                 .normalize('NFD') // remove acentos
