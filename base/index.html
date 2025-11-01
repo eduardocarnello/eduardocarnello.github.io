@@ -280,6 +280,8 @@
                             <option value="title">Apenas no Título</option>
                             <option value="summary">Apenas no Resumo</option>
                             <option value="tags">Apenas nas Tags</option>
+                            <!-- NOVA OPÇÃO DE BUSCA -->
+                            <option value="content">Apenas no Conteúdo</option>
                         </select>
                     </div>
                 </div>
@@ -318,7 +320,7 @@
 
                 <!-- Grid de Artigos (Principal) -->
                 <section class="w-full lg:w-3/4 xl:w-4/5">
-                    <h2 class="text-2xl font-bold text-slate-800 mb-6">
+                    <h2 id="articles-title" class="text-2xl font-bold text-slate-800 mb-6">
                         Artigos Recentes
                     </h2>
 
@@ -358,14 +360,15 @@
         class="fixed inset-0 bg-black bg-opacity-75 z-50 hidden transition-opacity duration-300 ease-out"
         aria-hidden="true"></div>
 
-    <div id="modal-container" class="fixed inset-0 z-50 hidden" role="dialog" aria-modal="true">
+    <!-- MUDANÇA: Modal agora é tela cheia (removido max-w-3xl, rounded, etc.) -->
+    <div id="modal-container" class="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-0 hidden"
+        role="dialog" aria-modal="true">
 
-        <!-- Painel do Modal (VISUAL REVERTIDO PARA JANELA) -->
         <div id="modal-panel"
-            class="bg-white  w-full h-full flex flex-col transform transition-all duration-300 ease-out scale-95 opacity-0">
+            class="bg-white rounded-2xl shadow-xl w-full max-w-3xl max-h-[90vh] flex flex-col transform transition-all duration-300 ease-out scale-95 opacity-0">
             <!-- Cabeçalho do Modal -->
             <header
-                class="sticky top-0 bg-white p-4 sm:p-3 border-b border-slate-200  flex justify-between items-center">
+                class="sticky top-0 bg-white p-4 sm:p-6 border-b border-slate-200 rounded-t-2xl flex justify-between items-center">
                 <h3 id="modal-title" class="text-xl sm:text-2xl font-bold text-slate-800 break-words pr-4">
                     Carregando Título...
                 </h3>
@@ -380,7 +383,7 @@
             </header>
 
             <!-- Conteúdo do Modal (com scroll) -->
-            <div id="modal-body" class="overflow-y-auto p-3 space-y-4">
+            <div id="modal-body" class="overflow-y-auto p-6 space-y-4">
                 <!-- Carregador do Modal -->
                 <div id="modal-loading-spinner" class="text-center py-10">
                     <svg class="mx-auto h-8 w-8 text-slate-400 animate-spin" xmlns="http://www.w3.org/2000/svg"
@@ -496,6 +499,7 @@
         // Busca
         const searchInput = document.getElementById('search-input');
         const searchField = document.getElementById('search-field');
+        const articlesTitle = document.getElementById('articles-title'); // Título da seção de artigos
         // Categorias
         const categoryGrid = document.getElementById('category-grid');
         const categoriesLoading = document.getElementById('categories-loading');
@@ -522,51 +526,66 @@
         // MÚLTIPLOS LINKS
         const modalLinksContainer = document.getElementById('modal-links-container');
         const modalLinksList = document.getElementById('modal-links-list');
-        // const modalLinkContainer = document.getElementById('modal-link-container'); // Removido
-        // const modalLink = document.getElementById('modal-link'); // Removido
-        // const modalLinkText = document.getElementById('modal-link-text'); // Removido
+
 
         // --- ESTADO GLOBAL ---
         let allCategories = []; // Cache de categorias
-        let allArticles = []; // Cache de artigos
+        let currentArticles = []; // Artigos visíveis no momento (da paginação ou busca)
         let currentUser = null; // Usuário logado
         let currentCategory = 'TODOS'; // Categoria filtrada
         let currentArticleCount = 0; // Contagem para paginação
         const ARTICLES_PER_PAGE = 10;
         let isLoadingMore = false; // Trava para evitar cliques duplos
+        let isSearchActive = false; // Trava para saber se estamos em modo "busca"
 
         // --- NOVA FUNÇÃO: fetchWithToken ---
         async function fetchWithToken(url, options = {}) {
             if (!currentUser) {
                 throw new Error("Usuário não autenticado.");
             }
-            const token = await getIdToken(currentUser);
+            // Garante um token novo se o antigo estiver perto de expirar
+            const token = await getIdToken(currentUser, /* forceRefresh */ true);
             const headers = {
                 ...options.headers,
                 'Authorization': `Bearer ${token}`,
                 'Content-Type': 'application/json'
             };
-            const response = await fetch(url, { ...options, headers });
+
+            // Usa caminho relativo (remove / inicial)
+            const relativeUrl = url.startsWith('/') ? url.substring(1) : url;
+
+            const response = await fetch(relativeUrl, { ...options, headers });
+
             if (!response.ok) {
                 let errorData;
+                let errorText = await response.text();
                 try {
-                    errorData = await response.json();
+                    errorData = JSON.parse(errorText);
                 } catch (e) {
-                    const errorText = await response.text();
-                    console.error("Erro HTML/Texto (não-JSON) recebido:", errorText);
+                    console.error("Erro HTML/Texto (não-JSON) recebido:", errorText.substring(0, 100) + '...');
                     errorData = { error: `Erro ${response.status}: ${response.statusText}` };
                 }
+
                 console.error(`Erro na API (${response.status}):`, errorData.error);
+
                 if (response.status === 401) {
                     alert('Sua sessão expirou. Por favor, faça login novamente.');
                     await signOut(auth);
                 }
                 throw new Error(errorData.error || 'Erro na requisição');
             }
-            if (response.status === 204) {
+
+            if (response.status === 204) { // No Content
                 return null;
             }
-            return response.json();
+
+            // Tenta retornar JSON, se falhar, retorna o texto (que pode ser vazio)
+            try {
+                const responseJson = JSON.parse(errorText); // errorText é o responseText
+                return responseJson;
+            } catch (e) {
+                return errorText; // Retorna texto vazio se o corpo estava vazio
+            }
         }
 
 
@@ -604,7 +623,7 @@
                 })
                 .catch((error) => {
                     console.error("Erro de login:", error.code, error.message);
-                    if (error.code === 'auth/invalid-credential') {
+                    if (error.code === 'auth/invalid-credential' || error.code === 'auth/wrong-password' || error.code === 'auth/user-not-found') {
                         loginStatus.textContent = 'E-mail ou senha inválidos.';
                     } else {
                         loginStatus.textContent = 'Erro ao tentar fazer login.';
@@ -634,14 +653,24 @@
         // Limpa o conteúdo ao deslogar
         function resetContent() {
             allCategories = [];
-            allArticles = [];
+            currentArticles = [];
             currentCategory = 'TODOS';
             currentArticleCount = 0;
+            isSearchActive = false;
+            // Limpa categorias (exceto "Todos")
             categoryGrid.querySelectorAll('.category-card:not([data-category="TODOS"])').forEach(el => el.remove());
+            // Reseta o botão "Todos" para o estado ativo
+            const todosBtn = categoryGrid.querySelector('.category-card[data-category="TODOS"]');
+            if (todosBtn) {
+                todosBtn.classList.add('bg-blue-600', 'text-white', 'shadow-lg');
+            }
+
             articlesGrid.innerHTML = '';
             articlesStatus.textContent = 'Você precisa estar logado para ver o conteúdo.';
             articlesStatus.classList.remove('hidden');
             loadMoreContainer.classList.add('hidden');
+            searchInput.value = '';
+            searchField.value = 'all';
         }
 
         // --- CARREGAMENTO DE DADOS (VIA /api) ---
@@ -651,9 +680,8 @@
                 if (allCategories.length === 0) {
                     await loadCategories();
                 }
-                if (allArticles.length === 0) {
-                    await loadArticles(ARTICLES_PER_PAGE, true);
-                }
+                // Agora, a busca inicial (loadArticles) é disparada pela lógica de filtro
+                await executeSearchOrFilter();
             } catch (error) {
                 console.error("Falha ao carregar dados iniciais:", error);
                 articlesStatus.textContent = `Erro ao carregar dados: ${error.message}`;
@@ -677,43 +705,29 @@
             }
         }
 
-        // 2. Carregar Artigos (com paginação)
+        // 2. Carregar Artigos (Paginação)
         loadMoreBtn.addEventListener('click', () => {
-            if (!isLoadingMore) {
-                loadArticles(currentArticleCount + ARTICLES_PER_PAGE);
+            if (!isLoadingMore && !isSearchActive) { // Só carrega mais se NÃO for uma busca
+                loadMoreArticles();
             }
         });
 
-        async function loadArticles(limit, reset = false) {
+        async function loadMoreArticles() {
             if (isLoadingMore) return;
             isLoadingMore = true;
 
-            if (reset) {
-                allArticles = [];
-                articlesGrid.innerHTML = '';
-                currentArticleCount = 0;
-            }
+            const limit = currentArticleCount + ARTICLES_PER_PAGE;
 
-            articlesStatus.classList.remove('hidden');
-            articlesStatus.innerHTML = `
-                <svg class="mx-auto h-12 w-12 text-slate-400 animate-spin" xmlns="http://www.w3.org/2000/svg"
-                    fill="none" viewBox="0 0 24 24">
-                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4">
-                    </circle>
-                    <path class="opacity-75" fill="currentColor"
-                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
-                    </path>
-                </svg>
-                <p class="mt-4 text-lg font-medium">Carregando artigos...</p>`;
             loadMoreBtn.textContent = 'Carregando...';
             loadMoreBtn.disabled = true;
 
             try {
-                const articles = await fetchWithToken(`api/getArtigos?limit=${limit}`);
+                // A API de getArtigos agora filtra por categoria no servidor
+                const url = `api/getArtigos?limit=${limit}&category=${currentCategory}`;
+                const articles = await fetchWithToken(url);
 
-                const newArticles = articles.filter(a => !allArticles.some(existing => existing.id === a.id));
-                allArticles = articles;
-
+                const newArticles = articles.filter(a => !currentArticles.some(existing => existing.id === a.id));
+                currentArticles = articles; // O cache agora é a lista completa da API
                 currentArticleCount = articles.length;
 
                 if (newArticles.length === 0 || articles.length < limit) {
@@ -722,18 +736,12 @@
                     loadMoreContainer.classList.remove('hidden');
                 }
 
-                renderArticles(newArticles);
-
-                if (allArticles.length === 0) {
-                    articlesStatus.textContent = 'Nenhum artigo encontrado.';
-                    articlesStatus.classList.remove('hidden');
-                } else {
-                    articlesStatus.classList.add('hidden');
-                }
+                renderArticles(newArticles, false); // false = não limpar o grid
 
             } catch (error) {
-                console.error("Erro ao buscar artigos:", error);
+                console.error("Erro ao buscar mais artigos:", error);
                 articlesStatus.textContent = `Erro ao carregar artigos: ${error.message}`;
+                articlesStatus.classList.remove('hidden');
             } finally {
                 isLoadingMore = false;
                 loadMoreBtn.textContent = 'Carregar Mais 10 Artigos';
@@ -746,11 +754,10 @@
 
         // Renderizar Categorias
         function renderCategories(categories) {
-            // Limpa o grid (exceto o botão "Todos")
             categoryGrid.querySelectorAll('.category-card:not([data-category="TODOS"])').forEach(el => el.remove());
 
             categories.forEach(category => {
-                const { name, color, icon, slug } = category;
+                const { name, color, icon } = category;
                 const colors = getCategoryColors(color);
 
                 const btn = document.createElement('button');
@@ -768,11 +775,17 @@
         }
 
         // Renderizar Artigos
-        function renderArticles(articlesToRender) {
-            if (articlesToRender.length === 0 && allArticles.length === 0) {
+        function renderArticles(articlesToRender, clearGrid = false) {
+            if (clearGrid) {
+                articlesGrid.innerHTML = '';
+            }
+
+            if (articlesToRender.length === 0 && clearGrid) {
                 articlesStatus.textContent = 'Nenhum artigo encontrado para esta categoria ou busca.';
                 articlesStatus.classList.remove('hidden');
                 return;
+            } else {
+                articlesStatus.classList.add('hidden');
             }
 
             const fragment = document.createDocumentFragment();
@@ -782,20 +795,15 @@
                 const category = allCategories.find(c => c.id === categoryId);
                 const colors = getCategoryColors(category ? category.color : 'slate');
                 const categoryName = category ? category.name : 'Sem Categoria';
-                const categoryTextColor = colors.text;
-                const categoryBorderColor = colors.border;
 
                 const card = document.createElement('div');
-                card.className = `article-card bg-white rounded-2xl shadow-lg overflow-hidden transition-transform transform hover:-translate-y-1 hover:shadow-xl cursor-pointer flex flex-col ${categoryBorderColor} border-t-4`; // Borda aqui
+                // Adiciona a borda colorida
+                card.className = `article-card bg-white rounded-2xl shadow-lg overflow-hidden transition-transform transform hover:-translate-y-1 hover:shadow-xl cursor-pointer flex flex-col ${colors.border} border-t-4`;
                 card.dataset.id = id;
-                card.dataset.title = title.toLowerCase();
-                card.dataset.summary = summary.toLowerCase();
-                card.dataset.category = categoryId;
-                card.dataset.tags = (article.tags || []).join(' ').toLowerCase();
 
                 card.innerHTML = `
                     <div class="p-6 flex-grow">
-                        <span class="text-sm font-semibold ${categoryTextColor}">${categoryName.toUpperCase()}</span>
+                        <span class="text-sm font-semibold ${colors.text}">${categoryName.toUpperCase()}</span>
                         <h3 class="mt-2 text-xl font-bold text-slate-800">${title}</h3>
                         <p class="mt-3 text-base text-slate-600 line-clamp-3">${summary}</p>
                     </div>
@@ -806,83 +814,84 @@
                 fragment.appendChild(card);
             });
             articlesGrid.appendChild(fragment);
-            updateFilter(); // Re-aplica o filtro
         }
 
-        // --- FILTRAGEM E BUSCA ---
-        searchInput.addEventListener('input', () => updateFilter());
-        searchField.addEventListener('change', () => updateFilter());
+        // --- LÓGICA DE BUSCA (NOVA ARQUITETURA) ---
+
+        let searchTimeout;
+        searchInput.addEventListener('input', () => {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(() => {
+                executeSearchOrFilter();
+            }, 300); // Espera 300ms após o usuário parar de digitar
+        });
+
+        searchField.addEventListener('change', executeSearchOrFilter);
+
         categoryGrid.addEventListener('click', (e) => {
             const card = e.target.closest('.category-card');
             if (card) {
                 currentCategory = card.dataset.category;
+
+                // Atualiza o visual dos botões de categoria
                 document.querySelectorAll('.category-card').forEach(btn => {
                     btn.classList.remove('bg-blue-600', 'text-white', 'shadow-lg');
                     const category = allCategories.find(c => c.id === btn.dataset.category);
                     const colors = getCategoryColors(category ? category.color : 'slate');
-                    btn.classList.add(colors.bgHover, colors.text);
+                    if (btn.dataset.category !== 'TODOS') {
+                        btn.classList.add(colors.bgHover, colors.text);
+                    }
                 });
                 card.classList.add('bg-blue-600', 'text-white', 'shadow-lg');
                 const activeColors = getCategoryColors(allCategories.find(c => c.id === card.dataset.category)?.color);
-                card.classList.remove(activeColors.bgHover, activeColors.text);
+                if (card.dataset.category !== 'TODOS') {
+                    card.classList.remove(activeColors.bgHover, activeColors.text);
+                }
 
-                updateFilter();
+                // Executa a busca/filtro
+                executeSearchOrFilter();
             }
         });
 
-        function updateFilter() {
-            const rawSearchText = searchInput.value.toLowerCase().trim();
+        async function executeSearchOrFilter() {
+            const searchTerm = searchInput.value.trim();
             const searchScope = searchField.value;
 
-            const exactMatches = [...rawSearchText.matchAll(/"([^"]+)"/g)].map(m => m[1]);
-            const normalSearchText = rawSearchText.replace(/"[^"]+"/g, '').trim();
-            const normalSearchTerms = normalSearchText.split(' ').filter(t => t.length > 0);
+            // Mostra o spinner de "Carregando"
+            articlesGrid.innerHTML = '';
+            articlesStatus.classList.remove('hidden');
+            articlesStatus.innerHTML = `
+                <svg class="mx-auto h-12 w-12 text-slate-400 animate-spin" ...>...</svg>
+                <p class="mt-4 text-lg font-medium">Carregando artigos...</p>`;
 
-            let hasVisibleArticles = false;
+            // Se não houver termo de busca, voltamos à paginação normal
+            if (searchTerm === '') {
+                isSearchActive = false;
+                articlesTitle.textContent = 'Artigos Recentes';
+                currentArticles = []; // Limpa o cache
+                currentArticleCount = 0;
+                await loadMoreArticles(); // Carrega a primeira página
+            } else {
+                // Se houver termo de busca, chamamos a API de BUSCA
+                isSearchActive = true;
+                articlesTitle.textContent = `Resultados da Busca por: "${searchTerm}"`;
+                loadMoreContainer.classList.add('hidden'); // Esconde o "Carregar Mais"
 
-            articlesGrid.querySelectorAll('.article-card').forEach(card => {
-                const title = card.dataset.title;
-                const summary = card.dataset.summary;
-                const tags = card.dataset.tags;
+                try {
+                    // Monta a URL da API de busca
+                    const url = `api/searchArtigos?term=${encodeURIComponent(searchTerm)}&scope=${searchScope}&category=${currentCategory}`;
+                    const searchResults = await fetchWithToken(url);
 
-                const categoryMatch = (currentCategory === 'TODOS' || card.dataset.category === currentCategory);
-                if (!categoryMatch) {
-                    card.classList.add('hidden');
-                    return;
+                    currentArticles = searchResults; // Salva os resultados da busca
+                    renderArticles(searchResults, true); // Renderiza os resultados limpando o grid
+
+                } catch (error) {
+                    console.error("Erro ao executar busca:", error);
+                    articlesStatus.textContent = `Erro ao buscar: ${error.message}`;
+                    articlesStatus.classList.remove('hidden');
                 }
-
-                let textMatch = true;
-                const textToSearch = {
-                    'all': `${title} ${summary} ${tags}`,
-                    'title': title,
-                    'summary': summary,
-                    'tags': tags
-                }[searchScope];
-
-                if (normalSearchTerms.length > 0) {
-                    textMatch = normalSearchTerms.every(term => textToSearch.includes(term));
-                }
-
-                if (textMatch && exactMatches.length > 0) {
-                    textMatch = exactMatches.every(term => textToSearch.includes(term));
-                }
-
-                if (categoryMatch && textMatch) {
-                    card.classList.remove('hidden');
-                    hasVisibleArticles = true;
-                } else {
-                    card.classList.add('hidden');
-                }
-            });
-
-            if (!hasVisibleArticles && allArticles.length > 0) {
-                articlesStatus.textContent = 'Nenhum artigo encontrado para esta categoria ou busca.';
-                articlesStatus.classList.remove('hidden');
-            } else if (allArticles.length > 0) {
-                articlesStatus.classList.add('hidden');
             }
         }
-
 
         // --- MODAL (Janela do Artigo) ---
 
@@ -895,13 +904,15 @@
         });
 
         async function openModal(id) {
+            // Reseta o estado do modal
             modalTitle.textContent = 'Carregando Título...';
             modalContent.innerHTML = '';
             modalMetadata.classList.add('hidden');
-            modalLinksContainer.classList.add('hidden'); // MÚLTIPLOS LINKS
-            modalLinksList.innerHTML = ''; // MÚLTIPLOS LINKS
+            modalLinksContainer.classList.add('hidden');
+            modalLinksList.innerHTML = '';
             modalLoadingSpinner.classList.remove('hidden');
 
+            // Mostra o modal (animação)
             modalBackdrop.classList.remove('hidden');
             modalContainer.classList.remove('hidden');
             setTimeout(() => {
@@ -910,10 +921,13 @@
             }, 10);
 
             try {
+                // Chama a API de detalhe
                 const article = await fetchWithToken(`api/getArtigoDetalhe?id=${id}`);
 
+                // 1. Preenche o Título
                 modalTitle.textContent = article.title;
 
+                // 2. Preenche a Categoria
                 const category = allCategories.find(c => c.id === article.categoryId);
                 if (category) {
                     const colors = getCategoryColors(category.color);
@@ -926,6 +940,7 @@
                     modalCategoryBadge.innerHTML = '';
                 }
 
+                // 3. Preenche a Data
                 if (article.publishedAt) {
                     const date = new Date(article.publishedAt.seconds * 1000).toLocaleDateString('pt-BR', {
                         day: '2-digit', month: 'long', year: 'numeric'
@@ -935,8 +950,10 @@
                     modalDate.textContent = '--';
                 }
 
+                // 4. Preenche o Resumo
                 modalSummary.textContent = article.summary;
 
+                // 5. Preenche as Tags
                 if (article.tags && article.tags.length > 0) {
                     modalTagsList.innerHTML = article.tags.map(tag =>
                         `<span class="inline-block bg-slate-200 text-slate-700 px-2 py-0.5 rounded-md">${tag}</span>`
@@ -946,17 +963,20 @@
                     modalTagsContainer.classList.add('hidden');
                 }
 
+                // 6. Preenche o Conteúdo
                 modalContent.innerHTML = article.content;
 
-                // MÚLTIPLOS LINKS
+                // 7. Preenche os Múltiplos Links
                 if (article.links && article.links.length > 0) {
                     modalLinksList.innerHTML = ''; // Limpa
                     article.links.forEach(link => {
+                        if (!link) return; // Pula links vazios
                         const li = document.createElement('li');
                         try {
                             const url = new URL(link);
                             li.innerHTML = `<a href="${link}" target="_blank" rel="noopener noreferrer" class="text-blue-600 hover:text-blue-700 hover:underline break-all">${url.hostname}</a>`;
                         } catch (e) {
+                            // Se a URL for inválida (ex: "teste"), apenas mostra o link
                             li.innerHTML = `<a href="${link}" target="_blank" rel="noopener noreferrer" class="text-blue-600 hover:text-blue-700 hover:underline break-all">${link}</a>`;
                         }
                         modalLinksList.appendChild(li);
@@ -964,18 +984,14 @@
                     modalLinksContainer.classList.remove('hidden');
                 }
 
+                // Mostra os metadados e esconde o spinner
                 modalMetadata.classList.remove('hidden');
                 modalLoadingSpinner.classList.add('hidden');
 
             } catch (error) {
                 console.error("Erro ao abrir modal (fetchWithToken):", error);
-                if (error.message.includes('expirou') || error.message.includes('autorizado')) {
-                    modalTitle.textContent = 'Sessão Expirada';
-                    modalContent.innerHTML = '<p class="text-red-500">Sua sessão expirou. Por favor, faça login novamente.</p>';
-                } else {
-                    modalTitle.textContent = 'Erro ao Carregar';
-                    modalContent.innerHTML = '<p class="text-red-500">Não foi possível carregar o conteúdo deste artigo. Tente novamente mais tarde.</p>';
-                }
+                modalTitle.textContent = 'Erro ao Carregar';
+                modalContent.innerHTML = `<p class="text-red-500">${error.message || 'Não foi possível carregar o conteúdo deste artigo. Tente novamente mais tarde.'}</p>`;
                 modalLoadingSpinner.classList.add('hidden');
             }
         }

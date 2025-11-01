@@ -1,39 +1,54 @@
 {
-    "version": 2,
-    "functions": {
-        "api/**/*.js": {
-            "memory": 1024,
-            "maxDuration": 10
+    "version": 2,
+    "functions": {
+        "api/**/*.js": {
+            "memory": 1024,
+            "maxDuration": 10
+       
         }
+   
     },
-    "rewrites": [
-        {
-            "source": "/api/admin/deletarArtigo",
-            "destination": "/api/admin/deletarArtigo.js"
+    "rewrites": [
+        {
+            "source": "/api/admin/deletarArtigo",
+            "destination": "/api/admin/deletarArtigo.js"
+       
         },
-        {
-            "source": "/api/admin/deletarCategoria",
-            "destination": "/api/admin/deletarCategoria.js"
+        {
+            "source": "/api/admin/deletarCategoria",
+            "destination": "/api/admin/deletarCategoria.js"
+       
         },
-        {
-            "source": "/api/admin/salvarArtigo",
-            "destination": "/api/admin/salvarArtigo.js"
+        {
+            "source": "/api/admin/salvarArtigo",
+            "destination": "/api/admin/salvarArtigo.js"
+       
         },
-        {
-            "source": "/api/admin/salvarCategoria",
-            "destination": "/api/admin/salvarCategoria.js"
+        {
+            "source": "/api/admin/salvarCategoria",
+            "destination": "/api/admin/salvarCategoria.js"
+       
         },
-        {
-            "source": "/api/getArtigoDetalhe",
-            "destination": "/api/getArtigoDetalhe.js"
+        {
+            "source": "/api/getArtigoDetalhe",
+            "destination": "/api/getArtigoDetalhe.js"
+       
         },
-        {
-            "source": "/api/getArtigos",
-            "destination": "/api/getArtigos.js"
+        {
+            "source": "/api/getArtigos",
+            "destination": "/api/getArtigos.js"
+      _
         },
-        {
-            "source": "/api/getCategorias",
-            "destination": "/api/getCategorias.js"
+        {
+            "source": "/api/getCategorias",
+            "destination": "/api/getCategorias.js"
+       
+        },
+        {
+            "source": "/api/searchArtigos",
+            "destination": "/api/searchArtigos.js"
+       
         }
+   
     ]
 }
