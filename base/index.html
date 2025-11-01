@@ -556,13 +556,16 @@
 
             const response = await fetch(relativeUrl, { ...options, headers });
 
+            // CORREÇÃO: Mover a leitura do texto para o topo do escopo
+            const responseText = await response.text();
+
             if (!response.ok) {
                 let errorData;
-                let errorText = await response.text();
+                // let errorText = await response.text(); // <-- MOVIDO PARA CIMA
                 try {
-                    errorData = JSON.parse(errorText);
+                    errorData = JSON.parse(responseText); // <-- Usar responseText
                 } catch (e) {
-                    console.error("Erro HTML/Texto (não-JSON) recebido:", errorText.substring(0, 100) + '...');
+                    console.error("Erro HTML/Texto (não-JSON) recebido:", responseText.substring(0, 100) + '...');
                     errorData = { error: `Erro ${response.status}: ${response.statusText}` };
                 }
 
@@ -581,10 +584,12 @@
 
             // Tenta retornar JSON, se falhar, retorna o texto (que pode ser vazio)
             try {
-                const responseJson = JSON.parse(errorText); // errorText é o responseText
+                // CORREÇÃO: Usar responseText
+                const responseJson = JSON.parse(responseText);
                 return responseJson;
             } catch (e) {
-                return errorText; // Retorna texto vazio se o corpo estava vazio
+                // CORREÇÃO: Usar responseText
+                return responseText; // Retorna texto vazio se o corpo estava vazio
             }
         }
 
