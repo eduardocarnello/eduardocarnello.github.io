@@ -1,64 +1,85 @@
 /*
  * /api/admin/salvarArtigo
  * Cria ou atualiza um artigo.
- * Protegido por Token E por lista de Admin.
+ * Protegido para Admins.
  */
-import { db, auth, admin } from '../firebaseAdmin.js'; // Note o '../'
+import { db, auth, FieldValue } from '../firebaseAdmin.js';
 
 // Lista de e-mails de administradores
 const ADMIN_EMAILS = ['eduardocarnello@gmail.com', 'mariliajec@tjsp.jus.br'];
 
+// Função helper para validar o token de admin
+async function validateAdmin(token) {
+    if (!token) {
+        throw new Error('Nenhum token fornecido.');
+    }
+    const decodedToken = await auth.verifyIdToken(token);
+    if (!ADMIN_EMAILS.includes(decodedToken.email)) {
+        throw new Error('Permissão negada. Usuário não é administrador.');
+    }
+    return decodedToken;
+}
+
 export default async function handler(req, res) {
-    // 1. Somente método POST
+
+    // API aceita apenas POST
     if (req.method !== 'POST') {
-        return res.status(405).json({ error: 'Método não permitido' });
+        return res.status(405).json({ error: 'Método não permitido.' });
     }
 
     try {
-        // 2. Validar o Token do usuário
         const token = req.headers.authorization?.split('Bearer ')[1];
-        if (!token) {
-            return res.status(401).json({ error: 'Nenhum token fornecido.' });
-        }
-        const decodedToken = await auth.verifyIdToken(token);
+        await validateAdmin(token);
 
-        // 3. VERIFICAR SE É ADMIN
-        if (!ADMIN_EMAILS.includes(decodedToken.email)) {
-            return res.status(403).json({ error: 'Acesso negado. Você não é um administrador.' });
+        const { id, articleData, publishedAt } = req.body;
+
+        if (!articleData || !articleData.title) {
+            return res.status(400).json({ error: 'Dados do artigo inválidos.' });
         }
 
-        // 4. Processar os dados do artigo
-        const { id, ...articleData } = req.body;
-
-        // Converte a string de data (se existir) para Timestamp do Firebase
-        if (articleData.publishedAt) {
-            articleData.publishedAt = admin.firestore.Timestamp.fromDate(new Date(articleData.publishedAt));
+        // **MÚLTIPLOS LINKS: Validação**
+        if (articleData.links && (!Array.isArray(articleData.links) || articleData.links.length > 5)) {
+            return res.status(400).json({ error: 'Formato de links inválido ou limite de 5 excedido.' });
         }
 
-        // Adiciona timestamps do servidor
-        articleData.updatedAt = admin.firestore.FieldValue.serverTimestamp();
+        // Gera o slug (mesma lógica do admin.html)
+        articleData.slug = articleData.title.toString().toLowerCase().trim()
+            .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+            .replace(/\s+/g, '-').replace(/[^\w-]+/g, '').replace(/--+/g, '-');
+
+        // Sempre atualiza a data de modificação
+        articleData.updatedAt = FieldValue.serverTimestamp();
+
+        // Lógica da Data de Publicação
+        if (publishedAt === 'keep') {
+            // Não faz nada, mantém a data existente (só em edição)
+        } else if (publishedAt) {
+            // Converte a string ISO enviada pelo admin.html para um Timestamp
+            articleData.publishedAt = new Date(publishedAt);
+        } else if (!id) {
+            // Se é um NOVO artigo e a data está VAZIA, usa a data atual
+            articleData.publishedAt = FieldValue.serverTimestamp();
+        }
 
         if (id) {
-            // Atualizar
+            // --- Atualizar Artigo ---
             const articleRef = db.collection('artigos').doc(id);
             await articleRef.set(articleData, { merge: true });
-            return res.status(200).json({ message: 'Artigo atualizado com sucesso!' });
+            return res.status(200).json({ id });
+
         } else {
-            // Criar
-            articleData.createdAt = admin.firestore.FieldValue.serverTimestamp();
-            // Se publishedAt não foi definido, usa o timestamp do servidor
-            if (!articleData.publishedAt) {
-                articleData.publishedAt = admin.firestore.FieldValue.serverTimestamp();
-            }
-            const newDoc = await db.collection('artigos').add(articleData);
-            return res.status(201).json({ message: 'Artigo salvo com sucesso!', id: newDoc.id });
+            // --- Criar Novo Artigo ---
+            articleData.createdAt = FieldValue.serverTimestamp(); // Adiciona data de criação
+            const newArticleRef = await db.collection('artigos').add(articleData);
+            return res.status(201).json({ id: newArticleRef.id });
         }
 
     } catch (error) {
         console.error('Erro em /api/admin/salvarArtigo:', error);
-        if (error.code === 'auth/id-token-expired') {
-            return res.status(401).json({ error: 'Token expirado. Faça login novamente.' });
+        if (error.message.includes('Permissão negada')) {
+            return res.status(403).json({ error: error.message });
         }
         return res.status(500).json({ error: 'Erro interno do servidor.' });
     }
 }
+
