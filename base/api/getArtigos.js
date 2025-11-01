@@ -2,31 +2,22 @@
  * /api/getArtigos
  * Busca os artigos com paginação.
  * Protegido por Token.
+ * CORRIGIDO: Agora filtra por 'categoryId' se ela for fornecida.
  */
 import { db, auth } from './firebaseAdmin.js';
 
-// --- FUNÇÃO HELPER PARA CORRIGIR DATAS (TIMESTAMPS) ---
-// Converte os Timestamps do Firebase (que não são JSON) para um formato serializável
-const convertTimestamps = (obj) => {
-    if (obj && typeof obj === 'object' && obj.toDate) { // Verifica se é um Timestamp
-        return {
-            seconds: obj.seconds,
-            nanoseconds: obj.nanoseconds
-        };
-    }
-    if (Array.isArray(obj)) {
-        return obj.map(convertTimestamps);
-    }
-    if (typeof obj === 'object' && obj !== null) {
-        const newObj = {};
-        for (const key in obj) {
-            newObj[key] = convertTimestamps(obj[key]);
+// Converte Timestamps do Firebase para JSON
+function convertTimestamps(data) {
+    if (data && typeof data === 'object') {
+        if (data.hasOwnProperty('_seconds') && data.hasOwnProperty('_nanoseconds')) {
+            return { seconds: data._seconds, nanoseconds: data._nanoseconds };
         }
-        return newObj;
+        for (const key in data) {
+            data[key] = convertTimestamps(data[key]);
+        }
     }
-    return obj;
-};
-// --- FIM DA FUNÇÃO HELPER ---
+    return data;
+}
 
 export default async function handler(req, res) {
     try {
@@ -43,13 +34,23 @@ export default async function handler(req, res) {
             return res.status(401).json({ error: 'Token inválido ou expirado. Faça login novamente.' });
         }
 
-        // 2. Buscar Dados
+        // 2. Buscar Dados (COM LÓGICA DE FILTRO DE CATEGORIA)
         const limit = parseInt(req.query.limit || 10, 10);
+        const category = req.query.category; // Pega a categoria da URL
 
-        const snapshot = await db.collection('artigos')
-            .orderBy('publishedAt', 'desc')
-            .limit(limit)
-            .get();
+        let query = db.collection('artigos');
+
+        // *** A CORREÇÃO ESTÁ AQUI ***
+        // Adiciona o filtro de categoria, se não for "TODOS"
+        if (category && category !== 'TODOS') {
+            query = query.where('categoryId', '==', category);
+        }
+        // **************************
+
+        // Aplica a ordenação e o limite
+        query = query.orderBy('publishedAt', 'desc').limit(limit);
+
+        const snapshot = await query.get();
 
         if (snapshot.empty) {
             return res.status(200).json([]);
@@ -57,14 +58,10 @@ export default async function handler(req, res) {
 
         const articles = [];
         snapshot.forEach(doc => {
-            const data = doc.data();
-            // Remove o 'content' para não enviar dados desnecessários
-            const { content, ...articleSummary } = data;
-
-            // **CORREÇÃO:** Converte os Timestamps (como 'publishedAt')
-            const serializableData = convertTimestamps(articleSummary);
-
-            articles.push({ id: doc.id, ...serializableData });
+            const { content, ...articleSummary } = doc.data();
+            // Converte os timestamps aninhados
+            const convertedData = convertTimestamps(articleSummary);
+            articles.push({ id: doc.id, ...convertedData });
         });
 
         // 3. Retornar Dados
@@ -72,8 +69,7 @@ export default async function handler(req, res) {
 
     } catch (error) {
         console.error('Erro em /api/getArtigos:', error);
-        // Trata o erro de índice (comum nessa migração)
-        if (error.code === 5 || (error.details && error.details.includes('index'))) { // 5 = FAILED_PRECONDITION
+        if (error.code === 5) { // FAILED_PRECONDITION (erro de índice)
             return res.status(500).json({
                 error: 'Erro no servidor: O índice do Firestore provavelmente está sendo criado. Tente novamente em alguns minutos.'
             });
