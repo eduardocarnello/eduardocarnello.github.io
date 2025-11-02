@@ -2,29 +2,28 @@
  * /api/getCategorias
  * Busca todas as categorias.
  * Protegido por Token.
- * ATUALIZADO P/ ETAPA 1: Usa o novo helper getUserRole.
+ * CORRIGIDO: Removida a ordenação (orderBy) da consulta para
+ * evitar o Erro 500 de índice. A ordenação é feita no JS.
  */
-import { db, getUserRole } from '../firebaseAdmin.js'; // Caminho atualizado para ../
+import { db, auth, getUserRole } from './firebaseAdmin.js';
 
 export default async function handler(req, res) {
     try {
-        // 1. Validar o Token e o Cargo do usuário
+        // 1. Validar o Token do usuário
         const token = req.headers.authorization?.split('Bearer ')[1];
         if (!token) {
             return res.status(401).json({ error: 'Nenhum token fornecido.' });
         }
 
-        // Usa o novo helper. Isso também garante que o usuário existe na coleção 'users'.
-        // Qualquer cargo logado (Leitor, Redator, etc.) pode ler categorias.
+        // Verifica o cargo (qualquer cargo logado pode ler)
         const role = await getUserRole(token);
-
         if (!role) {
-            // getUserRole já tratou o erro, mas por via das dúvidas
-            return res.status(401).json({ error: 'Usuário não autenticado ou token inválido.' });
+            return res.status(401).json({ error: 'Token inválido ou expirado. Faça login novamente.' });
         }
 
-        // 2. Buscar Dados
-        const snapshot = await db.collection('categorias').orderBy('name').get();
+        // --- INÍCIO DA CORREÇÃO ---
+        // 2. Buscar Dados (SEM ORDENAÇÃO)
+        const snapshot = await db.collection('categorias').get();
 
         if (snapshot.empty) {
             return res.status(200).json([]);
@@ -35,13 +34,19 @@ export default async function handler(req, res) {
             categories.push({ id: doc.id, ...doc.data() });
         });
 
-        // 3. Retornar Dados
+        // 3. Ordenar AQUI (no JavaScript) em vez de no Firestore
+        categories.sort((a, b) => a.name.localeCompare(b.name));
+        // --- FIM DA CORREÇÃO ---
+
+        // 4. Retornar Dados
         return res.status(200).json(categories);
 
     } catch (error) {
         console.error('Erro em /api/getCategorias:', error);
-        // O helper getUserRole já lida com 'auth/id-token-expired'
-        return res.status(500).json({ error: error.message || 'Erro interno do servidor.' });
+        if (error.code === 'auth/id-token-expired' || error.message.includes('Token')) {
+            return res.status(401).json({ error: 'Token expirado. Faça login novamente.' });
+        }
+        return res.status(500).json({ error: 'Erro interno do servidor.' });
     }
 }
 
