@@ -38,6 +38,18 @@
         {
             "source": "/api/searchArtigos",
             "destination": "/api/searchArtigos.js"
+        },
+        {
+            "source": "/api/user/upsert",
+            "destination": "/api/user/upsert.js"
+        },
+        {
+            "source": "/api/admin/getUsers",
+            "destination": "/api/admin/getUsers.js"
+        },
+        {
+            "source": "/api/admin/updateUserRole",
+            "destination": "/api/admin/updateUserRole.js"
         }
     ]
 }

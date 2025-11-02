@@ -1,12 +1,9 @@
 /*
  * /api/admin/salvarArtigo
  * Cria ou atualiza um artigo.
- * Protegido por Token E por lista de Admin.
+ * ATUALIZADO P/ ETAPA 1: Usa o novo helper getUserRole e checa os cargos.
  */
-import { db, auth, admin } from '../firebaseAdmin.js'; // Note o '../'
-
-// Lista de e-mails de administradores
-const ADMIN_EMAILS = ['eduardocarnello@gmail.com', 'mariliajec@tjsp.jus.br'];
+import { db, admin, getUserRole } from '../firebaseAdmin.js'; // Note o '../'
 
 export default async function handler(req, res) {
     // 1. Somente método POST
@@ -15,20 +12,30 @@ export default async function handler(req, res) {
     }
 
     try {
-        // 2. Validar o Token do usuário
+        // 2. Validar o Token e obter o Cargo
         const token = req.headers.authorization?.split('Bearer ')[1];
         if (!token) {
             return res.status(401).json({ error: 'Nenhum token fornecido.' });
         }
-        const decodedToken = await auth.verifyIdToken(token);
+        const role = await getUserRole(token);
 
-        // 3. VERIFICAR SE É ADMIN
-        if (!ADMIN_EMAILS.includes(decodedToken.email)) {
-            return res.status(403).json({ error: 'Acesso negado. Você não é um administrador.' });
+        // 3. Processar os dados do artigo
+        const { id, ...articleData } = req.body;
+
+        // 4. VERIFICAR PERMISSÕES COM BASE NO CARGO
+        if (id) {
+            // É UMA ATUALIZAÇÃO (EDITAR)
+            if (role !== 'Admin' && role !== 'Editor') {
+                return res.status(403).json({ error: 'Acesso negado. Apenas Admins ou Editores podem editar artigos.' });
+            }
+        } else {
+            // É UMA CRIAÇÃO (PUBLICAR)
+            if (role !== 'Admin' && role !== 'Editor' && role !== 'Redator') {
+                return res.status(403).json({ error: 'Acesso negado. Apenas Admins, Editores ou Redatores podem publicar artigos.' });
+            }
         }
 
-        // 4. Processar os dados do artigo
-        const { id, ...articleData } = req.body;
+        // 5. Lógica de Negócio (O código abaixo permanece o mesmo)
 
         // **MÚLTIPLOS LINKS: Validação**
         if (articleData.links && (!Array.isArray(articleData.links) || articleData.links.length > 5)) {
@@ -59,6 +66,7 @@ export default async function handler(req, res) {
             // Se publishedAt não foi definido, usa o timestamp do servidor
             if (!articleData.publishedAt) {
                 articleData.publishedAt = admin.firestore.FieldValue.serverTimestamp();
+                section
             }
             const newDoc = await db.collection('artigos').add(articleData);
             return res.status(201).json({ message: 'Artigo salvo com sucesso!', id: newDoc.id });
@@ -66,10 +74,8 @@ export default async function handler(req, res) {
 
     } catch (error) {
         console.error('Erro em /api/admin/salvarArtigo:', error);
-        if (error.code === 'auth/id-token-expired') {
-            return res.status(401).json({ error: 'Token expirado. Faça login novamente.' });
-        }
-        return res.status(500).json({ error: 'Erro interno do servidor.' });
+        // O helper getUserRole já lida com 'auth/id-token-expired'
+        return res.status(500).json({ error: error.message || 'Erro interno do servidor.' });
     }
 }
 

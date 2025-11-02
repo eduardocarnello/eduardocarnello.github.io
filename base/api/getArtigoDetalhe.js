@@ -1,15 +1,40 @@
-import { db, auth } from './firebaseAdmin.js';
+import { db, auth, getUserRole } from './firebaseAdmin.js'; // Importa o getUserRole
+
+// Converte Timestamps do Firebase para JSON (versão recursiva)
+function convertTimestamps(data) {
+    if (data && typeof data === 'object') {
+        // Verifica se é um Timestamp do Firestore (pode vir como _seconds ou seconds)
+        const secondsKey = data.hasOwnProperty('_seconds') ? '_seconds' : 'seconds';
+        const nanosKey = data.hasOwnProperty('_nanoseconds') ? '_nanoseconds' : 'nanoseconds';
+
+        if (data.hasOwnProperty(secondsKey) && data.hasOwnProperty(nanosKey)) {
+            return { seconds: data[secondsKey], nanoseconds: data[nanosKey] };
+        }
+
+        // Recursivamente para outros campos
+        for (const key in data) {
+            data[key] = convertTimestamps(data[key]);
+        }
+    }
+    return data;
+}
 
 export default async (req, res) => {
     try {
-        // 1. Autenticação: Verifica o token do usuário
+        // 1. Autenticação: Verifica o token e o cargo do usuário
         const { authorization } = req.headers;
         if (!authorization || !authorization.startsWith('Bearer ')) {
             return res.status(401).json({ error: 'Não autorizado: Token não fornecido.' });
         }
         const token = authorization.split('Bearer ')[1];
-        // Verifica se o token é válido
-        await auth.verifyIdToken(token);
+
+        // USA A NOVA FUNÇÃO DE VERIFICAÇÃO DE CARGO
+        const role = await getUserRole(token);
+        if (!role) {
+            // getUserRole já trata erros de token inválido/expirado
+            return res.status(401).json({ error: 'Token inválido ou expirado. Faça login novamente.' });
+        }
+        // Se temos um cargo (Leitor, Redator, Editor, Admin), o usuário está autenticado e pode ler.
 
         // 2. Lógica da API: Buscar o artigo
         const { id } = req.query;
@@ -24,40 +49,16 @@ export default async (req, res) => {
             return res.status(404).json({ error: 'Artigo não encontrado.' });
         }
 
-        // --- INÍCIO DA CORREÇÃO (Erro 500) ---
-        // O crash (Erro 500) acontece porque Vercel não sabe como "serializar"
-        // (converter para JSON) os objetos de Timestamp do Firebase.
-        // Precisamos convertê-los manualmente para um formato JSON simples.
-
+        // Converte os Timestamps de forma recursiva
         const data = docSnap.data();
-
-        // Converte qualquer campo de Timestamp (como publishedAt, createdAt, updatedAt)
-        // para um objeto simples que pode ser enviado como JSON.
-        const convertTimestamps = (obj) => {
-            if (obj && typeof obj === 'object' && obj.toDate) { // Verifica se é um Timestamp
-                return {
-                    seconds: obj.seconds,
-                    nanoseconds: obj.nanoseconds
-                };
-            }
-            return obj;
-        };
-
-        const serializableData = {
-            ...data,
-            publishedAt: convertTimestamps(data.publishedAt),
-            createdAt: convertTimestamps(data.createdAt),
-            updatedAt: convertTimestamps(data.updatedAt)
-        };
-
-        // --- FIM DA CORREÇÃO ---
+        const serializableData = convertTimestamps(data);
 
         // Envia os dados convertidos (serializáveis)
         res.status(200).json(serializableData);
 
     } catch (error) {
-        // Trata erros de token expirado/inválido
-        if (error.code === 'auth/id-token-expired' || error.code === 'auth/argument-error') {
+        // Trata erros de token (que o getUserRole pode lançar)
+        if (error.code === 'auth/id-token-expired' || error.message.includes('Token')) {
             return res.status(401).json({ error: 'Não autorizado: Token inválido ou expirado.' });
         }
         // Trata erros internos

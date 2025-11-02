@@ -48,7 +48,6 @@
         /* Estilos do Conteúdo do Artigo (Modal) */
         #modal-content h1 {
             font-size: 1.875rem;
-            /* 3xl */
             font-weight: 700;
             margin-top: 1.5rem;
             margin-bottom: 0.75rem;
@@ -56,7 +55,6 @@
 
         #modal-content h2 {
             font-size: 1.5rem;
-            /* 2xl */
             font-weight: 600;
             margin-top: 1.25rem;
             margin-bottom: 0.5rem;
@@ -64,7 +62,6 @@
 
         #modal-content h3 {
             font-size: 1.25rem;
-            /* xl */
             font-weight: 600;
             margin-top: 1rem;
             margin-bottom: 0.5rem;
@@ -95,31 +92,25 @@
 
         #modal-content a {
             color: #2563eb;
-            /* blue-600 */
             text-decoration: underline;
         }
 
         #modal-content a:hover {
             color: #1d4ed8;
-            /* blue-700 */
         }
 
         #modal-content blockquote {
             border-left: 4px solid #94a3b8;
-            /* slate-400 */
             padding-left: 1rem;
             margin-left: 0;
             margin-bottom: 1rem;
             font-style: italic;
             color: #475569;
-            /* slate-600 */
         }
 
         #modal-content pre.ql-syntax {
             background-color: #1e293b;
-            /* slate-800 */
             color: #e2e8f0;
-            /* slate-200 */
             padding: 1rem;
             border-radius: 0.5rem;
             overflow-x: auto;
@@ -164,56 +155,31 @@
             <!-- Mensagem de Erro/Status -->
             <div id="login-status" class="text-center text-red-500 font-medium"></div>
 
-            <!-- Formulário de Login -->
-            <form id="login-form" class="mt-8 space-y-6">
-                <div class="rounded-md shadow-sm -space-y-px">
-                    <div>
-                        <label for="login-email" class="sr-only">Email</label>
-                        <input id="login-email" name="email" type="email" autocomplete="email" required
-                            class="appearance-none rounded-none relative block w-full px-3 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
-                            placeholder="Endereço de e-mail">
-                    </div>
-                    <div>
-                        <label for="login-password" class="sr-only">Senha</label>
-                        <input id="login-password" name="password" type="password" autocomplete="current-password"
-                            required
-                            class="appearance-none rounded-none relative block w-full px-3 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
-                            placeholder="Senha">
-                    </div>
-                </div>
+            <!-- Formulário de Login (REMOVIDO) -->
+            <!-- <form id="login-form" ...> ... </form> -->
 
-                <div>
-                    <button type="submit"
-                        class="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors">
-                        Entrar
-                    </button>
-                </div>
-            </form>
+            <!-- Divisor "OU" (REMOVIDO) -->
+            <!-- <div class="relative flex py-3 items-center"> ... </div> -->
 
-            <!-- Divisor "OU" -->
-            <div class="relative flex py-3 items-center">
-                <div class="flex-grow border-t border-gray-300"></div>
-                <span class="flex-shrink mx-4 text-gray-500">OU</span>
-                <div class="flex-grow border-t border-gray-300"></div>
-            </div>
-
-            <!-- Botão Login Google -->
-            <div>
+            <div class="space-y-4 pt-6">
+                <!-- Botão Login Google -->
                 <button id="google-login-btn"
                     class="group relative w-full flex justify-center py-3 px-4 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors">
                     <img class="w-5 h-5 mr-2" src="https://www.svgrepo.com/show/475656/google-color.svg"
                         alt="Google icon">
                     Entrar com Google
                 </button>
+                <!-- Botão Login Microsoft (NOVO) -->
+                <button id="microsoft-login-btn"
+                    class="group relative w-full flex justify-center py-3 px-4 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors">
+                    <img class="w-5 h-5 mr-2" src="https://www.svgrepo.com/show/303108/microsoft-icon-logo.svg"
+                        alt="Microsoft icon">
+                    Entrar com Microsoft
+                </button>
             </div>
 
-            <!-- Link para o Admin (se for admin) -->
-            <div class="text-center mt-6">
-                <a href="admin.html"
-                    class="text-sm font-medium text-blue-600 hover:text-blue-500 transition-colors focus-ring-visible rounded-md">
-                    Painel de Administração &rarr;
-                </a>
-            </div>
+            <!-- Link para o Admin (removido, pois o login do admin é o mesmo) -->
+            <!-- <div class="text-center mt-6"> ... </div> -->
 
         </div>
     </section>
@@ -236,6 +202,11 @@
 
                     <!-- Botões de Admin e Sair -->
                     <div class="flex items-center gap-4">
+                        <!-- NOVO: Exibição de Cargo -->
+                        <span id="user-info" class="text-sm text-slate-600 hidden sm:block">
+                            <span id="user-email" class="font-medium"></span>
+                            (<span id="user-role" class="font-light"></span>)
+                        </span>
                         <a href="admin.html" id="admin-btn"
                             class="hidden text-sm font-medium text-blue-600 hover:text-blue-800 transition-colors focus-ring-visible rounded-md p-1">
                             Painel Admin
@@ -280,7 +251,6 @@
                             <option value="title">Apenas no Título</option>
                             <option value="summary">Apenas no Resumo</option>
                             <option value="tags">Apenas nas Tags</option>
-                            <!-- NOVA OPÇÃO DE BUSCA -->
                             <option value="content">Apenas no Conteúdo</option>
                         </select>
                     </div>
@@ -360,7 +330,6 @@
         class="fixed inset-0 bg-black bg-opacity-75 z-50 hidden transition-opacity duration-300 ease-out"
         aria-hidden="true"></div>
 
-    <!-- MUDANÇA: Modal agora é tela cheia (removido max-w-3xl, rounded, etc.) -->
     <div id="modal-container" class="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-0 hidden"
         role="dialog" aria-modal="true">
 
@@ -455,14 +424,13 @@
         import {
             getAuth,
             onAuthStateChanged,
-            signInWithEmailAndPassword,
+            // signInWithEmailAndPassword, // REMOVIDO
             signInWithPopup,
             GoogleAuthProvider,
+            OAuthProvider, // NOVO
             signOut,
             getIdToken
         } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-
-        // ** Firestore NÃO é mais importado aqui **
 
         // Configuração do Firebase
         const firebaseConfig = {
@@ -478,28 +446,33 @@
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const googleProvider = new GoogleAuthProvider();
+        const microsoftProvider = new OAuthProvider('microsoft.com'); // NOVO
         setLogLevel('Debug');
 
-        // E-mails de Admin (para mostrar o botão de admin)
-        const adminEmails = ['eduardocarnello@gmail.com', 'mariliajec@tjsp.jus.br'];
+        // E-mails de Admin (REMOVIDO - agora usa roles)
+        // const adminEmails = ['eduardocarnello@gmail.com', 'mariliajec@tjsp.jus.br'];
 
         // --- REFERÊNCIAS DO DOM ---
         // Seções
         const loginSection = document.getElementById('login-section');
         const contentSection = document.getElementById('content-section');
         // Login
-        const loginForm = document.getElementById('login-form');
-        const loginEmail = document.getElementById('login-email');
-        const loginPassword = document.getElementById('login-password');
+        const loginForm = document.getElementById('login-form'); // (Será removido)
+        // const loginEmail = document.getElementById('login-email'); // (Será removido)
+        // const loginPassword = document.getElementById('login-password'); // (Será removido)
         const loginStatus = document.getElementById('login-status');
         const googleLoginBtn = document.getElementById('google-login-btn');
+        const microsoftLoginBtn = document.getElementById('microsoft-login-btn'); // NOVO
         // Header (Conteúdo)
         const logoutBtn = document.getElementById('logout-btn');
         const adminBtn = document.getElementById('admin-btn');
+        const userInfo = document.getElementById('user-info'); // NOVO
+        const userEmailSpan = document.getElementById('user-email'); // NOVO
+        const userRoleSpan = document.getElementById('user-role'); // NOVO
         // Busca
         const searchInput = document.getElementById('search-input');
         const searchField = document.getElementById('search-field');
-        const articlesTitle = document.getElementById('articles-title'); // Título da seção de artigos
+        const articlesTitle = document.getElementById('articles-title');
         // Categorias
         const categoryGrid = document.getElementById('category-grid');
         const categoriesLoading = document.getElementById('categories-loading');
@@ -523,56 +496,50 @@
         const modalTagsContainer = document.getElementById('modal-tags-container');
         const modalTagsList = document.getElementById('modal-tags-list');
         const modalContent = document.getElementById('modal-content');
-        // MÚLTIPLOS LINKS
         const modalLinksContainer = document.getElementById('modal-links-container');
         const modalLinksList = document.getElementById('modal-links-list');
 
 
         // --- ESTADO GLOBAL ---
-        let allCategories = []; // Cache de categorias
-        let currentArticles = []; // Artigos visíveis no momento (da paginação ou busca)
-        let currentUser = null; // Usuário logado
-        let currentCategory = 'TODOS'; // Categoria filtrada
-        let currentArticleCount = 0; // Contagem para paginação
+        let allCategories = [];
+        let currentArticles = [];
+        let currentUser = null;
+        let currentUserRole = 'Leitor'; // NOVO: Estado do cargo
+        let currentCategory = 'TODOS';
+        let currentArticleCount = 0;
         const ARTICLES_PER_PAGE = 10;
-        let isLoadingMore = false; // Trava para evitar cliques duplos
-        let isSearchActive = false; // Trava para saber se estamos em modo "busca"
+        let isLoadingMore = false;
+        let isSearchActive = false;
 
         // --- NOVA FUNÇÃO: fetchWithToken ---
+        // (BUG CORRIGIDO: responseText movido para o escopo correto)
         async function fetchWithToken(url, options = {}) {
             if (!currentUser) {
                 throw new Error("Usuário não autenticado.");
             }
-            // Garante um token novo se o antigo estiver perto de expirar
             const token = await getIdToken(currentUser, /* forceRefresh */ true);
             const headers = {
                 ...options.headers,
                 'Authorization': `Bearer ${token}`,
                 'Content-Type': 'application/json'
             };
-
-            // Usa caminho relativo (remove / inicial)
             const relativeUrl = url.startsWith('/') ? url.substring(1) : url;
 
             const response = await fetch(relativeUrl, { ...options, headers });
 
-            // *** CORREÇÃO DO BUG "errorText is not defined" ***
-            // A variável responseText deve ser declarada aqui, fora do 'if'
+            // CORREÇÃO: Declarar responseText aqui
             const responseText = await response.text();
-            // *************************************************
 
             if (!response.ok) {
                 let errorData;
-                // let errorText = await response.text(); // <-- ESTAVA AQUI, INCORRETO
+                // let errorText = await response.text(); // BUG: Removido daqui
                 try {
-                    errorData = JSON.parse(responseText); // <-- Correto
+                    errorData = JSON.parse(responseText);
                 } catch (e) {
                     console.error("Erro HTML/Texto (não-JSON) recebido:", responseText.substring(0, 100) + '...');
                     errorData = { error: `Erro ${response.status}: ${response.statusText}` };
                 }
-
                 console.error(`Erro na API (${response.status}):`, errorData.error);
-
                 if (response.status === 401) {
                     alert('Sua sessão expirou. Por favor, faça login novamente.');
                     await signOut(auth);
@@ -580,71 +547,90 @@
                 throw new Error(errorData.error || 'Erro na requisição');
             }
 
-            if (response.status === 204) { // No Content
+            if (response.status === 204) {
                 return null;
             }
 
-            // Tenta retornar JSON, se falhar, retorna o texto (que pode ser vazio)
             try {
-                const responseJson = JSON.parse(responseText); // <-- Correto
+                // Tenta retornar JSON
+                const responseJson = JSON.parse(responseText);
                 return responseJson;
             } catch (e) {
-                return responseText; // <-- Correto
+                // Retorna texto se não for JSON (pode ser resposta vazia)
+                return responseText;
             }
         }
 
 
-        // --- AUTENTICAÇÃO (COM CORREÇÃO DE "PISCADA") ---
-        onAuthStateChanged(auth, (user) => {
+        // --- AUTENTICAÇÃO (COM SISTEMA DE CARGOS) ---
+        onAuthStateChanged(auth, async (user) => {
             currentUser = user;
             if (user) {
-                // Usuário está logado
-                loginSection.style.display = 'none'; // Esconde o login
-                contentSection.style.display = 'block'; // Mostra o conteúdo
+                try {
+                    // NOVO: Chama a API upsert para registrar o usuário e obter seu cargo
+                    const { role, email } = await fetchWithToken('api/user/upsert', { method: 'POST' });
+                    currentUserRole = role; // Armazena o cargo
 
-                if (adminEmails.includes(user.email)) {
-                    adminBtn.classList.remove('hidden');
-                } else {
-                    adminBtn.classList.add('hidden');
+                    // Usuário está logado
+                    loginSection.style.display = 'none';
+                    contentSection.style.display = 'block';
+
+                    // Mostra info do usuário
+                    userInfo.classList.remove('hidden');
+                    userEmailSpan.textContent = email;
+                    userRoleSpan.textContent = role;
+
+                    // Mostra o botão de Admin se tiver permissão
+                    if (role === 'Redator' || role === 'Editor' || role === 'Admin') {
+                        adminBtn.classList.remove('hidden');
+                    } else {
+                        adminBtn.classList.add('hidden');
+                    }
+
+                    checkAndRenderAll();
+
+                } catch (error) {
+                    console.error("Erro ao verificar cargo do usuário:", error);
+                    loginStatus.textContent = 'Erro ao verificar permissões. Tente novamente.';
+                    await signOut(auth);
                 }
-                checkAndRenderAll();
             } else {
                 // Usuário está deslogado
-                loginSection.style.display = 'flex'; // Mostra o login
-                contentSection.style.display = 'none'; // Esconde o conteúdo
+                loginSection.style.display = 'flex';
+                contentSection.style.display = 'none';
                 adminBtn.classList.add('hidden');
+                userInfo.classList.add('hidden');
                 resetContent();
             }
         });
 
-        // Login com E-mail/Senha
-        loginForm.addEventListener('submit', (e) => {
-            e.preventDefault();
-            loginStatus.textContent = 'Entrando...';
-            signInWithEmailAndPassword(auth, loginEmail.value, loginPassword.value)
-                .then(() => {
-                    loginStatus.textContent = '';
-                    loginForm.reset();
-                })
-                .catch((error) => {
-                    console.error("Erro de login:", error.code, error.message);
-                    if (error.code === 'auth/invalid-credential' || error.code === 'auth/wrong-password' || error.code === 'auth/user-not-found') {
-                        loginStatus.textContent = 'E-mail ou senha inválidos.';
-                    } else {
-                        loginStatus.textContent = 'Erro ao tentar fazer login.';
-                    }
-                });
-        });
+        // REMOVIDO: Login com E-mail/Senha
+        // loginForm.addEventListener('submit', ...);
 
         // Login com Google
         googleLoginBtn.addEventListener('click', () => {
             loginStatus.textContent = 'Abrindo popup do Google...';
-            signInWithPopup(auth, googleProvider)
-                .catch((error) => {
-                    console.error("Erro ao logar com Google:", error);
-                    loginStatus.textContent = 'Erro ao logar com Google.';
-                });
+            signInWithPopup(auth, googleProvider).catch(handleAuthError);
         });
+
+        // NOVO: Login com Microsoft
+        microsoftLoginBtn.addEventListener('click', () => {
+            loginStatus.textContent = 'Abrindo popup da Microsoft...';
+            signInWithPopup(auth, microsoftProvider).catch(handleAuthError);
+        });
+
+        function handleAuthError(error) {
+            console.error("Erro de login:", error.code, error.message);
+            if (error.code === 'auth/popup-closed-by-user') {
+                loginStatus.textContent = 'Popup de login fechado.';
+            } else if (error.code === 'auth/unauthorized-domain') {
+                loginStatus.textContent = 'Erro: Domínio não autorizado.';
+                alert("ERRO: O domínio do seu site não está autorizado. \n\nPor favor, vá ao Console do Firebase > Authentication > Settings > Authorized domains e adicione o domínio onde este site está hospedado.");
+            } else {
+                loginStatus.textContent = 'Erro ao tentar fazer login.';
+            }
+        }
+
 
         // Logout
         logoutBtn.addEventListener('click', () => {
@@ -669,7 +655,6 @@
             if (todosBtn) {
                 todosBtn.classList.add('bg-blue-600', 'text-white', 'shadow-lg');
             }
-
             articlesGrid.innerHTML = '';
             articlesStatus.textContent = 'Você precisa estar logado para ver o conteúdo.';
             articlesStatus.classList.remove('hidden');
@@ -685,7 +670,6 @@
                 if (allCategories.length === 0) {
                     await loadCategories();
                 }
-                // Agora, a busca inicial (loadArticles) é disparada pela lógica de filtro
                 await executeSearchOrFilter();
             } catch (error) {
                 console.error("Falha ao carregar dados iniciais:", error);
@@ -698,7 +682,6 @@
         async function loadCategories() {
             categoriesLoading.textContent = 'Carregando categorias...';
             categoriesLoading.classList.remove('hidden');
-
             try {
                 const categories = await fetchWithToken('api/getCategorias');
                 allCategories = categories;
@@ -712,7 +695,7 @@
 
         // 2. Carregar Artigos (Paginação)
         loadMoreBtn.addEventListener('click', () => {
-            if (!isLoadingMore && !isSearchActive) { // Só carrega mais se NÃO for uma busca
+            if (!isLoadingMore && !isSearchActive) {
                 loadMoreArticles();
             }
         });
@@ -720,19 +703,15 @@
         async function loadMoreArticles() {
             if (isLoadingMore) return;
             isLoadingMore = true;
-
             const limit = currentArticleCount + ARTICLES_PER_PAGE;
-
             loadMoreBtn.textContent = 'Carregando...';
             loadMoreBtn.disabled = true;
 
             try {
-                // A API de getArtigos agora filtra por categoria no servidor
                 const url = `api/getArtigos?limit=${limit}&category=${currentCategory}`;
                 const articles = await fetchWithToken(url);
-
                 const newArticles = articles.filter(a => !currentArticles.some(existing => existing.id === a.id));
-                currentArticles = articles; // O cache agora é a lista completa da API
+                currentArticles = articles;
                 currentArticleCount = articles.length;
 
                 if (newArticles.length === 0 || articles.length < limit) {
@@ -740,9 +719,7 @@
                 } else {
                     loadMoreContainer.classList.remove('hidden');
                 }
-
                 renderArticles(newArticles, false); // false = não limpar o grid
-
             } catch (error) {
                 console.error("Erro ao buscar mais artigos:", error);
                 articlesStatus.textContent = `Erro ao carregar artigos: ${error.message}`;
@@ -759,16 +736,15 @@
 
         // Renderizar Categorias
         function renderCategories(categories) {
+            // CORREÇÃO: Seletor estava errado
             categoryGrid.querySelectorAll('.category-card:not([data-category="TODOS"])').forEach(el => el.remove());
 
             categories.forEach(category => {
                 const { name, color, icon } = category;
                 const colors = getCategoryColors(color);
-
                 const btn = document.createElement('button');
                 btn.className = `category-card w-full flex items-center gap-3 p-3 rounded-lg text-left font-medium transition-colors duration-150 focus-ring-visible ${colors.bgHover} ${colors.text}`;
                 btn.dataset.category = category.id;
-
                 btn.innerHTML = `
                     <div class="w-8 h-8 flex-shrink-0 flex items-center justify-center rounded-lg ${colors.bg} ${colors.iconText}">
                         ${getIconSvg(icon)}
@@ -784,7 +760,6 @@
             if (clearGrid) {
                 articlesGrid.innerHTML = '';
             }
-
             if (articlesToRender.length === 0 && clearGrid) {
                 articlesStatus.textContent = 'Nenhum artigo encontrado para esta categoria ou busca.';
                 articlesStatus.classList.remove('hidden');
@@ -796,16 +771,12 @@
             const fragment = document.createDocumentFragment();
             articlesToRender.forEach(article => {
                 const { id, title, summary, categoryId } = article;
-
                 const category = allCategories.find(c => c.id === categoryId);
                 const colors = getCategoryColors(category ? category.color : 'slate');
                 const categoryName = category ? category.name : 'Sem Categoria';
-
                 const card = document.createElement('div');
-                // Adiciona a borda colorida
                 card.className = `article-card bg-white rounded-2xl shadow-lg overflow-hidden transition-transform transform hover:-translate-y-1 hover:shadow-xl cursor-pointer flex flex-col ${colors.border} border-t-4`;
                 card.dataset.id = id;
-
                 card.innerHTML = `
                     <div class="p-6 flex-grow">
                         <span class="text-sm font-semibold ${colors.text}">${categoryName.toUpperCase()}</span>
@@ -828,7 +799,7 @@
             clearTimeout(searchTimeout);
             searchTimeout = setTimeout(() => {
                 executeSearchOrFilter();
-            }, 300); // Espera 300ms após o usuário parar de digitar
+            }, 300);
         });
 
         searchField.addEventListener('change', executeSearchOrFilter);
@@ -837,7 +808,6 @@
             const card = e.target.closest('.category-card');
             if (card) {
                 currentCategory = card.dataset.category;
-
                 // Atualiza o visual dos botões de categoria
                 document.querySelectorAll('.category-card').forEach(btn => {
                     btn.classList.remove('bg-blue-600', 'text-white', 'shadow-lg');
@@ -852,8 +822,6 @@
                 if (card.dataset.category !== 'TODOS') {
                     card.classList.remove(activeColors.bgHover, activeColors.text);
                 }
-
-                // Executa a busca/filtro
                 executeSearchOrFilter();
             }
         });
@@ -862,34 +830,27 @@
             const searchTerm = searchInput.value.trim();
             const searchScope = searchField.value;
 
-            // Mostra o spinner de "Carregando"
             articlesGrid.innerHTML = '';
             articlesStatus.classList.remove('hidden');
             articlesStatus.innerHTML = `
                 <svg class="mx-auto h-12 w-12 text-slate-400 animate-spin" ...>...</svg>
                 <p class="mt-4 text-lg font-medium">Carregando artigos...</p>`;
 
-            // Se não houver termo de busca, voltamos à paginação normal
             if (searchTerm === '') {
                 isSearchActive = false;
                 articlesTitle.textContent = 'Artigos Recentes';
-                currentArticles = []; // Limpa o cache
+                currentArticles = [];
                 currentArticleCount = 0;
-                await loadMoreArticles(); // Carrega a primeira página
+                await loadMoreArticles();
             } else {
-                // Se houver termo de busca, chamamos a API de BUSCA
                 isSearchActive = true;
                 articlesTitle.textContent = `Resultados da Busca por: "${searchTerm}"`;
-                loadMoreContainer.classList.add('hidden'); // Esconde o "Carregar Mais"
-
+                loadMoreContainer.classList.add('hidden');
                 try {
-                    // Monta a URL da API de busca
                     const url = `api/searchArtigos?term=${encodeURIComponent(searchTerm)}&scope=${searchScope}&category=${currentCategory}`;
                     const searchResults = await fetchWithToken(url);
-
-                    currentArticles = searchResults; // Salva os resultados da busca
-                    renderArticles(searchResults, true); // Renderiza os resultados limpando o grid
-
+                    currentArticles = searchResults;
+                    renderArticles(searchResults, true);
                 } catch (error) {
                     console.error("Erro ao executar busca:", error);
                     articlesStatus.textContent = `Erro ao buscar: ${error.message}`;
@@ -909,7 +870,6 @@
         });
 
         async function openModal(id) {
-            // Reseta o estado do modal
             modalTitle.textContent = 'Carregando Título...';
             modalContent.innerHTML = '';
             modalMetadata.classList.add('hidden');
@@ -917,7 +877,6 @@
             modalLinksList.innerHTML = '';
             modalLoadingSpinner.classList.remove('hidden');
 
-            // Mostra o modal (animação)
             modalBackdrop.classList.remove('hidden');
             modalContainer.classList.remove('hidden');
             setTimeout(() => {
@@ -926,13 +885,10 @@
             }, 10);
 
             try {
-                // Chama a API de detalhe
                 const article = await fetchWithToken(`api/getArtigoDetalhe?id=${id}`);
 
-                // 1. Preenche o Título
                 modalTitle.textContent = article.title;
 
-                // 2. Preenche a Categoria
                 const category = allCategories.find(c => c.id === article.categoryId);
                 if (category) {
                     const colors = getCategoryColors(category.color);
@@ -945,7 +901,6 @@
                     modalCategoryBadge.innerHTML = '';
                 }
 
-                // 3. Preenche a Data
                 if (article.publishedAt) {
                     const date = new Date(article.publishedAt.seconds * 1000).toLocaleDateString('pt-BR', {
                         day: '2-digit', month: 'long', year: 'numeric'
@@ -955,10 +910,8 @@
                     modalDate.textContent = '--';
                 }
 
-                // 4. Preenche o Resumo
                 modalSummary.textContent = article.summary;
 
-                // 5. Preenche as Tags
                 if (article.tags && article.tags.length > 0) {
                     modalTagsList.innerHTML = article.tags.map(tag =>
                         `<span class="inline-block bg-slate-200 text-slate-700 px-2 py-0.5 rounded-md">${tag}</span>`
@@ -968,20 +921,18 @@
                     modalTagsContainer.classList.add('hidden');
                 }
 
-                // 6. Preenche o Conteúdo
                 modalContent.innerHTML = article.content;
 
-                // 7. Preenche os Múltiplos Links
+                // MÚLTIPLOS LINKS
                 if (article.links && article.links.length > 0) {
                     modalLinksList.innerHTML = ''; // Limpa
                     article.links.forEach(link => {
-                        if (!link) return; // Pula links vazios
+                        if (!link) return;
                         const li = document.createElement('li');
                         try {
                             const url = new URL(link);
                             li.innerHTML = `<a href="${link}" target="_blank" rel="noopener noreferrer" class="text-blue-600 hover:text-blue-700 hover:underline break-all">${url.hostname}</a>`;
                         } catch (e) {
-                            // Se a URL for inválida (ex: "teste"), apenas mostra o link
                             li.innerHTML = `<a href="${link}" target="_blank" rel="noopener noreferrer" class="text-blue-600 hover:text-blue-700 hover:underline break-all">${link}</a>`;
                         }
                         modalLinksList.appendChild(li);
@@ -989,7 +940,6 @@
                     modalLinksContainer.classList.remove('hidden');
                 }
 
-                // Mostra os metadados e esconde o spinner
                 modalMetadata.classList.remove('hidden');
                 modalLoadingSpinner.classList.add('hidden');
 
