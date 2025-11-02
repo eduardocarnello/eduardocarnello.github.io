@@ -1,9 +1,11 @@
 /*
- * /api/admin/deletarCategoria
- * Deleta uma categoria.
+ * /api/admin/updateUserRole
+ * Atualiza o cargo (role) de um usuário.
  * Protegido por Token E por Role (Admin).
  */
 import { db, auth, getUserRole } from '../firebaseAdmin.js'; // Note o '../'
+
+const VALID_ROLES = ['Leitor', 'Redator', 'Editor', 'Admin'];
 
 export default async function handler(req, res) {
     if (req.method !== 'POST') {
@@ -17,25 +19,32 @@ export default async function handler(req, res) {
         // 1. VERIFICA O CARGO (ROLE)
         const role = await getUserRole(token);
         if (role !== 'Admin') {
-            return res.status(403).json({ error: 'Acesso negado. Você não tem permissão para deletar categorias.' });
+            return res.status(403).json({ error: 'Acesso negado. Você não tem permissão para mudar cargos.' });
         }
 
         // 2. LÓGICA DA API
-        const { id } = req.body;
-        if (!id) {
-            return res.status(400).json({ error: 'ID da categoria não fornecido.' });
+        const { uid, newRole } = req.body;
+
+        if (!uid || !newRole) {
+            return res.status(400).json({ error: 'UID do usuário e novo cargo (newRole) são obrigatórios.' });
         }
 
-        await db.collection('categorias').doc(id).delete();
+        if (!VALID_ROLES.includes(newRole)) {
+            return res.status(400).json({ error: 'Cargo inválido.' });
+        }
 
-        return res.status(200).json({ message: 'Categoria deletada com sucesso.' });
+        const userRef = db.collection('users').doc(uid);
+        await userRef.update({
+            role: newRole
+        });
+
+        return res.status(200).json({ message: 'Cargo do usuário atualizado com sucesso.' });
 
     } catch (error) {
-        console.error('Erro em /api/admin/deletarCategoria:', error);
+        console.error('Erro em /api/admin/updateUserRole:', error);
         if (error.code === 'auth/id-token-expired') {
             return res.status(401).json({ error: 'Token expirado. Faça login novamente.' });
         }
         return res.status(500).json({ error: 'Erro interno do servidor.' });
     }
 }
-

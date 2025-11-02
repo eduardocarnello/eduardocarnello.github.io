@@ -1,12 +1,9 @@
 /*
  * /api/admin/deletarArtigo
  * Deleta um artigo.
- * Protegido por Token E por lista de Admin.
+ * ATUALIZADO P/ ETAPA 1: Usa o novo helper getUserRole e checa o cargo "Admin".
  */
-import { db, auth } from '../firebaseAdmin.js'; // Note o '../'
-
-// Lista de e-mails de administradores
-const ADMIN_EMAILS = ['eduardocarnello@gmail.com', 'mariliajec@tjsp.jus.br'];
+import { db, getUserRole } from '../firebaseAdmin.js'; // Note o '../'
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
@@ -17,9 +14,12 @@ export default async function handler(req, res) {
     const token = req.headers.authorization?.split('Bearer ')[1];
     if (!token) return res.status(401).json({ error: 'Nenhum token fornecido.' });
 
-    const decodedToken = await auth.verifyIdToken(token);
-    if (!ADMIN_EMAILS.includes(decodedToken.email)) {
-      return res.status(403).json({ error: 'Acesso negado. Você não é um administrador.' });
+    // 1. Verifica o token e obtém o cargo do usuário
+    const role = await getUserRole(token);
+
+    // 2. Apenas "Admin" pode deletar
+    if (role !== 'Admin') {
+      return res.status(403).json({ error: 'Acesso negado. Apenas administradores podem deletar artigos.' });
     }
 
     const { id } = req.body;
@@ -33,9 +33,8 @@ export default async function handler(req, res) {
 
   } catch (error) {
     console.error('Erro em /api/admin/deletarArtigo:', error);
-    if (error.code === 'auth/id-token-expired') {
-      return res.status(401).json({ error: 'Token expirado. Faça login novamente.' });
-    }
-    return res.status(500).json({ error: 'Erro interno do servidor.' });
+    // O helper getUserRole já lida com 'auth/id-token-expired'
+    return res.status(500).json({ error: error.message || 'Erro interno do servidor.' });
   }
 }
+

@@ -1,17 +1,22 @@
 /*
  * /api/searchArtigos
  * Busca em TODOS os artigos (incluindo conteúdo).
- * Protegido por Token.
- * CORRIGIDO: Agora filtra por 'categoryId' se ela for fornecida.
+ * Protegido por Token E Cargo (qualquer cargo logado).
+ * Filtra por 'categoryId' se ela for fornecida.
  */
-import { db, auth } from './firebaseAdmin.js';
+import { db, auth, getUserRole } from './firebaseAdmin.js'; // Importa o getUserRole
 
 // Converte Timestamps do Firebase para JSON
 function convertTimestamps(data) {
     if (data && typeof data === 'object') {
-        if (data.hasOwnProperty('_seconds') && data.hasOwnProperty('_nanoseconds')) {
-            return { seconds: data._seconds, nanoseconds: data._nanoseconds };
+        // Verifica se é um Timestamp do Firestore (pode vir como _seconds ou seconds)
+        const secondsKey = data.hasOwnProperty('_seconds') ? '_seconds' : 'seconds';
+        const nanosKey = data.hasOwnProperty('_nanoseconds') ? '_nanoseconds' : 'nanoseconds';
+
+        if (data.hasOwnProperty(secondsKey) && data.hasOwnProperty(nanosKey)) {
+            return { seconds: data[secondsKey], nanoseconds: data[nanosKey] };
         }
+
         for (const key in data) {
             data[key] = convertTimestamps(data[key]);
         }
@@ -26,16 +31,19 @@ function stripHtml(html) {
 
 export default async function handler(req, res) {
     try {
-        // 1. Validar o Token do usuário
+        // 1. Validar o Token do usuário e obter o cargo
         const token = req.headers.authorization?.split('Bearer ')[1];
         if (!token) {
             return res.status(401).json({ error: 'Nenhum token fornecido.' });
         }
-        try {
-            await auth.verifyIdToken(token);
-        } catch (error) {
-            return res.status(401).json({ error: 'Token inválido ou expirado.' });
+
+        // USA A NOVA FUNÇÃO DE VERIFICAÇÃO DE CARGO
+        const role = await getUserRole(token);
+        if (!role) {
+            // getUserRole já trata erros de token inválido/expirado
+            return res.status(401).json({ error: 'Token inválido ou expirado. Faça login novamente.' });
         }
+        // Se temos um cargo, o usuário está autenticado e pode buscar.
 
         // 2. Obter Parâmetros de Busca
         const { term, scope, category } = req.query;
@@ -47,8 +55,6 @@ export default async function handler(req, res) {
         const searchTerm = term.toLowerCase();
 
         // 3. Buscar TODOS os artigos (para busca em "content")
-        // A busca no conteúdo não pode ser feita com 'where' do Firestore,
-        // então buscamos todos e filtramos na memória.
         const snapshot = await db.collection('artigos').orderBy('publishedAt', 'desc').get();
 
         if (snapshot.empty) {
@@ -59,10 +65,8 @@ export default async function handler(req, res) {
         snapshot.forEach(doc => {
             const article = doc.data();
 
-            // *** A CORREÇÃO ESTÁ AQUI ***
             // Verifica se a categoria bate (ou se é "TODOS")
-            const categoryMatch = (category === 'TODOS' || article.categoryId === category);
-            // **************************
+            const categoryMatch = (category === 'TODOS' || !category || article.categoryId === category);
 
             // Se a categoria não bate, pulamos este artigo
             if (!categoryMatch) {
@@ -111,6 +115,10 @@ export default async function handler(req, res) {
 
     } catch (error) {
         console.error('Erro em /api/searchArtigos:', error);
+        // Se o erro for de token (que o getUserRole pode lançar)
+        if (error.code === 'auth/id-token-expired' || error.message.includes('Token')) {
+            return res.status(401).json({ error: 'Token inválido ou expirado. Faça login novamente.' });
+        }
         return res.status(500).json({ error: 'Erro interno do servidor ao buscar artigos.' });
     }
 }

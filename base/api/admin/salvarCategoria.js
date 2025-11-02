@@ -1,12 +1,9 @@
 /*
  * /api/admin/salvarCategoria
- * Cria ou atualiza uma categoria.
- * Protegido por Token E por lista de Admin.
+ * Salva (cria ou atualiza) uma categoria.
+ * Protegido por Token E por Role (Admin).
  */
-import { db, auth } from '../firebaseAdmin.js'; // Note o '../'
-
-// Lista de e-mails de administradores
-const ADMIN_EMAILS = ['eduardocarnello@gmail.com', 'mariliajec@tjsp.jus.br'];
+import { db, auth, getUserRole } from '../firebaseAdmin.js'; // Note o '../'
 
 export default async function handler(req, res) {
     if (req.method !== 'POST') {
@@ -17,22 +14,30 @@ export default async function handler(req, res) {
         const token = req.headers.authorization?.split('Bearer ')[1];
         if (!token) return res.status(401).json({ error: 'Nenhum token fornecido.' });
 
-        const decodedToken = await auth.verifyIdToken(token);
-        if (!ADMIN_EMAILS.includes(decodedToken.email)) {
-            return res.status(403).json({ error: 'Acesso negado. Você não é um administrador.' });
+        // 1. VERIFICA O CARGO (ROLE)
+        const role = await getUserRole(token);
+        if (role !== 'Admin') {
+            return res.status(403).json({ error: 'Acesso negado. Você não tem permissão para gerenciar categorias.' });
         }
 
-        const { id, ...categoryData } = req.body;
+        // 2. LÓGICA DA API
+        const { id, name, color, icon, slug } = req.body;
+
+        if (!name || !color || !icon || !slug) {
+            return res.status(400).json({ error: 'Campos obrigatórios ausentes.' });
+        }
+
+        const categoryData = { name, color, icon, slug };
 
         if (id) {
             // Atualizar
             const catRef = db.collection('categorias').doc(id);
-            await catRef.set(categoryData);
-            return res.status(200).json({ message: 'Categoria atualizada com sucesso!' });
+            await catRef.set(categoryData, { merge: true });
+            return res.status(200).json({ message: 'Categoria atualizada com sucesso.' });
         } else {
             // Criar
-            const newDoc = await db.collection('categorias').add(categoryData);
-            return res.status(201).json({ message: 'Categoria salva com sucesso!', id: newDoc.id });
+            const docRef = await db.collection('categorias').add(categoryData);
+            return res.status(201).json({ message: 'Categoria criada com sucesso.', id: docRef.id });
         }
 
     } catch (error) {
@@ -43,3 +48,4 @@ export default async function handler(req, res) {
         return res.status(500).json({ error: 'Erro interno do servidor.' });
     }
 }
+

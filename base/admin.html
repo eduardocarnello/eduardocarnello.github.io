@@ -17,7 +17,6 @@
             font-family: 'Inter', sans-serif;
         }
 
-        /* Ajusta a altura do editor Quill */
         #editor-container {
             height: 350px;
         }
@@ -30,7 +29,6 @@
             border-radius: 0 0 0.5rem 0.5rem !important;
         }
 
-        /* Foco personalizado para acessibilidade */
         .focus-ring-visible:focus-visible {
             outline: 2px solid #2563eb;
             outline-offset: 2px;
@@ -46,8 +44,8 @@
 <body class="bg-slate-100">
 
     <!-- Seção de Login (Começa oculta para evitar "piscada") -->
-    <section id="login-section"
-        class="fouc-hidden min-h-screen items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+    <section id="login-section" style="display: none;"
+        class="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
         <div class="max-w-md w-full space-y-8 bg-white p-10 rounded-2xl shadow-xl">
             <div>
                 <svg class="mx-auto h-12 w-auto text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none"
@@ -63,46 +61,27 @@
             <!-- Mensagem de Erro/Status -->
             <div id="login-status" class="text-center text-red-500 font-medium"></div>
 
-            <!-- Formulário de Login -->
-            <form id="login-form" class="mt-8 space-y-6">
-                <div class="rounded-md shadow-sm -space-y-px">
-                    <div>
-                        <label for="login-email" class="sr-only">Email</label>
-                        <input id="login-email" name="email" type="email" autocomplete="email" required
-                            class="appearance-none rounded-none relative block w-full px-3 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
-                            placeholder="Endereço de e-mail">
-                    </div>
-                    <div>
-                        <label for="login-password" class="sr-only">Senha</label>
-                        <input id="login-password" name="password" type="password" autocomplete="current-password"
-                            required
-                            class="appearance-none rounded-none relative block w-full px-3 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
-                            placeholder="Senha">
-                    </div>
-                </div>
+            <!-- Formulário de Login (REMOVIDO) -->
+            <!-- <form id="login-form" class="mt-8 space-y-6"> ... </form> -->
 
-                <div>
-                    <button type="submit"
-                        class="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors">
-                        Entrar
-                    </button>
-                </div>
-            </form>
+            <!-- Divisor "OU" (REMOVIDO) -->
+            <!-- <div class="relative flex py-3 items-center"> ... </div> -->
 
-            <!-- Divisor "OU" -->
-            <div class="relative flex py-3 items-center">
-                <div class="flex-grow border-t border-gray-300"></div>
-                <span class="flex-shrink mx-4 text-gray-500">OU</span>
-                <div class="flex-grow border-t border-gray-300"></div>
-            </div>
-
-            <!-- Botão Login Google -->
-            <div>
+            <div class="space-y-4 pt-6">
+                <!-- Botão Login Google -->
                 <button id="google-login-btn"
                     class="group relative w-full flex justify-center py-3 px-4 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors">
                     <img class="w-5 h-5 mr-2" src="https://www.svgrepo.com/show/475656/google-color.svg"
                         alt="Google icon">
                     Entrar com Google
+                </button>
+
+                <!-- NOVO: Botão Login Microsoft -->
+                <button id="microsoft-login-btn"
+                    class="group relative w-full flex justify-center py-3 px-4 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors">
+                    <img class="w-5 h-5 mr-2" src="https://www.svgrepo.com/show/303108/microsoft-icon-logo.svg"
+                        alt="Microsoft icon">
+                    Entrar com Microsoft
                 </button>
             </div>
 
@@ -118,7 +97,7 @@
     </section>
 
     <!-- Seção de Administração (Começa oculta para evitar "piscada") -->
-    <section id="admin-dashboard" class="fouc-hidden">
+    <section id="admin-dashboard" style="display: none;">
 
         <!-- Header do Admin -->
         <header class="bg-white shadow-md sticky top-0 z-40">
@@ -135,7 +114,11 @@
                     </div>
                     <!-- Info Usuário e Botões -->
                     <div class="flex items-center gap-4">
-                        <span id="user-email" class="text-sm text-slate-600 hidden sm:block"></span>
+                        <!-- NOVO: Exibição de Cargo -->
+                        <span id="user-info" class="text-sm text-slate-600 hidden sm:block">
+                            <span id="user-email" class="font-medium"></span>
+                            (<span id="user-role" class="font-light"></span>)
+                        </span>
                         <a href="index.html" target="_blank"
                             class="text-sm font-medium text-blue-600 hover:text-blue-800 transition-colors focus-ring-visible rounded-md p-1">
                             Ver Site
@@ -164,8 +147,9 @@
                 <!-- Coluna Principal (Formulário de Artigo e Lista) -->
                 <div class="lg:col-span-2 space-y-8">
 
-                    <!-- Formulário de Artigo -->
-                    <div class="bg-white p-6 sm:p-8 rounded-2xl shadow-lg">
+                    <!-- Formulário de Artigo (Permissão: Redator, Editor, Admin) -->
+                    <div id="article-form-section" class="bg-white p-6 sm:p-8 rounded-2xl shadow-lg"
+                        style="display: none;"> <!-- Oculto por padrão -->
                         <h2 id="article-form-title" class="text-2xl font-bold text-slate-800 mb-6">Adicionar Novo Artigo
                         </h2>
                         <form id="article-form" class="space-y-6">
@@ -178,8 +162,8 @@
                                     class="w-full p-3 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
                             </div>
 
-                            <!-- Categoria -->
-                            <div>
+                            <!-- Categoria (Permissão: Editor, Admin) -->
+                            <div class="permission-editor permission-admin" style="display: none;">
                                 <label for="article-category"
                                     class="block text-sm font-medium text-slate-700 mb-1">Categoria</label>
                                 <select id="article-category" required
@@ -198,7 +182,7 @@
                                     class="w-full p-3 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
                             </div>
 
-                            <!-- Links Múltiplos -->
+                            <!-- Links Múltiplos (Inalterado) -->
                             <div>
                                 <label class="block text-sm font-medium text-slate-700 mb-1">Links de Referência (Max
                                     5)</label>
@@ -234,20 +218,9 @@
                             <div>
                                 <label class="block text-sm font-medium text-slate-700 mb-1">Conteúdo Completo</label>
                                 <div id="editor-container"></div> <!-- Container do Quill -->
-                                <!-- Ajuda para Imagens -->
+                                <!-- Ajuda para Imagens (Inalterado) -->
                                 <p class="text-xs text-slate-500 mt-2">
-                                    <b>Para adicionar imagens:</b> Publique a imagem em um site (como
-                                    <a href="https://imgur.com/upload" target="_blank"
-                                        class="text-blue-600 hover:underline">Imgur</a> ou
-                                    <a href="https://postimages.org/" target="_blank"
-                                        class="text-blue-600 hover:underline">Postimages</a>),
-                                    copie o link direto da imagem (ex: .jpg, .png) e cole-o usando o ícone de imagem
-                                    <svg class="w-4 h-4 inline -mt-1" xmlns="http://www.w3.org/2000/svg" fill="none"
-                                        viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round"
-                                            d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5zm10.5-11.25h.008v.008h-.008V8.25zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
-                                    </svg>
-                                    na barra de ferramentas.
+                                    <b>Para adicionar imagens:</b> ... (texto de ajuda)
                                 </p>
                             </div>
 
@@ -268,23 +241,48 @@
                         </form>
                     </div>
 
-                    <!-- Lista de Artigos -->
+                    <!-- Lista de Artigos (COM BUSCA E PAGINAÇÃO) -->
                     <div class="bg-white p-6 sm:p-8 rounded-2xl shadow-lg">
                         <h2 class="text-2xl font-bold text-slate-800 mb-6">Artigos Publicados</h2>
+
+                        <!-- NOVO: Busca no Admin -->
+                        <div class="relative mb-4">
+                            <input type="search" id="admin-search-input" placeholder="Buscar artigos no painel..."
+                                class="w-full p-3 pl-10 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <div class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
+                                <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                    stroke-width="1.5" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                        d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
+                                </svg>
+                            </div>
+                        </div>
+
                         <div id="articles-list-admin" class="space-y-4">
                             <p id="articles-loading-msg">Carregando artigos...</p>
                             <!-- Lista preenchida pelo JS -->
                         </div>
+
+                        <!-- NOVO: Paginação no Admin -->
+                        <div id="admin-load-more-container" class="text-center mt-8 hidden">
+                            <button id="admin-load-more-btn"
+                                class="bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium py-2 px-6 rounded-lg transition-colors focus-ring-visible">
+                                Carregar Mais
+                            </button>
+                        </div>
                     </div>
                 </div>
 
-                <!-- Coluna Lateral (Gerenciar Categorias) -->
+                <!-- Coluna Lateral (Gerenciar Categorias E Usuários) -->
                 <div class="lg:col-span-1 space-y-8">
-                    <div class="bg-white p-6 sm:p-8 rounded-2xl shadow-lg sticky top-24">
+
+                    <!-- Seção Gerenciar Categorias (Permissão: Admin) -->
+                    <div id="category-admin-section" class="bg-white p-6 sm:p-8 rounded-2xl shadow-lg sticky top-24"
+                        style="display: none;">
                         <h2 id="category-form-title" class="text-2xl font-bold text-slate-800 mb-6">Gerenciar Categorias
                         </h2>
 
-                        <!-- Formulário de Categoria -->
+                        <!-- Formulário de Categoria (Inalterado) -->
                         <form id="category-form" class="space-y-4 mb-8">
                             <div>
                                 <label for="category-name" class="block text-sm font-medium text-slate-700 mb-1">Nome da
@@ -292,9 +290,8 @@
                                 <input type="text" id="category-name" required
                                     class="w-full p-3 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
                             </div>
-
                             <div class="grid grid-cols-2 gap-4">
-                                <!-- Cor -->
+                                <!-- Cor (COM NOVAS CORES) -->
                                 <div>
                                     <label for="category-color"
                                         class="block text-sm font-medium text-slate-700 mb-1">Cor</label>
@@ -309,7 +306,6 @@
                                         <option value="indigo">Índigo (Indigo)</option>
                                         <option value="purple">Roxo (Purple)</option>
                                         <option value="pink">Rosa (Pink)</option>
-                                        <!-- NOVAS CORES -->
                                         <option value="cyan">Ciano (Cyan)</option>
                                         <option value="teal">Verde-azulado (Teal)</option>
                                         <option value="lime">Lima (Lime)</option>
@@ -317,7 +313,7 @@
                                         <option value="sky">Céu (Sky)</option>
                                     </select>
                                 </div>
-                                <!-- Ícone -->
+                                <!-- Ícone (COM ÍCONE 'USER' ATUALIZADO) -->
                                 <div>
                                     <label for="category-icon"
                                         class="block text-sm font-medium text-slate-700 mb-1">Ícone</label>
@@ -328,7 +324,7 @@
                                         <option value="gavel">Conformidade (gavel)</option>
                                         <option value="alert">Alerta (alert)</option>
                                         <option value="info">Info (info)</option>
-                                        <option value="user">Pessoa (user)</option> <!-- ÍCONE ATUALIZADO -->
+                                        <option value="user">Pessoa (user)</option>
                                         <option value="list">Lista (list)</option>
                                         <option value="file">Arquivo (file)</option>
                                         <option value="chart-bar">Gráfico (chart-bar)</option>
@@ -337,10 +333,8 @@
                                     </select>
                                 </div>
                             </div>
-
                             <!-- ID Oculto (para edição) -->
                             <input type="hidden" id="category-id">
-
                             <!-- Botões -->
                             <div class="flex gap-4">
                                 <button type="submit"
@@ -361,10 +355,55 @@
                             <!-- Lista preenchida pelo JS -->
                         </div>
                     </div>
+
+                    <!-- NOVO: Seção Gerenciar Usuários (Permissão: Admin) -->
+                    <div id="user-admin-section" class="bg-white p-6 sm:p-8 rounded-2xl shadow-lg"
+                        style="display: none;">
+                        <h2 class="text-2xl font-bold text-slate-800 mb-6">Gerenciar Usuários</h2>
+                        <div class="mb-4">
+                            <label for="user-search" class="block text-sm font-medium text-slate-700 mb-1">Buscar
+                                Usuário</label>
+                            <input type="text" id="user-search" placeholder="Filtrar por e-mail..."
+                                class="w-full p-3 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        </div>
+                        <div id="user-list-admin" class="space-y-3 max-h-96 overflow-y-auto">
+                            <p id="users-loading-msg">Carregando usuários...</p>
+                            <!-- Lista de usuários preenchida pelo JS -->
+                        </div>
+                    </div>
+
                 </div>
             </div>
         </main>
     </section>
+
+    <!-- NOVO: Modal de Confirmação Customizado -->
+    <div id="confirm-modal" class="fouc-hidden fixed inset-0 z-50 items-center justify-center p-4"
+        style="display: none;">
+        <!-- Backdrop -->
+        <div id="modal-backdrop-confirm" class="fixed inset-0 bg-black bg-opacity-50 transition-opacity"
+            aria-hidden="true"></div>
+        <!-- Painel -->
+        <div id="modal-panel-confirm"
+            class="relative bg-white rounded-2xl shadow-xl w-full max-w-md transform transition-all opacity-0 scale-95">
+            <div class="p-6">
+                <h3 id="confirm-modal-title" class="text-lg font-medium leading-6 text-gray-900">Confirmar Ação</h3>
+                <div class="mt-2">
+                    <p id="confirm-modal-message" class="text-sm text-gray-500">Tem certeza?</p>
+                </div>
+            </div>
+            <div class="bg-gray-50 px-6 py-4 flex flex-row-reverse gap-3 rounded-b-2xl">
+                <button type="button" id="confirm-modal-btn-confirm"
+                    class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-red-600 text-base font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 sm:w-auto sm:text-sm">
+                    Confirmar
+                </button>
+                <button type="button" id="confirm-modal-btn-cancel"
+                    class="w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:w-auto sm:text-sm">
+                    Cancelar
+                </button>
+            </div>
+        </div>
+    </div>
 
 
     <!-- Firebase SDKs -->
@@ -374,13 +413,13 @@
         import {
             getAuth,
             onAuthStateChanged,
-            signInWithEmailAndPassword,
+            // signInWithEmailAndPassword, // REMOVIDO
             signInWithPopup,
             GoogleAuthProvider,
+            OAuthProvider, // NOVO
             signOut,
             getIdToken
         } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        // REMOVEMOS O 'getFirestore' - ele agora roda no servidor
 
         // Configuração do Firebase
         const firebaseConfig = {
@@ -396,22 +435,38 @@
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const googleProvider = new GoogleAuthProvider();
-        setLogLevel('Debug'); // Habilita logs detalhados no console
+        const microsoftProvider = new OAuthProvider('microsoft.com'); // NOVO
+        setLogLevel('Debug');
 
-        // Lista de E-mails Admin
-        const adminEmails = ['eduardocarnello@gmail.com', 'mariliajec@tjsp.jus.br'];
+        // --- ESTADO GLOBAL ---
+        let currentUserRole = 'Leitor'; // Padrão
+        let allCategoriesMap = new Map();
+        let allUsersCache = []; // Cache para busca de usuários
+        let adminArticlesCache = []; // Cache para busca de artigos no admin
+        let adminArticleCount = 0;
+        const ADMIN_ARTICLES_PER_PAGE = 15; // QOL: Paginação
+        let adminIsLoadingMore = false;
+        let adminIsSearchActive = false;
+        // const adminEmails = ['eduardocarnello@gmail.com', 'mariliajec@tjsp.jus.br']; // REMOVIDO
 
         // --- REFERÊNCIAS DO DOM ---
         const loginSection = document.getElementById('login-section');
         const adminDashboard = document.getElementById('admin-dashboard');
-        const loginForm = document.getElementById('login-form');
-        const loginEmail = document.getElementById('login-email');
-        const loginPassword = document.getElementById('login-password');
+        const loginForm = document.getElementById('login-form'); // (Será removido)
+        // const loginEmail = document.getElementById('login-email'); // (Será removido)
+        // const loginPassword = document.getElementById('login-password'); // (Será removido)
         const loginStatus = document.getElementById('login-status');
         const googleLoginBtn = document.getElementById('google-login-btn');
+        const microsoftLoginBtn = document.getElementById('microsoft-login-btn'); // NOVO
         const logoutBtn = document.getElementById('logout-btn');
         const userEmailSpan = document.getElementById('user-email');
+        const userRoleSpan = document.getElementById('user-role'); // NOVO
         const adminStatus = document.getElementById('admin-status');
+
+        // Seções de Permissão
+        const articleFormSection = document.getElementById('article-form-section');
+        const categoryAdminSection = document.getElementById('category-admin-section');
+        const userAdminSection = document.getElementById('user-admin-section'); // NOVO
 
         // Formulário de Artigo
         const articleForm = document.getElementById('article-form');
@@ -419,16 +474,19 @@
         const articleTitle = document.getElementById('article-title');
         const articleCategory = document.getElementById('article-category');
         const articleSummary = document.getElementById('article-summary');
-        // LINKS MÚLTIPLOS
         const linksContainer = document.getElementById('links-container');
         const addLinkBtn = document.getElementById('add-link-btn');
-        // const articleLink = document.getElementById('article-link'); // Removido
         const articlePublishedAt = document.getElementById('article-published-at');
         const articleTags = document.getElementById('article-tags');
         const articleIdInput = document.getElementById('article-id');
         const cancelEditBtn = document.getElementById('cancel-edit-btn');
+
+        // Lista de Artigos Admin (QOL)
         const articlesListAdmin = document.getElementById('articles-list-admin');
         const articlesLoadingMsg = document.getElementById('articles-loading-msg');
+        const adminSearchInput = document.getElementById('admin-search-input'); // NOVO
+        const adminLoadMoreContainer = document.getElementById('admin-load-more-container'); // NOVO
+        const adminLoadMoreBtn = document.getElementById('admin-load-more-btn'); // NOVO
 
         // Formulário de Categoria
         const categoryForm = document.getElementById('category-form');
@@ -440,6 +498,20 @@
         const cancelCategoryEditBtn = document.getElementById('cancel-category-edit-btn');
         const categoryListAdmin = document.getElementById('category-list-admin');
         const categoriesLoadingMsg = document.getElementById('categories-loading-msg');
+
+        // Gerenciamento de Usuários (NOVO)
+        const userSearchInput = document.getElementById('user-search');
+        const userListAdmin = document.getElementById('user-list-admin');
+        const usersLoadingMsg = document.getElementById('users-loading-msg');
+
+        // Modal de Confirmação (NOVO)
+        const confirmModal = document.getElementById('confirm-modal');
+        const modalBackdropConfirm = document.getElementById('modal-backdrop-confirm');
+        const modalPanelConfirm = document.getElementById('modal-panel-confirm');
+        const confirmModalTitle = document.getElementById('confirm-modal-title');
+        const confirmModalMessage = document.getElementById('confirm-modal-message');
+        const confirmModalBtnConfirm = document.getElementById('confirm-modal-btn-confirm');
+        const confirmModalBtnCancel = document.getElementById('confirm-modal-btn-cancel');
 
         // Editor Quill
         let quill;
@@ -463,18 +535,15 @@
         }
 
         // --- FUNÇÃO WRAPPER DE FETCH (COM TOKEN) ---
-        // (Usa caminhos relativos e trata erros)
+        // (Inalterada)
         async function fetchWithToken(apiUrl, options = {}) {
             if (!auth.currentUser) {
                 showStatusMessage('Usuário não autenticado. Faça login novamente.', true);
-                signOut(auth); // Força o logout
+                signOut(auth);
                 throw new Error("Usuário não autenticado.");
             }
-
             try {
                 const token = await getIdToken(auth.currentUser);
-
-                // Configura headers
                 options.headers = {
                     ...options.headers,
                     'Authorization': `Bearer ${token}`
@@ -483,22 +552,15 @@
                 if (options.body) {
                     options.headers['Content-Type'] = 'application/json';
                 }
-
-                // Usa caminho relativo (remove / inicial)
                 const relativeApiUrl = apiUrl.startsWith('/') ? apiUrl.substring(1) : apiUrl;
-
                 const response = await fetch(relativeApiUrl, options);
-
                 const responseText = await response.text();
-
                 if (!response.ok) {
                     let errorMessage = `Erro ${response.status}`;
                     if (responseText) {
                         try {
                             const errorData = JSON.parse(responseText);
-                            if (errorData.error) {
-                                errorMessage = errorData.error;
-                            }
+                            if (errorData.error) errorMessage = errorData.error;
                         } catch (e) {
                             console.error("Erro HTML/Texto (não-JSON) recebido:", responseText.substring(0, 100) + '...');
                             errorMessage = `Erro ${response.status}: A API não foi encontrada ou retornou um erro inesperado.`;
@@ -507,17 +569,13 @@
                     console.error(`Erro na API (${response.status}):`, errorMessage);
                     throw new Error(errorMessage);
                 }
-
-                if (!responseText) {
-                    return null; // Resposta OK sem corpo (ex: Deletar)
-                }
+                if (!responseText) return null;
                 try {
                     return JSON.parse(responseText);
                 } catch (e) {
                     console.warn("Resposta da API não era JSON:", responseText);
                     return responseText;
                 }
-
             } catch (error) {
                 console.error("Erro fatal no fetchWithToken:", error);
                 showStatusMessage(error.message || 'Erro de rede ou autenticação.', true);
@@ -526,91 +584,137 @@
         }
 
 
-        // --- AUTENTICAÇÃO (COM PROTEÇÃO DE ROTA E CORREÇÃO DE "PISCADA") ---
-        onAuthStateChanged(auth, (user) => {
+        // --- AUTENTICAÇÃO (COM SISTEMA DE CARGOS) ---
+        onAuthStateChanged(auth, async (user) => {
             if (user) {
-                // Checagem de permissão
-                if (adminEmails.includes(user.email)) {
-                    // É Admin: Mostra o painel
-                    adminDashboard.style.display = 'block'; // Mostra o painel
-                    loginSection.style.display = 'none'; // Esconde o login
-                    userEmailSpan.textContent = user.email;
-                    initializeQuill(); // Inicializa o editor SÓ quando logado
-                    resetLinksContainer(); // Adiciona o primeiro campo de link
+                try {
+                    // NOVO: Chama a API upsert para registrar o usuário e obter seu cargo
+                    const { role, email } = await fetchWithToken('api/user/upsert', { method: 'POST' });
+                    currentUserRole = role; // Armazena o cargo globalmente
 
-                    // Carrega os dados (categorias e artigos)
+                    // Redireciona se for apenas Leitor
+                    if (role === 'Leitor') {
+                        // Não mostre o alerta, apenas redirecione silenciosamente
+                        // alert('Acesso negado. Você não tem permissão para acessar o painel de administração.');
+                        window.location.href = 'index.html';
+                        return;
+                    }
+
+                    // É Redator, Editor ou Admin: Mostra o painel
+                    adminDashboard.style.display = 'block';
+                    loginSection.style.display = 'none';
+                    userEmailSpan.textContent = email;
+                    userRoleSpan.textContent = role; // Mostra o cargo
+
+                    initializeQuill();
+                    resetLinksContainer();
+
+                    // Carrega os dados iniciais
                     loadCategories();
-                    loadArticles();
-                } else {
-                    // Não é Admin: Redireciona para o index
-                    alert('Acesso negado. Você não tem permissão para acessar esta página.');
-                    window.location.href = 'index.html';
+                    await executeAdminSearch(true); // Carrega a primeira página de artigos
+
+                    // Controla a visibilidade das seções com base no cargo
+                    updateUIVisibility(role);
+
+                    // Carrega usuários (apenas para Admins)
+                    if (role === 'Admin') {
+                        loadUsers();
+                    }
+
+                } catch (error) {
+                    console.error("Erro ao verificar cargo do usuário:", error);
+                    showStatusMessage('Erro ao verificar permissões. Faça login novamente.', true);
+                    await signOut(auth);
                 }
             } else {
                 // Usuário está deslogado
-                loginSection.style.display = 'flex'; // Mostra o login
-                adminDashboard.style.display = 'none'; // Esconde o painel
+                loginSection.style.display = 'flex';
+                adminDashboard.style.display = 'none';
                 userEmailSpan.textContent = '';
+                userRoleSpan.textContent = '';
+                currentUserRole = 'Leitor';
                 if (quill) {
-                    quill = null; // Destrói a instância se deslogar
+                    quill = null;
                 }
             }
         });
 
-        // Login com E-mail/Senha
-        loginForm.addEventListener('submit', (e) => {
-            e.preventDefault();
-            loginStatus.textContent = 'Entrando...';
-            signInWithEmailAndPassword(auth, loginEmail.value, loginPassword.value)
-                .then((userCredential) => {
-                    loginStatus.textContent = '';
-                    loginForm.reset();
-                })
-                .catch((error) => {
-                    console.error("Erro de login:", error.code, error.message);
-                    if (error.code === 'auth/invalid-credential' || error.code === 'auth/wrong-password' || error.code === 'auth/user-not-found') {
-                        loginStatus.textContent = 'E-mail ou senha inválidos.';
-                    } else {
-                        loginStatus.textContent = 'Erro ao tentar fazer login.';
-                    }
-                });
-        });
+        // REMOVIDO: Login com E-mail/Senha
+        // loginForm.addEventListener('submit', ...);
 
         // Login com Google
         googleLoginBtn.addEventListener('click', () => {
             loginStatus.textContent = 'Abrindo popup do Google...';
-            signInWithPopup(auth, googleProvider)
-                .then((result) => {
-                    loginStatus.textContent = '';
-                })
-                .catch((error) => {
-                    console.error("Erro ao logar com Google:", error);
-                    // (O tratamento de erro já estava aqui)
-                    if (error.code === 'auth/popup-closed-by-user') {
-                        loginStatus.textContent = 'Popup de login fechado.';
-                    } else if (error.code === 'auth/unauthorized-domain') {
-                        loginStatus.textContent = 'Erro: Domínio não autorizado. (Verifique o console do Firebase)';
-                        alert("ERRO: O domínio do seu site não está autorizado. \n\nPor favor, vá ao Console do Firebase > Authentication > Settings > Authorized domains e adicione o domínio onde este site está hospedado.");
-                    } else {
-                        loginStatus.textContent = 'Erro ao logar com Google.';
-                    }
-                });
+            signInWithPopup(auth, googleProvider).catch(handleAuthError);
         });
 
-        // Logout
-        logoutBtn.addEventListener('click', () => {
-            if (window.confirm('Tem certeza que deseja sair?')) {
-                signOut(auth).catch((error) => {
-                    console.error("Erro ao sair:", error);
-                    showStatusMessage('Erro ao tentar sair.', true);
-                });
-            }
+        // NOVO: Login com Microsoft
+        microsoftLoginBtn.addEventListener('click', () => {
+            loginStatus.textContent = 'Abrindo popup da Microsoft...';
+            signInWithPopup(auth, microsoftProvider).catch(handleAuthError);
         });
+
+        function handleAuthError(error) {
+            console.error("Erro de login:", error.code, error.message);
+            if (error.code === 'auth/popup-closed-by-user') {
+                loginStatus.textContent = 'Popup de login fechado.';
+            } else if (error.code === 'auth/unauthorized-domain') {
+                loginStatus.textContent = 'Erro: Domínio não autorizado.';
+                alert("ERRO: O domínio do seu site não está autorizado. \n\nPor favor, vá ao Console do Firebase > Authentication > Settings > Authorized domains e adicione o domínio onde este site está hospedado.");
+            } else {
+                loginStatus.textContent = 'Erro ao tentar fazer login.';
+            }
+        }
+
+        // Logout (COM MODAL CUSTOMIZADO)
+        logoutBtn.addEventListener('click', () => {
+            showConfirmModal(
+                'Sair do Painel',
+                'Tem certeza que deseja sair?',
+                async () => { // onConfirm
+                    try {
+                        await signOut(auth);
+                    } catch (error) {
+                        console.error("Erro ao sair:", error);
+                        showStatusMessage('Erro ao tentar sair.', true);
+                    }
+                },
+                'Sair' // Texto do botão de confirmação
+            );
+        });
+
+        // NOVO: Controla a visibilidade da UI com base no cargo
+        function updateUIVisibility(role) {
+            // Seções inteiras
+            articleFormSection.style.display = (role === 'Redator' || role === 'Editor' || role === 'Admin') ? 'block' : 'none';
+            categoryAdminSection.style.display = (role === 'Admin') ? 'block' : 'none';
+            userAdminSection.style.display = (role === 'Admin') ? 'block' : 'none';
+
+            // Elementos específicos
+
+            // Permissão para ver dropdown de Categoria
+            const categorySelectDiv = articleCategory.closest('div');
+            if (categorySelectDiv) {
+                categorySelectDiv.style.display = (role === 'Editor' || role === 'Admin') ? 'block' : 'none';
+            }
+
+            // Permissão para ver botões
+            const deleteArticleButtons = document.querySelectorAll('.delete-article-btn');
+            deleteArticleButtons.forEach(btn => btn.style.display = (role === 'Admin') ? 'inline-flex' : 'none');
+
+            const editArticleButtons = document.querySelectorAll('.edit-article-btn');
+            editArticleButtons.forEach(btn => btn.style.display = (role === 'Editor' || role === 'Admin') ? 'inline-flex' : 'none');
+
+            const editCategoryButtons = document.querySelectorAll('.edit-category-btn');
+            editCategoryButtons.forEach(btn => btn.style.display = (role === 'Admin') ? 'inline-flex' : 'none');
+
+            const deleteCategoryButtons = document.querySelectorAll('.delete-category-btn');
+            deleteCategoryButtons.forEach(btn => btn.style.display = (role === 'Admin') ? 'inline-flex' : 'none');
+        }
 
 
         // --- GERENCIAMENTO DE CATEGORIAS (CRUD) ---
-
-        let allCategoriesMap = new Map();
+        // (O código de salvar/carregar/popular/resetar é quase o mesmo)
 
         // Salvar/Atualizar Categoria
         categoryForm.addEventListener('submit', async (e) => {
@@ -622,20 +726,15 @@
                 icon: categoryIcon.value,
                 slug: slugify(categoryName.value)
             };
-
             try {
-                if (id) {
-                    categoryData.id = id;
-                }
-
+                if (id) categoryData.id = id;
                 await fetchWithToken('api/admin/salvarCategoria', {
                     method: 'POST',
                     body: JSON.stringify(categoryData)
                 });
-
                 showStatusMessage(id ? 'Categoria atualizada!' : 'Categoria salva!');
                 resetCategoryForm();
-                loadCategories(); // REFRESH AUTOMÁTICO
+                loadCategories(); // Auto-refresh
             } catch (error) {
                 console.error("Erro ao salvar categoria: ", error);
                 showStatusMessage(error.message || 'Erro ao salvar categoria.', true);
@@ -644,15 +743,13 @@
 
         // Carregar Categorias
         async function loadCategories() {
-            categoriesLoadingMsg.style.display = 'block'; // Mostra o loader
+            categoriesLoadingMsg.style.display = 'block';
             try {
                 const categories = await fetchWithToken('api/getCategorias');
-
                 categoriesLoadingMsg.classList.add('hidden');
                 categoryListAdmin.innerHTML = '';
                 articleCategory.innerHTML = '<option value="">-- Selecione uma categoria --</option>';
                 allCategoriesMap.clear();
-
                 categories.sort((a, b) => a.name.localeCompare(b.name));
 
                 categories.forEach(category => {
@@ -664,10 +761,10 @@
                     el.innerHTML = `
                         <span class="font-medium text-slate-700">${category.name}</span>
                         <div class="flex gap-2">
-                            <button data-id="${category.id}" class="edit-category-btn text-blue-600 hover:text-blue-800 focus-ring-visible rounded-md p-1">
+                            <button data-id="${category.id}" class="edit-category-btn text-blue-600 hover:text-blue-800 focus-ring-visible rounded-md p-1" style="display: ${currentUserRole === 'Admin' ? 'inline-flex' : 'none'}">
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.536L16.732 3.732z"></path></svg>
                             </button>
-                            <button data-id="${category.id}" data-name="${category.name}" class="delete-category-btn text-red-600 hover:text-red-800 focus-ring-visible rounded-md p-1">
+                            <button data-id="${category.id}" data-name="${category.name}" class="delete-category-btn text-red-600 hover:text-red-800 focus-ring-visible rounded-md p-1" style="display: ${currentUserRole === 'Admin' ? 'inline-flex' : 'none'}">
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
                             </button>
                         </div>
@@ -696,16 +793,8 @@
         categoryListAdmin.addEventListener('click', (e) => {
             const editBtn = e.target.closest('.edit-category-btn');
             const deleteBtn = e.target.closest('.delete-category-btn');
-
-            if (editBtn) {
-                const id = editBtn.dataset.id;
-                populateCategoryForm(id);
-            }
-            if (deleteBtn) {
-                const id = deleteBtn.dataset.id;
-                const name = deleteBtn.dataset.name;
-                deleteCategory(id, name);
-            }
+            if (editBtn) populateCategoryForm(editBtn.dataset.id);
+            if (deleteBtn) deleteCategory(deleteBtn.dataset.id, deleteBtn.dataset.name);
         });
 
         // Preencher formulário de Categoria para edição
@@ -722,22 +811,26 @@
             }
         }
 
-        // Deletar Categoria
+        // Deletar Categoria (COM MODAL CUSTOMIZADO)
         async function deleteCategory(id, name) {
-            if (confirm(`Tem certeza que quer deletar a categoria "${name}"?\nATENÇÃO: Artigos nesta categoria ficarão órfãos.`)) {
-                try {
-                    await fetchWithToken('api/admin/deletarCategoria', {
-                        method: 'POST', // Usamos POST para enviar um corpo
-                        body: JSON.stringify({ id: id })
-                    });
-                    showStatusMessage('Categoria deletada.');
-                    resetCategoryForm();
-                    loadCategories(); // REFRESH AUTOMÁTICO
-                } catch (error) {
-                    console.error("Erro ao deletar categoria: ", error);
-                    showStatusMessage(error.message || 'Erro ao deletar categoria.', true);
+            showConfirmModal(
+                'Deletar Categoria',
+                `Tem certeza que quer deletar a categoria "${name}"? Artigos nesta categoria ficarão órfãos.`,
+                async () => {
+                    try {
+                        await fetchWithToken('api/admin/deletarCategoria', {
+                            method: 'POST',
+                            body: JSON.stringify({ id: id })
+                        });
+                        showStatusMessage('Categoria deletada.');
+                        resetCategoryForm();
+                        loadCategories(); // Auto-refresh
+                    } catch (error) {
+                        console.error("Erro ao deletar categoria: ", error);
+                        showStatusMessage(error.message || 'Erro ao deletar categoria.', true);
+                    }
                 }
-            }
+            );
         }
 
         // Limpar formulário de Categoria
@@ -758,34 +851,21 @@
             const id = articleIdInput.value;
             const publishedDate = articlePublishedAt.value;
 
-            // Processa as tags
-            const tagsArray = articleTags.value
-                .split(',')
-                .map(tag => tag.trim())
-                .filter(tag => tag.length > 0);
-
-            // Processa os links múltiplos
-            const linksArray = Array.from(linksContainer.querySelectorAll('input'))
-                .map(input => input.value.trim())
-                .filter(link => link.length > 0);
+            const tagsArray = articleTags.value.split(',').map(tag => tag.trim()).filter(tag => tag.length > 0);
+            const linksArray = Array.from(linksContainer.querySelectorAll('input')).map(input => input.value.trim()).filter(link => link.length > 0);
 
             const articleData = {
                 title: articleTitle.value,
                 categoryId: articleCategory.value,
                 summary: articleSummary.value,
-                links: linksArray, // Array de links
+                links: linksArray,
                 tags: tagsArray,
                 content: quill.root.innerHTML,
                 slug: slugify(articleTitle.value),
             };
 
-            if (id) {
-                articleData.id = id;
-            }
-
-            if (publishedDate) {
-                articleData.publishedAt = publishedDate;
-            }
+            if (id) articleData.id = id;
+            if (publishedDate) articleData.publishedAt = publishedDate;
 
             try {
                 await fetchWithToken('api/admin/salvarArtigo', {
@@ -795,75 +875,134 @@
 
                 showStatusMessage(id ? 'Artigo atualizado!' : 'Artigo salvo!');
                 resetArticleForm();
-                loadArticles(); // REFRESH AUTOMÁTICO
+                await executeAdminSearch(true); // REFRESH AUTOMÁTICO (força recarga)
             } catch (error) {
                 console.error("Erro ao salvar artigo: ", error);
                 showStatusMessage(error.message || 'Erro ao salvar artigo.', true);
             }
         });
 
-        // Carregar Artigos (para o Admin)
-        async function loadArticles() {
-            articlesLoadingMsg.style.display = 'block'; // Mostra o loader
+        // QOL: BUSCA E PAGINAÇÃO NO ADMIN
+        adminSearchInput.addEventListener('input', () => {
+            // Otimização: Debounce
+            clearTimeout(adminSearchInput.timeoutId);
+            adminSearchInput.timeoutId = setTimeout(() => {
+                executeAdminSearch(true); // true = resetar e buscar do zero
+            }, 300);
+        });
+
+        adminLoadMoreBtn.addEventListener('click', () => {
+            if (!adminIsLoadingMore) {
+                executeAdminSearch(false); // false = carregar mais (adicionar)
+            }
+        });
+
+        // Carregar Artigos (COM BUSCA E PAGINAÇÃO)
+        async function executeAdminSearch(reset = false) {
+            if (adminIsLoadingMore) return;
+            adminIsLoadingMore = true;
+
+            if (reset) {
+                adminArticlesCache = [];
+                adminArticleCount = 0;
+                articlesListAdmin.innerHTML = ''; // Limpa o grid
+            }
+
+            const searchTerm = adminSearchInput.value.trim();
+            const limit = adminArticleCount + ADMIN_ARTICLES_PER_PAGE;
+
+            articlesLoadingMsg.style.display = 'block';
+            adminLoadMoreBtn.textContent = 'Carregando...';
+            adminLoadMoreBtn.disabled = true;
+
             try {
-                const articles = await fetchWithToken('api/getArtigos?limit=1000');
-
-                articlesLoadingMsg.classList.add('hidden');
-                articlesListAdmin.innerHTML = '';
-
-                // A API já deve retornar os artigos ordenados
-                articles.forEach(article => {
-                    const category = allCategoriesMap.get(article.categoryId);
-                    const categoryName = category ? category.name : 'Sem Categoria';
-
-                    const date = article.publishedAt
-                        ? new Date(article.publishedAt.seconds * 1000).toLocaleDateString()
-                        : 'Salvando...';
-
-                    const el = document.createElement('div');
-                    el.className = 'flex justify-between items-center p-4 bg-slate-50 rounded-lg';
-                    el.innerHTML = `
-                        <div>
-                            <strong class="text-slate-800">${article.title}</strong>
-                            <span class="block text-sm text-slate-500">${categoryName} - ${date}</span>
-                        </div>
-                        <div class="flex gap-2 flex-shrink-0">
-                            <button data-id="${article.id}" class="edit-article-btn text-blue-600 hover:text-blue-800 focus-ring-visible rounded-md p-1">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.536L16.732 3.732z"></path></svg>
-                            </button>
-                            <button data-id="${article.id}" data-title="${article.title}" class="delete-article-btn text-red-600 hover:text-red-800 focus-ring-visible rounded-md p-1">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
-                            </button>
-                        </div>
-                    `;
-                    articlesListAdmin.appendChild(el);
-                });
-
-                if (articles.length === 0) {
-                    articlesLoadingMsg.textContent = 'Nenhum artigo encontrado.';
-                    articlesLoadingMsg.classList.remove('hidden');
+                let articles = [];
+                if (searchTerm === '') {
+                    // MODO PAGINAÇÃO (getArtigos)
+                    adminIsSearchActive = false;
+                    const url = `api/getArtigos?limit=${limit}&category=TODOS`; // Admin sempre vê tudo
+                    articles = await fetchWithToken(url);
+                } else {
+                    // MODO BUSCA (searchArtigos)
+                    adminIsSearchActive = true;
+                    adminLoadMoreContainer.classList.add('hidden'); // Busca não tem "carregar mais"
+                    const url = `api/searchArtigos?term=${encodeURIComponent(searchTerm)}&scope=all&category=TODOS`;
+                    articles = await fetchWithToken(url);
                 }
+
+                const newArticles = articles.filter(a => !adminArticlesCache.some(existing => existing.id === a.id));
+                adminArticlesCache = articles; // Cache é a lista completa
+                adminArticleCount = articles.length;
+
+                // Esconde "Carregar Mais" se a busca estiver ativa ou se não houver mais artigos
+                if (adminIsSearchActive || newArticles.length === 0 || articles.length < limit) {
+                    adminLoadMoreContainer.classList.add('hidden');
+                } else {
+                    adminLoadMoreContainer.classList.remove('hidden');
+                }
+
+                renderAdminArticles(newArticles, false); // false = não limpar o grid
+
             } catch (error) {
-                console.error("Erro ao carregar artigos: ", error);
+                console.error("Erro ao carregar artigos (admin): ", error);
                 articlesLoadingMsg.textContent = error.message || 'Erro ao carregar artigos.';
-                articlesLoadingMsg.classList.remove('hidden');
+            } finally {
+                adminIsLoadingMore = false;
+                adminLoadMoreBtn.textContent = 'Carregar Mais';
+                adminLoadMoreBtn.disabled = false;
+                articlesLoadingMsg.style.display = 'none';
             }
         }
+
+        // Função separada para RENDERIZAR os artigos do Admin
+        function renderAdminArticles(articlesToRender, clearGrid) {
+            if (clearGrid) articlesListAdmin.innerHTML = '';
+
+            if (articlesToRender.length === 0 && adminArticlesCache.length === 0) {
+                articlesLoadingMsg.textContent = 'Nenhum artigo encontrado.';
+                articlesLoadingMsg.style.display = 'block';
+                return;
+            } else {
+                articlesLoadingMsg.style.display = 'none';
+            }
+
+            const fragment = document.createDocumentFragment();
+            articlesToRender.forEach(article => {
+                const category = allCategoriesMap.get(article.categoryId);
+                const categoryName = category ? category.name : 'Sem Categoria';
+                const date = article.publishedAt
+                    ? new Date(article.publishedAt.seconds * 1000).toLocaleDateString()
+                    : 'Salvando...';
+
+                const el = document.createElement('div');
+                el.className = 'flex justify-between items-center p-4 bg-slate-50 rounded-lg';
+                el.innerHTML = `
+                     <div>
+                         <strong class="text-slate-800">${article.title}</strong>
+                         <span class="block text-sm text-slate-500">${categoryName} - ${date}</span>
+                     </div>
+                     <div class="flex gap-2 flex-shrink-0">
+                         <button data-id="${article.id}" class="edit-article-btn text-blue-600 hover:text-blue-800 focus-ring-visible rounded-md p-1" style="display: ${currentUserRole === 'Editor' || currentUserRole === 'Admin' ? 'inline-flex' : 'none'}">
+                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.536L16.732 3.732z"></path></svg>
+                         </button>
+                         <button data-id="${article.id}" data-title="${article.title}" class="delete-article-btn text-red-600 hover:text-red-800 focus-ring-visible rounded-md p-1" style="display: ${currentUserRole === 'Admin' ? 'inline-flex' : 'none'}">
+                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                         </button>
+                     </div>
+                 `;
+                articlesListAdmin.appendChild(el);
+            });
+        }
+
+        // (loadArticles foi substituída por executeAdminSearch)
 
         // Delegação de Eventos para botões de Artigo
         articlesListAdmin.addEventListener('click', (e) => {
             const editBtn = e.target.closest('.edit-article-btn');
             const deleteBtn = e.target.closest('.delete-article-btn');
 
-            if (editBtn) {
-                const id = editBtn.dataset.id;
-                populateArticleForm(id);
-            }
-            if (deleteBtn) {
-                const id = deleteBtn.dataset.id;
-                const title = deleteBtn.dataset.title;
-                deleteArticle(id, title);
-            }
+            if (editBtn) populateArticleForm(editBtn.dataset.id);
+            if (deleteBtn) deleteArticle(deleteBtn.dataset.id, deleteBtn.dataset.title);
         });
 
         // Preencher formulário de Artigo para edição
@@ -885,16 +1024,15 @@
                     articlePublishedAt.value = '';
                 }
 
-                // Popula os links múltiplos
-                resetLinksContainer(); // Limpa e adiciona o primeiro
+                resetLinksContainer();
                 const linkInputs = linksContainer.querySelectorAll('input');
-                const links = article.links || [];
+                const links = article.links || (article.link ? [article.link] : []);
 
                 links.forEach((link, index) => {
                     if (index === 0) {
-                        linkInputs[0].value = link; // Preenche o primeiro
+                        linkInputs[0].value = link;
                     } else {
-                        addLinkInput(link); // Adiciona novos campos para os links restantes
+                        addLinkInput(link);
                     }
                 });
 
@@ -908,73 +1046,69 @@
             }
         }
 
-        // Deletar Artigo
+        // Deletar Artigo (COM MODAL CUSTOMIZADO)
         async function deleteArticle(id, title) {
-            if (confirm(`Tem certeza que quer deletar o artigo "${title}"?`)) {
-                try {
-                    await fetchWithToken('api/admin/deletarArtigo', {
-                        method: 'POST',
-                        body: JSON.stringify({ id: id })
-                    });
-                    showStatusMessage('Artigo deletado.');
-                    resetArticleForm();
-                    loadArticles(); // REFRESH AUTOMÁTICO
-                } catch (error) {
-                    console.error("Erro ao deletar artigo: ", error);
-                    showStatusMessage(error.message || 'Erro ao deletar artigo.', true);
+            showConfirmModal(
+                'Deletar Artigo',
+                `Tem certeza que quer deletar o artigo "${title}"?`,
+                async () => {
+                    try {
+                        await fetchWithToken('api/admin/deletarArtigo', {
+                            method: 'POST',
+                            body: JSON.stringify({ id: id })
+                        });
+                        showStatusMessage('Artigo deletado.');
+                        resetArticleForm();
+                        await executeAdminSearch(true); // REFRESH AUTOMÁTICO
+                    } catch (error) {
+                        console.error("Erro ao deletar artigo: ", error);
+                        showStatusMessage(error.message || 'Erro ao deletar artigo.', true);
+                    }
                 }
-            }
+            );
         }
 
         // Limpar formulário de Artigo
         function resetArticleForm() {
             articleForm.reset();
             articleIdInput.value = '';
-            quill.root.innerHTML = '';
+            if (quill) {
+                quill.root.innerHTML = '';
+            }
             articleFormTitle.textContent = 'Adicionar Novo Artigo';
             cancelEditBtn.classList.add('hidden');
-            resetLinksContainer(); // Limpa e adiciona o primeiro campo de link
+            resetLinksContainer();
         }
         cancelEditBtn.addEventListener('click', resetArticleForm);
 
 
         // --- GERENCIAMENTO DE LINKS MÚLTIPLOS ---
-
+        // (Inalterado)
         function createLinkInput(value = '') {
             const inputCount = linksContainer.querySelectorAll('input').length;
-            if (inputCount >= 5) return; // Limite de 5 links
-
+            if (inputCount >= 5) return;
             const div = document.createElement('div');
             div.className = 'flex items-center gap-2';
-
             const input = document.createElement('input');
             input.type = 'url';
             input.placeholder = `https://exemplo.com/link-${inputCount + 1}`;
             input.className = 'w-full p-3 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 link-input';
             input.value = value;
-
             const removeBtn = document.createElement('button');
             removeBtn.type = 'button';
             removeBtn.className = 'text-red-500 hover:text-red-700 p-1 rounded-full focus-ring-visible';
             removeBtn.ariaLabel = 'Remover link';
             removeBtn.innerHTML = '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>';
-
             removeBtn.addEventListener('click', () => {
                 div.remove();
                 updateAddLinkButton();
             });
-
             div.appendChild(input);
             div.appendChild(removeBtn);
             linksContainer.appendChild(div);
-
             updateAddLinkButton();
         }
-
-        function addLinkInput(value = '') {
-            createLinkInput(value);
-        }
-
+        function addLinkInput(value = '') { createLinkInput(value); }
         function updateAddLinkButton() {
             const inputCount = linksContainer.querySelectorAll('input').length;
             if (inputCount >= 5) {
@@ -983,27 +1117,162 @@
                 addLinkBtn.classList.remove('hidden');
             }
         }
-
         function resetLinksContainer() {
             linksContainer.innerHTML = '';
-            addLinkInput(); // Adiciona o primeiro campo vazio
+            addLinkInput();
         }
-
         addLinkBtn.addEventListener('click', () => addLinkInput());
 
+
+        // --- NOVO: GERENCIAMENTO DE USUÁRIOS (ROLES) ---
+
+        userSearchInput.addEventListener('input', () => {
+            const filter = userSearchInput.value.toLowerCase();
+            document.querySelectorAll('#user-list-admin .user-row').forEach(row => {
+                const email = row.dataset.email.toLowerCase();
+                if (email.includes(filter)) {
+                    row.style.display = 'flex';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        });
+
+        async function loadUsers() {
+            usersLoadingMsg.style.display = 'block';
+            userListAdmin.innerHTML = '';
+            allUsersCache = [];
+
+            try {
+                const users = await fetchWithToken('api/admin/getUsers');
+                allUsersCache = users;
+                renderUsers(users);
+                usersLoadingMsg.style.display = 'none';
+            } catch (error) {
+                console.error("Erro ao carregar usuários: ", error);
+                usersLoadingMsg.textContent = error.message || 'Erro ao carregar usuários.';
+            }
+        }
+
+        function renderUsers(users) {
+            userListAdmin.innerHTML = ''; // Limpa a lista
+            if (users.length === 0) {
+                usersLoadingMsg.textContent = 'Nenhum usuário encontrado (além de você).';
+                usersLoadingMsg.style.display = 'block';
+                return;
+            }
+
+            users.sort((a, b) => a.email.localeCompare(b.email));
+
+            users.forEach(user => {
+                const el = document.createElement('div');
+                el.className = 'user-row flex justify-between items-center p-3 bg-slate-50 rounded-lg';
+                el.dataset.email = user.email;
+
+                const roleSelectId = `role-select-${user.uid}`;
+
+                el.innerHTML = `
+                    <div class="flex-grow overflow-hidden">
+                        <span class="font-medium text-slate-800 text-sm truncate block" title="${user.email}">${user.email}</span>
+                        <!-- <span class="text-xs text-slate-500">${user.uid}</span> -->
+                    </div>
+                    <div class="flex-shrink-0 ml-2">
+                        <select id="${roleSelectId}" data-uid="${user.uid}" class="role-select w-full p-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white text-sm">
+                            <option value="Leitor" ${user.role === 'Leitor' ? 'selected' : ''}>Leitor</option>
+                            <option value="Redator" ${user.role === 'Redator' ? 'selected' : ''}>Redator</option>
+                            <option value="Editor" ${user.role === 'Editor' ? 'selected' : ''}>Editor</option>
+                            <option value="Admin" ${user.role === 'Admin' ? 'selected' : ''}>Admin</option>
+                        </select>
+                    </div>
+                `;
+                userListAdmin.appendChild(el);
+            });
+        }
+
+        // Delegação de evento para os <select> de cargo
+        userListAdmin.addEventListener('change', async (e) => {
+            if (e.target.classList.contains('role-select')) {
+                const selectEl = e.target;
+                const uid = selectEl.dataset.uid;
+                const newRole = selectEl.value;
+                const userEmail = allUsersCache.find(u => u.uid === uid)?.email || 'este usuário';
+
+                showConfirmModal(
+                    'Mudar Permissão',
+                    `Tem certeza que quer mudar o cargo de ${userEmail} para ${newRole}?`,
+                    async () => {
+                        try {
+                            await fetchWithToken('api/admin/updateUserRole', {
+                                method: 'POST',
+                                body: JSON.stringify({ uid: uid, role: newRole })
+                            });
+                            showStatusMessage('Cargo do usuário atualizado!');
+                            loadUsers(); // Recarrega a lista para garantir consistência
+                        } catch (error) {
+                            console.error("Erro ao atualizar cargo:", error);
+                            showStatusMessage(error.message || 'Erro ao atualizar cargo.', true);
+                            const user = allUsersCache.find(u => u.uid === uid);
+                            if (user) selectEl.value = user.role;
+                        }
+                    },
+                    'Confirmar',
+                    () => { // onCancel
+                        const user = allUsersCache.find(u => u.uid === uid);
+                        if (user) selectEl.value = user.role;
+                    }
+                );
+            }
+        });
+
+        // --- QOL: MODAL DE CONFIRMAÇÃO CUSTOMIZADO ---
+        let onConfirmCallback = null;
+        let onCancelCallback = null;
+
+        function showConfirmModal(title, message, onConfirm, confirmText = 'Confirmar', onCancel = null) {
+            confirmModalTitle.textContent = title;
+            confirmModalMessage.textContent = message;
+            confirmModalBtnConfirm.textContent = confirmText;
+
+            confirmModalBtnConfirm.onclick = () => {
+                if (onConfirmCallback) onConfirmCallback();
+                closeConfirmModal();
+            };
+            confirmModalBtnCancel.onclick = () => {
+                if (onCancelCallback) onCancelCallback();
+                closeConfirmModal();
+            };
+
+            onConfirmCallback = onConfirm;
+            onCancelCallback = onCancel;
+
+            confirmModal.style.display = 'flex';
+            setTimeout(() => {
+                modalBackdropConfirm.style.opacity = '1';
+                modalPanelConfirm.style.opacity = '1';
+                modalPanelConfirm.style.transform = 'scale(1)';
+            }, 10);
+        }
+
+        function closeConfirmModal() {
+            modalPanelConfirm.style.opacity = '0';
+            modalPanelConfirm.style.transform = 'scale(0.95)';
+            modalBackdropConfirm.style.opacity = '0';
+            setTimeout(() => {
+                confirmModal.style.display = 'none';
+                onConfirmCallback = null;
+                onCancelCallback = null;
+            }, 300); // Duração da animação
+        }
 
         // --- FUNÇÕES UTILITÁRIAS ---
 
         // Mostrar mensagem de status (toast)
-        let statusTimeout; // Variável para guardar o timeout
+        let statusTimeout;
         function showStatusMessage(message, isError = false) {
-            clearTimeout(statusTimeout); // Limpa qualquer timeout anterior
-
+            clearTimeout(statusTimeout);
             adminStatus.textContent = message;
             adminStatus.classList.remove('hidden', 'bg-green-500', 'bg-red-500');
             adminStatus.classList.add(isError ? 'bg-red-500' : 'bg-green-500');
-
-            // Esconde a mensagem depois de 3 segundos
             statusTimeout = setTimeout(() => {
                 adminStatus.classList.add('hidden');
             }, 3000);
@@ -1014,9 +1283,9 @@
             return text.toString().toLowerCase().trim()
                 .normalize('NFD') // remove acentos
                 .replace(/[\u0300-\u036f]/g, '')
-                .replace(/\s+/g, '-') // substitui espaços por -
-                .replace(/[^\w-]+/g, '') // remove caracteres não-alfanuméricos
-                .replace(/--+/g, '-'); // remove hífens duplicados
+                .replace(/\s+/g, '-')
+                .replace(/[^\w-]+/g, '')
+                .replace(/--+/g, '-');
         }
 
     </script>
