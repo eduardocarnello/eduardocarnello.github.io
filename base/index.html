@@ -2,7 +2,6 @@
 <html lang="pt-BR" class="h-full">
 
 <head>
-    <!-- v1.1 -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Base de Conhecimento</title>
@@ -49,6 +48,7 @@
         /* Estilos do Conteúdo do Artigo (Modal) */
         #modal-content h1 {
             font-size: 1.875rem;
+            /* 3xl */
             font-weight: 700;
             margin-top: 1.5rem;
             margin-bottom: 0.75rem;
@@ -56,6 +56,7 @@
 
         #modal-content h2 {
             font-size: 1.5rem;
+            /* 2xl */
             font-weight: 600;
             margin-top: 1.25rem;
             margin-bottom: 0.5rem;
@@ -63,6 +64,7 @@
 
         #modal-content h3 {
             font-size: 1.25rem;
+            /* xl */
             font-weight: 600;
             margin-top: 1rem;
             margin-bottom: 0.5rem;
@@ -93,25 +95,31 @@
 
         #modal-content a {
             color: #2563eb;
+            /* blue-600 */
             text-decoration: underline;
         }
 
         #modal-content a:hover {
             color: #1d4ed8;
+            /* blue-700 */
         }
 
         #modal-content blockquote {
             border-left: 4px solid #94a3b8;
+            /* slate-400 */
             padding-left: 1rem;
             margin-left: 0;
             margin-bottom: 1rem;
             font-style: italic;
             color: #475569;
+            /* slate-600 */
         }
 
         #modal-content pre.ql-syntax {
             background-color: #1e293b;
+            /* slate-800 */
             color: #e2e8f0;
+            /* slate-200 */
             padding: 1rem;
             border-radius: 0.5rem;
             overflow-x: auto;
@@ -157,7 +165,7 @@
             <div id="login-status" class="text-center text-red-500 font-medium"></div>
 
             <!-- Formulário de Login (REMOVIDO) -->
-            <!-- <form id="login-form" ...> ... </form> -->
+            <!-- <form id="login-form" class="mt-8 space-y-6"> ... </form> -->
 
             <!-- Divisor "OU" (REMOVIDO) -->
             <!-- <div class="relative flex py-3 items-center"> ... </div> -->
@@ -458,9 +466,7 @@
         const loginSection = document.getElementById('login-section');
         const contentSection = document.getElementById('content-section');
         // Login
-        const loginForm = document.getElementById('login-form'); // (Será removido)
-        // const loginEmail = document.getElementById('login-email'); // (Será removido)
-        // const loginPassword = document.getElementById('login-password'); // (Será removido)
+        // const loginForm = document.getElementById('login-form'); // REMOVIDO
         const loginStatus = document.getElementById('login-status');
         const googleLoginBtn = document.getElementById('google-login-btn');
         const microsoftLoginBtn = document.getElementById('microsoft-login-btn'); // NOVO
@@ -512,7 +518,7 @@
         let isLoadingMore = false;
         let isSearchActive = false;
 
-        // --- NOVA FUNÇÃO: fetchWithToken ---
+        // --- FUNÇÃO WRAPPER DE FETCH (COM TOKEN) ---
         // (BUG CORRIGIDO: responseText movido para o escopo correto)
         async function fetchWithToken(url, options = {}) {
             if (!currentUser) {
@@ -554,8 +560,7 @@
 
             try {
                 // Tenta retornar JSON
-                const responseJson = JSON.parse(responseText);
-                return responseJson;
+                return JSON.parse(responseText);
             } catch (e) {
                 // Retorna texto se não for JSON (pode ser resposta vazia)
                 return responseText;
@@ -593,7 +598,8 @@
                 } catch (error) {
                     console.error("Erro ao verificar cargo do usuário:", error);
                     loginStatus.textContent = 'Erro ao verificar permissões. Tente novamente.';
-                    await signOut(auth);
+                    // Não desloga automaticamente, pois pode ser erro de rede
+                    // await signOut(auth); 
                 }
             } else {
                 // Usuário está deslogado
@@ -631,7 +637,6 @@
                 loginStatus.textContent = 'Erro ao tentar fazer login.';
             }
         }
-
 
         // Logout
         logoutBtn.addEventListener('click', () => {
@@ -834,7 +839,10 @@
             articlesGrid.innerHTML = '';
             articlesStatus.classList.remove('hidden');
             articlesStatus.innerHTML = `
-                <svg class="mx-auto h-12 w-12 text-slate-400 animate-spin" ...>...</svg>
+                <svg class="mx-auto h-12 w-12 text-slate-400 animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
                 <p class="mt-4 text-lg font-medium">Carregando artigos...</p>`;
 
             if (searchTerm === '') {
