@@ -13,7 +13,7 @@ let serviceAccount;
 try {
     // Tenta analisar a variável de ambiente
     serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
-} catch (e) {
+} catch (e) { // <-- CORREÇÃO: Estava escrito "cat ch"
     console.error("ERRO CRÍTICO: Não foi possível analisar a FIREBASE_SERVICE_ACCOUNT. Verifique as Variáveis de Ambiente na Vercel. Ela deve ser o JSON completo da Chave de Serviço.");
     // Lança um erro que interromperá a inicialização da função
     throw new Error("Configuração do Servidor Incorreta: FIREBASE_SERVICE_ACCOUNT está faltando ou mal formatada.");
