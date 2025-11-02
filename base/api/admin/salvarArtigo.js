@@ -1,10 +1,10 @@
 /*
  * /api/admin/salvarArtigo
  * Cria ou atualiza um artigo.
- * Protegido por Token E por Cargo (Redator, Editor, Admin).
+ * Protegido por Token E por Role (Admin, Editor, Redator).
+ * ATUALIZADO: Adicionada lógica de "Ciência" (Etapa 3.A)
  */
-// CORREÇÃO: Importa Timestamp e FieldValue (e remove 'admin')
-import { db, auth, Timestamp, FieldValue, getUserRole } from '../firebaseAdmin.js'; // Note o '../'
+import { db, auth, getUserRole, FieldValue, Timestamp } from '../firebaseAdmin.js'; // Importa FieldValue e Timestamp
 
 export default async function handler(req, res) {
     // 1. Somente método POST
@@ -20,12 +20,10 @@ export default async function handler(req, res) {
         }
         const role = await getUserRole(token);
 
-        // 3. Processar os dados do artigo
-        const { id, ...articleData } = req.body;
-
-        // 4. VERIFICAR PERMISSÕES (CARGOS)
+        // 3. VERIFICAR PERMISSÃO
+        const { id } = req.body; // Pega o ID para saber se é edição
         if (id) {
-            // É uma ATUALIZAÇÃO (edição)
+            // É uma EDIÇÃO
             if (role !== 'Editor' && role !== 'Admin') {
                 return res.status(403).json({ error: 'Acesso negado. Você não tem permissão para editar artigos.' });
             }
@@ -34,44 +32,75 @@ export default async function handler(req, res) {
             if (role !== 'Redator' && role !== 'Editor' && role !== 'Admin') {
                 return res.status(403).json({ error: 'Acesso negado. Você não tem permissão para criar artigos.' });
             }
-            // Redator não pode definir categoria, então forçamos para nulo se não for Editor/Admin
-            if (role === 'Redator') {
-                articleData.categoryId = null; // Ou um ID de categoria "Rascunho" padrão
-            }
         }
 
-        // 5. Processar dados
+        // 4. Processar os dados do artigo
+        // ETAPA 3.A: Captura os novos campos de ciência
+        const { id: articleId, isScienceReset, ...articleData } = req.body;
+
+
+        // Validação de Links Múltiplos (já estava correta)
         if (articleData.links && (!Array.isArray(articleData.links) || articleData.links.length > 5)) {
             return res.status(400).json({ error: 'Formato de links inválido ou limite de 5 excedido.' });
         }
-        if (articleData.link) { // Remove 'link' antigo
+        // Remove o 'link' antigo (do formulário antigo) se ele ainda estiver sendo enviado
+        if (articleData.link) {
             delete articleData.link;
         }
 
         // Converte a string de data (se existir) para Timestamp do Firebase
         if (articleData.publishedAt) {
-            // CORREÇÃO: Usa o 'Timestamp' importado
+            // A data vem como 'YYYY-MM-DD'. Adicionamos T12:00:00 para evitar problemas de fuso.
             articleData.publishedAt = Timestamp.fromDate(new Date(articleData.publishedAt + 'T12:00:00Z'));
         }
 
         // Adiciona timestamps do servidor
-        // CORREÇÃO: Usa o 'FieldValue' importado
         articleData.updatedAt = FieldValue.serverTimestamp();
 
+        // 5. LÓGICA DE SALVAR
         if (id) {
-            // Atualizar
+            // ATUALIZAR
             const articleRef = db.collection('artigos').doc(id);
+
+            // ETAPA 3.A: Lógica de Ciência (Edição)
+            if (articleData.requiresScience) {
+                if (isScienceReset) {
+                    // "Resetar" - Incrementa a versão
+                    articleData.scienceVersion = FieldValue.increment(1);
+                } else {
+                    // Apenas marcando, verifica se já existe
+                    const docSnap = await articleRef.get();
+                    const existingData = docSnap.data();
+                    if (!existingData.scienceVersion || existingData.scienceVersion === 0) {
+                        articleData.scienceVersion = 1; // Define para 1 na primeira vez
+                    }
+                    // Se já existe, não faz nada (mantém a versão atual)
+                }
+            } else {
+                // Se desmarcou a caixa, zera a versão (ou define como 0)
+                articleData.scienceVersion = 0;
+            }
+            // FIM ETAPA 3.A
+
             await articleRef.set(articleData, { merge: true });
             return res.status(200).json({ message: 'Artigo atualizado com sucesso!' });
+
         } else {
-            // Criar
-            // CORREÇÃO: Usa o 'FieldValue' importado
+            // CRIAR
             articleData.createdAt = FieldValue.serverTimestamp();
             // Se publishedAt não foi definido, usa o timestamp do servidor
             if (!articleData.publishedAt) {
-                // CORREÇÃO: Usa o 'FieldValue' importado
                 articleData.publishedAt = FieldValue.serverTimestamp();
             }
+
+            // ETAPA 3.A: Lógica de Ciência (Criação)
+            if (articleData.requiresScience) {
+                articleData.scienceVersion = 1; // Novo artigo começa na v1
+            } else {
+                articleData.scienceVersion = 0;
+            }
+            // FIM ETAPA 3.A
+
             const newDoc = await db.collection('artigos').add(articleData);
             return res.status(201).json({ message: 'Artigo salvo com sucesso!', id: newDoc.id });
         }
