@@ -61,12 +61,6 @@
             <!-- Mensagem de Erro/Status -->
             <div id="login-status" class="text-center text-red-500 font-medium"></div>
 
-            <!-- Formulário de Login (REMOVIDO) -->
-            <!-- <form id="login-form" class="mt-8 space-y-6"> ... </form> -->
-
-            <!-- Divisor "OU" (REMOVIDO) -->
-            <!-- <div class="relative flex py-3 items-center"> ... </div> -->
-
             <div class="space-y-4 pt-6">
                 <!-- Botão Login Google -->
                 <button id="google-login-btn"
@@ -114,7 +108,7 @@
                     </div>
                     <!-- Info Usuário e Botões -->
                     <div class="flex items-center gap-4">
-                        <!-- NOVO: Exibição de Cargo -->
+                        <!-- Exibição de Cargo -->
                         <span id="user-info" class="text-sm text-slate-600 hidden sm:block">
                             <span id="user-email" class="font-medium"></span>
                             (<span id="user-role" class="font-light"></span>)
@@ -169,7 +163,6 @@
                                 <select id="article-category" required
                                     class="w-full p-3 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
                                     <option value="">Carregando categorias...</option>
-                                    <!-- Categorias preenchidas pelo JS -->
                                 </select>
                             </div>
 
@@ -187,7 +180,7 @@
                                 <label class="block text-sm font-medium text-slate-700 mb-1">Links de Referência (Max
                                     5)</label>
                                 <div id="links-container" class="space-y-2">
-                                    <!-- Inputs de link serão adicionados aqui pelo JS -->
+                                    <!-- Inputs de link -->
                                 </div>
                                 <button type="button" id="add-link-btn"
                                     class="mt-2 text-sm font-medium text-blue-600 hover:text-blue-800 transition-colors focus-ring-visible rounded-md p-1">
@@ -214,11 +207,34 @@
                                     class="w-full p-3 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
                             </div>
 
+                            <!-- NOVO: Seção de Ciência do Artigo (ETAPA 3.A) -->
+                            <div class="permission-admin" style="display: none;"> <!-- Só Admin pode ver -->
+                                <label class="block text-sm font-medium text-slate-700 mb-2">Ciência do Artigo</label>
+                                <div class="relative flex items-start">
+                                    <div class="flex h-6 items-center">
+                                        <input id="article-requires-science" name="requiresScience" type="checkbox"
+                                            class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-600">
+                                    </div>
+                                    <div class="ml-3 text-sm leading-6">
+                                        <label for="article-requires-science" class="font-medium text-gray-900">Exigir
+                                            que todos os usuários declarem ciência deste artigo</label>
+                                        <p class="text-gray-500 text-xs">Isso fará um pop-up aparecer para todos os
+                                            usuários que ainda não viram esta versão.</p>
+                                    </div>
+                                </div>
+                                <!-- Botão de Reset (só aparece na edição) -->
+                                <button type="button" id="reset-science-btn"
+                                    class="hidden mt-4 text-sm font-medium text-yellow-700 bg-yellow-100 hover:bg-yellow-200 rounded-lg p-3 w-full focus-ring-visible transition-colors">
+                                    ⚠️ Resetar e Exigir Ciência de Todos Novamente
+                                </button>
+                                <input type="hidden" id="article-science-reset" value="false">
+                            </div>
+                            <!-- FIM: Seção de Ciência -->
+
                             <!-- Editor de Conteúdo -->
                             <div>
                                 <label class="block text-sm font-medium text-slate-700 mb-1">Conteúdo Completo</label>
                                 <div id="editor-container"></div> <!-- Container do Quill -->
-                                <!-- Ajuda para Imagens (Inalterado) -->
                                 <p class="text-xs text-slate-500 mt-2">
                                     <b>Para adicionar imagens:</b> ... (texto de ajuda)
                                 </p>
@@ -277,12 +293,12 @@
                 <div class="lg:col-span-1 space-y-8">
 
                     <!-- Seção Gerenciar Categorias (Permissão: Admin) -->
-                    <div id="category-admin-section" class="bg-white p-6 sm:p-8 rounded-2xl shadow-lg sticky top-24"
+                    <div id="category-admin-section" class="bg-white p-6 sm:p-8 rounded-2xl shadow-lg top-24"
                         style="display: none;">
                         <h2 id="category-form-title" class="text-2xl font-bold text-slate-800 mb-6">Gerenciar Categorias
                         </h2>
 
-                        <!-- Formulário de Categoria (Inalterado) -->
+                        <!-- Formulário de Categoria (COM NOVAS CORES E ÍCONE) -->
                         <form id="category-form" class="space-y-4 mb-8">
                             <div>
                                 <label for="category-name" class="block text-sm font-medium text-slate-700 mb-1">Nome da
@@ -291,7 +307,7 @@
                                     class="w-full p-3 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
                             </div>
                             <div class="grid grid-cols-2 gap-4">
-                                <!-- Cor (COM NOVAS CORES) -->
+                                <!-- Cor -->
                                 <div>
                                     <label for="category-color"
                                         class="block text-sm font-medium text-slate-700 mb-1">Cor</label>
@@ -313,7 +329,7 @@
                                         <option value="sky">Céu (Sky)</option>
                                     </select>
                                 </div>
-                                <!-- Ícone (COM ÍCONE 'USER' ATUALIZADO) -->
+                                <!-- Ícone -->
                                 <div>
                                     <label for="category-icon"
                                         class="block text-sm font-medium text-slate-700 mb-1">Ícone</label>
@@ -378,11 +394,10 @@
     </section>
 
     <!-- NOVO: Modal de Confirmação Customizado -->
-    <div id="confirm-modal" class="fouc-hidden fixed inset-0 z-50 items-center justify-center p-4"
-        style="display: none;">
+    <div id="confirm-modal" class="fixed inset-0 z-50 items-center justify-center p-4" style="display: none;">
         <!-- Backdrop -->
         <div id="modal-backdrop-confirm" class="fixed inset-0 bg-black bg-opacity-50 transition-opacity"
-            aria-hidden="true"></div>
+            aria-hidden="true" style="opacity: 0;"></div>
         <!-- Painel -->
         <div id="modal-panel-confirm"
             class="relative bg-white rounded-2xl shadow-xl w-full max-w-md transform transition-all opacity-0 scale-95">
@@ -480,6 +495,10 @@
         const articleTags = document.getElementById('article-tags');
         const articleIdInput = document.getElementById('article-id');
         const cancelEditBtn = document.getElementById('cancel-edit-btn');
+        // NOVO: Campos de Ciência
+        const articleRequiresScience = document.getElementById('article-requires-science');
+        const resetScienceBtn = document.getElementById('reset-science-btn');
+        const articleScienceReset = document.getElementById('article-science-reset');
 
         // Lista de Artigos Admin (QOL)
         const articlesListAdmin = document.getElementById('articles-list-admin');
@@ -510,8 +529,8 @@
         const modalPanelConfirm = document.getElementById('modal-panel-confirm');
         const confirmModalTitle = document.getElementById('confirm-modal-title');
         const confirmModalMessage = document.getElementById('confirm-modal-message');
-        const confirmModalBtnConfirm = document.getElementById('confirm-modal-btn-confirm');
-        const confirmModalBtnCancel = document.getElementById('confirm-modal-btn-cancel');
+        let confirmModalBtnConfirm = document.getElementById('confirm-modal-btn-confirm'); // (let)
+        let confirmModalBtnCancel = document.getElementById('confirm-modal-btn-cancel'); // (let)
 
         // Editor Quill
         let quill;
@@ -640,7 +659,16 @@
         });
 
         // REMOVIDO: Login com E-mail/Senha
-        // loginForm.addEventListener('submit', ...);
+        if (loginForm) {
+            loginForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                loginStatus.textContent = 'Login por e-mail/senha foi desabilitado.';
+            });
+            loginForm.style.display = 'none'; // Esconde o formulário
+            // Esconde o divisor
+            const divisor = loginForm.nextElementSibling;
+            if (divisor && divisor.classList.contains('relative')) divisor.style.display = 'none';
+        }
 
         // Login com Google
         googleLoginBtn.addEventListener('click', () => {
@@ -698,7 +726,7 @@
                 categorySelectDiv.style.display = (role === 'Editor' || role === 'Admin') ? 'block' : 'none';
             }
 
-            // Permissão para ver botões
+            // Permissão para ver botões (é chamada de novo no loadArticles)
             const deleteArticleButtons = document.querySelectorAll('.delete-article-btn');
             deleteArticleButtons.forEach(btn => btn.style.display = (role === 'Admin') ? 'inline-flex' : 'none');
 
@@ -862,6 +890,9 @@
                 tags: tagsArray,
                 content: quill.root.innerHTML,
                 slug: slugify(articleTitle.value),
+                // NOVO: Campos de Ciência
+                requiresScience: articleRequiresScience.checked,
+                isScienceReset: articleScienceReset.value === 'true'
             };
 
             if (id) articleData.id = id;
@@ -880,6 +911,24 @@
                 console.error("Erro ao salvar artigo: ", error);
                 showStatusMessage(error.message || 'Erro ao salvar artigo.', true);
             }
+        });
+
+        // NOVO: Botão de Resetar Ciência
+        resetScienceBtn.addEventListener('click', () => {
+            showConfirmModal(
+                'Resetar Ciência do Artigo?',
+                'Isso forçará TODOS os usuários (incluindo os que já deram ciência) a ver este artigo novamente. Você deve salvar o artigo após esta ação para aplicá-la.',
+                () => { // onConfirm
+                    articleScienceReset.value = 'true';
+                    resetScienceBtn.textContent = '✅ Resetado! Salve o artigo para aplicar.';
+                    resetScienceBtn.classList.add('bg-green-200', 'text-green-800');
+                    resetScienceBtn.classList.remove('bg-yellow-100', 'text-yellow-700');
+                },
+                'Sim, Resetar',
+                () => { // onCancel
+                    articleScienceReset.value = 'false';
+                }
+            );
         });
 
         // QOL: BUSCA E PAGINAÇÃO NO ADMIN
@@ -994,8 +1043,6 @@
             });
         }
 
-        // (loadArticles foi substituída por executeAdminSearch)
-
         // Delegação de Eventos para botões de Artigo
         articlesListAdmin.addEventListener('click', (e) => {
             const editBtn = e.target.closest('.edit-article-btn');
@@ -1035,6 +1082,19 @@
                         addLinkInput(link);
                     }
                 });
+
+                // NOVO: Preenche os campos de Ciência
+                articleRequiresScience.checked = article.requiresScience || false;
+                articleScienceReset.value = 'false'; // Sempre reseta o "reset"
+                if (article.requiresScience && article.scienceVersion > 0) {
+                    resetScienceBtn.classList.remove('hidden');
+                    resetScienceBtn.textContent = '⚠️ Resetar e Exigir Ciência de Todos Novamente';
+                    resetScienceBtn.classList.remove('bg-green-200', 'text-green-800');
+                    resetScienceBtn.classList.add('bg-yellow-100', 'text-yellow-700');
+                } else {
+                    resetScienceBtn.classList.add('hidden');
+                }
+
 
                 quill.root.innerHTML = article.content;
                 cancelEditBtn.classList.remove('hidden');
@@ -1078,6 +1138,13 @@
             articleFormTitle.textContent = 'Adicionar Novo Artigo';
             cancelEditBtn.classList.add('hidden');
             resetLinksContainer();
+            // NOVO: Reseta os campos de ciência
+            articleRequiresScience.checked = false;
+            articleScienceReset.value = 'false';
+            resetScienceBtn.classList.add('hidden');
+            resetScienceBtn.textContent = '⚠️ Resetar e Exigir Ciência de Todos Novamente';
+            resetScienceBtn.classList.remove('bg-green-200', 'text-green-800');
+            resetScienceBtn.classList.add('bg-yellow-100', 'text-yellow-700');
         }
         cancelEditBtn.addEventListener('click', resetArticleForm);
 
@@ -1231,26 +1298,46 @@
         function showConfirmModal(title, message, onConfirm, confirmText = 'Confirmar', onCancel = null) {
             confirmModalTitle.textContent = title;
             confirmModalMessage.textContent = message;
+
+            // Re-seleciona os botões CADA VEZ para garantir que os listeners são novos
+            confirmModalBtnConfirm = document.getElementById('confirm-modal-btn-confirm');
+            confirmModalBtnCancel = document.getElementById('confirm-modal-btn-cancel');
+
             confirmModalBtnConfirm.textContent = confirmText;
 
-            confirmModalBtnConfirm.onclick = () => {
-                if (onConfirmCallback) onConfirmCallback();
-                closeConfirmModal();
-            };
-            confirmModalBtnCancel.onclick = () => {
-                if (onCancelCallback) onCancelCallback();
-                closeConfirmModal();
-            };
+            // Limpa listeners antigos
+            confirmModalBtnConfirm.replaceWith(confirmModalBtnConfirm.cloneNode(true));
+            confirmModalBtnCancel.replaceWith(confirmModalBtnCancel.cloneNode(true));
 
+            // Pega as novas referências
+            confirmModalBtnConfirm = document.getElementById('confirm-modal-btn-confirm');
+            confirmModalBtnCancel = document.getElementById('confirm-modal-btn-cancel');
+
+            // Armazena os callbacks
             onConfirmCallback = onConfirm;
             onCancelCallback = onCancel;
 
+            // Adiciona novos listeners
+            confirmModalBtnConfirm.addEventListener('click', handleConfirm);
+            confirmModalBtnCancel.addEventListener('click', handleCancel);
+
+            // Mostra o modal
             confirmModal.style.display = 'flex';
             setTimeout(() => {
                 modalBackdropConfirm.style.opacity = '1';
                 modalPanelConfirm.style.opacity = '1';
                 modalPanelConfirm.style.transform = 'scale(1)';
             }, 10);
+        }
+
+        function handleConfirm() {
+            if (onConfirmCallback) onConfirmCallback();
+            closeConfirmModal();
+        }
+
+        function handleCancel() {
+            if (onCancelCallback) onCancelCallback();
+            closeConfirmModal();
         }
 
         function closeConfirmModal() {
