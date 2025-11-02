@@ -1,9 +1,10 @@
 /*
  * /api/admin/salvarArtigo
  * Cria ou atualiza um artigo.
- * ATUALIZADO P/ ETAPA 1: Usa o novo helper getUserRole e checa os cargos.
+ * Protegido por Token E por Cargo (Redator, Editor, Admin).
  */
-import { db, admin, getUserRole } from '../firebaseAdmin.js'; // Note o '../'
+// CORREÇÃO: Importa Timestamp e FieldValue (e remove 'admin')
+import { db, auth, Timestamp, FieldValue, getUserRole } from '../firebaseAdmin.js'; // Note o '../'
 
 export default async function handler(req, res) {
     // 1. Somente método POST
@@ -12,7 +13,7 @@ export default async function handler(req, res) {
     }
 
     try {
-        // 2. Validar o Token e obter o Cargo
+        // 2. Validar o Token do usuário e obter cargo
         const token = req.headers.authorization?.split('Bearer ')[1];
         if (!token) {
             return res.status(401).json({ error: 'Nenhum token fornecido.' });
@@ -22,38 +23,40 @@ export default async function handler(req, res) {
         // 3. Processar os dados do artigo
         const { id, ...articleData } = req.body;
 
-        // 4. VERIFICAR PERMISSÕES COM BASE NO CARGO
+        // 4. VERIFICAR PERMISSÕES (CARGOS)
         if (id) {
-            // É UMA ATUALIZAÇÃO (EDITAR)
-            if (role !== 'Admin' && role !== 'Editor') {
-                return res.status(403).json({ error: 'Acesso negado. Apenas Admins ou Editores podem editar artigos.' });
+            // É uma ATUALIZAÇÃO (edição)
+            if (role !== 'Editor' && role !== 'Admin') {
+                return res.status(403).json({ error: 'Acesso negado. Você não tem permissão para editar artigos.' });
             }
         } else {
-            // É UMA CRIAÇÃO (PUBLICAR)
-            if (role !== 'Admin' && role !== 'Editor' && role !== 'Redator') {
-                return res.status(403).json({ error: 'Acesso negado. Apenas Admins, Editores ou Redatores podem publicar artigos.' });
+            // É uma CRIAÇÃO
+            if (role !== 'Redator' && role !== 'Editor' && role !== 'Admin') {
+                return res.status(403).json({ error: 'Acesso negado. Você não tem permissão para criar artigos.' });
+            }
+            // Redator não pode definir categoria, então forçamos para nulo se não for Editor/Admin
+            if (role === 'Redator') {
+                articleData.categoryId = null; // Ou um ID de categoria "Rascunho" padrão
             }
         }
 
-        // 5. Lógica de Negócio (O código abaixo permanece o mesmo)
-
-        // **MÚLTIPLOS LINKS: Validação**
+        // 5. Processar dados
         if (articleData.links && (!Array.isArray(articleData.links) || articleData.links.length > 5)) {
             return res.status(400).json({ error: 'Formato de links inválido ou limite de 5 excedido.' });
         }
-        // Remove o 'link' antigo (do formulário antigo) se ele ainda estiver sendo enviado
-        if (articleData.link) {
+        if (articleData.link) { // Remove 'link' antigo
             delete articleData.link;
         }
 
         // Converte a string de data (se existir) para Timestamp do Firebase
         if (articleData.publishedAt) {
-            // A data vem como 'YYYY-MM-DD'. Adicionamos T12:00:00 para evitar problemas de fuso.
-            articleData.publishedAt = admin.firestore.Timestamp.fromDate(new Date(articleData.publishedAt + 'T12:00:00Z'));
+            // CORREÇÃO: Usa o 'Timestamp' importado
+            articleData.publishedAt = Timestamp.fromDate(new Date(articleData.publishedAt + 'T12:00:00Z'));
         }
 
         // Adiciona timestamps do servidor
-        articleData.updatedAt = admin.firestore.FieldValue.serverTimestamp();
+        // CORREÇÃO: Usa o 'FieldValue' importado
+        articleData.updatedAt = FieldValue.serverTimestamp();
 
         if (id) {
             // Atualizar
@@ -62,11 +65,12 @@ export default async function handler(req, res) {
             return res.status(200).json({ message: 'Artigo atualizado com sucesso!' });
         } else {
             // Criar
-            articleData.createdAt = admin.firestore.FieldValue.serverTimestamp();
+            // CORREÇÃO: Usa o 'FieldValue' importado
+            articleData.createdAt = FieldValue.serverTimestamp();
             // Se publishedAt não foi definido, usa o timestamp do servidor
             if (!articleData.publishedAt) {
-                articleData.publishedAt = admin.firestore.FieldValue.serverTimestamp();
-                section
+                // CORREÇÃO: Usa o 'FieldValue' importado
+                articleData.publishedAt = FieldValue.serverTimestamp();
             }
             const newDoc = await db.collection('artigos').add(articleData);
             return res.status(201).json({ message: 'Artigo salvo com sucesso!', id: newDoc.id });
@@ -74,8 +78,10 @@ export default async function handler(req, res) {
 
     } catch (error) {
         console.error('Erro em /api/admin/salvarArtigo:', error);
-        // O helper getUserRole já lida com 'auth/id-token-expired'
-        return res.status(500).json({ error: error.message || 'Erro interno do servidor.' });
+        if (error.code === 'auth/id-token-expired' || error.message.includes('Token')) {
+            return res.status(401).json({ error: 'Token expirado. Faça login novamente.' });
+        }
+        return res.status(500).json({ error: 'Erro interno do servidor.' });
     }
 }
 
