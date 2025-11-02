@@ -20,7 +20,6 @@ if (!getApps().length) {
 
 const db = getFirestore();
 const auth = getAuth();
-// REMOVIDA a constante 'admin' antiga e incorreta.
 
 // E-mail do "Super Admin"
 const SUPER_ADMIN_EMAIL = 'eduardocarnello@gmail.com';
