@@ -4,16 +4,19 @@
  * E exporta a nova função de verificação de cargo (Role).
  */
 import { initializeApp, cert, getApps } from 'firebase-admin/app';
+// IMPORTAÇÃO CORRIGIDA: Timestamp e FieldValue vêm de 'firebase-admin/firestore'
 import { getFirestore, Timestamp, FieldValue } from 'firebase-admin/firestore';
 import { getAuth } from 'firebase-admin/auth';
 
 // Pega a Chave de Serviço da variável de ambiente VERCEL
 let serviceAccount;
 try {
+    // Tenta analisar a variável de ambiente
     serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
 } catch (e) {
-    console.error("ERRO CRÍTICO: Não foi possível analisar a FIREBASE_SERVICE_ACCOUNT. Verifique as Variáveis de Ambiente na Vercel.");
-    throw new Error("Configuração do Servidor Incorreta.");
+    console.error("ERRO CRÍTICO: Não foi possível analisar a FIREBASE_SERVICE_ACCOUNT. Verifique as Variáveis de Ambiente na Vercel. Ela deve ser o JSON completo da Chave de Serviço.");
+    // Lança um erro que interromperá a inicialização da função
+    throw new Error("Configuração do Servidor Incorreta: FIREBASE_SERVICE_ACCOUNT está faltando ou mal formatada.");
 }
 
 // Inicializa o app Firebase (só se não foi inicializado ainda)
@@ -60,6 +63,7 @@ async function getUserRole(token) {
             const newUserProfile = {
                 email: email,
                 role: newRole,
+                // CORREÇÃO: Usa o 'FieldValue' importado diretamente
                 createdAt: FieldValue.serverTimestamp()
             };
 
@@ -77,5 +81,6 @@ async function getUserRole(token) {
     }
 }
 
+// CORREÇÃO: Exporta os módulos 'Timestamp' e 'FieldValue'
 export { db, auth, Timestamp, FieldValue, getUserRole };
 
