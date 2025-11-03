@@ -39,7 +39,16 @@
             display: none;
         }
 
-        /* CORREÇÃO BUG 2: Estilo para o Switch de Filtro de Ciência */
+        /* Estilo para o Switch de Filtro */
+        .toggle-checkbox:checked {
+            right: 0;
+            border-color: #2563eb;
+        }
+
+        .toggle-checkbox:checked+.toggle-label {
+            background-color: #2563eb;
+        }
+
         #science-toggle-switch:checked+div {
             /* O fundo */
             background-color: #2563eb;
@@ -106,7 +115,7 @@
     <section id="admin-dashboard" style="display: none;">
 
         <!-- Header do Admin -->
-        <header class="bg-white shadow-md top-0 z-40">
+        <header class="bg-white shadow-md sticky top-0 z-40">
             <div class="container mx-auto px-4 sm:px-6 lg:px-8">
                 <div class="flex justify-between items-center h-16">
                     <!-- Logo -->
@@ -336,7 +345,7 @@
                 <div class="lg:col-span-1 space-y-8">
 
                     <!-- Seção Gerenciar Categorias (Permissão: Admin) -->
-                    <div id="category-admin-section" class="bg-white p-6 sm:p-8 rounded-2xl shadow-lg sticky top-24"
+                    <div id="category-admin-section" class="bg-white p-6 sm:p-8 rounded-2xl shadow-lg top-24"
                         style="display: none;">
                         <h2 id="category-form-title" class="text-2xl font-bold text-slate-800 mb-6">Gerenciar Categorias
                         </h2>
@@ -537,7 +546,7 @@
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const googleProvider = new GoogleAuthProvider();
-        // const microsoftProvider = new OAuthProvider('microsoft.com');
+        const microsoftProvider = new OAuthProvider('microsoft.com');
         setLogLevel('Debug');
 
         // --- ESTADO GLOBAL ---
@@ -549,14 +558,14 @@
         const ADMIN_ARTICLES_PER_PAGE = 15;
         let adminIsLoadingMore = false;
         let adminIsSearchActive = false;
-        let adminScienceFilterActive = false; // NOVO
+        // let adminScienceFilterActive = false; // Removido, estado lido direto do checkbox
 
         // --- REFERÊNCIAS DO DOM ---
         const loginSection = document.getElementById('login-section');
         const adminDashboard = document.getElementById('admin-dashboard');
         const loginStatus = document.getElementById('login-status');
         const googleLoginBtn = document.getElementById('google-login-btn');
-        //const microsoftLoginBtn = document.getElementById('microsoft-login-btn');
+        const microsoftLoginBtn = document.getElementById('microsoft-login-btn');
         const logoutBtn = document.getElementById('logout-btn');
         const userEmailSpan = document.getElementById('user-email');
         const userRoleSpan = document.getElementById('user-role');
@@ -614,8 +623,9 @@
         const modalPanelConfirm = document.getElementById('modal-panel-confirm');
         const confirmModalTitle = document.getElementById('confirm-modal-title');
         const confirmModalMessage = document.getElementById('confirm-modal-message');
-        const confirmModalBtnConfirm = document.getElementById('confirm-modal-btn-confirm');
-        const confirmModalBtnCancel = document.getElementById('confirm-modal-btn-cancel');
+        // RE-SELECIONADOS DENTRO DE showConfirmModal
+        // let confirmModalBtnConfirm = document.getElementById('confirm-modal-btn-confirm');
+        // let confirmModalBtnCancel = document.getElementById('confirm-modal-btn-cancel');
 
         // Modal de Log de Ciência
         const scienceLogModal = document.getElementById('science-log-modal');
@@ -761,7 +771,10 @@
             signInWithPopup(auth, googleProvider).catch(handleAuthError);
         });
 
-
+        /* microsoftLoginBtn.addEventListener('click', () => {
+             loginStatus.textContent = 'Abrindo popup da Microsoft...';
+             signInWithPopup(auth, microsoftProvider).catch(handleAuthError);
+         });*/
 
         function handleAuthError(error) {
             console.error("Erro de login:", error.code, error.message);
@@ -918,7 +931,7 @@
 
         // --- GERENCIAMENTO DE ARTIGOS (CRUD) ---
 
-        // Salvar/Atualizar Artigo
+        // Salvar/Atualizar Artigo (COM LÓGICA DE CIÊNCIA)
         articleForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             const id = articleIdInput.value;
@@ -980,7 +993,6 @@
 
         // Listener do Switch de Ciência
         scienceToggleSwitch.addEventListener('change', () => {
-            // Apenas filtra a lista local, não faz re-fetch
             filterAdminListByScience();
         });
 
@@ -1122,7 +1134,7 @@
                 el.innerHTML = `
                      <div class="flex items-center min-w-0">
                          <div class="min-w-0">
-                             <strong class="text-slate-800 truncate block">${article.title}</strong>
+                             <strong class="text-slate-800 truncate block" title="${article.title}">${article.title}</strong>
                              <span class="block text-sm text-slate-500">${categoryName} - ${date}</span>
                          </div>
                          ${requiresScienceIcon}
@@ -1391,21 +1403,26 @@
         function showConfirmModal(title, message, onConfirm, confirmText = 'Confirmar', onCancel = null) {
             confirmModalTitle.textContent = title;
             confirmModalMessage.textContent = message;
-            confirmModalBtnConfirm.textContent = confirmText;
+
+            // CORREÇÃO BUG: As variáveis globais são re-selecionadas aqui
+            let confirmBtn = document.getElementById('confirm-modal-btn-confirm');
+            let cancelBtn = document.getElementById('confirm-modal-btn-cancel');
+
+            confirmBtn.textContent = confirmText;
 
             // Limpa listeners antigos (essencial)
-            const newConfirmBtn = confirmModalBtnConfirm.cloneNode(true);
-            confirmModalBtnConfirm.parentNode.replaceChild(newConfirmBtn, confirmModalBtnConfirm);
+            const newConfirmBtn = confirmBtn.cloneNode(true);
+            confirmBtn.parentNode.replaceChild(newConfirmBtn, confirmBtn);
 
-            const newCancelBtn = confirmModalBtnCancel.cloneNode(true);
-            confirmModalBtnCancel.parentNode.replaceChild(newCancelBtn, confirmModalBtnCancel);
+            const newCancelBtn = cancelBtn.cloneNode(true);
+            cancelBtn.parentNode.replaceChild(newCancelBtn, cancelBtn);
 
-            // Re-seleciona os botões clonados
-            document.getElementById('confirm-modal-btn-confirm').addEventListener('click', () => {
+            // Adiciona novos listeners
+            newConfirmBtn.addEventListener('click', () => {
                 if (onConfirmCallback) onConfirmCallback();
                 closeConfirmModal();
             });
-            document.getElementById('confirm-modal-btn-cancel').addEventListener('click', () => {
+            newCancelBtn.addEventListener('click', () => {
                 if (onCancelCallback) onCancelCallback();
                 closeConfirmModal();
             });
@@ -1443,7 +1460,6 @@
             scienceLogCompleted.innerHTML = '';
             scienceLogPending.innerHTML = '';
 
-            // Exibe o modal
             scienceLogModal.style.display = 'flex';
             setTimeout(() => {
                 modalBackdropScienceLog.style.opacity = '1';
@@ -1474,6 +1490,9 @@
                 listElement.innerHTML = `<li class="text-sm text-gray-500">Nenhum usuário.</li>`;
                 return;
             }
+            // Ordena por e-mail
+            users.sort((a, b) => a.email.localeCompare(b.email));
+
             listElement.innerHTML = users.map(user => {
                 const date = showDate && user.declaredAt
                     ? new Date(user.declaredAt.seconds * 1000).toLocaleString('pt-BR')
