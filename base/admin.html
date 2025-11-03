@@ -537,7 +537,7 @@
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const googleProvider = new GoogleAuthProvider();
-        const microsoftProvider = new OAuthProvider('microsoft.com');
+        // const microsoftProvider = new OAuthProvider('microsoft.com');
         setLogLevel('Debug');
 
         // --- ESTADO GLOBAL ---
@@ -556,7 +556,7 @@
         const adminDashboard = document.getElementById('admin-dashboard');
         const loginStatus = document.getElementById('login-status');
         const googleLoginBtn = document.getElementById('google-login-btn');
-        const microsoftLoginBtn = document.getElementById('microsoft-login-btn');
+        //const microsoftLoginBtn = document.getElementById('microsoft-login-btn');
         const logoutBtn = document.getElementById('logout-btn');
         const userEmailSpan = document.getElementById('user-email');
         const userRoleSpan = document.getElementById('user-role');
@@ -761,10 +761,7 @@
             signInWithPopup(auth, googleProvider).catch(handleAuthError);
         });
 
-        microsoftLoginBtn.addEventListener('click', () => {
-            loginStatus.textContent = 'Abrindo popup da Microsoft...';
-            signInWithPopup(auth, microsoftProvider).catch(handleAuthError);
-        });
+
 
         function handleAuthError(error) {
             console.error("Erro de login:", error.code, error.message);

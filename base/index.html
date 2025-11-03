@@ -704,10 +704,7 @@
             loginStatus.textContent = 'Abrindo popup do Google...';
             signInWithPopup(auth, googleProvider).catch(handleAuthError);
         });
-        microsoftLoginBtn.addEventListener('click', () => {
-            loginStatus.textContent = 'Abrindo popup da Microsoft...';
-            signInWithPopup(auth, microsoftProvider).catch(handleAuthError);
-        });
+
         function handleAuthError(error) {
             console.error("Erro de login:", error.code, error.message);
             if (error.code === 'auth/popup-closed-by-user') {
