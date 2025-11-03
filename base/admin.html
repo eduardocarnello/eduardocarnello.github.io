@@ -159,13 +159,14 @@
             <!-- Grid Principal -->
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
 
-                <!-- Coluna Principal (Formulário de Artigo e Lista) -->
+                <!-- Coluna Principal (Formulário de Documento e Lista) -->
                 <div class="lg:col-span-2 space-y-8">
 
-                    <!-- Formulário de Artigo (Permissão: Redator, Editor, Admin) -->
+                    <!-- Formulário de Documento (Permissão: Redator, Editor, Admin) -->
                     <div id="article-form-section" class="bg-white p-6 sm:p-8 rounded-2xl shadow-lg"
                         style="display: none;"> <!-- Oculto por padrão -->
-                        <h2 id="article-form-title" class="text-2xl font-bold text-slate-800 mb-6">Adicionar Novo Artigo
+                        <h2 id="article-form-title" class="text-2xl font-bold text-slate-800 mb-6">Adicionar Novo
+                            Documento
                         </h2>
                         <form id="article-form" class="space-y-6">
 
@@ -240,7 +241,7 @@
                                             </div>
                                             <div class="ml-3 text-sm">
                                                 <label for="requires-science" class="font-medium text-gray-700">Exigir
-                                                    Ciência deste Artigo</label>
+                                                    Ciência deste Documento</label>
                                                 <p class="text-gray-500">Força os usuários a lerem e "Declarar
                                                     Ciência" deste item.</p>
                                             </div>
@@ -250,7 +251,8 @@
                                                 class="text-sm font-medium text-orange-600 hover:text-orange-800 transition-colors focus-ring-visible rounded-md p-1">
                                                 &#9888; Resetar e Exigir Ciência de Todos Novamente
                                             </button>
-                                            <p class="text-xs text-slate-500 mt-1">Use isso se o artigo foi atualizado e
+                                            <p class="text-xs text-slate-500 mt-1">Use isso se o documento foi
+                                                atualizado e
                                                 precisa ser lido por todos de novo.</p>
                                         </div>
                                     </div>
@@ -282,7 +284,7 @@
                             <div class="flex gap-4">
                                 <button type="submit"
                                     class="flex-1 py-3 px-6 border border-transparent text-base font-medium rounded-lg text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors">
-                                    Salvar Artigo
+                                    Salvar Documento
                                 </button>
                                 <button type="button" id="cancel-edit-btn"
                                     class="hidden flex-1 py-3 px-6 border border-slate-300 text-base font-medium rounded-lg text-slate-700 bg-white hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-400 transition-colors">
@@ -292,10 +294,10 @@
                         </form>
                     </div>
 
-                    <!-- Lista de Artigos (COM BUSCA E PAGINAÇÃO) -->
+                    <!-- Lista de Documentos (COM BUSCA E PAGINAÇÃO) -->
                     <div class="bg-white p-6 sm:p-8 rounded-2xl shadow-lg">
                         <div class="flex flex-wrap justify-between items-center mb-6 gap-4">
-                            <h2 class="text-2xl font-bold text-slate-800">Artigos Publicados</h2>
+                            <h2 class="text-2xl font-bold text-slate-800">Documentos Publicados</h2>
                             <!-- NOVO: Switch de Filtro de Ciência (Permissão: Editor, Admin) -->
                             <div id="science-filter-container" class="permission-editor permission-admin"
                                 style="display: none;">
@@ -316,7 +318,7 @@
 
                         <!-- Busca no Admin -->
                         <div class="relative mb-4">
-                            <input type="search" id="admin-search-input" placeholder="Buscar artigos no painel..."
+                            <input type="search" id="admin-search-input" placeholder="Buscar documentos no painel..."
                                 class="w-full p-3 pl-10 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
                             <div class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
                                 <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
@@ -328,7 +330,7 @@
                         </div>
 
                         <div id="articles-list-admin" class="space-y-4">
-                            <p id="articles-loading-msg">Carregando artigos...</p>
+                            <p id="articles-loading-msg">Carregando documentos...</p>
                         </div>
 
                         <!-- Paginação no Admin -->
@@ -576,7 +578,7 @@
         const categoryAdminSection = document.getElementById('category-admin-section');
         const userAdminSection = document.getElementById('user-admin-section');
 
-        // Formulário de Artigo
+        // Formulário de Documento
         const articleForm = document.getElementById('article-form');
         const articleFormTitle = document.getElementById('article-form-title');
         const articleTitle = document.getElementById('article-title');
@@ -593,7 +595,7 @@
         const resetScienceBtn = document.getElementById('reset-science-btn');
         const isScienceResetInput = document.getElementById('is-science-reset');
 
-        // Lista de Artigos Admin
+        // Lista de Documentos Admin
         const articlesListAdmin = document.getElementById('articles-list-admin');
         const articlesLoadingMsg = document.getElementById('articles-loading-msg');
         const adminSearchInput = document.getElementById('admin-search-input');
@@ -730,7 +732,7 @@
 
                     // CORREÇÃO BUG 1 (FLICKERING): Espera as categorias carregarem
                     await loadCategories();
-                    await executeAdminSearch(true); // Só então carrega os artigos
+                    await executeAdminSearch(true); // Só então carrega os documentos
 
                     updateUIVisibility(role);
 
@@ -906,7 +908,7 @@
         async function deleteCategory(id, name) {
             showConfirmModal(
                 'Deletar Categoria',
-                `Tem certeza que quer deletar a categoria "${name}"? Artigos nesta categoria ficarão órfãos.`,
+                `Tem certeza que quer deletar a categoria "${name}"? Documentos nesta categoria ficarão órfãos.`,
                 async () => {
                     try {
                         await fetchWithToken('admin/deletarCategoria', { id: id });
@@ -931,7 +933,7 @@
 
         // --- GERENCIAMENTO DE ARTIGOS (CRUD) ---
 
-        // Salvar/Atualizar Artigo (COM LÓGICA DE CIÊNCIA)
+        // Salvar/Atualizar Documento (COM LÓGICA DE CIÊNCIA)
         articleForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             const id = articleIdInput.value;
@@ -955,21 +957,21 @@
             if (publishedDate) articleData.publishedAt = publishedDate;
 
             try {
-                await fetchWithToken('admin/salvarArtigo', articleData);
-                showStatusMessage(id ? 'Artigo atualizado!' : 'Artigo salvo!');
+                await fetchWithToken('admin/salvarDocumento', articleData);
+                showStatusMessage(id ? 'Documento atualizado!' : 'Documento salvo!');
                 resetArticleForm();
                 await executeAdminSearch(true); // REFRESH AUTOMÁTICO
             } catch (error) {
-                console.error("Erro ao salvar artigo: ", error);
-                showStatusMessage(error.message || 'Erro ao salvar artigo.', true);
+                console.error("Erro ao salvar documento: ", error);
+                showStatusMessage(error.message || 'Erro ao salvar documento.', true);
             }
         });
 
         // Lógica do botão Resetar Ciência
         resetScienceBtn.addEventListener('click', () => {
             showConfirmModal(
-                'Resetar Ciência do Artigo',
-                'Isso forçará TODOS os usuários a darem ciência deste artigo novamente. Tem certeza?',
+                'Resetar Ciência do Documento',
+                'Isso forçará TODOS os usuários a darem ciência deste documento novamente. Tem certeza?',
                 () => {
                     isScienceResetInput.value = 'true';
                     articleForm.dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }));
@@ -1016,7 +1018,7 @@
             });
             // Atualiza mensagem de "vazio"
             if (count === 0 && (showOnlyScience || adminSearchInput.value.trim() !== '')) {
-                articlesLoadingMsg.textContent = 'Nenhum artigo encontrado para este filtro.';
+                articlesLoadingMsg.textContent = 'Nenhum documento encontrado para este filtro.';
                 articlesLoadingMsg.style.display = 'block';
             } else if (count > 0) {
                 articlesLoadingMsg.style.display = 'none';
@@ -1024,7 +1026,7 @@
         }
 
 
-        // Carregar Artigos (COM BUSCA E PAGINAÇÃO)
+        // Carregar Documentos (COM BUSCA E PAGINAÇÃO)
         async function executeAdminSearch(reset = false) {
             if (adminIsLoadingMore) return;
             adminIsLoadingMore = true;
@@ -1046,11 +1048,11 @@
                 let articles = [];
                 if (searchTerm === '') {
                     adminIsSearchActive = false;
-                    articles = await fetchWithToken('getArtigos', { limit: limit, category: 'TODOS' });
+                    articles = await fetchWithToken('getDocumentos', { limit: limit, category: 'TODOS' });
                 } else {
                     adminIsSearchActive = true;
                     adminLoadMoreContainer.classList.add('hidden');
-                    articles = await fetchWithToken('searchArtigos', {
+                    articles = await fetchWithToken('searchDocumentos', {
                         term: searchTerm,
                         scope: 'all',
                         category: 'TODOS'
@@ -1073,8 +1075,8 @@
                 filterAdminListByScience();
 
             } catch (error) {
-                console.error("Erro ao carregar artigos (admin): ", error);
-                articlesLoadingMsg.textContent = error.message || 'Erro ao carregar artigos.';
+                console.error("Erro ao carregar documentos (admin): ", error);
+                articlesLoadingMsg.textContent = error.message || 'Erro ao carregar documentos.';
             } finally {
                 adminIsLoadingMore = false;
                 adminLoadMoreBtn.textContent = 'Carregar Mais';
@@ -1086,10 +1088,10 @@
                 if (anyArticlesVisible) {
                     articlesLoadingMsg.style.display = 'none';
                 } else if (adminArticlesCache.length === 0 && searchTerm !== '') {
-                    articlesLoadingMsg.textContent = 'Nenhum artigo encontrado para esta busca.';
+                    articlesLoadingMsg.textContent = 'Nenhum documento encontrado para esta busca.';
                     articlesLoadingMsg.style.display = 'block';
                 } else if (adminArticlesCache.length === 0 && searchTerm === '') {
-                    articlesLoadingMsg.textContent = 'Nenhum artigo publicado.';
+                    articlesLoadingMsg.textContent = 'Nenhum documento publicado.';
                     articlesLoadingMsg.style.display = 'block';
                 } else if (!anyArticlesVisible && scienceToggleSwitch.checked) {
                     // Já tratado por filterAdminListByScience
@@ -1097,11 +1099,11 @@
             }
         }
 
-        // Função separada para RENDERIZAR os artigos do Admin
+        // Função separada para RENDERIZAR os documentos do Admin
         function renderAdminArticles(articlesToRender) {
 
             if (articlesToRender.length === 0 && adminArticlesCache.length === 0) {
-                articlesLoadingMsg.textContent = 'Nenhum artigo encontrado.';
+                articlesLoadingMsg.textContent = 'Nenhum documento encontrado.';
                 articlesLoadingMsg.style.display = 'block';
                 return;
             }
@@ -1156,7 +1158,7 @@
             updateUIVisibility(currentUserRole);
         }
 
-        // Delegação de Eventos para botões de Artigo
+        // Delegação de Eventos para botões de Documento
         articlesListAdmin.addEventListener('click', (e) => {
             const editBtn = e.target.closest('.edit-article-btn');
             const deleteBtn = e.target.closest('.delete-article-btn');
@@ -1167,12 +1169,12 @@
             if (scienceBtn) openScienceLogModal(scienceBtn.dataset.id, scienceBtn.dataset.title); // NOVO
         });
 
-        // Preencher formulário de Artigo para edição
+        // Preencher formulário de Documento para edição
         async function populateArticleForm(id) {
             try {
-                const article = await fetchWithToken('getArtigoDetalhe', { id: id });
+                const article = await fetchWithToken('getDocumentoDetalhe', { id: id });
 
-                articleFormTitle.textContent = 'Editar Artigo';
+                articleFormTitle.textContent = 'Editar Documento';
                 articleIdInput.value = id;
                 articleTitle.value = article.title;
                 articleCategory.value = article.categoryId;
@@ -1212,8 +1214,8 @@
                 window.scrollTo({ top: articleForm.offsetTop, behavior: 'smooth' });
 
             } catch (error) {
-                console.error("Erro ao buscar artigo:", error);
-                showStatusMessage(error.message || 'Erro ao carregar artigo para edição.', true);
+                console.error("Erro ao buscar documento:", error);
+                showStatusMessage(error.message || 'Erro ao carregar documento para edição.', true);
             }
         }
 
@@ -1226,33 +1228,33 @@
             }
         });
 
-        // Deletar Artigo (COM MODAL CUSTOMIZADO)
+        // Deletar Documento (COM MODAL CUSTOMIZADO)
         async function deleteArticle(id, title) {
             showConfirmModal(
-                'Deletar Artigo',
-                `Tem certeza que quer deletar o artigo "${title || 'este artigo'}"?`,
+                'Deletar Documento',
+                `Tem certeza que quer deletar o documento "${title || 'este documento'}"?`,
                 async () => {
                     try {
-                        await fetchWithToken('admin/deletarArtigo', { id: id });
-                        showStatusMessage('Artigo deletado.');
+                        await fetchWithToken('admin/deletarDocumento', { id: id });
+                        showStatusMessage('Documento deletado.');
                         resetArticleForm();
                         await executeAdminSearch(true); // REFRESH AUTOMÁTICO
                     } catch (error) {
-                        console.error("Erro ao deletar artigo: ", error);
-                        showStatusMessage(error.message || 'Erro ao deletar artigo.', true);
+                        console.error("Erro ao deletar documento: ", error);
+                        showStatusMessage(error.message || 'Erro ao deletar documento.', true);
                     }
                 }
             );
         }
 
-        // Limpar formulário de Artigo
+        // Limpar formulário de Documento
         function resetArticleForm() {
             articleForm.reset();
             articleIdInput.value = '';
             if (quill) {
                 quill.root.innerHTML = '';
             }
-            articleFormTitle.textContent = 'Adicionar Novo Artigo';
+            articleFormTitle.textContent = 'Adicionar Novo Documento';
             cancelEditBtn.classList.add('hidden');
             resetLinksContainer();
             resetScienceContainer.classList.add('hidden');
