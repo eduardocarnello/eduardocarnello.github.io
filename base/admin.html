@@ -1048,7 +1048,7 @@
                 let articles = [];
                 if (searchTerm === '') {
                     adminIsSearchActive = false;
-                    articles = await fetchWithToken('getDocumentos', { limit: limit, category: 'TODOS' });
+                    articles = await fetchWithToken('getArtigos', { limit: limit, category: 'TODOS' });
                 } else {
                     adminIsSearchActive = true;
                     adminLoadMoreContainer.classList.add('hidden');
@@ -1172,7 +1172,7 @@
         // Preencher formulário de Documento para edição
         async function populateArticleForm(id) {
             try {
-                const article = await fetchWithToken('getDocumentoDetalhe', { id: id });
+                const article = await fetchWithToken('getArtigoDetalhe', { id: id });
 
                 articleFormTitle.textContent = 'Editar Documento';
                 articleIdInput.value = id;

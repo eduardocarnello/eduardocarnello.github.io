@@ -794,7 +794,7 @@
             try {
                 // AÇÃO ATUALIZADA
                 const payload = { limit: limit, category: currentCategory };
-                const articles = await fetchWithToken('getDocumentos', payload);
+                const articles = await fetchWithToken('getArtigos', payload);
 
                 const newArticles = articles.filter(a => !currentArticles.some(existing => existing.id === a.id));
                 currentArticles = articles;
@@ -974,7 +974,7 @@
 
             try {
                 // AÇÃO ATUALIZADA
-                const article = await fetchWithToken('getDocumentoDetalhe', { id: id });
+                const article = await fetchWithToken('getArtigoDetalhe', { id: id });
 
                 modalTitle.textContent = article.title;
 
@@ -1056,7 +1056,7 @@
         async function verificarDocumentosParaCiencia() {
             try {
                 // AÇÃO ATUALIZADA
-                const documentos = await fetchWithToken('getDocumentosParaCiencia');
+                const documentos = await fetchWithToken('getArtigosParaCiencia');
 
                 if (documentos && documentos.length > 0) {
                     documentosParaCiencia = documentos;
@@ -1100,7 +1100,7 @@
 
             try {
                 // AÇÃO ATUALIZADA
-                const documentoCompleto = await fetchWithToken('getDocumentoDetalhe', { id: documento.id });
+                const documentoCompleto = await fetchWithToken('getArtigoDetalhe', { id: documento.id });
 
                 modalCienciaTitle.textContent = documentoCompleto.title;
                 modalCienciaContent.innerHTML = documentoCompleto.content;
