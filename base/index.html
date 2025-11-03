@@ -39,7 +39,7 @@
             outline-offset: 2px;
         }
 
-        /* Estilos do Conteúdo do Artigo (Modal) */
+        /* Estilos do Conteúdo do Documento (Modal) */
         #modal-content h1,
         #modal-ciencia-content h1 {
             font-size: 1.875rem;
@@ -215,15 +215,16 @@
         <div class="bg-slate-800 py-12 sm:py-16">
             <div class="container mx-auto px-4 sm:px-6 lg:px-8">
                 <div class="max-w-3xl mx-auto text-center">
-                    <h1 class="text-3xl sm:text-4xl font-extrabold text-white">Como podemos ajudar?</h1>
+                    <h1 class="text-3xl sm:text-4xl font-extrabold text-white">Base de Conhecimentos do JEC de
+                        Marília/SP</h1>
                     <p class="mt-4 text-lg text-slate-300">
-                        Pesquise comunicados, provimentos, orientações e mais.
+                        Pesquise comunicados, provimentos, orientações, manuais e mais.
                     </p>
                 </div>
                 <!-- Barra de Busca -->
                 <div class="max-w-3xl mx-auto mt-8">
                     <div class="relative">
-                        <input type="search" id="search-input" placeholder="Pesquisar artigos..."
+                        <input type="search" id="search-input" placeholder="Pesquisar no banco..."
                             class="w-full p-4 pl-12 text-lg text-slate-900 bg-white rounded-full shadow-lg focus:outline-none focus:ring-4 focus:ring-blue-500 focus:ring-opacity-50 transition-shadow">
                         <div class="absolute left-4 top-1/2 -translate-y-1/2">
                             <svg class="w-6 h-6 text-slate-400" xmlns="http://www.w3.org/2000/svg" fill="none"
@@ -279,10 +280,10 @@
                     </nav>
                 </aside>
 
-                <!-- Grid de Artigos (Principal) -->
+                <!-- Grid de Documentos (Principal) -->
                 <section class="w-full lg:w-3/4 xl:w-4/5">
                     <h2 id="articles-title" class="text-2xl font-bold text-slate-800 mb-6">
-                        Artigos Recentes
+                        Documentos Recentes
                     </h2>
 
                     <!-- Mensagem de Status (Carregando, Erro, Vazio) -->
@@ -295,19 +296,19 @@
                                 d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
                             </path>
                         </svg>
-                        <p class="mt-4 text-lg font-medium">Carregando artigos...</p>
+                        <p class="mt-4 text-lg font-medium">Carregando documentos...</p>
                     </div>
 
-                    <!-- Container dos Cards de Artigo -->
+                    <!-- Container dos Cards de Documento -->
                     <div id="articles-grid" class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <!-- Cards de artigo vêm aqui -->
+                        <!-- Cards de documento vêm aqui -->
                     </div>
 
                     <!-- Botão Carregar Mais -->
                     <div id="load-more-container" class="text-center mt-12 hidden">
                         <button id="load-more-btn"
                             class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-full shadow-lg transition-transform transform hover:scale-105 focus-ring-visible">
-                            Carregar Mais 10 Artigos
+                            Carregar Mais 10 Documentos
                         </button>
                     </div>
 
@@ -316,7 +317,7 @@
         </main>
     </section>
 
-    <!-- Modal de Artigo (Começa oculto) -->
+    <!-- Modal de Documento (Começa oculto) -->
     <div id="modal-backdrop"
         class="fixed inset-0 bg-black bg-opacity-75 z-50 hidden transition-opacity duration-300 ease-out"
         aria-hidden="true" style="opacity: 0;"></div>
@@ -356,7 +357,7 @@
                     <p class="mt-3 text-slate-500">Carregando conteúdo...</p>
                 </div>
 
-                <!-- Metadados do Artigo -->
+                <!-- Metadados do Documento -->
                 <div id="modal-metadata" class="hidden border-b border-slate-200 pb-4 mb-4 space-y-3">
                     <!-- Categoria -->
                     <div id="modal-category-badge" class="flex items-center gap-2">
@@ -387,7 +388,7 @@
                     </div>
                 </div>
 
-                <!-- Conteúdo do Artigo (do Quill) -->
+                <!-- Conteúdo do Documento (do Quill) -->
                 <div id="modal-content">
                     <!-- Conteúdo vem aqui -->
                 </div>
@@ -443,7 +444,7 @@
                     <p class="mt-3 text-slate-500">Carregando conteúdo...</p>
                 </div>
 
-                <!-- Conteúdo do Artigo (do Quill) -->
+                <!-- Conteúdo do Documento (do Quill) -->
                 <div id="modal-ciencia-content" class="hidden">
                     <!-- O conteúdo será injetado aqui -->
                 </div>
@@ -544,13 +545,13 @@
         // Categorias
         const categoryGrid = document.getElementById('category-grid');
         const categoriesLoading = document.getElementById('categories-loading');
-        // Artigos
+        // Documentos
         const articlesGrid = document.getElementById('articles-grid');
         const articlesStatus = document.getElementById('articles-status');
         const loadMoreContainer = document.getElementById('load-more-container');
         const loadMoreBtn = document.getElementById('load-more-btn');
 
-        // Modal de Artigo Normal
+        // Modal de Documento Normal
         const modalBackdrop = document.getElementById('modal-backdrop');
         const modalContainer = document.getElementById('modal-container');
         const modalPanel = document.getElementById('modal-panel');
@@ -593,8 +594,8 @@
         const ARTICLES_PER_PAGE = 10;
         let isLoadingMore = false;
         let isSearchActive = false;
-        let artigosParaCiencia = [];
-        let cienciaArtigoIndex = 0;
+        let documentosParaCiencia = [];
+        let cienciaDocumentoIndex = 0;
 
         // --- FUNÇÃO WRAPPER DE FETCH (COM TOKEN) ---
         // (Atualizada para a API Monolito)
@@ -675,11 +676,11 @@
                         adminBtn.classList.add('hidden');
                     }
 
-                    // Verifica artigos de ciência ANTES de carregar o resto
-                    await verificarArtigosParaCiencia();
+                    // Verifica documentos de ciência ANTES de carregar o resto
+                    await verificarDocumentosParaCiencia();
 
                     // Carrega o conteúdo principal (só se o modal de ciência não estiver aberto)
-                    if (artigosParaCiencia.length === 0) {
+                    if (documentosParaCiencia.length === 0) {
                         contentSection.style.display = 'block'; // Mostra o conteúdo
                         checkAndRenderAll();
                     }
@@ -776,7 +777,7 @@
             }
         }
 
-        // 2. Carregar Artigos (Paginação)
+        // 2. Carregar Documentos (Paginação)
         loadMoreBtn.addEventListener('click', () => {
             if (!isLoadingMore && !isSearchActive) {
                 loadMoreArticles();
@@ -793,7 +794,7 @@
             try {
                 // AÇÃO ATUALIZADA
                 const payload = { limit: limit, category: currentCategory };
-                const articles = await fetchWithToken('getArtigos', payload);
+                const articles = await fetchWithToken('getDocumentos', payload);
 
                 const newArticles = articles.filter(a => !currentArticles.some(existing => existing.id === a.id));
                 currentArticles = articles;
@@ -806,12 +807,12 @@
                 }
                 renderArticles(newArticles, false); // false = não limpar o grid
             } catch (error) {
-                console.error("Erro ao buscar mais artigos:", error);
-                articlesStatus.textContent = `Erro ao carregar artigos: ${error.message}`;
+                console.error("Erro ao buscar mais documentos:", error);
+                articlesStatus.textContent = `Erro ao carregar documentos: ${error.message}`;
                 articlesStatus.classList.remove('hidden');
             } finally {
                 isLoadingMore = false;
-                loadMoreBtn.textContent = 'Carregar Mais 10 Artigos';
+                loadMoreBtn.textContent = 'Carregar Mais 10 Documentos';
                 loadMoreBtn.disabled = false;
             }
         }
@@ -839,13 +840,13 @@
             });
         }
 
-        // Renderizar Artigos
+        // Renderizar Documentos
         function renderArticles(articlesToRender, clearGrid = false) {
             if (clearGrid) {
                 articlesGrid.innerHTML = '';
             }
             if (articlesToRender.length === 0 && clearGrid) {
-                articlesStatus.textContent = 'Nenhum artigo encontrado para esta categoria ou busca.';
+                articlesStatus.textContent = 'Nenhum documento encontrado para esta categoria ou busca.';
                 articlesStatus.classList.remove('hidden');
                 return;
             } else {
@@ -868,7 +869,7 @@
                         <p class="mt-3 text-base text-slate-600 line-clamp-3">${summary}</p>
                     </div>
                     <footer class="bg-slate-50 px-6 py-4">
-                        <span class="text-sm font-medium text-blue-600 hover:text-blue-700">Ver artigo completo &rarr;</span>
+                        <span class="text-sm font-medium text-blue-600 hover:text-blue-700">Ver documento completo &rarr;</span>
                     </footer>
                 `;
                 fragment.appendChild(card);
@@ -919,11 +920,11 @@
                     <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                     <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                 </svg>
-                <p class="mt-4 text-lg font-medium">Carregando artigos...</p>`;
+                <p class="mt-4 text-lg font-medium">Carregando documentos...</p>`;
 
             if (searchTerm === '') {
                 isSearchActive = false;
-                articlesTitle.textContent = 'Artigos Recentes';
+                articlesTitle.textContent = 'Documentos Recentes';
                 currentArticles = [];
                 currentArticleCount = 0;
                 await loadMoreArticles();
@@ -934,7 +935,7 @@
                 try {
                     // AÇÃO ATUALIZADA
                     const payload = { term: searchTerm, scope: searchScope, category: currentCategory };
-                    const searchResults = await fetchWithToken('searchArtigos', payload);
+                    const searchResults = await fetchWithToken('searchDocumentos', payload);
 
                     currentArticles = searchResults;
                     renderArticles(searchResults, true);
@@ -946,7 +947,7 @@
             }
         }
 
-        // --- MODAL (Janela do Artigo) ---
+        // --- MODAL (Janela do Documento) ---
         articlesGrid.addEventListener('click', (e) => {
             const card = e.target.closest('.article-card');
             if (card) {
@@ -973,7 +974,7 @@
 
             try {
                 // AÇÃO ATUALIZADA
-                const article = await fetchWithToken('getArtigoDetalhe', { id: id });
+                const article = await fetchWithToken('getDocumentoDetalhe', { id: id });
 
                 modalTitle.textContent = article.title;
 
@@ -1033,7 +1034,7 @@
             } catch (error) {
                 console.error("Erro ao abrir modal (fetchWithToken):", error);
                 modalTitle.textContent = 'Erro ao Carregar';
-                modalContent.innerHTML = `<p class="text-red-500">${error.message || 'Não foi possível carregar o conteúdo deste artigo. Tente novamente mais tarde.'}</p>`;
+                modalContent.innerHTML = `<p class="text-red-500">${error.message || 'Não foi possível carregar o conteúdo deste documento. Tente novamente mais tarde.'}</p>`;
                 modalLoadingSpinner.classList.add('hidden');
             }
         }
@@ -1052,22 +1053,22 @@
 
         // --- NOVO: LÓGICA DO MODAL DE CIÊNCIA ---
 
-        async function verificarArtigosParaCiencia() {
+        async function verificarDocumentosParaCiencia() {
             try {
                 // AÇÃO ATUALIZADA
-                const artigos = await fetchWithToken('getArtigosParaCiencia');
+                const documentos = await fetchWithToken('getDocumentosParaCiencia');
 
-                if (artigos && artigos.length > 0) {
-                    artigosParaCiencia = artigos;
-                    cienciaArtigoIndex = 0;
+                if (documentos && documentos.length > 0) {
+                    documentosParaCiencia = documentos;
+                    cienciaDocumentoIndex = 0;
                     abrirModalCiencia();
                 } else {
-                    // Nenhum artigo pendente, carrega o site normalmente
+                    // Nenhum documento pendente, carrega o site normalmente
                     contentSection.style.display = 'block'; // Mostra o conteúdo
                     checkAndRenderAll();
                 }
             } catch (error) {
-                console.error("Erro ao verificar artigos para ciência:", error);
+                console.error("Erro ao verificar documentos para ciência:", error);
                 // Falha ao verificar, carrega o site normalmente para não bloquear o usuário
                 contentSection.style.display = 'block'; // Mostra o conteúdo
                 checkAndRenderAll();
@@ -1082,10 +1083,10 @@
                 modalCienciaPanel.style.opacity = '1';
                 modalCienciaPanel.style.transform = 'scale(1)';
             }, 10);
-            renderArtigoCiencia();
+            renderDocumentoCiencia();
         }
 
-        async function renderArtigoCiencia() {
+        async function renderDocumentoCiencia() {
             // Mostra o spinner e esconde o conteúdo
             cienciaLoadingSpinner.style.display = 'block';
             modalCienciaContent.style.display = 'none';
@@ -1094,15 +1095,15 @@
             cienciaPrevBtn.style.display = 'none';
             cienciaStatus.textContent = '';
 
-            const artigo = artigosParaCiencia[cienciaArtigoIndex];
-            if (!artigo) return;
+            const documento = documentosParaCiencia[cienciaDocumentoIndex];
+            if (!documento) return;
 
             try {
                 // AÇÃO ATUALIZADA
-                const artigoCompleto = await fetchWithToken('getArtigoDetalhe', { id: artigo.id });
+                const documentoCompleto = await fetchWithToken('getDocumentoDetalhe', { id: documento.id });
 
-                modalCienciaTitle.textContent = artigoCompleto.title;
-                modalCienciaContent.innerHTML = artigoCompleto.content;
+                modalCienciaTitle.textContent = documentoCompleto.title;
+                modalCienciaContent.innerHTML = documentoCompleto.content;
 
                 cienciaLoadingSpinner.style.display = 'none';
                 modalCienciaContent.style.display = 'block';
@@ -1111,12 +1112,12 @@
                 modalCienciaBody.scrollTop = 0;
 
                 // Atualiza a navegação
-                cienciaCounter.textContent = `Artigo ${cienciaArtigoIndex + 1} de ${artigosParaCiencia.length}`;
+                cienciaCounter.textContent = `Documento ${cienciaDocumentoIndex + 1} de ${documentosParaCiencia.length}`;
 
                 // ----- INÍCIO DA NOVA LÓGICA DE SCROLL -----
 
                 // 1. Define qual botão é o "alvo" (Próximo ou Declarar Ciência)
-                const isLastArticle = cienciaArtigoIndex === artigosParaCiencia.length - 1;
+                const isLastArticle = cienciaDocumentoIndex === documentosParaCiencia.length - 1;
                 const targetButton = isLastArticle ? declararCienciaBtn : cienciaNextBtn;
 
                 // 2. Desabilita o botão alvo por padrão
@@ -1130,8 +1131,8 @@
                     cienciaNextBtn.style.display = 'inline-flex';
                 }
 
-                // 4. Mostra o botão "Anterior" se não for o primeiro artigo
-                if (cienciaArtigoIndex > 0) {
+                // 4. Mostra o botão "Anterior" se não for o primeiro documento
+                if (cienciaDocumentoIndex > 0) {
                     cienciaPrevBtn.style.display = 'inline-flex';
                 }
 
@@ -1151,7 +1152,7 @@
                 // 6. Limpa qualquer ouvinte de scroll antigo
                 modalCienciaBody.onscroll = null;
 
-                // 7. Roda a checagem 1x (caso o artigo seja curto e não precise de scroll)
+                // 7. Roda a checagem 1x (caso o documento seja curto e não precise de scroll)
                 // Usamos um pequeno timeout para garantir que o DOM (scrollHeight) foi calculado
                 setTimeout(checkScroll, 100);
 
@@ -1161,8 +1162,8 @@
                 // ----- FIM DA NOVA LÓGICA DE SCROLL -----
 
             } catch (error) {
-                console.error("Erro ao carregar detalhe do artigo de ciência:", error);
-                modalCienciaTitle.textContent = 'Erro ao Carregar Artigo';
+                console.error("Erro ao carregar detalhe do documento de ciência:", error);
+                modalCienciaTitle.textContent = 'Erro ao Carregar Documento';
                 modalCienciaContent.innerHTML = `<p class="text-red-500">${error.message}</p>`;
                 cienciaLoadingSpinner.style.display = 'none';
                 modalCienciaContent.style.display = 'block';
@@ -1171,16 +1172,16 @@
         }
 
         cienciaPrevBtn.addEventListener('click', () => {
-            if (cienciaArtigoIndex > 0) {
-                cienciaArtigoIndex--;
-                renderArtigoCiencia();
+            if (cienciaDocumentoIndex > 0) {
+                cienciaDocumentoIndex--;
+                renderDocumentoCiencia();
             }
         });
 
         cienciaNextBtn.addEventListener('click', () => {
-            if (cienciaArtigoIndex < artigosParaCiencia.length - 1) {
-                cienciaArtigoIndex++;
-                renderArtigoCiencia();
+            if (cienciaDocumentoIndex < documentosParaCiencia.length - 1) {
+                cienciaDocumentoIndex++;
+                renderDocumentoCiencia();
             }
         });
 
@@ -1190,13 +1191,13 @@
             cienciaStatus.textContent = '';
 
             try {
-                const artigosConcluidos = artigosParaCiencia.map(art => ({
+                const documentosConcluidos = documentosParaCiencia.map(art => ({
                     articleId: art.id,
                     scienceVersion: art.scienceVersion
                 }));
 
                 // AÇÃO ATUALIZADA
-                await fetchWithToken('user/declararCiencia', { artigos: artigosConcluidos });
+                await fetchWithToken('user/declararCiencia', { documentos: documentosConcluidos });
 
                 // Sucesso! Fecha o modal e carrega o site.
                 fecharModalCiencia();
