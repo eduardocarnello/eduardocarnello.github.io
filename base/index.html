@@ -418,7 +418,7 @@
 
             <!-- Cabeçalho do Modal de Ciência -->
             <header
-                class="sticky top-0 bg-white p-4 sm:p-6 border-b border-slate-200 flex justify-between items-center z-10 rounded-t-2x">
+                class="sticky top-0 bg-white p-4 sm:p-6 border-b border-slate-200 flex justify-between items-center z-10 rounded-t-2xl">
                 <div class="flex flex-col">
                     <span class="text-sm font-semibold text-red-600">LEITURA OBRIGATÓRIA</span>
                     <h3 id="modal-ciencia-title" class="text-xl sm:text-2xl font-bold text-slate-800 break-words pr-4">
@@ -1076,7 +1076,7 @@
 
         function abrirModalCiencia() {
             modalCienciaBackdrop.style.display = 'block';
-            modalCienciaContainer.style.display = 'block';
+            modalCienciaContainer.style.display = 'flex';
             setTimeout(() => {
                 modalCienciaBackdrop.style.opacity = '1';
                 modalCienciaPanel.style.opacity = '1';
