@@ -2,26 +2,30 @@
  * API "Monolito"
  * Este arquivo único agora lida com TODAS as requisições de API.
  * Ele lê o campo 'action' do body para rotear a lógica.
- * Isso resolve o limite de 12 funções do Vercel.
+ * IMPLEMENTA A LÓGICA DE WHITELIST.
  */
-// A importação do 'firebaseAdmin.js' agora é o nosso helper central
-import { db, auth, getUserRole, FieldValue, Timestamp, SUPER_ADMIN_EMAIL } from './firebaseAdmin.js';
+import { db, auth, getUserRole, FieldValue, Timestamp, SUPER_ADMIN_EMAIL } from './firebaseAdmin.js'; // Importa SUPER_ADMIN_EMAIL
+
+// --- NOVO: WHITELIST (LISTA DE APROVADOS) ---
+// O SUPER_ADMIN_EMAIL é sempre permitido.
+const EMAIL_WHITELIST = [
+    SUPER_ADMIN_EMAIL, // eduardocarnello@gmail.com
+    'camilaps05@gmail.com',
+    // Adicione outros e-mails aprovados aqui
+    // 'outro.email@tjsp.jus.br',
+];
+// --- FIM DA WHITELIST ---
+
 
 // --- Funções Auxiliares (Copiadas das APIs antigas) ---
 
 function convertTimestamps(data) {
     if (data && typeof data === 'object') {
-        // Esta é a versão recursiva e segura
         const secondsKey = data.hasOwnProperty('_seconds') ? '_seconds' : 'seconds';
         const nanosKey = data.hasOwnProperty('_nanoseconds') ? '_nanoseconds' : 'nanoseconds';
 
         if (data.hasOwnProperty(secondsKey) && data.hasOwnProperty(nanosKey)) {
             return { seconds: data[secondsKey], nanoseconds: data[nanosKey] };
-        }
-
-        // Trata Timestamps do Firestore { seconds, nanoseconds }
-        if (data.hasOwnProperty('seconds') && data.hasOwnProperty('nanoseconds')) {
-            return { seconds: data.seconds, nanoseconds: data.nanoseconds };
         }
 
         for (const key in data) {
@@ -55,20 +59,30 @@ export default async function handler(req, res) {
             return res.status(401).json({ error: 'Nenhum token fornecido.' });
         }
 
-        // Ação de login/upsert é a única que não precisa de um 'role' prévio
+        const decodedToken = await auth.verifyIdToken(token);
+
+        // --- LÓGICA DA WHITELIST ---
+        // Verifica se o e-mail está na whitelist ANTES de qualquer ação
+        const userEmail = decodedToken.email;
+        if (!EMAIL_WHITELIST.includes(userEmail)) {
+            console.warn(`ACESSO NEGADO (Whitelist): E-mail ${userEmail} tentou acessar.`);
+            // Retorna um erro 403 (Proibido) com uma mensagem clara.
+            // O front-end (index.html/admin.html) deve tratar este erro.
+            return res.status(403).json({ error: 'ACESSO_NEGADO: Seu e-mail não está autorizado a usar este sistema.' });
+        }
+        // --- FIM DA LÓGICA DA WHITELIST ---
+
+        // Ação de login/upsert
         if (action === 'user/upsert') {
-            const decodedToken = await auth.verifyIdToken(token);
             const { role, email } = await handleUpsert(decodedToken);
             return res.status(200).json({ role, email });
         }
 
         // Todas as outras ações exigem um cargo (role)
-        const role = await getUserRole(token);
+        const role = await getUserRole(token); // Agora é seguro chamar, pois o usuário está na whitelist
         if (!role) {
             return res.status(401).json({ error: 'Token inválido ou usuário sem cargo.' });
         }
-
-        const decodedToken = await auth.verifyIdToken(token);
 
         // --- ROTEADOR DE AÇÕES ---
         switch (action) {
@@ -102,7 +116,7 @@ export default async function handler(req, res) {
             case 'admin/updateUserRole':
                 return await handleUpdateUserRole(payload, decodedToken.uid, role, res);
 
-            // -- ETAPA 3.C (NOVA) --
+            // -- ETAPA 3.C (Auditoria) --
             case 'admin/getScienceLog':
                 return await handleGetScienceLog(payload, role, res);
 
@@ -118,7 +132,7 @@ export default async function handler(req, res) {
     }
 }
 
-// --- Funções Lógicas (Handlers) ---
+// --- Funções Lógicas (Copiadas das APIs antigas) ---
 
 // (Lógica de api/user/upsert.js)
 async function handleUpsert(decodedToken) {
@@ -130,6 +144,7 @@ async function handleUpsert(decodedToken) {
     if (userSnap.exists) {
         return { role: userSnap.data().role, email: userSnap.data().email };
     } else {
+        // (A verificação de Whitelist já foi feita acima)
         const newRole = (email === SUPER_ADMIN_EMAIL) ? 'Admin' : 'Leitor';
         const newUserProfile = {
             email: email,
@@ -255,8 +270,8 @@ async function handleGetArtigosParaCiencia(uid, res) {
             artigosPendentes.push({
                 id: artigoId,
                 title: artigo.title,
-                publishedAt: artigo.publishedAt, // Adiciona data para ordenação
-                scienceVersion: versaoArtigo
+                scienceVersion: versaoArtigo,
+                publishedAt: artigo.publishedAt // Passa a data para ordenação
             });
         }
     });
@@ -267,7 +282,14 @@ async function handleGetArtigosParaCiencia(uid, res) {
         return bDate - aDate;
     });
 
-    return res.status(200).json(artigosPendentes);
+    // Remove o publishedAt antes de enviar, já que o front-end não precisa dele
+    const artigosFinais = artigosPendentes.map(art => ({
+        id: art.id,
+        title: art.title,
+        scienceVersion: art.scienceVersion
+    }));
+
+    return res.status(200).json(artigosFinais);
 }
 
 // (Lógica de api/user/declararCiencia.js)
@@ -281,7 +303,6 @@ async function handleDeclararCiencia(payload, uid, email, res) {
     artigos.forEach(artigo => {
         const { articleId, scienceVersion } = artigo;
         if (!articleId || !scienceVersion) return;
-
         const docId = `${uid}_${articleId}`;
         const docRef = cienciaRef.doc(docId);
         const dadosCiencia = {
@@ -328,11 +349,12 @@ async function handleSalvarArtigo(payload, role, uid, res) {
         articleData.requiresScience = requiresScience;
         if (id && requiresScience && isScienceReset) {
             articleData.scienceVersion = FieldValue.increment(1);
-        } else if (!id && requiresScience) {
+        } else if (requiresScience && (!id || !articleData.scienceVersion)) {
+            // Se for novo ou se a ciência foi recém-marcada
             articleData.scienceVersion = 1;
         }
     }
-    delete articleData.isScienceReset;
+    delete articleData.isScienceReset; // Remove o campo temporário
 
     if (id) {
         const articleRef = db.collection('artigos').doc(id);
@@ -360,9 +382,9 @@ async function handleDeletarArtigo(payload, role, res) {
     const { id } = payload;
     if (!id) return res.status(400).json({ error: 'ID do artigo não fornecido.' });
 
-    // TODO: Deletar registros de ciência associados
-
     await db.collection('artigos').doc(id).delete();
+    // TODO: Deletar registros de ciência associados (Etapa 3.C)
+
     return res.status(200).json({ message: 'Artigo deletado com sucesso.' });
 }
 
@@ -377,10 +399,10 @@ async function handleSalvarCategoria(payload, role, res) {
     if (id) {
         const catRef = db.collection('categorias').doc(id);
         await catRef.set(categoryData);
-        return res.status(200).json({ message: 'Categoria atualizada com sucesso.' });
+        return res.status(200).json({ message: 'Categoria atualizada!' });
     } else {
         await db.collection('categorias').add(categoryData);
-        return res.status(201).json({ message: 'Categoria salva com sucesso.' });
+        return res.status(201).json({ message: 'Categoria salva!' });
     }
 }
 
@@ -391,6 +413,7 @@ async function handleDeletarCategoria(payload, role, res) {
     }
     const { id } = payload;
     if (!id) return res.status(400).json({ error: 'ID da categoria não fornecido.' });
+
     await db.collection('categorias').doc(id).delete();
     return res.status(200).json({ message: 'Categoria deletada com sucesso.' });
 }
@@ -398,16 +421,14 @@ async function handleDeletarCategoria(payload, role, res) {
 // (Lógica de api/admin/getUsers.js)
 async function handleGetUsers(adminUid, role, res) {
     if (role !== 'Admin') {
-        return res.status(403).json({ error: 'Acesso negado. Você não tem permissão para ver usuários.' });
+        return res.status(403).json({ error: 'Acesso negado.' });
     }
-    const snapshot = await db.collection('users').get();
-    if (snapshot.empty) return res.status(200).json([]);
-
+    const usersSnapshot = await db.collection('users').get();
     const users = [];
-    snapshot.forEach(doc => {
-        if (doc.id !== adminUid) { // Não inclui o próprio admin
-            const data = doc.data();
-            users.push({ uid: doc.id, email: data.email, role: data.role });
+    usersSnapshot.forEach(doc => {
+        // Não inclui o próprio admin na lista de gerenciamento
+        if (doc.id !== adminUid) {
+            users.push({ uid: doc.id, ...doc.data() });
         }
     });
     return res.status(200).json(users);
@@ -416,96 +437,92 @@ async function handleGetUsers(adminUid, role, res) {
 // (Lógica de api/admin/updateUserRole.js)
 async function handleUpdateUserRole(payload, adminUid, role, res) {
     if (role !== 'Admin') {
-        return res.status(403).json({ error: 'Acesso negado. Você não tem permissão para alterar cargos.' });
+        return res.status(403).json({ error: 'Acesso negado.' });
     }
     const { uid, role: newRole } = payload;
-    const VALID_ROLES = ['Leitor', 'Redator', 'Editor', 'Admin'];
-    if (!uid || !newRole) return res.status(400).json({ error: 'UID do usuário e novo cargo são obrigatórios.' });
-    if (!VALID_ROLES.includes(newRole)) return res.status(400).json({ error: 'Cargo inválido.' });
-    if (adminUid === uid) return res.status(400).json({ error: 'Você não pode alterar seu próprio cargo.' });
-
-    const userRef = db.collection('users').doc(uid);
-    await userRef.update({ role: newRole });
+    if (!uid || !newRole) {
+        return res.status(400).json({ error: 'UID do usuário e novo cargo são obrigatórios.' });
+    }
+    if (uid === adminUid) {
+        return res.status(400).json({ error: 'Você não pode alterar seu próprio cargo.' });
+    }
+    const validRoles = ['Leitor', 'Redator', 'Editor', 'Admin'];
+    if (!validRoles.includes(newRole)) {
+        return res.status(400).json({ error: 'Cargo inválido.' });
+    }
 
     try {
         await auth.setCustomUserClaims(uid, { role: newRole });
-    } catch (claimsError) {
-        console.warn(`AVISO: Falha ao definir Custom Claim para ${uid}. Erro: ${claimsError.message}`);
+        await db.collection('users').doc(uid).update({ role: newRole });
+        return res.status(200).json({ message: 'Cargo atualizado com sucesso.' });
+    } catch (error) {
+        console.error("Erro ao atualizar cargo:", error);
+        return res.status(500).json({ error: 'Erro ao definir permissões.' });
     }
-
-    return res.status(200).json({ message: 'Cargo do usuário atualizado com sucesso.' });
 }
 
-// --- ETAPA 3.C (LOG DE CIÊNCIA - CORRIGIDO) ---
+// --- ETAPA 3.C (Auditoria de Ciência) ---
 async function handleGetScienceLog(payload, role, res) {
-    // Permissão: Editor ou Admin podem ver o log
     if (role !== 'Editor' && role !== 'Admin') {
-        return res.status(403).json({ error: 'Acesso negado. Permissão insuficiente.' });
+        return res.status(403).json({ error: 'Acesso negado. Permissão de Editor ou Admin necessária.' });
     }
 
     const { articleId } = payload;
-    if (!articleId) return res.status(400).json({ error: 'ID do artigo é obrigatório.' });
+    if (!articleId) {
+        return res.status(400).json({ error: 'ID do artigo é obrigatório.' });
+    }
 
-    // 1. Busca a versão atual do artigo
+    // 1. Busca o artigo para saber a versão atual
     const articleRef = db.collection('artigos').doc(articleId);
     const articleSnap = await articleRef.get();
-    if (!articleSnap.exists) return res.status(404).json({ error: 'Artigo não encontrado.' });
+    if (!articleSnap.exists) {
+        return res.status(404).json({ error: 'Artigo não encontrado.' });
+    }
     const currentScienceVersion = articleSnap.data().scienceVersion || 1;
 
     // 2. Busca todos os usuários
     const usersSnapshot = await db.collection('users').get();
-    const allUsers = new Map();
-    usersSnapshot.forEach(doc => {
-        // **CORREÇÃO BUG 4**: Pega TODOS os usuários, incluindo Admins
-        const user = doc.data();
-        allUsers.set(doc.id, { email: user.email, uid: doc.id, role: user.role });
-    });
 
     // 3. Busca todos os registros de ciência para este artigo
     const cienciaSnapshot = await db.collection('ciencia')
         .where('articleId', '==', articleId)
         .get();
 
+    const cienciaMap = new Map();
+    cienciaSnapshot.forEach(doc => {
+        const data = doc.data();
+        cienciaMap.set(data.userId, {
+            version: data.scienceVersion,
+            declaredAt: convertTimestamps(data.declaredAt)
+        });
+    });
+
     const completed = [];
     const pending = [];
 
     // 4. Compara as listas
-    cienciaSnapshot.forEach(doc => {
-        const cienciaData = doc.data();
-        const userId = cienciaData.userId;
+    usersSnapshot.forEach(doc => {
+        const user = doc.data();
+        const userId = doc.id;
+        const cienciaInfo = cienciaMap.get(userId);
 
-        if (allUsers.has(userId)) {
-            const user = allUsers.get(userId);
-
-            if (cienciaData.scienceVersion >= currentScienceVersion) {
-                // Usuário deu ciência da versão atual
-                completed.push({
-                    email: cienciaData.userEmail,
-                    declaredAt: convertTimestamps(cienciaData.declaredAt)
+        if (cienciaInfo && cienciaInfo.version >= currentScienceVersion) {
+            // Usuário deu ciência da versão atual ou mais recente
+            // CORREÇÃO BUG 4: Inclui Admins na lista de "Completos"
+            completed.push({
+                email: user.email,
+                declaredAt: cienciaInfo.declaredAt
+            });
+        } else {
+            // Usuário está pendente
+            // CORREÇÃO BUG 4: Admins não ficam "pendentes"
+            if (user.role !== 'Admin') {
+                pending.push({
+                    email: user.email
                 });
-            } else {
-                // Usuário deu ciência de uma versão antiga, ele está pendente
-                // **CORREÇÃO BUG 4**: Só adiciona a pendente se não for Admin
-                if (user.role !== 'Admin') {
-                    pending.push(user);
-                }
             }
-            // Remove o usuário do map para sabermos quem sobrou (pendente)
-            allUsers.delete(userId);
         }
     });
-
-    // 5. Adiciona os usuários restantes (que NUNCA deram ciência) à lista de pendentes
-    allUsers.forEach(user => {
-        // **CORREÇÃO BUG 4**: Só adiciona a pendente se não for Admin
-        if (user.role !== 'Admin') {
-            pending.push(user);
-        }
-    });
-
-    // Ordena as listas por e-mail
-    completed.sort((a, b) => a.email.localeCompare(b.email));
-    pending.sort((a, b) => a.email.localeCompare(b.email));
 
     return res.status(200).json({ completed, pending });
 }
