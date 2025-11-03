@@ -594,8 +594,8 @@
         const ARTICLES_PER_PAGE = 10;
         let isLoadingMore = false;
         let isSearchActive = false;
-        let documentosParaCiencia = [];
-        let cienciaDocumentoIndex = 0;
+        let artigosParaCiencia = [];
+        let cienciaArtigoIndex = 0;
 
         // --- FUNÇÃO WRAPPER DE FETCH (COM TOKEN) ---
         // (Atualizada para a API Monolito)
@@ -677,10 +677,10 @@
                     }
 
                     // Verifica documentos de ciência ANTES de carregar o resto
-                    await verificarDocumentosParaCiencia();
+                    await verificarArtigosParaCiencia();
 
                     // Carrega o conteúdo principal (só se o modal de ciência não estiver aberto)
-                    if (documentosParaCiencia.length === 0) {
+                    if (artigosParaCiencia.length === 0) {
                         contentSection.style.display = 'block'; // Mostra o conteúdo
                         checkAndRenderAll();
                     }
@@ -935,7 +935,7 @@
                 try {
                     // AÇÃO ATUALIZADA
                     const payload = { term: searchTerm, scope: searchScope, category: currentCategory };
-                    const searchResults = await fetchWithToken('searchDocumentos', payload);
+                    const searchResults = await fetchWithToken('searchArtigos', payload);
 
                     currentArticles = searchResults;
                     renderArticles(searchResults, true);
@@ -1053,14 +1053,14 @@
 
         // --- NOVO: LÓGICA DO MODAL DE CIÊNCIA ---
 
-        async function verificarDocumentosParaCiencia() {
+        async function verificarArtigosParaCiencia() {
             try {
                 // AÇÃO ATUALIZADA
-                const documentos = await fetchWithToken('getArtigosParaCiencia');
+                const artigos = await fetchWithToken('getArtigosParaCiencia');
 
-                if (documentos && documentos.length > 0) {
-                    documentosParaCiencia = documentos;
-                    cienciaDocumentoIndex = 0;
+                if (artigos && artigos.length > 0) {
+                    artigosParaCiencia = artigos;
+                    cienciaArtigoIndex = 0;
                     abrirModalCiencia();
                 } else {
                     // Nenhum documento pendente, carrega o site normalmente
@@ -1083,10 +1083,10 @@
                 modalCienciaPanel.style.opacity = '1';
                 modalCienciaPanel.style.transform = 'scale(1)';
             }, 10);
-            renderDocumentoCiencia();
+            renderArtigoCiencia();
         }
 
-        async function renderDocumentoCiencia() {
+        async function renderArtigoCiencia() {
             // Mostra o spinner e esconde o conteúdo
             cienciaLoadingSpinner.style.display = 'block';
             modalCienciaContent.style.display = 'none';
@@ -1095,15 +1095,15 @@
             cienciaPrevBtn.style.display = 'none';
             cienciaStatus.textContent = '';
 
-            const documento = documentosParaCiencia[cienciaDocumentoIndex];
-            if (!documento) return;
+            const artigo = artigosParaCiencia[cienciaArtigoIndex];
+            if (!artigo) return;
 
             try {
                 // AÇÃO ATUALIZADA
-                const documentoCompleto = await fetchWithToken('getArtigoDetalhe', { id: documento.id });
+                const artigoCompleto = await fetchWithToken('getArtigoDetalhe', { id: artigo.id });
 
-                modalCienciaTitle.textContent = documentoCompleto.title;
-                modalCienciaContent.innerHTML = documentoCompleto.content;
+                modalCienciaTitle.textContent = artigoCompleto.title;
+                modalCienciaContent.innerHTML = artigoCompleto.content;
 
                 cienciaLoadingSpinner.style.display = 'none';
                 modalCienciaContent.style.display = 'block';
@@ -1112,12 +1112,12 @@
                 modalCienciaBody.scrollTop = 0;
 
                 // Atualiza a navegação
-                cienciaCounter.textContent = `Documento ${cienciaDocumentoIndex + 1} de ${documentosParaCiencia.length}`;
+                cienciaCounter.textContent = `Documento ${cienciaArtigoIndex + 1} de ${artigosParaCiencia.length}`;
 
                 // ----- INÍCIO DA NOVA LÓGICA DE SCROLL -----
 
                 // 1. Define qual botão é o "alvo" (Próximo ou Declarar Ciência)
-                const isLastArticle = cienciaDocumentoIndex === documentosParaCiencia.length - 1;
+                const isLastArticle = cienciaArtigoIndex === artigosParaCiencia.length - 1;
                 const targetButton = isLastArticle ? declararCienciaBtn : cienciaNextBtn;
 
                 // 2. Desabilita o botão alvo por padrão
@@ -1132,7 +1132,7 @@
                 }
 
                 // 4. Mostra o botão "Anterior" se não for o primeiro documento
-                if (cienciaDocumentoIndex > 0) {
+                if (cienciaArtigoIndex > 0) {
                     cienciaPrevBtn.style.display = 'inline-flex';
                 }
 
@@ -1172,16 +1172,16 @@
         }
 
         cienciaPrevBtn.addEventListener('click', () => {
-            if (cienciaDocumentoIndex > 0) {
-                cienciaDocumentoIndex--;
-                renderDocumentoCiencia();
+            if (cienciaArtigoIndex > 0) {
+                cienciaArtigoIndex--;
+                renderArtigoCiencia();
             }
         });
 
         cienciaNextBtn.addEventListener('click', () => {
-            if (cienciaDocumentoIndex < documentosParaCiencia.length - 1) {
-                cienciaDocumentoIndex++;
-                renderDocumentoCiencia();
+            if (cienciaArtigoIndex < artigosParaCiencia.length - 1) {
+                cienciaArtigoIndex++;
+                renderArtigoCiencia();
             }
         });
 
@@ -1191,13 +1191,13 @@
             cienciaStatus.textContent = '';
 
             try {
-                const documentosConcluidos = documentosParaCiencia.map(art => ({
+                const artigosConcluidos = artigososParaCiencia.map(art => ({
                     articleId: art.id,
                     scienceVersion: art.scienceVersion
                 }));
 
                 // AÇÃO ATUALIZADA
-                await fetchWithToken('user/declararCiencia', { documentos: documentosConcluidos });
+                await fetchWithToken('user/declararCiencia', { artigos: artigosConcluidos });
 
                 // Sucesso! Fecha o modal e carrega o site.
                 fecharModalCiencia();
