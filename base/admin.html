@@ -97,7 +97,13 @@
                     Entrar com Google
                 </button>
 
-
+                <!-- NOVO: Botão Login Microsoft -->
+                <button id="microsoft-login-btn"
+                    class="group relative w-full flex justify-center py-3 px-4 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors">
+                    <img class="w-5 h-5 mr-2" src="https://www.svgrepo.com/show/303108/microsoft-icon-logo.svg"
+                        alt="Microsoft icon">
+                    Entrar com Microsoft
+                </button>
             </div>
 
             <!-- Link para o Site -->
@@ -347,7 +353,7 @@
                 <div class="lg:col-span-1 space-y-8">
 
                     <!-- Seção Gerenciar Categorias (Permissão: Admin) -->
-                    <div id="category-admin-section" class="bg-white p-6 sm:p-8 rounded-2xl shadow-lg top-24"
+                    <div id="category-admin-section" class="bg-white p-6 sm:p-8 rounded-2xl shadow-lg sticky top-24"
                         style="display: none;">
                         <h2 id="category-form-title" class="text-2xl font-bold text-slate-800 mb-6">Gerenciar Categorias
                         </h2>
@@ -625,9 +631,9 @@
         const modalPanelConfirm = document.getElementById('modal-panel-confirm');
         const confirmModalTitle = document.getElementById('confirm-modal-title');
         const confirmModalMessage = document.getElementById('confirm-modal-message');
-        // RE-SELECIONADOS DENTRO DE showConfirmModal
-        // let confirmModalBtnConfirm = document.getElementById('confirm-modal-btn-confirm');
-        // let confirmModalBtnCancel = document.getElementById('confirm-modal-btn-cancel');
+        // CORREÇÃO BUG: Removidas as declarações globais
+        // const confirmModalBtnConfirm = document.getElementById('confirm-modal-btn-confirm');
+        // const confirmModalBtnCancel = document.getElementById('confirm-modal-btn-cancel');
 
         // Modal de Log de Ciência
         const scienceLogModal = document.getElementById('science-log-modal');
@@ -742,7 +748,12 @@
 
                 } catch (error) {
                     console.error("Erro ao verificar cargo do usuário:", error);
-                    showStatusMessage('Erro ao verificar permissões. Faça login novamente.', true);
+                    // MUDANÇA: Trata o erro de Whitelist
+                    if (error.message.includes('ACESSO_NEGADO')) {
+                        loginStatus.textContent = 'Acesso Negado. Seu e-mail não está autorizado.';
+                    } else {
+                        loginStatus.textContent = 'Erro ao verificar permissões. Tente novamente.';
+                    }
                     await signOut(auth);
                 }
             } else {
@@ -773,14 +784,17 @@
             signInWithPopup(auth, googleProvider).catch(handleAuthError);
         });
 
-        /* microsoftLoginBtn.addEventListener('click', () => {
-             loginStatus.textContent = 'Abrindo popup da Microsoft...';
-             signInWithPopup(auth, microsoftProvider).catch(handleAuthError);
-         });*/
+        microsoftLoginBtn.addEventListener('click', () => {
+            loginStatus.textContent = 'Abrindo popup da Microsoft...';
+            signInWithPopup(auth, microsoftProvider).catch(handleAuthError);
+        });
 
         function handleAuthError(error) {
             console.error("Erro de login:", error.code, error.message);
-            if (error.code === 'auth/popup-closed-by-user') {
+            // MUDANÇA: Trata o erro de Whitelist
+            if (error.message.includes('ACESSO_NEGADO')) {
+                loginStatus.textContent = 'Acesso Negado. Seu e-mail não está autorizado.';
+            } else if (error.code === 'auth/popup-closed-by-user') {
                 loginStatus.textContent = 'Popup de login fechado.';
             } else if (error.code === 'auth/unauthorized-domain') {
                 loginStatus.textContent = 'Erro: Domínio não autorizado.';
@@ -957,7 +971,7 @@
             if (publishedDate) articleData.publishedAt = publishedDate;
 
             try {
-                await fetchWithToken('admin/salvarDocumento', articleData);
+                await fetchWithToken('admin/salvarArtigo', articleData);
                 showStatusMessage(id ? 'Documento atualizado!' : 'Documento salvo!');
                 resetArticleForm();
                 await executeAdminSearch(true); // REFRESH AUTOMÁTICO
@@ -1022,6 +1036,10 @@
                 articlesLoadingMsg.style.display = 'block';
             } else if (count > 0) {
                 articlesLoadingMsg.style.display = 'none';
+            } else if (count === 0 && adminArticlesCache.length > 0) {
+                // Caso onde o filtro de ciência não encontra nada, mas o cache não está vazio
+                articlesLoadingMsg.textContent = 'Nenhum documento encontrado para este filtro.';
+                articlesLoadingMsg.style.display = 'block';
             }
         }
 
@@ -1041,6 +1059,7 @@
             const limit = adminArticleCount + ADMIN_ARTICLES_PER_PAGE;
 
             articlesLoadingMsg.style.display = 'block';
+            articlesLoadingMsg.textContent = 'Carregando documentos...'; // Reseta a msg
             adminLoadMoreBtn.textContent = 'Carregando...';
             adminLoadMoreBtn.disabled = true;
 
@@ -1052,7 +1071,7 @@
                 } else {
                     adminIsSearchActive = true;
                     adminLoadMoreContainer.classList.add('hidden');
-                    articles = await fetchWithToken('searchDocumentos', {
+                    articles = await fetchWithToken('searchArtigos', {
                         term: searchTerm,
                         scope: 'all',
                         category: 'TODOS'
@@ -1095,6 +1114,9 @@
                     articlesLoadingMsg.style.display = 'block';
                 } else if (!anyArticlesVisible && scienceToggleSwitch.checked) {
                     // Já tratado por filterAdminListByScience
+                } else if (!anyArticlesVisible && searchTerm !== '') {
+                    articlesLoadingMsg.textContent = 'Nenhum documento encontrado para esta busca.';
+                    articlesLoadingMsg.style.display = 'block';
                 }
             }
         }
@@ -1235,7 +1257,7 @@
                 `Tem certeza que quer deletar o documento "${title || 'este documento'}"?`,
                 async () => {
                     try {
-                        await fetchWithToken('admin/deletarDocumento', { id: id });
+                        await fetchWithToken('admin/deletarArtigo', { id: id });
                         showStatusMessage('Documento deletado.');
                         resetArticleForm();
                         await executeAdminSearch(true); // REFRESH AUTOMÁTICO
@@ -1406,7 +1428,7 @@
             confirmModalTitle.textContent = title;
             confirmModalMessage.textContent = message;
 
-            // CORREÇÃO BUG: As variáveis globais são re-selecionadas aqui
+            // CORREÇÃO BUG: As variáveis são re-selecionadas *dentro* da função
             let confirmBtn = document.getElementById('confirm-modal-btn-confirm');
             let cancelBtn = document.getElementById('confirm-modal-btn-cancel');
 
@@ -1415,16 +1437,18 @@
             // Limpa listeners antigos (essencial)
             const newConfirmBtn = confirmBtn.cloneNode(true);
             confirmBtn.parentNode.replaceChild(newConfirmBtn, confirmBtn);
+            confirmBtn = newConfirmBtn; // Atualiza a referência
 
             const newCancelBtn = cancelBtn.cloneNode(true);
             cancelBtn.parentNode.replaceChild(newCancelBtn, cancelBtn);
+            cancelBtn = newCancelBtn; // Atualiza a referência
 
             // Adiciona novos listeners
-            newConfirmBtn.addEventListener('click', () => {
+            confirmBtn.addEventListener('click', () => {
                 if (onConfirmCallback) onConfirmCallback();
                 closeConfirmModal();
             });
-            newCancelBtn.addEventListener('click', () => {
+            cancelBtn.addEventListener('click', () => {
                 if (onCancelCallback) onCancelCallback();
                 closeConfirmModal();
             });
@@ -1456,7 +1480,7 @@
         // --- ETAPA 3.C: MODAL DE LOG DE CIÊNCIA ---
 
         async function openScienceLogModal(articleId, articleTitle) {
-            scienceLogTitle.textContent = `Log de Ciência: ${articleTitle}`;
+            scienceLogTitle.textContent = `Log de Ciência: ${articleTitle || 'Documento'}`;
             scienceLogContent.style.display = 'none';
             scienceLogLoading.style.display = 'block';
             scienceLogCompleted.innerHTML = '';

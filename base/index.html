@@ -14,7 +14,7 @@
             scroll-behavior: smooth;
         }
 
-        /* ... (estilos CSS inalterados) ... */
+        /* Webkit Scrollbar */
         ::-webkit-scrollbar {
             width: 12px;
             height: 12px;
@@ -34,10 +34,17 @@
             background: #94a3b8;
         }
 
+        /* Foco personalizado */
         .focus-ring-visible:focus-visible {
             outline: 2px solid #2563eb;
             outline-offset: 2px;
         }
+
+        /* CORREÇÃO PISCADA (FOUC): Esconde o conteúdo até o JS decidir o que mostrar */
+        /* .fouc-hidden {
+            display: none;
+        } */
+        /* Aplicado via style="display: none;" inline */
 
         /* Estilos do Conteúdo do Documento (Modal) */
         #modal-content h1,
@@ -170,6 +177,13 @@
                     Entrar com Google
                 </button>
 
+                <!-- Botão Login Microsoft -->
+                <button id="microsoft-login-btn"
+                    class="group relative w-full flex justify-center py-3 px-4 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors">
+                    <img class="w-5 h-5 mr-2" src="https://www.svgrepo.com/show/303108/microsoft-icon-logo.svg"
+                        alt="Microsoft icon">
+                    Entrar com Microsoft
+                </button>
             </div>
 
         </div>
@@ -193,7 +207,7 @@
 
                     <!-- Botões de Admin e Sair -->
                     <div class="flex items-center gap-4">
-                        <!-- NOVO: Exibição de Cargo -->
+                        <!-- Exibição de Cargo -->
                         <span id="user-info" class="text-sm text-slate-600 hidden sm:block">
                             <span id="user-email" class="font-medium"></span>
                             (<span id="user-role" class="font-light"></span>)
@@ -322,7 +336,7 @@
         class="fixed inset-0 bg-black bg-opacity-75 z-50 hidden transition-opacity duration-300 ease-out"
         aria-hidden="true" style="opacity: 0;"></div>
 
-    <div id="modal-container" class="fixed inset-0 z-50 hidden" role="dialog" aria-modal="true">
+    <div id="modal-container" class="fixed inset-0 z-50 hidden" role="dialog" aria-modal="true" style="display: none;">
 
         <div id="modal-panel"
             class="bg-white rounded-2xl shadow-xl w-full h-full flex flex-col  transform transition-all duration-300 ease-out scale-95 opacity-0">
@@ -413,9 +427,9 @@
     <div id="modal-ciencia-container" class="fixed inset-0 z-[70] hidden flex items-center justify-center p-4"
         role="dialog" aria-modal="true" aria-labelledby="modal-ciencia-title">
 
-        <!-- Painel de Tela Cheia -->
+        <!-- Painel (NÃO TELA CHEIA) -->
         <div id="modal-ciencia-panel"
-            class="bg-white shadow-xl max-w-3xl flex flex-col transform transition-all duration-300 ease-out scale-95 opacity-0 rounded-2xl shadow-xl max-w-3xl max-h-[90vh]">
+            class="bg-white shadow-xl max-w-3xl flex flex-col transform transition-all duration-300 ease-out scale-95 opacity-0 rounded-2xl max-h-[90vh]">
 
             <!-- Cabeçalho do Modal de Ciência -->
             <header
@@ -616,7 +630,8 @@
                     body: JSON.stringify({ action, payload }) // Envia a ação e o payload
                 });
 
-                const responseText = await response.text();
+                const responseText = await response.text(); // Lê o texto uma vez
+
                 if (!response.ok) {
                     let errorData;
                     try {
@@ -642,25 +657,23 @@
                 }
             } catch (error) {
                 console.error("Erro fatal no fetchWithToken:", error);
-                // Não joga o erro se for de auth/network, para não quebrar a UI
-                if (!error.message.includes('Token') && !error.message.includes('NetworkError')) {
-                    throw error;
-                }
+                // MUDANÇA: Lança o erro para que o onAuthStateChanged possa pegá-lo
+                throw error;
             }
         }
 
 
-        // --- AUTENTICAÇÃO (COM SISTEMA DE CARGOS) ---
+        // --- AUTENTICAÇÃO (COM SISTEMA DE CARGOS E WHITELIST) ---
         onAuthStateChanged(auth, async (user) => {
             currentUser = user;
             if (user) {
                 try {
                     // Chama a API upsert para registrar o usuário e obter seu cargo
-                    // AÇÃO ATUALIZADA
+                    // Esta API agora também valida a WHITELIST
                     const { role, email } = await fetchWithToken('user/upsert');
                     currentUserRole = role;
 
-                    // Usuário está logado
+                    // Usuário está logado E autorizado
                     loginSection.style.display = 'none';
                     // NÃO mostra o conteúdo ainda, espera a verificação de ciência
                     // contentSection.style.display = 'block'; 
@@ -687,7 +700,13 @@
 
                 } catch (error) {
                     console.error("Erro ao verificar cargo do usuário:", error);
-                    loginStatus.textContent = 'Erro ao verificar permissões. Tente novamente.';
+                    // MUDANÇA: Trata o erro de Whitelist
+                    if (error.message.includes('ACESSO_NEGADO')) {
+                        loginStatus.textContent = 'Acesso Negado. Seu e-mail não está autorizado.';
+                    } else {
+                        loginStatus.textContent = 'Erro ao verificar permissões. Tente novamente.';
+                    }
+                    await signOut(auth); // Desloga o usuário não autorizado ou com erro
                 }
             } else {
                 // Usuário está deslogado
@@ -705,9 +724,15 @@
             signInWithPopup(auth, googleProvider).catch(handleAuthError);
         });
 
+        // REMOVIDO: Botão Microsoft (com base no seu HTML)
+        // microsoftLoginBtn.addEventListener('click', ...);
+
         function handleAuthError(error) {
             console.error("Erro de login:", error.code, error.message);
-            if (error.code === 'auth/popup-closed-by-user') {
+            // MUDANÇA: Trata o erro de Whitelist
+            if (error.message.includes('ACESSO_NEGADO')) {
+                loginStatus.textContent = 'Acesso Negado. Seu e-mail não está autorizado.';
+            } else if (error.code === 'auth/popup-closed-by-user') {
                 loginStatus.textContent = 'Popup de login fechado.';
             } else if (error.code === 'auth/unauthorized-domain') {
                 loginStatus.textContent = 'Erro: Domínio não autorizado.';
@@ -716,6 +741,7 @@
                 loginStatus.textContent = 'Erro ao tentar fazer login.';
             }
         }
+
 
         // Logout
         logoutBtn.addEventListener('click', () => {
@@ -1167,7 +1193,6 @@
                 modalCienciaContent.innerHTML = `<p class="text-red-500">${error.message}</p>`;
                 cienciaLoadingSpinner.style.display = 'none';
                 modalCienciaContent.style.display = 'block';
-                D
             }
         }
 
@@ -1191,7 +1216,7 @@
             cienciaStatus.textContent = '';
 
             try {
-                const artigosConcluidos = artigososParaCiencia.map(art => ({
+                const artigosConcluidos = artigosParaCiencia.map(art => ({
                     articleId: art.id,
                     scienceVersion: art.scienceVersion
                 }));
