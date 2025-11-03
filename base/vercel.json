@@ -1,63 +1,15 @@
 {
     "version": 2,
     "functions": {
-        "api/**/*.js": {
+        "api/index.js": {
             "memory": 1024,
             "maxDuration": 10
         }
     },
     "rewrites": [
         {
-            "source": "/api/admin/deletarArtigo",
-            "destination": "/api/admin/deletarArtigo.js"
-        },
-        {
-            "source": "/api/admin/deletarCategoria",
-            "destination": "/api/admin/deletarCategoria.js"
-        },
-        {
-            "source": "/api/admin/salvarArtigo",
-            "destination": "/api/admin/salvarArtigo.js"
-        },
-        {
-            "source": "/api/admin/salvarCategoria",
-            "destination": "/api/admin/salvarCategoria.js"
-        },
-        {
-            "source": "/api/getArtigoDetalhe",
-            "destination": "/api/getArtigoDetalhe.js"
-        },
-        {
-            "source": "/api/getArtigos",
-            "destination": "/api/getArtigos.js"
-        },
-        {
-            "source": "/api/getCategorias",
-            "destination": "/api/getCategorias.js"
-        },
-        {
-            "source": "/api/searchArtigos",
-            "destination": "/api/searchArtigos.js"
-        },
-        {
-            "source": "/api/user/upsert",
-            "destination": "/api/user/upsert.js"
-        },
-        {
-            "source": "/api/admin/getUsers",
-            "destination": "/api/admin/getUsers.js"
-        },
-        {
-            "source": "/api/admin/updateUserRole",
-            "destination": "/api/admin/updateUserRole.js"
-        },
-        {
-            "source": "/api/getArtigosParaCiencia",
-            "destination": "/api/getArtigosParaCiencia.js"
-        },
-        {
-            "source": "/api/user/declararCiencia",
-            "destination": "/api/user/declararCiencia.js"
+            "source": "/api",
+            "destination": "/api/index.js"
         }
     ]
 }

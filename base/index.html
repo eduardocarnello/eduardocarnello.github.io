@@ -215,7 +215,6 @@
 
                     <!-- Botões de Admin e Sair -->
                     <div class="flex items-center gap-4">
-                        <!-- NOVO: Exibição de Cargo -->
                         <span id="user-info" class="text-sm text-slate-600 hidden sm:block">
                             <span id="user-email" class="font-medium"></span>
                             (<span id="user-role" class="font-light"></span>)
@@ -293,11 +292,7 @@
                             </div>
                             <span>Todos</span>
                         </button>
-
-                        <!-- Mensagem de Carregamento de Categorias -->
                         <div id="categories-loading" class="text-slate-500">Carregando categorias...</div>
-
-                        <!-- Categorias dinâmicas vêm aqui -->
                     </nav>
                 </aside>
 
@@ -306,8 +301,6 @@
                     <h2 id="articles-title" class="text-2xl font-bold text-slate-800 mb-6">
                         Artigos Recentes
                     </h2>
-
-                    <!-- Mensagem de Status (Carregando, Erro, Vazio) -->
                     <div id="articles-status" class="text-center text-slate-500 py-10">
                         <svg class="mx-auto h-12 w-12 text-slate-400 animate-spin" xmlns="http://www.w3.org/2000/svg"
                             fill="none" viewBox="0 0 24 24">
@@ -319,36 +312,28 @@
                         </svg>
                         <p class="mt-4 text-lg font-medium">Carregando artigos...</p>
                     </div>
-
-                    <!-- Container dos Cards de Artigo -->
                     <div id="articles-grid" class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <!-- Cards de artigo vêm aqui -->
                     </div>
-
-                    <!-- Botão Carregar Mais -->
                     <div id="load-more-container" class="text-center mt-12 hidden">
                         <button id="load-more-btn"
                             class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-full shadow-lg transition-transform transform hover:scale-105 focus-ring-visible">
                             Carregar Mais 10 Artigos
                         </button>
                     </div>
-
                 </section>
             </div>
         </main>
     </section>
 
-    <!-- Modal de Artigo (Começa oculto) -->
+    <!-- Modal de Artigo (Inalterado) -->
     <div id="modal-backdrop"
         class="fixed inset-0 bg-black bg-opacity-75 z-50 hidden transition-opacity duration-300 ease-out"
         aria-hidden="true" style="opacity: 0;"></div>
-
     <div id="modal-container" class="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-0 hidden"
         role="dialog" aria-modal="true">
-
         <div id="modal-panel"
             class="bg-white rounded-2xl shadow-xl w-full max-w-3xl max-h-[90vh] flex flex-col transform transition-all duration-300 ease-out scale-95 opacity-0">
-            <!-- Cabeçalho do Modal -->
             <header
                 class="sticky top-0 bg-white p-4 sm:p-6 border-b border-slate-200 rounded-t-2xl flex justify-between items-center">
                 <h3 id="modal-title" class="text-xl sm:text-2xl font-bold text-slate-800 break-words pr-4">
@@ -363,10 +348,7 @@
                     </svg>
                 </button>
             </header>
-
-            <!-- Conteúdo do Modal (com scroll) -->
             <div id="modal-body" class="overflow-y-auto p-6 space-y-4">
-                <!-- Carregador do Modal -->
                 <div id="modal-loading-spinner" class="text-center py-10">
                     <svg class="mx-auto h-8 w-8 text-slate-400 animate-spin" xmlns="http://www.w3.org/2000/svg"
                         fill="none" viewBox="0 0 24 24">
@@ -378,14 +360,8 @@
                     </svg>
                     <p class="mt-3 text-slate-500">Carregando conteúdo...</p>
                 </div>
-
-                <!-- Metadados do Artigo -->
                 <div id="modal-metadata" class="hidden border-b border-slate-200 pb-4 mb-4 space-y-3">
-                    <!-- Categoria -->
-                    <div id="modal-category-badge" class="flex items-center gap-2">
-                        <!-- Badge vem aqui -->
-                    </div>
-                    <!-- Data -->
+                    <div id="modal-category-badge" class="flex items-center gap-2"></div>
                     <div class="flex items-center gap-2 text-sm text-slate-500">
                         <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
                             stroke-width="1.5" stroke="currentColor">
@@ -394,9 +370,7 @@
                         </svg>
                         Publicado em: <span id="modal-date">--</span>
                     </div>
-                    <!-- Resumo -->
                     <p id="modal-summary" class="text-base text-slate-600 italic"></p>
-                    <!-- Tags -->
                     <div id="modal-tags-container"
                         class="hidden flex flex-wrap gap-2 items-center text-sm text-slate-500">
                         <!-- ÍCONE DE ETIQUETA ATUALIZADO -->
@@ -405,30 +379,19 @@
                             <path
                                 d="M5.5 16.5A1.5 1.5 0 014 15V5a1.5 1.5 0 011.5-1.5h5.138a1.5 1.5 0 011.06.44l5.862 5.861a1.5 1.5 0 010 2.122l-5.137 5.137a1.5 1.5 0 01-1.061.44H5.5zM6 6a1 1 0 100-2 1 1 0 000 2z" />
                         </svg>
-                        <span id="modal-tags-list">
-                            <!-- Tags vêm aqui -->
-                        </span>
+                        <span id="modal-tags-list"></span>
                     </div>
                 </div>
-
-                <!-- Conteúdo do Artigo (do Quill) -->
-                <div id="modal-content">
-                    <!-- Conteúdo vem aqui -->
-                </div>
-
-                <!-- MÚLTIPLOS LINKS (Inalterado) -->
+                <div id="modal-content"></div>
                 <div id="modal-links-container" class="hidden pt-4 border-t border-slate-200 space-y-3">
                     <h4 class="font-semibold text-slate-700">Links de Referência:</h4>
-                    <ul id="modal-links-list" class="list-disc list-inside space-y-2">
-                        <!-- Links vêm aqui -->
-                    </ul>
+                    <ul id="modal-links-list" class="list-disc list-inside space-y-2"></ul>
                 </div>
-
             </div>
         </div>
     </div>
 
-    <!-- NOVO: Modal de CIÊNCIA (Começa oculto) -->
+    <!-- NOVO: Modal de CIÊNCIA (Etapa 3.B) -->
     <div id="modal-ciencia-backdrop"
         class="fixed inset-0 bg-slate-900 bg-opacity-90 z-[60] hidden transition-opacity duration-300 ease-out"
         aria-hidden="true" style="opacity: 0;"></div>
@@ -436,11 +399,9 @@
     <div id="modal-ciencia-container" class="fixed inset-0 z-[70] hidden" role="dialog" aria-modal="true"
         aria-labelledby="modal-ciencia-title">
 
-        <!-- Painel de Tela Cheia -->
         <div id="modal-ciencia-panel"
             class="bg-white w-full h-full flex flex-col transform transition-all duration-300 ease-out scale-95 opacity-0">
 
-            <!-- Cabeçalho do Modal de Ciência -->
             <header
                 class="sticky top-0 bg-white p-4 sm:p-6 border-b border-slate-200 flex justify-between items-center z-10">
                 <div class="flex flex-col">
@@ -449,28 +410,30 @@
                         Carregando Título...
                     </h3>
                 </div>
-                <!-- Botão de fechar é PROPOSITALMENTE OMITIDO para forçar a ciência -->
             </header>
 
-            <!-- Conteúdo do Modal de Ciência (com scroll) -->
             <div id="modal-ciencia-body" class="overflow-y-auto p-6 space-y-4 flex-grow">
-                <!-- Carregador -->
                 <div id="ciencia-loading-spinner" class="text-center py-10">
-                    <svg class="mx-auto h-8 w-8 text-slate-400 animate-spin" ...>...</svg>
+                    <svg class="mx-auto h-8 w-8 text-slate-400 animate-spin" xmlns="http://www.w3.org/2000/svg"
+                        fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4">
+                        </circle>
+                        <path class="opacity-75" fill="currentColor"
+                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+                        </path>
+                    </svg>
                     <p class="mt-3 text-slate-500">Carregando conteúdo...</p>
                 </div>
-
-                <!-- Conteúdo do Artigo (do Quill) -->
                 <div id="modal-ciencia-content" class="hidden">
                     <!-- O conteúdo será injetado aqui -->
                 </div>
             </div>
 
-            <!-- Rodapé de Navegação e Ação -->
             <footer class="bg-gray-50 p-4 border-t border-slate-200">
                 <div class="flex justify-between items-center">
                     <button type="button" id="ciencia-prev-btn"
-                        class="hidden items-center gap-2 text-sm font-medium text-slate-600 hover:text-slate-900 focus-ring-visible rounded-md p-2">
+                        class="hidden items-center gap-2 text-sm font-medium text-slate-600 hover:text-slate-900 focus-ring-visible rounded-md p-2 disabled:opacity-50"
+                        disabled>
                         <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
                             stroke-width="1.5" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round"
@@ -478,13 +441,14 @@
                         </svg>
                         Anterior
                     </button>
-                    <!-- Espaçador -->
-                    <span></span>
+
+                    <span></span> <!-- Espaçador -->
 
                     <div class="flex items-center gap-4">
                         <span id="ciencia-counter" class="text-sm text-slate-500"></span>
                         <button type="button" id="ciencia-next-btn"
-                            class="hidden items-center gap-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus-ring-visible rounded-lg py-2 px-4">
+                            class="hidden items-center gap-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus-ring-visible rounded-lg py-2 px-4 disabled:opacity-50"
+                            disabled>
                             Próximo
                             <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
                                 stroke-width="1.5" stroke="currentColor">
@@ -493,7 +457,8 @@
                             </svg>
                         </button>
                         <button type="button" id="declarar-ciencia-btn"
-                            class="hidden items-center gap-2 text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus-ring-visible rounded-lg py-2 px-4 disabled:bg-gray-400">
+                            class="hidden items-center gap-2 text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus-ring-visible rounded-lg py-2 px-4 disabled:opacity-50"
+                            disabled>
                             <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
                                 stroke-width="1.5" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round"
@@ -516,10 +481,9 @@
         import {
             getAuth,
             onAuthStateChanged,
-            // signInWithEmailAndPassword, // REMOVIDO
             signInWithPopup,
             GoogleAuthProvider,
-            OAuthProvider, // NOVO
+            OAuthProvider,
             signOut,
             getIdToken
         } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
@@ -538,37 +502,29 @@
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const googleProvider = new GoogleAuthProvider();
-        const microsoftProvider = new OAuthProvider('microsoft.com'); // NOVO
+        const microsoftProvider = new OAuthProvider('microsoft.com');
         setLogLevel('Debug');
 
         // --- REFERÊNCIAS DO DOM ---
-        // Seções
         const loginSection = document.getElementById('login-section');
         const contentSection = document.getElementById('content-section');
-        // Login
         const loginStatus = document.getElementById('login-status');
         const googleLoginBtn = document.getElementById('google-login-btn');
         const microsoftLoginBtn = document.getElementById('microsoft-login-btn');
-        // Header (Conteúdo)
         const logoutBtn = document.getElementById('logout-btn');
         const adminBtn = document.getElementById('admin-btn');
         const userInfo = document.getElementById('user-info');
         const userEmailSpan = document.getElementById('user-email');
         const userRoleSpan = document.getElementById('user-role');
-        // Busca
         const searchInput = document.getElementById('search-input');
         const searchField = document.getElementById('search-field');
         const articlesTitle = document.getElementById('articles-title');
-        // Categorias
         const categoryGrid = document.getElementById('category-grid');
         const categoriesLoading = document.getElementById('categories-loading');
-        // Artigos
         const articlesGrid = document.getElementById('articles-grid');
         const articlesStatus = document.getElementById('articles-status');
         const loadMoreContainer = document.getElementById('load-more-container');
         const loadMoreBtn = document.getElementById('load-more-btn');
-
-        // Modal de Artigo Normal
         const modalBackdrop = document.getElementById('modal-backdrop');
         const modalContainer = document.getElementById('modal-container');
         const modalPanel = document.getElementById('modal-panel');
@@ -586,7 +542,7 @@
         const modalLinksContainer = document.getElementById('modal-links-container');
         const modalLinksList = document.getElementById('modal-links-list');
 
-        // NOVO: Modal de Ciência
+        // Modal de Ciência
         const modalCienciaBackdrop = document.getElementById('modal-ciencia-backdrop');
         const modalCienciaContainer = document.getElementById('modal-ciencia-container');
         const modalCienciaPanel = document.getElementById('modal-ciencia-panel');
@@ -600,7 +556,6 @@
         const declararCienciaBtn = document.getElementById('declarar-ciencia-btn');
         const cienciaStatus = document.getElementById('ciencia-status');
 
-
         // --- ESTADO GLOBAL ---
         let allCategories = [];
         let currentArticles = [];
@@ -611,27 +566,30 @@
         const ARTICLES_PER_PAGE = 10;
         let isLoadingMore = false;
         let isSearchActive = false;
-        // NOVO: Estado de Ciência
         let artigosParaCiencia = [];
         let cienciaArtigoIndex = 0;
 
         // --- FUNÇÃO WRAPPER DE FETCH (COM TOKEN) ---
-        // (Corrigido o bug do 'responseText')
-        async function fetchWithToken(url, options = {}) {
+        // (Refatorada para o Monolito)
+        async function fetchWithToken(action, payload = {}) {
             if (!currentUser) {
                 throw new Error("Usuário não autenticado.");
             }
+
             const token = await getIdToken(currentUser, /* forceRefresh */ true);
             const headers = {
-                ...options.headers,
                 'Authorization': `Bearer ${token}`,
                 'Content-Type': 'application/json'
             };
-            const relativeUrl = url.startsWith('/') ? url.substring(1) : url;
 
-            const response = await fetch(relativeUrl, { ...options, headers });
+            // Todas as chamadas agora vão para 'api/index.js'
+            const response = await fetch('api', { // A Vercel reescreve 'api' para 'api/index.js'
+                method: 'POST',
+                headers: headers,
+                body: JSON.stringify({ action, payload }) // Envia a ação e o payload
+            });
 
-            const responseText = await response.text(); // Lê o texto uma vez
+            const responseText = await response.text();
 
             if (!response.ok) {
                 let errorData;
@@ -641,7 +599,7 @@
                     console.error("Erro HTML/Texto (não-JSON) recebido:", responseText.substring(0, 100) + '...');
                     errorData = { error: `Erro ${response.status}: ${response.statusText || 'Erro no servidor'}` };
                 }
-                console.error(`Erro na API (${response.status}):`, errorData.error);
+                console.error(`Erro na API (ação: ${action}, status: ${response.status}):`, errorData.error);
                 if (response.status === 401) {
                     alert('Sua sessão expirou. Por favor, faça login novamente.');
                     await signOut(auth);
@@ -649,14 +607,14 @@
                 throw new Error(errorData.error || 'Erro na requisição');
             }
 
-            if (response.status === 204) { // No Content
-                return null;
+            if (response.status === 204 || !responseText) {
+                return null; // No Content
             }
 
             try {
                 return JSON.parse(responseText); // Tenta parsear
             } catch (e) {
-                return responseText; // Retorna texto (pode ser vazio)
+                return responseText; // Retorna texto
             }
         }
 
@@ -666,20 +624,14 @@
             currentUser = user;
             if (user) {
                 try {
-                    // Chama a API upsert para registrar o usuário e obter seu cargo
-                    const { role, email } = await fetchWithToken('api/user/upsert', { method: 'POST' });
-                    currentUserRole = role; // Armazena o cargo
-
-                    // Usuário está logado
-                    loginSection.style.display = 'none';
-                    contentSection.style.display = 'block';
+                    const { role, email } = await fetchWithToken('user/upsert');
+                    currentUserRole = role;
 
                     // Mostra info do usuário
                     userInfo.classList.remove('hidden');
                     userEmailSpan.textContent = email;
                     userRoleSpan.textContent = role;
 
-                    // Mostra o botão de Admin se tiver permissão
                     if (role === 'Redator' || role === 'Editor' || role === 'Admin') {
                         adminBtn.classList.remove('hidden');
                     } else {
@@ -687,17 +639,23 @@
                     }
 
                     // NOVO: Verifica artigos de ciência ANTES de carregar o resto
-                    await verificarArtigosParaCiencia();
+                    const temCienciaPendente = await verificarArtigosParaCiencia();
 
-                    // Carrega o conteúdo principal (só se o modal de ciência não estiver aberto)
-                    if (artigosParaCiencia.length === 0) {
+                    // Mostra o conteúdo principal
+                    loginSection.style.display = 'none';
+                    contentSection.style.display = 'block';
+
+                    // Carrega o conteúdo principal (só se o modal de ciência NÃO estiver aberto)
+                    if (!temCienciaPendente) {
                         checkAndRenderAll();
                     }
 
                 } catch (error) {
                     console.error("Erro ao verificar cargo do usuário:", error);
-                    loginStatus.textContent = 'Erro ao verificar permissões. Tente novamente.';
-                    // await signOut(auth); 
+                    loginStatus.textContent = `Erro ao verificar permissões: ${error.message}. Tente novamente.`;
+                    contentSection.style.display = 'none';
+                    loginSection.style.display = 'flex';
+                    await signOut(auth);
                 }
             } else {
                 // Usuário está deslogado
@@ -714,12 +672,10 @@
             loginStatus.textContent = 'Abrindo popup do Google...';
             signInWithPopup(auth, googleProvider).catch(handleAuthError);
         });
-
         microsoftLoginBtn.addEventListener('click', () => {
             loginStatus.textContent = 'Abrindo popup da Microsoft...';
             signInWithPopup(auth, microsoftProvider).catch(handleAuthError);
         });
-
         function handleAuthError(error) {
             console.error("Erro de login:", error.code, error.message);
             if (error.code === 'auth/popup-closed-by-user') {
@@ -734,7 +690,7 @@
 
         // Logout
         logoutBtn.addEventListener('click', () => {
-            if (confirm('Tem certeza que deseja sair?')) {
+            if (confirm('Tem certeza que deseja sair?')) { // TODO: Substituir por modal customizado
                 signOut(auth).catch((error) => {
                     console.error("Erro ao sair:", error);
                 });
@@ -743,7 +699,6 @@
 
         // Limpa o conteúdo ao deslogar
         function resetContent() {
-            // ... (código inalterado) ...
             allCategories = [];
             currentArticles = [];
             currentCategory = 'TODOS';
@@ -762,7 +717,7 @@
             searchField.value = 'all';
         }
 
-        // --- CARREGAMENTO DE DADOS (VIA /api) ---
+        // --- CARREGAMENTO DE DADOS (VIA API Monolito) ---
 
         async function checkAndRenderAll() {
             try {
@@ -782,13 +737,13 @@
             categoriesLoading.textContent = 'Carregando categorias...';
             categoriesLoading.classList.remove('hidden');
             try {
-                const categories = await fetchWithToken('api/getCategorias');
+                const categories = await fetchWithToken('getCategorias'); // AÇÃO ATUALIZADA
                 allCategories = categories;
                 renderCategories(categories);
                 categoriesLoading.classList.add('hidden');
             } catch (error) {
                 console.error("Erro ao buscar categorias:", error);
-                categoriesLoading.textContent = 'Erro ao carregar.';
+                categoriesLoading.textContent = `Erro ao carregar: ${error.message}`;
             }
         }
 
@@ -800,7 +755,6 @@
         });
 
         async function loadMoreArticles() {
-            // ... (código inalterado) ...
             if (isLoadingMore) return;
             isLoadingMore = true;
             const limit = currentArticleCount + ARTICLES_PER_PAGE;
@@ -808,8 +762,12 @@
             loadMoreBtn.disabled = true;
 
             try {
-                const url = `api/getArtigos?limit=${limit}&category=${currentCategory}`;
-                const articles = await fetchWithToken(url);
+                // AÇÃO ATUALIZADA
+                const articles = await fetchWithToken('getArtigos', {
+                    limit: limit,
+                    category: currentCategory
+                });
+
                 const newArticles = articles.filter(a => !currentArticles.some(existing => existing.id === a.id));
                 currentArticles = articles;
                 currentArticleCount = articles.length;
@@ -819,7 +777,7 @@
                 } else {
                     loadMoreContainer.classList.remove('hidden');
                 }
-                renderArticles(newArticles, false); // false = não limpar o grid
+                renderArticles(newArticles, false);
             } catch (error) {
                 console.error("Erro ao buscar mais artigos:", error);
                 articlesStatus.textContent = `Erro ao carregar artigos: ${error.message}`;
@@ -831,12 +789,10 @@
             }
         }
 
-
         // --- RENDERIZAÇÃO (Interface) ---
 
         // Renderizar Categorias
         function renderCategories(categories) {
-            // ... (código inalterado) ...
             categoryGrid.querySelectorAll('.category-card:not([data-category="TODOS"])').forEach(el => el.remove());
             categories.forEach(category => {
                 const { name, color, icon } = category;
@@ -856,7 +812,6 @@
 
         // Renderizar Artigos
         function renderArticles(articlesToRender, clearGrid = false) {
-            // ... (código inalterado) ...
             if (clearGrid) {
                 articlesGrid.innerHTML = '';
             }
@@ -867,7 +822,6 @@
             } else {
                 articlesStatus.classList.add('hidden');
             }
-
             const fragment = document.createDocumentFragment();
             articlesToRender.forEach(article => {
                 const { id, title, summary, categoryId } = article;
@@ -892,8 +846,7 @@
             articlesGrid.appendChild(fragment);
         }
 
-        // --- LÓGICA DE BUSCA (NOVA ARQUITETURA) ---
-        // ... (código inalterado) ...
+        // --- LÓGICA DE BUSCA (API Monolito) ---
         let searchTimeout;
         searchInput.addEventListener('input', () => {
             clearTimeout(searchTimeout);
@@ -903,7 +856,6 @@
         });
 
         searchField.addEventListener('change', executeSearchOrFilter);
-
         categoryGrid.addEventListener('click', (e) => {
             const card = e.target.closest('.category-card');
             if (card) {
@@ -917,8 +869,8 @@
                     }
                 });
                 card.classList.add('bg-blue-600', 'text-white', 'shadow-lg');
-                const activeColors = getCategoryColors(allCategories.find(c => c.id === card.dataset.category)?.color);
                 if (card.dataset.category !== 'TODOS') {
+                    const activeColors = getCategoryColors(allCategories.find(c => c.id === card.dataset.category)?.color);
                     card.classList.remove(activeColors.bgHover, activeColors.text);
                 }
                 executeSearchOrFilter();
@@ -949,8 +901,12 @@
                 articlesTitle.textContent = `Resultados da Busca por: "${searchTerm}"`;
                 loadMoreContainer.classList.add('hidden');
                 try {
-                    const url = `api/searchArtigos?term=${encodeURIComponent(searchTerm)}&scope=${searchScope}&category=${currentCategory}`;
-                    const searchResults = await fetchWithToken(url);
+                    // AÇÃO ATUALIZADA
+                    const searchResults = await fetchWithToken('searchArtigos', {
+                        term: searchTerm,
+                        scope: searchScope,
+                        category: currentCategory
+                    });
                     currentArticles = searchResults;
                     renderArticles(searchResults, true);
                 } catch (error) {
@@ -962,7 +918,6 @@
         }
 
         // --- MODAL (Janela do Artigo) ---
-        // (Lógica inalterada, continua funcionando)
         articlesGrid.addEventListener('click', (e) => {
             const card = e.target.closest('.article-card');
             if (card) {
@@ -972,7 +927,7 @@
         });
 
         async function openModal(id) {
-            // ... (código inalterado) ...
+            // ... (lógica inalterada) ...
             modalTitle.textContent = 'Carregando Título...';
             modalContent.innerHTML = '';
             modalMetadata.classList.add('hidden');
@@ -982,11 +937,14 @@
             modalBackdrop.classList.remove('hidden');
             modalContainer.classList.remove('hidden');
             setTimeout(() => {
-                modalBackdrop.classList.add('opacity-100');
-                modalPanel.classList.add('scale-100', 'opacity-100');
+                modalBackdrop.style.opacity = '1';
+                modalPanel.style.opacity = '1';
+                modalPanel.style.transform = 'scale(1)';
             }, 10);
             try {
-                const article = await fetchWithToken(`api/getArtigoDetalhe?id=${id}`);
+                // AÇÃO ATUALIZADA
+                const article = await fetchWithToken('getArtigoDetalhe', { id: id });
+
                 modalTitle.textContent = article.title;
                 const category = allCategories.find(c => c.id === article.categoryId);
                 if (category) {
@@ -1042,11 +1000,14 @@
             }
         }
         function closeModal() {
-            modalPanel.classList.remove('scale-100', 'opacity-100');
-            modalBackdrop.classList.remove('opacity-100');
+            modalPanel.style.transform = 'scale(0.95)';
+            modalPanel.style.opacity = '0';
+            modalBackdrop.style.opacity = '0';
             setTimeout(() => {
                 modalBackdrop.classList.add('hidden');
                 modalContainer.classList.add('hidden');
+                modalPanel.style.transform = ''; // Reseta para a próxima abertura
+                modalBackdrop.style.transform = '';
             }, 300);
         }
         modalCloseBtn.addEventListener('click', closeModal);
@@ -1057,19 +1018,18 @@
 
         async function verificarArtigosParaCiencia() {
             try {
-                const artigos = await fetchWithToken('api/getArtigosParaCiencia');
+                // AÇÃO ATUALIZADA
+                const artigos = await fetchWithToken('getArtigosParaCiencia');
                 if (artigos && artigos.length > 0) {
                     artigosParaCiencia = artigos;
                     cienciaArtigoIndex = 0;
                     abrirModalCiencia();
-                } else {
-                    // Nenhum artigo pendente, carrega o site normalmente
-                    checkAndRenderAll();
+                    return true; // Retorna true para sinalizar que o modal está aberto
                 }
+                return false; // Nenhum artigo pendente
             } catch (error) {
                 console.error("Erro ao verificar artigos para ciência:", error);
-                // Falha ao verificar, carrega o site normalmente para não bloquear o usuário
-                checkAndRenderAll();
+                return false; // Falha ao verificar, carrega o site normalmente
             }
         }
 
@@ -1084,48 +1044,49 @@
             renderArtigoCiencia();
         }
 
-        function renderArtigoCiencia() {
-            // Mostra o spinner e esconde o conteúdo
+        async function renderArtigoCiencia() {
             cienciaLoadingSpinner.style.display = 'block';
             modalCienciaContent.style.display = 'none';
             declararCienciaBtn.classList.add('hidden');
             cienciaNextBtn.classList.add('hidden');
             cienciaPrevBtn.classList.add('hidden');
             cienciaStatus.textContent = '';
+            cienciaPrevBtn.disabled = true;
+            cienciaNextBtn.disabled = true;
+            declararCienciaBtn.disabled = true;
 
-            const artigo = artigosParaCiencia[cienciaArtigoIndex];
-            if (!artigo) return;
+            const artigoPendente = artigosParaCiencia[cienciaArtigoIndex];
+            if (!artigoPendente) return;
 
-            // Busca o conteúdo completo (o getArtigosParaCiencia só traz o ID/Título)
-            fetchWithToken(`api/getArtigoDetalhe?id=${artigo.id}`)
-                .then(artigoCompleto => {
-                    modalCienciaTitle.textContent = artigoCompleto.title;
-                    modalCienciaContent.innerHTML = artigoCompleto.content;
+            try {
+                // AÇÃO ATUALIZADA
+                const artigoCompleto = await fetchWithToken('getArtigoDetalhe', { id: artigoPendente.id });
 
-                    // Esconde o spinner e mostra o conteúdo
-                    cienciaLoadingSpinner.style.display = 'none';
-                    modalCienciaContent.style.display = 'block';
+                modalCienciaTitle.textContent = artigoCompleto.title;
+                modalCienciaContent.innerHTML = artigoCompleto.content;
+                cienciaLoadingSpinner.style.display = 'none';
+                modalCienciaContent.style.display = 'block';
+                cienciaCounter.textContent = `Artigo ${cienciaArtigoIndex + 1} de ${artigosParaCiencia.length}`;
 
-                    // Atualiza a navegação
-                    cienciaCounter.textContent = `Artigo ${cienciaArtigoIndex + 1} de ${artigosParaCiencia.length}`;
-
-                    if (cienciaArtigoIndex > 0) {
-                        cienciaPrevBtn.classList.remove('hidden');
-                    }
-                    if (cienciaArtigoIndex < artigosParaCiencia.length - 1) {
-                        cienciaNextBtn.classList.remove('hidden');
-                    } else {
-                        // É o último artigo
-                        declararCienciaBtn.classList.remove('hidden');
-                    }
-                })
-                .catch(error => {
-                    console.error("Erro ao carregar detalhe do artigo de ciência:", error);
-                    modalCienciaTitle.textContent = 'Erro ao Carregar Artigo';
-                    modalCienciaContent.innerHTML = `<p class="text-red-500">${error.message}</p>`;
-                    cienciaLoadingSpinner.style.display = 'none';
-                    modalCienciaContent.style.display = 'block';
-                });
+                if (cienciaArtigoIndex > 0) {
+                    cienciaPrevBtn.classList.remove('hidden');
+                    cienciaPrevBtn.disabled = false;
+                }
+                if (cienciaArtigoIndex < artigosParaCiencia.length - 1) {
+                    cienciaNextBtn.classList.remove('hidden');
+                    cienciaNextBtn.disabled = false;
+                } else {
+                    declararCienciaBtn.classList.remove('hidden');
+                    declararCienciaBtn.disabled = false;
+                }
+                modalCienciaBody.focus();
+            } catch (error) {
+                console.error("Erro ao carregar detalhe do artigo de ciência:", error);
+                modalCienciaTitle.textContent = 'Erro ao Carregar Artigo';
+                modalCienciaContent.innerHTML = `<p class="text-red-500">${error.message}</p>`;
+                cienciaLoadingSpinner.style.display = 'none';
+                modalCienciaContent.style.display = 'block';
+            }
         }
 
         cienciaPrevBtn.addEventListener('click', () => {
@@ -1148,18 +1109,14 @@
             cienciaStatus.textContent = '';
 
             try {
-                // Envia a lista de TODOS os artigos que o usuário deu ciência nesta sessão
                 const artigosConcluidos = artigosParaCiencia.map(art => ({
                     articleId: art.id,
                     scienceVersion: art.scienceVersion
                 }));
 
-                await fetchWithToken('api/user/declararCiencia', {
-                    method: 'POST',
-                    body: JSON.stringify({ artigos: artigosConcluidos })
-                });
+                // AÇÃO ATUALIZADA
+                await fetchWithToken('user/declararCiencia', { artigos: artigosConcluidos });
 
-                // Sucesso! Fecha o modal e carrega o site.
                 fecharModalCiencia();
                 checkAndRenderAll(); // Carrega o conteúdo principal
 
@@ -1167,10 +1124,8 @@
                 console.error("Erro ao declarar ciência:", error);
                 cienciaStatus.textContent = `Erro: ${error.message}`;
                 declararCienciaBtn.disabled = false;
-                declararCienciaBtn.innerHTML = `
-                    <svg class="w-5 h-5" ...></svg>
-                    Declarar Ciência
-                `; // Resetar o botão (SVG omitido por brevidade)
+                declararCienciaBtn.textContent = 'Declarar Ciência'; // Reseta o texto
+                // (O SVG já está no HTML, não precisa ser readicionado)
             }
         });
 
