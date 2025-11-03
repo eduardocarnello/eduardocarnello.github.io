@@ -17,7 +17,6 @@
             font-family: 'Inter', sans-serif;
         }
 
-        /* Ajusta a altura do editor Quill */
         #editor-container {
             height: 350px;
         }
@@ -30,14 +29,22 @@
             border-radius: 0 0 0.5rem 0.5rem !important;
         }
 
-        /* Foco personalizado para acessibilidade */
         .focus-ring-visible:focus-visible {
             outline: 2px solid #2563eb;
             outline-offset: 2px;
         }
 
-        /* CORREÇÃO PISCADA (FOUC): Esconde o conteúdo até o JS decidir o que mostrar */
         /* Aplicado via style="display: none;" inline */
+
+        /* Estilo para o Switch de Filtro */
+        .toggle-checkbox:checked {
+            right: 0;
+            border-color: #2563eb;
+        }
+
+        .toggle-checkbox:checked+.toggle-label {
+            background-color: #2563eb;
+        }
     </style>
 </head>
 
@@ -61,12 +68,6 @@
             <!-- Mensagem de Erro/Status -->
             <div id="login-status" class="text-center text-red-500 font-medium"></div>
 
-            <!-- Formulário de Login (REMOVIDO) -->
-            <!-- <form id="login-form" class="mt-8 space-y-6"> ... </form> -->
-
-            <!-- Divisor "OU" (REMOVIDO) -->
-            <!-- <div class="relative flex py-3 items-center"> ... </div> -->
-
             <div class="space-y-4 pt-6">
                 <!-- Botão Login Google -->
                 <button id="google-login-btn"
@@ -75,6 +76,7 @@
                         alt="Google icon">
                     Entrar com Google
                 </button>
+
                 <!-- NOVO: Botão Login Microsoft -->
                 <button id="microsoft-login-btn"
                     class="group relative w-full flex justify-center py-3 px-4 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors">
@@ -212,7 +214,7 @@
                                     class="w-full p-3 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
                             </div>
 
-                            <!-- NOVO: Seção de Ciência (Permissão: Admin) -->
+                            <!-- ETAPA 3.A: Seção de Ciência (Permissão: Admin) -->
                             <div class="permission-admin" style="display: none;">
                                 <fieldset class="border-t border-slate-200 pt-4">
                                     <legend class="text-sm font-medium text-slate-700">Opções de Ciência</legend>
@@ -245,7 +247,7 @@
                             <!-- Editor de Conteúdo -->
                             <div>
                                 <label class="block text-sm font-medium text-slate-700 mb-1">Conteúdo Completo</label>
-                                <div id="editor-container"></div> <!-- Container do Quill -->
+                                <div id="editor-container"></div>
                                 <p class="text-xs text-slate-500 mt-2">
                                     <b>Para adicionar imagens:</b> Publique a imagem em um site (como
                                     <a href="https://imgur.com/upload" target="_blank"
@@ -261,13 +263,8 @@
                                     na barra de ferramentas.
                                 </p>
                             </div>
-
-                            <!-- ID Oculto (para edição) -->
                             <input type="hidden" id="article-id">
-                            <!-- NOVO: ID Oculto para Reset de Ciência -->
                             <input type="hidden" id="is-science-reset" value="false">
-
-                            <!-- Botões -->
                             <div class="flex gap-4">
                                 <button type="submit"
                                     class="flex-1 py-3 px-6 border border-transparent text-base font-medium rounded-lg text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors">
@@ -283,9 +280,26 @@
 
                     <!-- Lista de Artigos (COM BUSCA E PAGINAÇÃO) -->
                     <div class="bg-white p-6 sm:p-8 rounded-2xl shadow-lg">
-                        <h2 class="text-2xl font-bold text-slate-800 mb-6">Artigos Publicados</h2>
+                        <div class="flex justify-between items-center mb-6">
+                            <h2 class="text-2xl font-bold text-slate-800">Artigos Publicados</h2>
+                            <!-- NOVO: Switch de Filtro de Ciência -->
+                            <div id="science-filter-container" class="permission-editor permission-admin"
+                                style="display: none;">
+                                <label for="science-toggle-switch" class="flex items-center cursor-pointer">
+                                    <span class="mr-3 text-sm font-medium text-gray-900">Mostrar apenas artigos com
+                                        "Ciência"</span>
+                                    <div class="relative">
+                                        <input type="checkbox" id="science-toggle-switch" class="sr-only">
+                                        <div class="block bg-gray-200 w-14 h-8 rounded-full transition"></div>
+                                        <div
+                                            class="dot absolute left-1 top-1 bg-white w-6 h-6 rounded-full transition-transform transform">
+                                        </div>
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
 
-                        <!-- NOVO: Busca no Admin -->
+                        <!-- Busca no Admin -->
                         <div class="relative mb-4">
                             <input type="search" id="admin-search-input" placeholder="Buscar artigos no painel..."
                                 class="w-full p-3 pl-10 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
@@ -302,7 +316,7 @@
                             <p id="articles-loading-msg">Carregando artigos...</p>
                         </div>
 
-                        <!-- NOVO: Paginação no Admin -->
+                        <!-- Paginação no Admin -->
                         <div id="admin-load-more-container" class="text-center mt-8 hidden">
                             <button id="admin-load-more-btn"
                                 class="bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium py-2 px-6 rounded-lg transition-colors focus-ring-visible">
@@ -384,8 +398,6 @@
                                 </button>
                             </div>
                         </form>
-
-                        <!-- Lista de Categorias -->
                         <h3 class="text-lg font-bold text-slate-800 mb-4">Categorias Atuais</h3>
                         <div id="category-list-admin" class="space-y-3">
                             <p id="categories-loading-msg">Carregando categorias...</p>
@@ -414,10 +426,8 @@
 
     <!-- NOVO: Modal de Confirmação Customizado -->
     <div id="confirm-modal" class="fixed inset-0 z-50 items-center justify-center p-4" style="display: none;">
-        <!-- Backdrop -->
         <div id="modal-backdrop-confirm" class="fixed inset-0 bg-black bg-opacity-50 transition-opacity opacity-0"
             aria-hidden="true"></div>
-        <!-- Painel -->
         <div id="modal-panel-confirm"
             class="relative bg-white rounded-2xl shadow-xl w-full max-w-md transform transition-all opacity-0 scale-95">
             <div class="p-6">
@@ -439,6 +449,59 @@
         </div>
     </div>
 
+    <!-- ETAPA 3.C: Modal de Auditoria de Ciência -->
+    <div id="science-log-modal" class="fixed inset-0 z-50 items-center justify-center p-4" style="display: none;">
+        <!-- Backdrop -->
+        <div id="modal-backdrop-science-log" class="fixed inset-0 bg-black bg-opacity-50 transition-opacity opacity-0"
+            aria-hidden="true"></div>
+        <!-- Painel -->
+        <div id="modal-panel-science-log"
+            class="relative bg-white rounded-2xl shadow-xl w-full max-w-2xl transform transition-all opacity-0 scale-95">
+            <div class="flex justify-between items-center p-4 sm:p-6 border-b border-slate-200">
+                <h3 id="science-log-title" class="text-xl font-medium leading-6 text-gray-900">Log de Ciência</h3>
+                <button type="button" id="science-log-close-btn"
+                    class="p-2 -m-2 rounded-full text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors focus-ring-visible">
+                    <span class="sr-only">Fechar</span>
+                    <svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                        stroke-width="2" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+
+            <div class="p-6 max-h-[70vh] overflow-y-auto">
+                <!-- Carregador -->
+                <div id="science-log-loading" class="text-center py-10">
+                    <svg class="mx-auto h-8 w-8 text-slate-400 animate-spin" xmlns="http://www.w3.org/2000/svg"
+                        fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4">
+                        </circle>
+                        <path class="opacity-75" fill="currentColor"
+                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+                        </path>
+                    </svg>
+                    <p class="mt-3 text-slate-500">Buscando logs...</p>
+                </div>
+
+                <!-- Listas de Logs -->
+                <div id="science-log-content" class="hidden grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <h4 class="text-lg font-semibold text-green-700 mb-3">Deram Ciência</h4>
+                        <ul id="science-log-completed" class="space-y-2">
+                            <!-- JS preenche aqui -->
+                        </ul>
+                    </div>
+                    <div>
+                        <h4 class="text-lg font-semibold text-red-700 mb-3">Pendentes</h4>
+                        <ul id="science-log-pending" class="space-y-2">
+                            <!-- JS preenche aqui -->
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
 
     <!-- Firebase SDKs -->
     <script type="module">
@@ -447,10 +510,9 @@
         import {
             getAuth,
             onAuthStateChanged,
-            // signInWithEmailAndPassword, // REMOVIDO
             signInWithPopup,
             GoogleAuthProvider,
-            OAuthProvider, // NOVO
+            OAuthProvider,
             signOut,
             getIdToken
         } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
@@ -469,36 +531,34 @@
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const googleProvider = new GoogleAuthProvider();
-        const microsoftProvider = new OAuthProvider('microsoft.com'); // NOVO
+        const microsoftProvider = new OAuthProvider('microsoft.com');
         setLogLevel('Debug');
 
         // --- ESTADO GLOBAL ---
-        let currentUserRole = 'Leitor'; // Padrão
+        let currentUserRole = 'Leitor';
         let allCategoriesMap = new Map();
-        let allUsersCache = []; // Cache para busca de usuários
-        let adminArticlesCache = []; // Cache para busca de artigos no admin
+        let allUsersCache = [];
+        let adminArticlesCache = [];
         let adminArticleCount = 0;
-        const ADMIN_ARTICLES_PER_PAGE = 15; // QOL: Paginação
+        const ADMIN_ARTICLES_PER_PAGE = 15;
         let adminIsLoadingMore = false;
         let adminIsSearchActive = false;
-        // const adminEmails = ['eduardocarnello@gmail.com', 'mariliajec@tjsp.jus.br']; // REMOVIDO
 
         // --- REFERÊNCIAS DO DOM ---
         const loginSection = document.getElementById('login-section');
         const adminDashboard = document.getElementById('admin-dashboard');
-        const loginForm = document.getElementById('login-form'); // (Será removido)
         const loginStatus = document.getElementById('login-status');
         const googleLoginBtn = document.getElementById('google-login-btn');
-        const microsoftLoginBtn = document.getElementById('microsoft-login-btn'); // NOVO
+        const microsoftLoginBtn = document.getElementById('microsoft-login-btn');
         const logoutBtn = document.getElementById('logout-btn');
         const userEmailSpan = document.getElementById('user-email');
-        const userRoleSpan = document.getElementById('user-role'); // NOVO
+        const userRoleSpan = document.getElementById('user-role');
         const adminStatus = document.getElementById('admin-status');
 
         // Seções de Permissão
         const articleFormSection = document.getElementById('article-form-section');
         const categoryAdminSection = document.getElementById('category-admin-section');
-        const userAdminSection = document.getElementById('user-admin-section'); // NOVO
+        const userAdminSection = document.getElementById('user-admin-section');
 
         // Formulário de Artigo
         const articleForm = document.getElementById('article-form');
@@ -512,19 +572,18 @@
         const articleTags = document.getElementById('article-tags');
         const articleIdInput = document.getElementById('article-id');
         const cancelEditBtn = document.getElementById('cancel-edit-btn');
-        // NOVO: Campos de Ciência
         const requiresScienceCheckbox = document.getElementById('requires-science');
         const resetScienceContainer = document.getElementById('reset-science-container');
         const resetScienceBtn = document.getElementById('reset-science-btn');
         const isScienceResetInput = document.getElementById('is-science-reset');
 
-
-        // Lista de Artigos Admin (QOL)
+        // Lista de Artigos Admin
         const articlesListAdmin = document.getElementById('articles-list-admin');
         const articlesLoadingMsg = document.getElementById('articles-loading-msg');
-        const adminSearchInput = document.getElementById('admin-search-input'); // NOVO
-        const adminLoadMoreContainer = document.getElementById('admin-load-more-container'); // NOVO
-        const adminLoadMoreBtn = document.getElementById('admin-load-more-btn'); // NOVO
+        const adminSearchInput = document.getElementById('admin-search-input');
+        const adminLoadMoreContainer = document.getElementById('admin-load-more-container');
+        const adminLoadMoreBtn = document.getElementById('admin-load-more-btn');
+        const scienceToggleSwitch = document.getElementById('science-toggle-switch'); // NOVO
 
         // Formulário de Categoria
         const categoryForm = document.getElementById('category-form');
@@ -537,12 +596,12 @@
         const categoryListAdmin = document.getElementById('category-list-admin');
         const categoriesLoadingMsg = document.getElementById('categories-loading-msg');
 
-        // Gerenciamento de Usuários (NOVO)
+        // Gerenciamento de Usuários
         const userSearchInput = document.getElementById('user-search');
         const userListAdmin = document.getElementById('user-list-admin');
         const usersLoadingMsg = document.getElementById('users-loading-msg');
 
-        // Modal de Confirmação (NOVO)
+        // Modal de Confirmação
         const confirmModal = document.getElementById('confirm-modal');
         const modalBackdropConfirm = document.getElementById('modal-backdrop-confirm');
         const modalPanelConfirm = document.getElementById('modal-panel-confirm');
@@ -550,6 +609,18 @@
         const confirmModalMessage = document.getElementById('confirm-modal-message');
         const confirmModalBtnConfirm = document.getElementById('confirm-modal-btn-confirm');
         const confirmModalBtnCancel = document.getElementById('confirm-modal-btn-cancel');
+
+        // NOVO: Modal de Log de Ciência
+        const scienceLogModal = document.getElementById('science-log-modal');
+        const modalBackdropScienceLog = document.getElementById('modal-backdrop-science-log');
+        const modalPanelScienceLog = document.getElementById('modal-panel-science-log');
+        const scienceLogTitle = document.getElementById('science-log-title');
+        const scienceLogLoading = document.getElementById('science-log-loading');
+        const scienceLogContent = document.getElementById('science-log-content');
+        const scienceLogCompleted = document.getElementById('science-log-completed');
+        const scienceLogPending = document.getElementById('science-log-pending');
+        const scienceLogCloseBtn = document.getElementById('science-log-close-btn');
+
 
         // Editor Quill
         let quill;
@@ -573,7 +644,6 @@
         }
 
         // --- FUNÇÃO WRAPPER DE FETCH (COM TOKEN) ---
-        // (Refatorada para o Monolito)
         async function fetchWithToken(action, payload = {}) {
             if (!auth.currentUser) {
                 showStatusMessage('Usuário não autenticado. Faça login novamente.', true);
@@ -583,8 +653,7 @@
             try {
                 const token = await getIdToken(auth.currentUser, /* forceRefresh */ true);
 
-                // Todas as chamadas agora vão para 'api' (que o vercel.json roteia para api/index.js)
-                const response = await fetch('api', {
+                const response = await fetch('api', { // Sempre chama a API monolito
                     method: 'POST',
                     headers: {
                         'Authorization': `Bearer ${token}`,
@@ -627,34 +696,25 @@
         onAuthStateChanged(auth, async (user) => {
             if (user) {
                 try {
-                    // NOVO: Chama a API upsert para registrar o usuário e obter seu cargo
-                    const { role, email } = await fetchWithToken('user/upsert'); // Ação 'user/upsert'
-                    currentUserRole = role; // Armazena o cargo globalmente
+                    const { role, email } = await fetchWithToken('user/upsert');
+                    currentUserRole = role;
 
-                    // Redireciona se for apenas Leitor
                     if (role === 'Leitor') {
-                        // alert('Acesso negado. Você não tem permissão para acessar o painel de administração.');
                         window.location.href = 'index.html';
                         return;
                     }
 
-                    // É Redator, Editor ou Admin: Mostra o painel
                     adminDashboard.style.display = 'block';
                     loginSection.style.display = 'none';
                     userEmailSpan.textContent = email;
-                    userRoleSpan.textContent = role; // Mostra o cargo
+                    userRoleSpan.textContent = role;
 
                     initializeQuill();
                     resetLinksContainer();
-
-                    // Carrega os dados iniciais
                     loadCategories();
-                    await executeAdminSearch(true); // Carrega a primeira página de artigos
-
-                    // Controla a visibilidade das seções com base no cargo
+                    await executeAdminSearch(true);
                     updateUIVisibility(role);
 
-                    // Carrega usuários (apenas para Admins)
                     if (role === 'Admin') {
                         loadUsers();
                     }
@@ -677,23 +737,18 @@
             }
         });
 
-        // REMOVIDO: Login com E-mail/Senha
-        if (loginForm) {
-            loginForm.style.display = 'none';
-            // Esconde o divisor
-            const divisor = loginForm.nextElementSibling;
-            if (divisor && divisor.classList.contains('relative')) {
-                divisor.style.display = 'none';
-            }
+        // Logins (Removido e-mail/senha)
+        if (document.getElementById('login-form')) {
+            document.getElementById('login-form').style.display = 'none';
+            const divisor = document.querySelector('.relative.flex.py-3.items-center');
+            if (divisor) divisor.style.display = 'none';
         }
 
-        // Login com Google
         googleLoginBtn.addEventListener('click', () => {
             loginStatus.textContent = 'Abrindo popup do Google...';
             signInWithPopup(auth, googleProvider).catch(handleAuthError);
         });
 
-        // NOVO: Login com Microsoft
         microsoftLoginBtn.addEventListener('click', () => {
             loginStatus.textContent = 'Abrindo popup da Microsoft...';
             signInWithPopup(auth, microsoftProvider).catch(handleAuthError);
@@ -716,7 +771,7 @@
             showConfirmModal(
                 'Sair do Painel',
                 'Tem certeza que deseja sair?',
-                async () => { // onConfirm
+                async () => {
                     try {
                         await signOut(auth);
                     } catch (error) {
@@ -724,7 +779,7 @@
                         showStatusMessage('Erro ao tentar sair.', true);
                     }
                 },
-                'Sair' // Texto do botão de confirmação
+                'Sair'
             );
         });
 
@@ -735,38 +790,32 @@
             categoryAdminSection.style.display = (role === 'Admin') ? 'block' : 'none';
             userAdminSection.style.display = (role === 'Admin') ? 'block' : 'none';
 
-            // Elementos específicos
+            // Container do filtro de ciência
+            document.getElementById('science-filter-container').style.display = (role === 'Editor' || role === 'Admin') ? 'flex' : 'none';
 
-            // Permissão para ver dropdown de Categoria
+            // Elementos específicos
             const categorySelectDiv = articleCategory.closest('div');
             if (categorySelectDiv) {
                 categorySelectDiv.style.display = (role === 'Editor' || role === 'Admin') ? 'block' : 'none';
             }
 
-            // Permissão para ver opções de Ciência
             document.querySelectorAll('.permission-admin').forEach(el => {
                 el.style.display = (role === 'Admin') ? 'block' : 'none';
             });
 
-            // Atualiza a visibilidade dos botões na lista de artigos
-            const deleteArticleButtons = document.querySelectorAll('.delete-article-btn');
-            deleteArticleButtons.forEach(btn => btn.style.display = (role === 'Admin') ? 'inline-flex' : 'none');
-
-            const editArticleButtons = document.querySelectorAll('.edit-article-btn');
-            editArticleButtons.forEach(btn => btn.style.display = (role === 'Editor' || role === 'Admin') ? 'inline-flex' : 'none');
-
-            // Atualiza a visibilidade dos botões na lista de categorias
-            const editCategoryButtons = document.querySelectorAll('.edit-category-btn');
-            editCategoryButtons.forEach(btn => btn.style.display = (role === 'Admin') ? 'inline-flex' : 'none');
-
-            const deleteCategoryButtons = document.querySelectorAll('.delete-category-btn');
-            deleteCategoryButtons.forEach(btn => btn.style.display = (role === 'Admin') ? 'inline-flex' : 'none');
+            // Botões (listas) - eles são recriados, então a lógica está em renderAdminArticles
+            document.querySelectorAll('.delete-article-btn').forEach(btn => btn.style.display = (role === 'Admin') ? 'inline-flex' : 'none');
+            document.querySelectorAll('.edit-article-btn').forEach(btn => btn.style.display = (role === 'Editor' || role === 'Admin') ? 'inline-flex' : 'none');
+            document.querySelectorAll('.edit-category-btn').forEach(btn => btn.style.display = (role === 'Admin') ? 'inline-flex' : 'none');
+            document.querySelectorAll('.delete-category-btn').forEach(btn => btn.style.display = (role === 'Admin') ? 'inline-flex' : 'none');
+            // NOVO: Botão de Log de Ciência
+            document.querySelectorAll('.science-log-btn').forEach(btn => btn.style.display = (role === 'Editor' || role === 'Admin') ? 'inline-flex' : 'none');
         }
 
 
         // --- GERENCIAMENTO DE CATEGORIAS (CRUD) ---
+        // (Inalterado, já usa monolito e modal)
 
-        // Salvar/Atualizar Categoria
         categoryForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             const id = categoryIdInput.value;
@@ -778,7 +827,6 @@
             };
             try {
                 if (id) categoryData.id = id;
-                // AÇÃO ATUALIZADA
                 await fetchWithToken('admin/salvarCategoria', categoryData);
                 showStatusMessage(id ? 'Categoria atualizada!' : 'Categoria salva!');
                 resetCategoryForm();
@@ -789,11 +837,9 @@
             }
         });
 
-        // Carregar Categorias
         async function loadCategories() {
             categoriesLoadingMsg.style.display = 'block';
             try {
-                // AÇÃO ATUALIZADA
                 const categories = await fetchWithToken('getCategorias');
                 categoriesLoadingMsg.classList.add('hidden');
                 categoryListAdmin.innerHTML = '';
@@ -804,7 +850,6 @@
                 categories.forEach(category => {
                     allCategoriesMap.set(category.id, category);
 
-                    // Popula a lista do admin
                     const el = document.createElement('div');
                     el.className = 'flex justify-between items-center p-3 bg-slate-50 rounded-lg';
                     el.innerHTML = `
@@ -820,7 +865,6 @@
                     `;
                     categoryListAdmin.appendChild(el);
 
-                    // Popula o dropdown do formulário de artigo
                     const opt = document.createElement('option');
                     opt.value = category.id;
                     opt.textContent = category.name;
@@ -838,7 +882,6 @@
             }
         }
 
-        // Delegação de Eventos para botões de Categoria
         categoryListAdmin.addEventListener('click', (e) => {
             const editBtn = e.target.closest('.edit-category-btn');
             const deleteBtn = e.target.closest('.delete-category-btn');
@@ -846,7 +889,6 @@
             if (deleteBtn) deleteCategory(deleteBtn.dataset.id, deleteBtn.dataset.name);
         });
 
-        // Preencher formulário de Categoria para edição
         function populateCategoryForm(id) {
             const category = allCategoriesMap.get(id);
             if (category) {
@@ -860,18 +902,16 @@
             }
         }
 
-        // Deletar Categoria (COM MODAL CUSTOMIZADO)
         async function deleteCategory(id, name) {
             showConfirmModal(
                 'Deletar Categoria',
                 `Tem certeza que quer deletar a categoria "${name}"? Artigos nesta categoria ficarão órfãos.`,
                 async () => {
                     try {
-                        // AÇÃO ATUALIZADA
                         await fetchWithToken('admin/deletarCategoria', { id: id });
                         showStatusMessage('Categoria deletada.');
                         resetCategoryForm();
-                        loadCategories(); // Auto-refresh
+                        loadCategories();
                     } catch (error) {
                         console.error("Erro ao deletar categoria: ", error);
                         showStatusMessage(error.message || 'Erro ao deletar categoria.', true);
@@ -880,7 +920,6 @@
             );
         }
 
-        // Limpar formulário de Categoria
         function resetCategoryForm() {
             categoryForm.reset();
             categoryIdInput.value = '';
@@ -909,53 +948,86 @@
                 tags: tagsArray,
                 content: quill.root.innerHTML,
                 slug: slugify(articleTitle.value),
-                // NOVO: Dados de Ciência
                 requiresScience: requiresScienceCheckbox.checked,
-                isScienceReset: isScienceResetInput.value === 'true' // Envia se o reset foi clicado
+                isScienceReset: isScienceResetInput.value === 'true'
             };
 
             if (id) articleData.id = id;
             if (publishedDate) articleData.publishedAt = publishedDate;
 
             try {
-                // AÇÃO ATUALIZADA
                 await fetchWithToken('admin/salvarArtigo', articleData);
                 showStatusMessage(id ? 'Artigo atualizado!' : 'Artigo salvo!');
                 resetArticleForm();
-                await executeAdminSearch(true); // REFRESH AUTOMÁTICO (força recarga)
+                await executeAdminSearch(true);
             } catch (error) {
                 console.error("Erro ao salvar artigo: ", error);
                 showStatusMessage(error.message || 'Erro ao salvar artigo.', true);
             }
         });
 
-        // NOVO: Lógica do botão Resetar Ciência
+        // Lógica do botão Resetar Ciência
         resetScienceBtn.addEventListener('click', () => {
             showConfirmModal(
                 'Resetar Ciência do Artigo',
                 'Isso forçará TODOS os usuários a darem ciência deste artigo novamente. Tem certeza?',
                 () => {
                     isScienceResetInput.value = 'true';
-                    // Simula um clique no botão salvar para enviar o formulário
                     articleForm.dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }));
                 },
                 'Sim, Resetar'
             );
         });
 
-        // QOL: BUSCA E PAGINAÇÃO NO ADMIN
+        // BUSCA E PAGINAÇÃO NO ADMIN
         adminSearchInput.addEventListener('input', () => {
             clearTimeout(adminSearchInput.timeoutId);
             adminSearchInput.timeoutId = setTimeout(() => {
-                executeAdminSearch(true); // true = resetar e buscar do zero
+                executeAdminSearch(true);
             }, 300);
         });
 
         adminLoadMoreBtn.addEventListener('click', () => {
             if (!adminIsLoadingMore) {
-                executeAdminSearch(false); // false = carregar mais (adicionar)
+                executeAdminSearch(false);
             }
         });
+
+        // NOVO: Listener do Switch de Ciência
+        scienceToggleSwitch.addEventListener('change', () => {
+            // Apenas filtra a lista local, não faz re-fetch
+            filterAdminListByScience();
+        });
+
+        // NOVO: Filtro local do Switch de Ciência
+        function filterAdminListByScience() {
+            const showOnlyScience = scienceToggleSwitch.checked;
+            let count = 0;
+            document.querySelectorAll('.article-row').forEach(row => {
+                const requiresScience = row.dataset.requiresScience === 'true';
+                if (showOnlyScience) {
+                    if (requiresScience) {
+                        row.style.display = 'flex';
+                        count++;
+                    } else {
+                        row.style.display = 'none';
+                    }
+                } else {
+                    // Se o switch está desligado, apenas mostra
+                    row.style.display = 'flex';
+                    count++;
+                }
+            });
+
+            // Atualiza mensagem de "vazio"
+            if (count === 0 && showOnlyScience) {
+                articlesLoadingMsg.textContent = 'Nenhum artigo com "ciência" ativa foi encontrado.';
+                articlesLoadingMsg.style.display = 'block';
+            } else {
+                articlesLoadingMsg.style.display = 'none';
+            }
+        }
+
 
         // Carregar Artigos (COM BUSCA E PAGINAÇÃO)
         async function executeAdminSearch(reset = false) {
@@ -965,7 +1037,7 @@
             if (reset) {
                 adminArticlesCache = [];
                 adminArticleCount = 0;
-                articlesListAdmin.innerHTML = ''; // Limpa o grid
+                articlesListAdmin.innerHTML = '';
             }
 
             const searchTerm = adminSearchInput.value.trim();
@@ -978,15 +1050,11 @@
             try {
                 let articles = [];
                 if (searchTerm === '') {
-                    // MODO PAGINAÇÃO (getArtigos)
                     adminIsSearchActive = false;
-                    // AÇÃO ATUALIZADA
                     articles = await fetchWithToken('getArtigos', { limit: limit, category: 'TODOS' });
                 } else {
-                    // MODO BUSCA (searchArtigos)
                     adminIsSearchActive = true;
                     adminLoadMoreContainer.classList.add('hidden');
-                    // AÇÃO ATUALIZADA
                     articles = await fetchWithToken('searchArtigos', {
                         term: searchTerm,
                         scope: 'all',
@@ -995,7 +1063,7 @@
                 }
 
                 const newArticles = articles.filter(a => !adminArticlesCache.some(existing => existing.id === a.id));
-                adminArticlesCache = articles; // Cache é a lista completa
+                adminArticlesCache = articles;
                 adminArticleCount = articles.length;
 
                 if (adminIsSearchActive || newArticles.length === 0 || articles.length < limit) {
@@ -1006,6 +1074,9 @@
 
                 renderAdminArticles(newArticles); // Renderiza apenas os novos
 
+                // NOVO: Aplica o filtro do switch após renderizar
+                filterAdminListByScience();
+
             } catch (error) {
                 console.error("Erro ao carregar artigos (admin): ", error);
                 articlesLoadingMsg.textContent = error.message || 'Erro ao carregar artigos.';
@@ -1013,7 +1084,11 @@
                 adminIsLoadingMore = false;
                 adminLoadMoreBtn.textContent = 'Carregar Mais';
                 adminLoadMoreBtn.disabled = false;
-                if (adminArticlesCache.length > 0 || adminIsSearchActive) {
+
+                // Lógica de exibição da mensagem de 'loading'
+                const anyArticlesVisible = adminArticlesCache.length > 0 && articlesListAdmin.querySelector('.article-row:not([style*="display: none"])');
+
+                if (anyArticlesVisible) {
                     articlesLoadingMsg.style.display = 'none';
                 }
                 if (adminArticlesCache.length === 0 && searchTerm !== '') {
@@ -1047,13 +1122,29 @@
                     : 'Salvando...';
 
                 const el = document.createElement('div');
-                el.className = 'flex justify-between items-center p-4 bg-slate-50 rounded-lg';
+                // NOVO: Adiciona 'article-row' e 'data-requires-science'
+                el.className = 'flex justify-between items-center p-4 bg-slate-50 rounded-lg article-row';
+                el.dataset.requiresScience = article.requiresScience || 'false';
+
+                const requiresScienceIcon = article.requiresScience
+                    ? `<svg class="w-4 h-4 text-red-500 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" title="Exige Ciência"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>`
+                    : '';
+
                 el.innerHTML = `
-                     <div>
-                         <strong class="text-slate-800">${article.title}</strong>
-                         <span class="block text-sm text-slate-500">${categoryName} - ${date}</span>
+                     <div class="flex items-center min-w-0">
+                         <div class="min-w-0">
+                            <strong class="text-slate-800 truncate block">${article.title}</strong>
+                            <span class="block text-sm text-slate-500">${categoryName} - ${date}</span>
+                         </div>
+                         ${requiresScienceIcon}
                      </div>
                      <div class="flex gap-2 flex-shrink-0">
+                         <!-- NOVO: Botão de Auditoria -->
+                         <button data-id="${article.id}" data-title="${article.title}" class="science-log-btn text-gray-500 hover:text-blue-600 focus-ring-visible rounded-md p-1 ${article.requiresScience ? '' : 'hidden'}" title="Ver Log de Ciência" style="display: ${currentUserRole === 'Editor' || currentUserRole === 'Admin' ? 'inline-flex' : 'none'}">
+                             <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                             </svg>
+                         </button>
                          <button data-id="${article.id}" class="edit-article-btn text-blue-600 hover:text-blue-800 focus-ring-visible rounded-md p-1" style="display: ${currentUserRole === 'Editor' || currentUserRole === 'Admin' ? 'inline-flex' : 'none'}">
                              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.536L16.732 3.732z"></path></svg>
                          </button>
@@ -1068,20 +1159,20 @@
             updateUIVisibility(currentUserRole);
         }
 
-        // (loadArticles foi substituída por executeAdminSearch)
-
         // Delegação de Eventos para botões de Artigo
         articlesListAdmin.addEventListener('click', (e) => {
             const editBtn = e.target.closest('.edit-article-btn');
             const deleteBtn = e.target.closest('.delete-article-btn');
+            const scienceBtn = e.target.closest('.science-log-btn'); // NOVO
+
             if (editBtn) populateArticleForm(editBtn.dataset.id);
             if (deleteBtn) deleteArticle(deleteBtn.dataset.id, deleteBtn.dataset.title);
+            if (scienceBtn) openScienceLogModal(scienceBtn.dataset.id, scienceBtn.dataset.title); // NOVO
         });
 
         // Preencher formulário de Artigo para edição
         async function populateArticleForm(id) {
             try {
-                // AÇÃO ATUALIZADA
                 const article = await fetchWithToken('getArtigoDetalhe', { id: id });
 
                 articleFormTitle.textContent = 'Editar Artigo';
@@ -1100,7 +1191,7 @@
 
                 resetLinksContainer();
                 const linkInputs = linksContainer.querySelectorAll('input');
-                const links = article.links || (article.link ? [article.link] : []);
+                const links = article.links || [];
 
                 links.forEach((link, index) => {
                     if (index === 0) {
@@ -1136,7 +1227,6 @@
                 `Tem certeza que quer deletar o artigo "${title || 'este artigo'}"?`,
                 async () => {
                     try {
-                        // AÇÃO ATUALIZADA
                         await fetchWithToken('admin/deletarArtigo', { id: id });
                         showStatusMessage('Artigo deletado.');
                         resetArticleForm();
@@ -1228,7 +1318,6 @@
             allUsersCache = [];
 
             try {
-                // AÇÃO ATUALIZADA
                 const users = await fetchWithToken('admin/getUsers');
                 allUsersCache = users;
                 renderUsers(users);
@@ -1287,7 +1376,6 @@
                     `Tem certeza que quer mudar o cargo de ${userEmail} para ${newRole}?`,
                     async () => {
                         try {
-                            // AÇÃO ATUALIZADA
                             await fetchWithToken('admin/updateUserRole', { uid: uid, role: newRole });
                             showStatusMessage('Cargo do usuário atualizado!');
                             loadUsers(); // Recarrega a lista para garantir consistência
@@ -1356,8 +1444,73 @@
             }, 300); // Duração da animação
         }
 
-        // Adiciona listener ao backdrop para fechar
         modalBackdropConfirm.addEventListener('click', closeConfirmModal);
+
+
+        // --- ETAPA 3.C: MODAL DE LOG DE CIÊNCIA ---
+
+        async function openScienceLogModal(articleId, articleTitle) {
+            scienceLogTitle.textContent = `Log de Ciência: ${articleTitle}`;
+            scienceLogContent.style.display = 'none';
+            scienceLogLoading.style.display = 'block';
+            scienceLogCompleted.innerHTML = '';
+            scienceLogPending.innerHTML = '';
+
+            // Exibe o modal
+            scienceLogModal.style.display = 'flex';
+            setTimeout(() => {
+                modalBackdropScienceLog.style.opacity = '1';
+                modalPanelScienceLog.style.opacity = '1';
+                modalPanelScienceLog.style.transform = 'scale(1)';
+            }, 10);
+
+            try {
+                // Chama a (futura) API
+                const { completed, pending } = await fetchWithToken('admin/getScienceLog', { articleId: articleId });
+
+                // Renderiza as listas
+                renderLogList(scienceLogCompleted, completed, true);
+                renderLogList(scienceLogPending, pending, false);
+
+                scienceLogLoading.style.display = 'none';
+                scienceLogContent.style.display = 'grid';
+
+            } catch (error) {
+                console.error("Erro ao buscar log de ciência:", error);
+                scienceLogLoading.style.display = 'none';
+                scienceLogCompleted.innerHTML = `<li class="text-red-500">${error.message || 'Erro ao carregar dados.'}</li>`;
+            }
+        }
+
+        function renderLogList(listElement, users, showDate) {
+            if (users.length === 0) {
+                listElement.innerHTML = `<li class="text-sm text-gray-500">Nenhum usuário.</li>`;
+                return;
+            }
+            listElement.innerHTML = users.map(user => {
+                const date = showDate && user.declaredAt
+                    ? new Date(user.declaredAt.seconds * 1000).toLocaleString('pt-BR')
+                    : '';
+                return `
+                    <li class="flex justify-between items-center text-sm p-2 bg-gray-50 rounded">
+                        <span class="text-gray-700 truncate" title="${user.email}">${user.email}</span>
+                        ${showDate ? `<span class="text-gray-500 text-xs flex-shrink-0 ml-2">${date}</span>` : ''}
+                    </li>
+                `;
+            }).join('');
+        }
+
+        function closeScienceLogModal() {
+            modalPanelScienceLog.style.opacity = '0';
+            modalPanelScienceLog.style.transform = 'scale(0.95)';
+            modalBackdropScienceLog.style.opacity = '0';
+            setTimeout(() => {
+                scienceLogModal.style.display = 'none';
+            }, 300);
+        }
+
+        scienceLogCloseBtn.addEventListener('click', closeScienceLogModal);
+        modalBackdropScienceLog.addEventListener('click', closeScienceLogModal);
 
 
         // --- FUNÇÕES UTILITÁRIAS ---
@@ -1380,6 +1533,7 @@
                 .replace(/[^\w-]+/g, '')
                 .replace(/--+/g, '-');
         }
+
 
     </script>
 
