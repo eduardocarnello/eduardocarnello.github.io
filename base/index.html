@@ -41,12 +41,14 @@
         }
 
         /* CORREÇÃO PISCADA (FOUC): Esconde o conteúdo até o JS decidir o que mostrar */
-        .fouc-hidden {
+        /* .fouc-hidden {
             display: none;
-        }
+        } */
+        /* Aplicado via style="display: none;" inline */
 
         /* Estilos do Conteúdo do Artigo (Modal) */
-        #modal-content h1 {
+        #modal-content h1,
+        #modal-ciencia-content h1 {
             font-size: 1.875rem;
             /* 3xl */
             font-weight: 700;
@@ -54,7 +56,8 @@
             margin-bottom: 0.75rem;
         }
 
-        #modal-content h2 {
+        #modal-content h2,
+        #modal-ciencia-content h2 {
             font-size: 1.5rem;
             /* 2xl */
             font-weight: 600;
@@ -62,7 +65,8 @@
             margin-bottom: 0.5rem;
         }
 
-        #modal-content h3 {
+        #modal-content h3,
+        #modal-ciencia-content h3 {
             font-size: 1.25rem;
             /* xl */
             font-weight: 600;
@@ -70,41 +74,48 @@
             margin-bottom: 0.5rem;
         }
 
-        #modal-content p {
+        #modal-content p,
+        #modal-ciencia-content p {
             margin-bottom: 1rem;
             line-height: 1.6;
         }
 
-        #modal-content ul {
+        #modal-content ul,
+        #modal-ciencia-content ul {
             list-style-type: disc;
             margin-left: 1.5rem;
             margin-bottom: 1rem;
             padding-left: 0.5rem;
         }
 
-        #modal-content ol {
+        #modal-content ol,
+        #modal-ciencia-content ol {
             list-style-type: decimal;
             margin-left: 1.5rem;
             margin-bottom: 1rem;
             padding-left: 0.5rem;
         }
 
-        #modal-content li {
+        #modal-content li,
+        #modal-ciencia-content li {
             margin-bottom: 0.5rem;
         }
 
-        #modal-content a {
+        #modal-content a,
+        #modal-ciencia-content a {
             color: #2563eb;
             /* blue-600 */
             text-decoration: underline;
         }
 
-        #modal-content a:hover {
+        #modal-content a:hover,
+        #modal-ciencia-content a:hover {
             color: #1d4ed8;
             /* blue-700 */
         }
 
-        #modal-content blockquote {
+        #modal-content blockquote,
+        #modal-ciencia-content blockquote {
             border-left: 4px solid #94a3b8;
             /* slate-400 */
             padding-left: 1rem;
@@ -115,7 +126,8 @@
             /* slate-600 */
         }
 
-        #modal-content pre.ql-syntax {
+        #modal-content pre.ql-syntax,
+        #modal-ciencia-content pre.ql-syntax {
             background-color: #1e293b;
             /* slate-800 */
             color: #e2e8f0;
@@ -127,7 +139,8 @@
             font-family: monospace;
         }
 
-        #modal-content img {
+        #modal-content img,
+        #modal-ciencia-content img {
             max-width: 100%;
             height: auto;
             border-radius: 0.5rem;
@@ -164,12 +177,6 @@
             <!-- Mensagem de Erro/Status -->
             <div id="login-status" class="text-center text-red-500 font-medium"></div>
 
-            <!-- Formulário de Login (REMOVIDO) -->
-            <!-- <form id="login-form" class="mt-8 space-y-6"> ... </form> -->
-
-            <!-- Divisor "OU" (REMOVIDO) -->
-            <!-- <div class="relative flex py-3 items-center"> ... </div> -->
-
             <div class="space-y-4 pt-6">
                 <!-- Botão Login Google -->
                 <button id="google-login-btn"
@@ -186,9 +193,6 @@
                     Entrar com Microsoft
                 </button>
             </div>
-
-            <!-- Link para o Admin (removido, pois o login do admin é o mesmo) -->
-            <!-- <div class="text-center mt-6"> ... </div> -->
 
         </div>
     </section>
@@ -337,7 +341,7 @@
     <!-- Modal de Artigo (Começa oculto) -->
     <div id="modal-backdrop"
         class="fixed inset-0 bg-black bg-opacity-75 z-50 hidden transition-opacity duration-300 ease-out"
-        aria-hidden="true"></div>
+        aria-hidden="true" style="opacity: 0;"></div>
 
     <div id="modal-container" class="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-0 hidden"
         role="dialog" aria-modal="true">
@@ -395,12 +399,11 @@
                     <!-- Tags -->
                     <div id="modal-tags-container"
                         class="hidden flex flex-wrap gap-2 items-center text-sm text-slate-500">
-                        <!-- NOVO ÍCONE DE ETIQUETA -->
-                        <svg class="w-4 h-4 flex-shrink-0" xmlns="http://www.w3.org/2000/svg" fill="none"
-                            viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round"
-                                d="M9.568 3H5.25A2.25 2.25 0 003 5.25v4.318c0 .597.237 1.17.659 1.591l9.581 9.581c.699.699 1.78.872 2.737.51l.004.004 2.73 1.018a.75.75 0 00.966-.965l-1.018-2.73a2.25 2.25 0 00-.51-2.737L5.16 3.66A2.25 2.25 0 003 5.25v.003z" />
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M6 6h.008v.008H6V6z" />
+                        <!-- ÍCONE DE ETIQUETA ATUALIZADO -->
+                        <svg class="w-4 h-4 flex-shrink-0" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"
+                            fill="currentColor">
+                            <path
+                                d="M5.5 16.5A1.5 1.5 0 014 15V5a1.5 1.5 0 011.5-1.5h5.138a1.5 1.5 0 011.06.44l5.862 5.861a1.5 1.5 0 010 2.122l-5.137 5.137a1.5 1.5 0 01-1.061.44H5.5zM6 6a1 1 0 100-2 1 1 0 000 2z" />
                         </svg>
                         <span id="modal-tags-list">
                             <!-- Tags vêm aqui -->
@@ -413,7 +416,7 @@
                     <!-- Conteúdo vem aqui -->
                 </div>
 
-                <!-- MÚLTIPLOS LINKS -->
+                <!-- MÚLTIPLOS LINKS (Inalterado) -->
                 <div id="modal-links-container" class="hidden pt-4 border-t border-slate-200 space-y-3">
                     <h4 class="font-semibold text-slate-700">Links de Referência:</h4>
                     <ul id="modal-links-list" class="list-disc list-inside space-y-2">
@@ -422,6 +425,86 @@
                 </div>
 
             </div>
+        </div>
+    </div>
+
+    <!-- NOVO: Modal de CIÊNCIA (Começa oculto) -->
+    <div id="modal-ciencia-backdrop"
+        class="fixed inset-0 bg-slate-900 bg-opacity-90 z-[60] hidden transition-opacity duration-300 ease-out"
+        aria-hidden="true" style="opacity: 0;"></div>
+
+    <div id="modal-ciencia-container" class="fixed inset-0 z-[70] hidden" role="dialog" aria-modal="true"
+        aria-labelledby="modal-ciencia-title">
+
+        <!-- Painel de Tela Cheia -->
+        <div id="modal-ciencia-panel"
+            class="bg-white w-full h-full flex flex-col transform transition-all duration-300 ease-out scale-95 opacity-0">
+
+            <!-- Cabeçalho do Modal de Ciência -->
+            <header
+                class="sticky top-0 bg-white p-4 sm:p-6 border-b border-slate-200 flex justify-between items-center z-10">
+                <div class="flex flex-col">
+                    <span class="text-sm font-semibold text-red-600">LEITURA OBRIGATÓRIA</span>
+                    <h3 id="modal-ciencia-title" class="text-xl sm:text-2xl font-bold text-slate-800 break-words pr-4">
+                        Carregando Título...
+                    </h3>
+                </div>
+                <!-- Botão de fechar é PROPOSITALMENTE OMITIDO para forçar a ciência -->
+            </header>
+
+            <!-- Conteúdo do Modal de Ciência (com scroll) -->
+            <div id="modal-ciencia-body" class="overflow-y-auto p-6 space-y-4 flex-grow">
+                <!-- Carregador -->
+                <div id="ciencia-loading-spinner" class="text-center py-10">
+                    <svg class="mx-auto h-8 w-8 text-slate-400 animate-spin" ...>...</svg>
+                    <p class="mt-3 text-slate-500">Carregando conteúdo...</p>
+                </div>
+
+                <!-- Conteúdo do Artigo (do Quill) -->
+                <div id="modal-ciencia-content" class="hidden">
+                    <!-- O conteúdo será injetado aqui -->
+                </div>
+            </div>
+
+            <!-- Rodapé de Navegação e Ação -->
+            <footer class="bg-gray-50 p-4 border-t border-slate-200">
+                <div class="flex justify-between items-center">
+                    <button type="button" id="ciencia-prev-btn"
+                        class="hidden items-center gap-2 text-sm font-medium text-slate-600 hover:text-slate-900 focus-ring-visible rounded-md p-2">
+                        <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                            stroke-width="1.5" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
+                        </svg>
+                        Anterior
+                    </button>
+                    <!-- Espaçador -->
+                    <span></span>
+
+                    <div class="flex items-center gap-4">
+                        <span id="ciencia-counter" class="text-sm text-slate-500"></span>
+                        <button type="button" id="ciencia-next-btn"
+                            class="hidden items-center gap-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus-ring-visible rounded-lg py-2 px-4">
+                            Próximo
+                            <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                stroke-width="1.5" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                    d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
+                            </svg>
+                        </button>
+                        <button type="button" id="declarar-ciencia-btn"
+                            class="hidden items-center gap-2 text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus-ring-visible rounded-lg py-2 px-4 disabled:bg-gray-400">
+                            <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                stroke-width="1.5" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                    d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            Declarar Ciência
+                        </button>
+                        <div id="ciencia-status" class="text-sm text-red-500 font-medium"></div>
+                    </div>
+                </div>
+            </footer>
         </div>
     </div>
 
@@ -458,24 +541,20 @@
         const microsoftProvider = new OAuthProvider('microsoft.com'); // NOVO
         setLogLevel('Debug');
 
-        // E-mails de Admin (REMOVIDO - agora usa roles)
-        // const adminEmails = ['eduardocarnello@gmail.com', 'mariliajec@tjsp.jus.br'];
-
         // --- REFERÊNCIAS DO DOM ---
         // Seções
         const loginSection = document.getElementById('login-section');
         const contentSection = document.getElementById('content-section');
         // Login
-        // const loginForm = document.getElementById('login-form'); // REMOVIDO
         const loginStatus = document.getElementById('login-status');
         const googleLoginBtn = document.getElementById('google-login-btn');
-        const microsoftLoginBtn = document.getElementById('microsoft-login-btn'); // NOVO
+        const microsoftLoginBtn = document.getElementById('microsoft-login-btn');
         // Header (Conteúdo)
         const logoutBtn = document.getElementById('logout-btn');
         const adminBtn = document.getElementById('admin-btn');
-        const userInfo = document.getElementById('user-info'); // NOVO
-        const userEmailSpan = document.getElementById('user-email'); // NOVO
-        const userRoleSpan = document.getElementById('user-role'); // NOVO
+        const userInfo = document.getElementById('user-info');
+        const userEmailSpan = document.getElementById('user-email');
+        const userRoleSpan = document.getElementById('user-role');
         // Busca
         const searchInput = document.getElementById('search-input');
         const searchField = document.getElementById('search-field');
@@ -488,7 +567,8 @@
         const articlesStatus = document.getElementById('articles-status');
         const loadMoreContainer = document.getElementById('load-more-container');
         const loadMoreBtn = document.getElementById('load-more-btn');
-        // Modal
+
+        // Modal de Artigo Normal
         const modalBackdrop = document.getElementById('modal-backdrop');
         const modalContainer = document.getElementById('modal-container');
         const modalPanel = document.getElementById('modal-panel');
@@ -506,20 +586,37 @@
         const modalLinksContainer = document.getElementById('modal-links-container');
         const modalLinksList = document.getElementById('modal-links-list');
 
+        // NOVO: Modal de Ciência
+        const modalCienciaBackdrop = document.getElementById('modal-ciencia-backdrop');
+        const modalCienciaContainer = document.getElementById('modal-ciencia-container');
+        const modalCienciaPanel = document.getElementById('modal-ciencia-panel');
+        const modalCienciaTitle = document.getElementById('modal-ciencia-title');
+        const modalCienciaBody = document.getElementById('modal-ciencia-body');
+        const cienciaLoadingSpinner = document.getElementById('ciencia-loading-spinner');
+        const modalCienciaContent = document.getElementById('modal-ciencia-content');
+        const cienciaPrevBtn = document.getElementById('ciencia-prev-btn');
+        const cienciaNextBtn = document.getElementById('ciencia-next-btn');
+        const cienciaCounter = document.getElementById('ciencia-counter');
+        const declararCienciaBtn = document.getElementById('declarar-ciencia-btn');
+        const cienciaStatus = document.getElementById('ciencia-status');
+
 
         // --- ESTADO GLOBAL ---
         let allCategories = [];
         let currentArticles = [];
         let currentUser = null;
-        let currentUserRole = 'Leitor'; // NOVO: Estado do cargo
+        let currentUserRole = 'Leitor';
         let currentCategory = 'TODOS';
         let currentArticleCount = 0;
         const ARTICLES_PER_PAGE = 10;
         let isLoadingMore = false;
         let isSearchActive = false;
+        // NOVO: Estado de Ciência
+        let artigosParaCiencia = [];
+        let cienciaArtigoIndex = 0;
 
         // --- FUNÇÃO WRAPPER DE FETCH (COM TOKEN) ---
-        // (BUG CORRIGIDO: responseText movido para o escopo correto)
+        // (Corrigido o bug do 'responseText')
         async function fetchWithToken(url, options = {}) {
             if (!currentUser) {
                 throw new Error("Usuário não autenticado.");
@@ -534,17 +631,15 @@
 
             const response = await fetch(relativeUrl, { ...options, headers });
 
-            // CORREÇÃO: Declarar responseText aqui
-            const responseText = await response.text();
+            const responseText = await response.text(); // Lê o texto uma vez
 
             if (!response.ok) {
                 let errorData;
-                // let errorText = await response.text(); // BUG: Removido daqui
                 try {
                     errorData = JSON.parse(responseText);
                 } catch (e) {
                     console.error("Erro HTML/Texto (não-JSON) recebido:", responseText.substring(0, 100) + '...');
-                    errorData = { error: `Erro ${response.status}: ${response.statusText}` };
+                    errorData = { error: `Erro ${response.status}: ${response.statusText || 'Erro no servidor'}` };
                 }
                 console.error(`Erro na API (${response.status}):`, errorData.error);
                 if (response.status === 401) {
@@ -554,16 +649,14 @@
                 throw new Error(errorData.error || 'Erro na requisição');
             }
 
-            if (response.status === 204) {
+            if (response.status === 204) { // No Content
                 return null;
             }
 
             try {
-                // Tenta retornar JSON
-                return JSON.parse(responseText);
+                return JSON.parse(responseText); // Tenta parsear
             } catch (e) {
-                // Retorna texto se não for JSON (pode ser resposta vazia)
-                return responseText;
+                return responseText; // Retorna texto (pode ser vazio)
             }
         }
 
@@ -573,7 +666,7 @@
             currentUser = user;
             if (user) {
                 try {
-                    // NOVO: Chama a API upsert para registrar o usuário e obter seu cargo
+                    // Chama a API upsert para registrar o usuário e obter seu cargo
                     const { role, email } = await fetchWithToken('api/user/upsert', { method: 'POST' });
                     currentUserRole = role; // Armazena o cargo
 
@@ -593,12 +686,17 @@
                         adminBtn.classList.add('hidden');
                     }
 
-                    checkAndRenderAll();
+                    // NOVO: Verifica artigos de ciência ANTES de carregar o resto
+                    await verificarArtigosParaCiencia();
+
+                    // Carrega o conteúdo principal (só se o modal de ciência não estiver aberto)
+                    if (artigosParaCiencia.length === 0) {
+                        checkAndRenderAll();
+                    }
 
                 } catch (error) {
                     console.error("Erro ao verificar cargo do usuário:", error);
                     loginStatus.textContent = 'Erro ao verificar permissões. Tente novamente.';
-                    // Não desloga automaticamente, pois pode ser erro de rede
                     // await signOut(auth); 
                 }
             } else {
@@ -611,16 +709,12 @@
             }
         });
 
-        // REMOVIDO: Login com E-mail/Senha
-        // loginForm.addEventListener('submit', ...);
-
-        // Login com Google
+        // Logins (Google e Microsoft)
         googleLoginBtn.addEventListener('click', () => {
             loginStatus.textContent = 'Abrindo popup do Google...';
             signInWithPopup(auth, googleProvider).catch(handleAuthError);
         });
 
-        // NOVO: Login com Microsoft
         microsoftLoginBtn.addEventListener('click', () => {
             loginStatus.textContent = 'Abrindo popup da Microsoft...';
             signInWithPopup(auth, microsoftProvider).catch(handleAuthError);
@@ -649,14 +743,13 @@
 
         // Limpa o conteúdo ao deslogar
         function resetContent() {
+            // ... (código inalterado) ...
             allCategories = [];
             currentArticles = [];
             currentCategory = 'TODOS';
             currentArticleCount = 0;
             isSearchActive = false;
-            // Limpa categorias (exceto "Todos")
             categoryGrid.querySelectorAll('.category-card:not([data-category="TODOS"])').forEach(el => el.remove());
-            // Reseta o botão "Todos" para o estado ativo
             const todosBtn = categoryGrid.querySelector('.category-card[data-category="TODOS"]');
             if (todosBtn) {
                 todosBtn.classList.add('bg-blue-600', 'text-white', 'shadow-lg');
@@ -707,6 +800,7 @@
         });
 
         async function loadMoreArticles() {
+            // ... (código inalterado) ...
             if (isLoadingMore) return;
             isLoadingMore = true;
             const limit = currentArticleCount + ARTICLES_PER_PAGE;
@@ -742,9 +836,8 @@
 
         // Renderizar Categorias
         function renderCategories(categories) {
-            // CORREÇÃO: Seletor estava errado
+            // ... (código inalterado) ...
             categoryGrid.querySelectorAll('.category-card:not([data-category="TODOS"])').forEach(el => el.remove());
-
             categories.forEach(category => {
                 const { name, color, icon } = category;
                 const colors = getCategoryColors(color);
@@ -763,6 +856,7 @@
 
         // Renderizar Artigos
         function renderArticles(articlesToRender, clearGrid = false) {
+            // ... (código inalterado) ...
             if (clearGrid) {
                 articlesGrid.innerHTML = '';
             }
@@ -799,7 +893,7 @@
         }
 
         // --- LÓGICA DE BUSCA (NOVA ARQUITETURA) ---
-
+        // ... (código inalterado) ...
         let searchTimeout;
         searchInput.addEventListener('input', () => {
             clearTimeout(searchTimeout);
@@ -814,7 +908,6 @@
             const card = e.target.closest('.category-card');
             if (card) {
                 currentCategory = card.dataset.category;
-                // Atualiza o visual dos botões de categoria
                 document.querySelectorAll('.category-card').forEach(btn => {
                     btn.classList.remove('bg-blue-600', 'text-white', 'shadow-lg');
                     const category = allCategories.find(c => c.id === btn.dataset.category);
@@ -869,7 +962,7 @@
         }
 
         // --- MODAL (Janela do Artigo) ---
-
+        // (Lógica inalterada, continua funcionando)
         articlesGrid.addEventListener('click', (e) => {
             const card = e.target.closest('.article-card');
             if (card) {
@@ -879,25 +972,22 @@
         });
 
         async function openModal(id) {
+            // ... (código inalterado) ...
             modalTitle.textContent = 'Carregando Título...';
             modalContent.innerHTML = '';
             modalMetadata.classList.add('hidden');
             modalLinksContainer.classList.add('hidden');
             modalLinksList.innerHTML = '';
             modalLoadingSpinner.classList.remove('hidden');
-
             modalBackdrop.classList.remove('hidden');
             modalContainer.classList.remove('hidden');
             setTimeout(() => {
                 modalBackdrop.classList.add('opacity-100');
                 modalPanel.classList.add('scale-100', 'opacity-100');
             }, 10);
-
             try {
                 const article = await fetchWithToken(`api/getArtigoDetalhe?id=${id}`);
-
                 modalTitle.textContent = article.title;
-
                 const category = allCategories.find(c => c.id === article.categoryId);
                 if (category) {
                     const colors = getCategoryColors(category.color);
@@ -909,7 +999,6 @@
                 } else {
                     modalCategoryBadge.innerHTML = '';
                 }
-
                 if (article.publishedAt) {
                     const date = new Date(article.publishedAt.seconds * 1000).toLocaleDateString('pt-BR', {
                         day: '2-digit', month: 'long', year: 'numeric'
@@ -918,9 +1007,7 @@
                 } else {
                     modalDate.textContent = '--';
                 }
-
                 modalSummary.textContent = article.summary;
-
                 if (article.tags && article.tags.length > 0) {
                     modalTagsList.innerHTML = article.tags.map(tag =>
                         `<span class="inline-block bg-slate-200 text-slate-700 px-2 py-0.5 rounded-md">${tag}</span>`
@@ -929,10 +1016,7 @@
                 } else {
                     modalTagsContainer.classList.add('hidden');
                 }
-
                 modalContent.innerHTML = article.content;
-
-                // MÚLTIPLOS LINKS
                 if (article.links && article.links.length > 0) {
                     modalLinksList.innerHTML = ''; // Limpa
                     article.links.forEach(link => {
@@ -948,10 +1032,8 @@
                     });
                     modalLinksContainer.classList.remove('hidden');
                 }
-
                 modalMetadata.classList.remove('hidden');
                 modalLoadingSpinner.classList.add('hidden');
-
             } catch (error) {
                 console.error("Erro ao abrir modal (fetchWithToken):", error);
                 modalTitle.textContent = 'Erro ao Carregar';
@@ -959,8 +1041,6 @@
                 modalLoadingSpinner.classList.add('hidden');
             }
         }
-
-        // Fechar Modal
         function closeModal() {
             modalPanel.classList.remove('scale-100', 'opacity-100');
             modalBackdrop.classList.remove('opacity-100');
@@ -972,6 +1052,137 @@
         modalCloseBtn.addEventListener('click', closeModal);
         modalBackdrop.addEventListener('click', closeModal);
 
+
+        // --- NOVO: LÓGICA DO MODAL DE CIÊNCIA ---
+
+        async function verificarArtigosParaCiencia() {
+            try {
+                const artigos = await fetchWithToken('api/getArtigosParaCiencia');
+                if (artigos && artigos.length > 0) {
+                    artigosParaCiencia = artigos;
+                    cienciaArtigoIndex = 0;
+                    abrirModalCiencia();
+                } else {
+                    // Nenhum artigo pendente, carrega o site normalmente
+                    checkAndRenderAll();
+                }
+            } catch (error) {
+                console.error("Erro ao verificar artigos para ciência:", error);
+                // Falha ao verificar, carrega o site normalmente para não bloquear o usuário
+                checkAndRenderAll();
+            }
+        }
+
+        function abrirModalCiencia() {
+            modalCienciaBackdrop.classList.remove('hidden');
+            modalCienciaContainer.classList.remove('hidden');
+            setTimeout(() => {
+                modalCienciaBackdrop.style.opacity = '1';
+                modalCienciaPanel.style.opacity = '1';
+                modalCienciaPanel.style.transform = 'scale(1)';
+            }, 10);
+            renderArtigoCiencia();
+        }
+
+        function renderArtigoCiencia() {
+            // Mostra o spinner e esconde o conteúdo
+            cienciaLoadingSpinner.style.display = 'block';
+            modalCienciaContent.style.display = 'none';
+            declararCienciaBtn.classList.add('hidden');
+            cienciaNextBtn.classList.add('hidden');
+            cienciaPrevBtn.classList.add('hidden');
+            cienciaStatus.textContent = '';
+
+            const artigo = artigosParaCiencia[cienciaArtigoIndex];
+            if (!artigo) return;
+
+            // Busca o conteúdo completo (o getArtigosParaCiencia só traz o ID/Título)
+            fetchWithToken(`api/getArtigoDetalhe?id=${artigo.id}`)
+                .then(artigoCompleto => {
+                    modalCienciaTitle.textContent = artigoCompleto.title;
+                    modalCienciaContent.innerHTML = artigoCompleto.content;
+
+                    // Esconde o spinner e mostra o conteúdo
+                    cienciaLoadingSpinner.style.display = 'none';
+                    modalCienciaContent.style.display = 'block';
+
+                    // Atualiza a navegação
+                    cienciaCounter.textContent = `Artigo ${cienciaArtigoIndex + 1} de ${artigosParaCiencia.length}`;
+
+                    if (cienciaArtigoIndex > 0) {
+                        cienciaPrevBtn.classList.remove('hidden');
+                    }
+                    if (cienciaArtigoIndex < artigosParaCiencia.length - 1) {
+                        cienciaNextBtn.classList.remove('hidden');
+                    } else {
+                        // É o último artigo
+                        declararCienciaBtn.classList.remove('hidden');
+                    }
+                })
+                .catch(error => {
+                    console.error("Erro ao carregar detalhe do artigo de ciência:", error);
+                    modalCienciaTitle.textContent = 'Erro ao Carregar Artigo';
+                    modalCienciaContent.innerHTML = `<p class="text-red-500">${error.message}</p>`;
+                    cienciaLoadingSpinner.style.display = 'none';
+                    modalCienciaContent.style.display = 'block';
+                });
+        }
+
+        cienciaPrevBtn.addEventListener('click', () => {
+            if (cienciaArtigoIndex > 0) {
+                cienciaArtigoIndex--;
+                renderArtigoCiencia();
+            }
+        });
+
+        cienciaNextBtn.addEventListener('click', () => {
+            if (cienciaArtigoIndex < artigosParaCiencia.length - 1) {
+                cienciaArtigoIndex++;
+                renderArtigoCiencia();
+            }
+        });
+
+        declararCienciaBtn.addEventListener('click', async () => {
+            declararCienciaBtn.disabled = true;
+            declararCienciaBtn.textContent = 'Registrando...';
+            cienciaStatus.textContent = '';
+
+            try {
+                // Envia a lista de TODOS os artigos que o usuário deu ciência nesta sessão
+                const artigosConcluidos = artigosParaCiencia.map(art => ({
+                    articleId: art.id,
+                    scienceVersion: art.scienceVersion
+                }));
+
+                await fetchWithToken('api/user/declararCiencia', {
+                    method: 'POST',
+                    body: JSON.stringify({ artigos: artigosConcluidos })
+                });
+
+                // Sucesso! Fecha o modal e carrega o site.
+                fecharModalCiencia();
+                checkAndRenderAll(); // Carrega o conteúdo principal
+
+            } catch (error) {
+                console.error("Erro ao declarar ciência:", error);
+                cienciaStatus.textContent = `Erro: ${error.message}`;
+                declararCienciaBtn.disabled = false;
+                declararCienciaBtn.innerHTML = `
+                    <svg class="w-5 h-5" ...></svg>
+                    Declarar Ciência
+                `; // Resetar o botão (SVG omitido por brevidade)
+            }
+        });
+
+        function fecharModalCiencia() {
+            modalCienciaPanel.style.transform = 'scale(0.95)';
+            modalCienciaPanel.style.opacity = '0';
+            modalCienciaBackdrop.style.opacity = '0';
+            setTimeout(() => {
+                modalCienciaBackdrop.classList.add('hidden');
+                modalCienciaContainer.classList.add('hidden');
+            }, 300);
+        }
 
         // --- FUNÇÕES UTILITÁRIAS ---
 

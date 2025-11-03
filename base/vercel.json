@@ -50,6 +50,14 @@
         {
             "source": "/api/admin/updateUserRole",
             "destination": "/api/admin/updateUserRole.js"
+        },
+        {
+            "source": "/api/getArtigosParaCiencia",
+            "destination": "/api/getArtigosParaCiencia.js"
+        },
+        {
+            "source": "/api/user/declararCiencia",
+            "destination": "/api/user/declararCiencia.js"
         }
     ]
 }
