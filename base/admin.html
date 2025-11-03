@@ -35,9 +35,7 @@
         }
 
         /* CORREÇÃO PISCADA (FOUC): Esconde o conteúdo até o JS decidir o que mostrar */
-        .fouc-hidden {
-            display: none;
-        }
+        /* Aplicado via style="display: none;" inline */
     </style>
 </head>
 
@@ -60,6 +58,12 @@
 
             <!-- Mensagem de Erro/Status -->
             <div id="login-status" class="text-center text-red-500 font-medium"></div>
+
+            <!-- Formulário de Login (REMOVIDO) -->
+            <!-- <form id="login-form" class="mt-8 space-y-6"> ... </form> -->
+
+            <!-- Divisor "OU" (REMOVIDO) -->
+            <!-- <div class="relative flex py-3 items-center"> ... </div> -->
 
             <div class="space-y-4 pt-6">
                 <!-- Botão Login Google -->
@@ -108,7 +112,7 @@
                     </div>
                     <!-- Info Usuário e Botões -->
                     <div class="flex items-center gap-4">
-                        <!-- Exibição de Cargo -->
+                        <!-- NOVO: Exibição de Cargo -->
                         <span id="user-info" class="text-sm text-slate-600 hidden sm:block">
                             <span id="user-email" class="font-medium"></span>
                             (<span id="user-role" class="font-light"></span>)
@@ -207,27 +211,33 @@
                                     class="w-full p-3 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
                             </div>
 
-                            <!-- NOVO: Seção de Ciência do Artigo (ETAPA 3.A) -->
-                            <div class="permission-admin" style="display: none;"> <!-- Só Admin pode ver -->
-                                <label class="block text-sm font-medium text-slate-700 mb-2">Ciência do Artigo</label>
-                                <div class="relative flex items-start">
-                                    <div class="flex h-6 items-center">
-                                        <input id="article-requires-science" name="requiresScience" type="checkbox"
-                                            class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-600">
+                            <!-- NOVO: Seção de Ciência (Permissão: Admin) -->
+                            <div class="permission-admin" style="display: none;">
+                                <fieldset class="border-t border-slate-200 pt-4">
+                                    <legend class="text-sm font-medium text-slate-700">Opções de Ciência</legend>
+                                    <div class="mt-4 space-y-4">
+                                        <div class="relative flex items-start">
+                                            <div class="flex h-5 items-center">
+                                                <input id="requires-science" name="requires-science" type="checkbox"
+                                                    class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                                            </div>
+                                            <div class="ml-3 text-sm">
+                                                <label for="requires-science" class="font-medium text-gray-700">Exigir
+                                                    Ciência deste Artigo</label>
+                                                <p class="text-gray-500">Força os usuários a lerem e "Declarar
+                                                    Ciência" deste item.</p>
+                                            </div>
+                                        </div>
+                                        <div id="reset-science-container" class="hidden">
+                                            <button type="button" id="reset-science-btn"
+                                                class="text-sm font-medium text-orange-600 hover:text-orange-800 transition-colors focus-ring-visible rounded-md p-1">
+                                                &#9888; Resetar e Exigir Ciência de Todos Novamente
+                                            </button>
+                                            <p class="text-xs text-slate-500 mt-1">Use isso se o artigo foi atualizado e
+                                                precisa ser lido por todos de novo.</p>
+                                        </div>
                                     </div>
-                                    <div class="ml-3 text-sm leading-6">
-                                        <label for="article-requires-science" class="font-medium text-gray-900">Exigir
-                                            que todos os usuários declarem ciência deste artigo</label>
-                                        <p class="text-gray-500 text-xs">Isso fará um pop-up aparecer para todos os
-                                            usuários que ainda não viram esta versão.</p>
-                                    </div>
-                                </div>
-                                <!-- Botão de Reset (só aparece na edição) -->
-                                <button type="button" id="reset-science-btn"
-                                    class="hidden mt-4 text-sm font-medium text-yellow-700 bg-yellow-100 hover:bg-yellow-200 rounded-lg p-3 w-full focus-ring-visible transition-colors">
-                                    ⚠️ Resetar e Exigir Ciência de Todos Novamente
-                                </button>
-                                <input type="hidden" id="article-science-reset" value="false">
+                                </fieldset>
                             </div>
                             <!-- FIM: Seção de Ciência -->
 
@@ -242,6 +252,8 @@
 
                             <!-- ID Oculto (para edição) -->
                             <input type="hidden" id="article-id">
+                            <!-- NOVO: ID Oculto para Reset de Ciência -->
+                            <input type="hidden" id="is-science-reset" value="false">
 
                             <!-- Botões -->
                             <div class="flex gap-4">
@@ -276,7 +288,6 @@
 
                         <div id="articles-list-admin" class="space-y-4">
                             <p id="articles-loading-msg">Carregando artigos...</p>
-                            <!-- Lista preenchida pelo JS -->
                         </div>
 
                         <!-- NOVO: Paginação no Admin -->
@@ -293,7 +304,7 @@
                 <div class="lg:col-span-1 space-y-8">
 
                     <!-- Seção Gerenciar Categorias (Permissão: Admin) -->
-                    <div id="category-admin-section" class="bg-white p-6 sm:p-8 rounded-2xl shadow-lg top-24"
+                    <div id="category-admin-section" class="bg-white p-6 sm:p-8 rounded-2xl shadow-lg sticky top-24"
                         style="display: none;">
                         <h2 id="category-form-title" class="text-2xl font-bold text-slate-800 mb-6">Gerenciar Categorias
                         </h2>
@@ -307,7 +318,7 @@
                                     class="w-full p-3 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
                             </div>
                             <div class="grid grid-cols-2 gap-4">
-                                <!-- Cor -->
+                                <!-- Cor (NOVAS CORES) -->
                                 <div>
                                     <label for="category-color"
                                         class="block text-sm font-medium text-slate-700 mb-1">Cor</label>
@@ -329,7 +340,7 @@
                                         <option value="sky">Céu (Sky)</option>
                                     </select>
                                 </div>
-                                <!-- Ícone -->
+                                <!-- Ícone (ÍCONE 'USER' ATUALIZADO) -->
                                 <div>
                                     <label for="category-icon"
                                         class="block text-sm font-medium text-slate-700 mb-1">Ícone</label>
@@ -396,8 +407,8 @@
     <!-- NOVO: Modal de Confirmação Customizado -->
     <div id="confirm-modal" class="fixed inset-0 z-50 items-center justify-center p-4" style="display: none;">
         <!-- Backdrop -->
-        <div id="modal-backdrop-confirm" class="fixed inset-0 bg-black bg-opacity-50 transition-opacity"
-            aria-hidden="true" style="opacity: 0;"></div>
+        <div id="modal-backdrop-confirm" class="fixed inset-0 bg-black bg-opacity-50 transition-opacity opacity-0"
+            aria-hidden="true"></div>
         <!-- Painel -->
         <div id="modal-panel-confirm"
             class="relative bg-white rounded-2xl shadow-xl w-full max-w-md transform transition-all opacity-0 scale-95">
@@ -468,8 +479,6 @@
         const loginSection = document.getElementById('login-section');
         const adminDashboard = document.getElementById('admin-dashboard');
         const loginForm = document.getElementById('login-form'); // (Será removido)
-        // const loginEmail = document.getElementById('login-email'); // (Será removido)
-        // const loginPassword = document.getElementById('login-password'); // (Será removido)
         const loginStatus = document.getElementById('login-status');
         const googleLoginBtn = document.getElementById('google-login-btn');
         const microsoftLoginBtn = document.getElementById('microsoft-login-btn'); // NOVO
@@ -496,9 +505,11 @@
         const articleIdInput = document.getElementById('article-id');
         const cancelEditBtn = document.getElementById('cancel-edit-btn');
         // NOVO: Campos de Ciência
-        const articleRequiresScience = document.getElementById('article-requires-science');
+        const requiresScienceCheckbox = document.getElementById('requires-science');
+        const resetScienceContainer = document.getElementById('reset-science-container');
         const resetScienceBtn = document.getElementById('reset-science-btn');
-        const articleScienceReset = document.getElementById('article-science-reset');
+        const isScienceResetInput = document.getElementById('is-science-reset');
+
 
         // Lista de Artigos Admin (QOL)
         const articlesListAdmin = document.getElementById('articles-list-admin');
@@ -529,8 +540,8 @@
         const modalPanelConfirm = document.getElementById('modal-panel-confirm');
         const confirmModalTitle = document.getElementById('confirm-modal-title');
         const confirmModalMessage = document.getElementById('confirm-modal-message');
-        let confirmModalBtnConfirm = document.getElementById('confirm-modal-btn-confirm'); // (let)
-        let confirmModalBtnCancel = document.getElementById('confirm-modal-btn-cancel'); // (let)
+        const confirmModalBtnConfirm = document.getElementById('confirm-modal-btn-confirm');
+        const confirmModalBtnCancel = document.getElementById('confirm-modal-btn-cancel');
 
         // Editor Quill
         let quill;
@@ -554,7 +565,6 @@
         }
 
         // --- FUNÇÃO WRAPPER DE FETCH (COM TOKEN) ---
-        // (Inalterada)
         async function fetchWithToken(apiUrl, options = {}) {
             if (!auth.currentUser) {
                 showStatusMessage('Usuário não autenticado. Faça login novamente.', true);
@@ -613,7 +623,6 @@
 
                     // Redireciona se for apenas Leitor
                     if (role === 'Leitor') {
-                        // Não mostre o alerta, apenas redirecione silenciosamente
                         // alert('Acesso negado. Você não tem permissão para acessar o painel de administração.');
                         window.location.href = 'index.html';
                         return;
@@ -660,14 +669,12 @@
 
         // REMOVIDO: Login com E-mail/Senha
         if (loginForm) {
-            loginForm.addEventListener('submit', (e) => {
-                e.preventDefault();
-                loginStatus.textContent = 'Login por e-mail/senha foi desabilitado.';
-            });
-            loginForm.style.display = 'none'; // Esconde o formulário
+            loginForm.style.display = 'none';
             // Esconde o divisor
             const divisor = loginForm.nextElementSibling;
-            if (divisor && divisor.classList.contains('relative')) divisor.style.display = 'none';
+            if (divisor && divisor.classList.contains('relative')) {
+                divisor.style.display = 'none';
+            }
         }
 
         // Login com Google
@@ -726,13 +733,19 @@
                 categorySelectDiv.style.display = (role === 'Editor' || role === 'Admin') ? 'block' : 'none';
             }
 
-            // Permissão para ver botões (é chamada de novo no loadArticles)
+            // Permissão para ver opções de Ciência
+            document.querySelectorAll('.permission-admin').forEach(el => {
+                el.style.display = (role === 'Admin') ? 'block' : 'none';
+            });
+
+            // Atualiza a visibilidade dos botões na lista de artigos
             const deleteArticleButtons = document.querySelectorAll('.delete-article-btn');
             deleteArticleButtons.forEach(btn => btn.style.display = (role === 'Admin') ? 'inline-flex' : 'none');
 
             const editArticleButtons = document.querySelectorAll('.edit-article-btn');
             editArticleButtons.forEach(btn => btn.style.display = (role === 'Editor' || role === 'Admin') ? 'inline-flex' : 'none');
 
+            // Atualiza a visibilidade dos botões na lista de categorias
             const editCategoryButtons = document.querySelectorAll('.edit-category-btn');
             editCategoryButtons.forEach(btn => btn.style.display = (role === 'Admin') ? 'inline-flex' : 'none');
 
@@ -742,7 +755,7 @@
 
 
         // --- GERENCIAMENTO DE CATEGORIAS (CRUD) ---
-        // (O código de salvar/carregar/popular/resetar é quase o mesmo)
+        // (Inalterado, exceto pela chamada de auto-refresh)
 
         // Salvar/Atualizar Categoria
         categoryForm.addEventListener('submit', async (e) => {
@@ -873,7 +886,7 @@
 
         // --- GERENCIAMENTO DE ARTIGOS (CRUD) ---
 
-        // Salvar/Atualizar Artigo
+        // Salvar/Atualizar Artigo (COM LÓGICA DE CIÊNCIA)
         articleForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             const id = articleIdInput.value;
@@ -890,9 +903,9 @@
                 tags: tagsArray,
                 content: quill.root.innerHTML,
                 slug: slugify(articleTitle.value),
-                // NOVO: Campos de Ciência
-                requiresScience: articleRequiresScience.checked,
-                isScienceReset: articleScienceReset.value === 'true'
+                // NOVO: Dados de Ciência
+                requiresScience: requiresScienceCheckbox.checked,
+                isScienceReset: isScienceResetInput.value === 'true' // Envia se o reset foi clicado
             };
 
             if (id) articleData.id = id;
@@ -913,27 +926,22 @@
             }
         });
 
-        // NOVO: Botão de Resetar Ciência
+        // NOVO: Lógica do botão Resetar Ciência
         resetScienceBtn.addEventListener('click', () => {
             showConfirmModal(
-                'Resetar Ciência do Artigo?',
-                'Isso forçará TODOS os usuários (incluindo os que já deram ciência) a ver este artigo novamente. Você deve salvar o artigo após esta ação para aplicá-la.',
-                () => { // onConfirm
-                    articleScienceReset.value = 'true';
-                    resetScienceBtn.textContent = '✅ Resetado! Salve o artigo para aplicar.';
-                    resetScienceBtn.classList.add('bg-green-200', 'text-green-800');
-                    resetScienceBtn.classList.remove('bg-yellow-100', 'text-yellow-700');
+                'Resetar Ciência do Artigo',
+                'Isso forçará TODOS os usuários a darem ciência deste artigo novamente. Tem certeza?',
+                () => {
+                    isScienceResetInput.value = 'true';
+                    // Simula um clique no botão salvar para enviar o formulário
+                    articleForm.dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }));
                 },
-                'Sim, Resetar',
-                () => { // onCancel
-                    articleScienceReset.value = 'false';
-                }
+                'Sim, Resetar'
             );
         });
 
         // QOL: BUSCA E PAGINAÇÃO NO ADMIN
         adminSearchInput.addEventListener('input', () => {
-            // Otimização: Debounce
             clearTimeout(adminSearchInput.timeoutId);
             adminSearchInput.timeoutId = setTimeout(() => {
                 executeAdminSearch(true); // true = resetar e buscar do zero
@@ -983,14 +991,13 @@
                 adminArticlesCache = articles; // Cache é a lista completa
                 adminArticleCount = articles.length;
 
-                // Esconde "Carregar Mais" se a busca estiver ativa ou se não houver mais artigos
                 if (adminIsSearchActive || newArticles.length === 0 || articles.length < limit) {
                     adminLoadMoreContainer.classList.add('hidden');
                 } else {
                     adminLoadMoreContainer.classList.remove('hidden');
                 }
 
-                renderAdminArticles(newArticles, false); // false = não limpar o grid
+                renderAdminArticles(newArticles); // Renderiza apenas os novos
 
             } catch (error) {
                 console.error("Erro ao carregar artigos (admin): ", error);
@@ -999,13 +1006,12 @@
                 adminIsLoadingMore = false;
                 adminLoadMoreBtn.textContent = 'Carregar Mais';
                 adminLoadMoreBtn.disabled = false;
-                articlesLoadingMsg.style.display = 'none';
+                if (adminArticlesCache.length > 0) articlesLoadingMsg.style.display = 'none';
             }
         }
 
         // Função separada para RENDERIZAR os artigos do Admin
-        function renderAdminArticles(articlesToRender, clearGrid) {
-            if (clearGrid) articlesListAdmin.innerHTML = '';
+        function renderAdminArticles(articlesToRender) {
 
             if (articlesToRender.length === 0 && adminArticlesCache.length === 0) {
                 articlesLoadingMsg.textContent = 'Nenhum artigo encontrado.';
@@ -1047,12 +1053,11 @@
         articlesListAdmin.addEventListener('click', (e) => {
             const editBtn = e.target.closest('.edit-article-btn');
             const deleteBtn = e.target.closest('.delete-article-btn');
-
             if (editBtn) populateArticleForm(editBtn.dataset.id);
             if (deleteBtn) deleteArticle(deleteBtn.dataset.id, deleteBtn.dataset.title);
         });
 
-        // Preencher formulário de Artigo para edição
+        // Preencher formulário de Artigo para edição (COM LÓGICA DE CIÊNCIA)
         async function populateArticleForm(id) {
             try {
                 const article = await fetchWithToken(`api/getArtigoDetalhe?id=${id}`);
@@ -1071,9 +1076,10 @@
                     articlePublishedAt.value = '';
                 }
 
+                // Popula os links múltiplos
                 resetLinksContainer();
                 const linkInputs = linksContainer.querySelectorAll('input');
-                const links = article.links || (article.link ? [article.link] : []);
+                const links = article.links || [];
 
                 links.forEach((link, index) => {
                     if (index === 0) {
@@ -1083,18 +1089,14 @@
                     }
                 });
 
-                // NOVO: Preenche os campos de Ciência
-                articleRequiresScience.checked = article.requiresScience || false;
-                articleScienceReset.value = 'false'; // Sempre reseta o "reset"
-                if (article.requiresScience && article.scienceVersion > 0) {
-                    resetScienceBtn.classList.remove('hidden');
-                    resetScienceBtn.textContent = '⚠️ Resetar e Exigir Ciência de Todos Novamente';
-                    resetScienceBtn.classList.remove('bg-green-200', 'text-green-800');
-                    resetScienceBtn.classList.add('bg-yellow-100', 'text-yellow-700');
+                // NOVO: Popula dados de Ciência
+                requiresScienceCheckbox.checked = article.requiresScience || false;
+                if (article.requiresScience) {
+                    resetScienceContainer.classList.remove('hidden');
                 } else {
-                    resetScienceBtn.classList.add('hidden');
+                    resetScienceContainer.classList.add('hidden');
                 }
-
+                isScienceResetInput.value = 'false'; // Sempre reseta o botão
 
                 quill.root.innerHTML = article.content;
                 cancelEditBtn.classList.remove('hidden');
@@ -1105,6 +1107,16 @@
                 showStatusMessage(error.message || 'Erro ao carregar artigo para edição.', true);
             }
         }
+
+        // NOVO: Mostra/Esconde o botão de Resetar Ciência
+        requiresScienceCheckbox.addEventListener('change', () => {
+            if (requiresScienceCheckbox.checked && articleIdInput.value) {
+                resetScienceContainer.classList.remove('hidden');
+            } else {
+                resetScienceContainer.classList.add('hidden');
+            }
+        });
+
 
         // Deletar Artigo (COM MODAL CUSTOMIZADO)
         async function deleteArticle(id, title) {
@@ -1139,12 +1151,8 @@
             cancelEditBtn.classList.add('hidden');
             resetLinksContainer();
             // NOVO: Reseta os campos de ciência
-            articleRequiresScience.checked = false;
-            articleScienceReset.value = 'false';
-            resetScienceBtn.classList.add('hidden');
-            resetScienceBtn.textContent = '⚠️ Resetar e Exigir Ciência de Todos Novamente';
-            resetScienceBtn.classList.remove('bg-green-200', 'text-green-800');
-            resetScienceBtn.classList.add('bg-yellow-100', 'text-yellow-700');
+            resetScienceContainer.classList.add('hidden');
+            isScienceResetInput.value = 'false';
         }
         cancelEditBtn.addEventListener('click', resetArticleForm);
 
@@ -1298,30 +1306,26 @@
         function showConfirmModal(title, message, onConfirm, confirmText = 'Confirmar', onCancel = null) {
             confirmModalTitle.textContent = title;
             confirmModalMessage.textContent = message;
-
-            // Re-seleciona os botões CADA VEZ para garantir que os listeners são novos
-            confirmModalBtnConfirm = document.getElementById('confirm-modal-btn-confirm');
-            confirmModalBtnCancel = document.getElementById('confirm-modal-btn-cancel');
-
             confirmModalBtnConfirm.textContent = confirmText;
 
-            // Limpa listeners antigos
-            confirmModalBtnConfirm.replaceWith(confirmModalBtnConfirm.cloneNode(true));
-            confirmModalBtnCancel.replaceWith(confirmModalBtnCancel.cloneNode(true));
+            // Limpa listeners antigos (essencial)
+            confirmModalBtnConfirm.onclick = null;
+            confirmModalBtnCancel.onclick = null;
 
-            // Pega as novas referências
-            confirmModalBtnConfirm = document.getElementById('confirm-modal-btn-confirm');
-            confirmModalBtnCancel = document.getElementById('confirm-modal-btn-cancel');
+            // Adiciona novos listeners
+            confirmModalBtnConfirm.onclick = () => {
+                if (onConfirmCallback) onConfirmCallback();
+                closeConfirmModal();
+            };
+            confirmModalBtnCancel.onclick = () => {
+                if (onCancelCallback) onCancelCallback();
+                closeConfirmModal();
+            };
 
-            // Armazena os callbacks
             onConfirmCallback = onConfirm;
             onCancelCallback = onCancel;
 
-            // Adiciona novos listeners
-            confirmModalBtnConfirm.addEventListener('click', handleConfirm);
-            confirmModalBtnCancel.addEventListener('click', handleCancel);
-
-            // Mostra o modal
+            // Exibe o modal
             confirmModal.style.display = 'flex';
             setTimeout(() => {
                 modalBackdropConfirm.style.opacity = '1';
@@ -1330,26 +1334,20 @@
             }, 10);
         }
 
-        function handleConfirm() {
-            if (onConfirmCallback) onConfirmCallback();
-            closeConfirmModal();
-        }
-
-        function handleCancel() {
-            if (onCancelCallback) onCancelCallback();
-            closeConfirmModal();
-        }
-
         function closeConfirmModal() {
             modalPanelConfirm.style.opacity = '0';
             modalPanelConfirm.style.transform = 'scale(0.95)';
             modalBackdropConfirm.style.opacity = '0';
             setTimeout(() => {
                 confirmModal.style.display = 'none';
-                onConfirmCallback = null;
+                onConfirmCallback = null; // Limpa o callback
                 onCancelCallback = null;
             }, 300); // Duração da animação
         }
+
+        // Adiciona listener ao backdrop para fechar
+        modalBackdropConfirm.addEventListener('click', closeConfirmModal);
+
 
         // --- FUNÇÕES UTILITÁRIAS ---
 
