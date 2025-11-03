@@ -34,16 +34,21 @@
             outline-offset: 2px;
         }
 
-        /* Aplicado via style="display: none;" inline */
-
-        /* Estilo para o Switch de Filtro */
-        .toggle-checkbox:checked {
-            right: 0;
-            border-color: #2563eb;
+        /* CORREÇÃO PISCADA (FOUC): Esconde o conteúdo até o JS decidir o que mostrar */
+        .fouc-hidden {
+            display: none;
         }
 
-        .toggle-checkbox:checked+.toggle-label {
+        /* CORREÇÃO BUG 2: Estilo para o Switch de Filtro de Ciência */
+        #science-toggle-switch:checked+div {
+            /* O fundo */
             background-color: #2563eb;
+            /* blue-600 */
+        }
+
+        #science-toggle-switch:checked+div+div {
+            /* O ponto */
+            transform: translateX(100%);
         }
     </style>
 </head>
@@ -67,6 +72,12 @@
 
             <!-- Mensagem de Erro/Status -->
             <div id="login-status" class="text-center text-red-500 font-medium"></div>
+
+            <!-- Formulário de Login (REMOVIDO) -->
+            <!-- <form id="login-form" class="mt-8 space-y-6"> ... </form> -->
+
+            <!-- Divisor "OU" (REMOVIDO) -->
+            <!-- <div class="relative flex py-3 items-center"> ... </div> -->
 
             <div class="space-y-4 pt-6">
                 <!-- Botão Login Google -->
@@ -280,17 +291,18 @@
 
                     <!-- Lista de Artigos (COM BUSCA E PAGINAÇÃO) -->
                     <div class="bg-white p-6 sm:p-8 rounded-2xl shadow-lg">
-                        <div class="flex justify-between items-center mb-6">
+                        <div class="flex flex-wrap justify-between items-center mb-6 gap-4">
                             <h2 class="text-2xl font-bold text-slate-800">Artigos Publicados</h2>
-                            <!-- NOVO: Switch de Filtro de Ciência -->
+                            <!-- NOVO: Switch de Filtro de Ciência (Permissão: Editor, Admin) -->
                             <div id="science-filter-container" class="permission-editor permission-admin"
                                 style="display: none;">
                                 <label for="science-toggle-switch" class="flex items-center cursor-pointer">
-                                    <span class="mr-3 text-sm font-medium text-gray-900">Mostrar apenas artigos com
-                                        "Ciência"</span>
+                                    <span class="mr-3 text-sm font-medium text-gray-900">Apenas "Ciência"</span>
                                     <div class="relative">
-                                        <input type="checkbox" id="science-toggle-switch" class="sr-only">
-                                        <div class="block bg-gray-200 w-14 h-8 rounded-full transition"></div>
+                                        <input type="checkbox" id="science-toggle-switch"
+                                            class="sr-only toggle-checkbox">
+                                        <div class="toggle-label block bg-gray-200 w-14 h-8 rounded-full transition">
+                                        </div>
                                         <div
                                             class="dot absolute left-1 top-1 bg-white w-6 h-6 rounded-full transition-transform transform">
                                         </div>
@@ -543,6 +555,7 @@
         const ADMIN_ARTICLES_PER_PAGE = 15;
         let adminIsLoadingMore = false;
         let adminIsSearchActive = false;
+        let adminScienceFilterActive = false; // NOVO
 
         // --- REFERÊNCIAS DO DOM ---
         const loginSection = document.getElementById('login-section');
@@ -583,7 +596,7 @@
         const adminSearchInput = document.getElementById('admin-search-input');
         const adminLoadMoreContainer = document.getElementById('admin-load-more-container');
         const adminLoadMoreBtn = document.getElementById('admin-load-more-btn');
-        const scienceToggleSwitch = document.getElementById('science-toggle-switch'); // NOVO
+        const scienceToggleSwitch = document.getElementById('science-toggle-switch');
 
         // Formulário de Categoria
         const categoryForm = document.getElementById('category-form');
@@ -610,7 +623,7 @@
         const confirmModalBtnConfirm = document.getElementById('confirm-modal-btn-confirm');
         const confirmModalBtnCancel = document.getElementById('confirm-modal-btn-cancel');
 
-        // NOVO: Modal de Log de Ciência
+        // Modal de Log de Ciência
         const scienceLogModal = document.getElementById('science-log-modal');
         const modalBackdropScienceLog = document.getElementById('modal-backdrop-science-log');
         const modalPanelScienceLog = document.getElementById('modal-panel-science-log');
@@ -620,7 +633,6 @@
         const scienceLogCompleted = document.getElementById('science-log-completed');
         const scienceLogPending = document.getElementById('science-log-pending');
         const scienceLogCloseBtn = document.getElementById('science-log-close-btn');
-
 
         // Editor Quill
         let quill;
@@ -643,7 +655,7 @@
             }
         }
 
-        // --- FUNÇÃO WRAPPER DE FETCH (COM TOKEN) ---
+        // --- FUNÇÃO WRAPPER DE FETCH (COM TOKEN MONOLITO) ---
         async function fetchWithToken(action, payload = {}) {
             if (!auth.currentUser) {
                 showStatusMessage('Usuário não autenticado. Faça login novamente.', true);
@@ -653,7 +665,7 @@
             try {
                 const token = await getIdToken(auth.currentUser, /* forceRefresh */ true);
 
-                const response = await fetch('api', { // Sempre chama a API monolito
+                const response = await fetch('api', { // Sempre chama a API raiz
                     method: 'POST',
                     headers: {
                         'Authorization': `Bearer ${token}`,
@@ -711,8 +723,11 @@
 
                     initializeQuill();
                     resetLinksContainer();
-                    loadCategories();
-                    await executeAdminSearch(true);
+
+                    // CORREÇÃO BUG 1 (FLICKERING): Espera as categorias carregarem
+                    await loadCategories();
+                    await executeAdminSearch(true); // Só então carrega os artigos
+
                     updateUIVisibility(role);
 
                     if (role === 'Admin') {
@@ -738,10 +753,13 @@
         });
 
         // Logins (Removido e-mail/senha)
-        if (document.getElementById('login-form')) {
-            document.getElementById('login-form').style.display = 'none';
-            const divisor = document.querySelector('.relative.flex.py-3.items-center');
-            if (divisor) divisor.style.display = 'none';
+        const loginFormElement = document.getElementById('login-form');
+        if (loginFormElement) {
+            loginFormElement.style.display = 'none';
+            const divisor = loginFormElement.nextElementSibling;
+            if (divisor && divisor.classList.contains('relative')) {
+                divisor.style.display = 'none';
+            }
         }
 
         googleLoginBtn.addEventListener('click', () => {
@@ -783,17 +801,13 @@
             );
         });
 
-        // NOVO: Controla a visibilidade da UI com base no cargo
+        // Controla a visibilidade da UI com base no cargo
         function updateUIVisibility(role) {
-            // Seções inteiras
             articleFormSection.style.display = (role === 'Redator' || role === 'Editor' || role === 'Admin') ? 'block' : 'none';
             categoryAdminSection.style.display = (role === 'Admin') ? 'block' : 'none';
             userAdminSection.style.display = (role === 'Admin') ? 'block' : 'none';
-
-            // Container do filtro de ciência
             document.getElementById('science-filter-container').style.display = (role === 'Editor' || role === 'Admin') ? 'flex' : 'none';
 
-            // Elementos específicos
             const categorySelectDiv = articleCategory.closest('div');
             if (categorySelectDiv) {
                 categorySelectDiv.style.display = (role === 'Editor' || role === 'Admin') ? 'block' : 'none';
@@ -803,28 +817,17 @@
                 el.style.display = (role === 'Admin') ? 'block' : 'none';
             });
 
-            // Botões (listas) - eles são recriados, então a lógica está em renderAdminArticles
-            document.querySelectorAll('.delete-article-btn').forEach(btn => btn.style.display = (role === 'Admin') ? 'inline-flex' : 'none');
-            document.querySelectorAll('.edit-article-btn').forEach(btn => btn.style.display = (role === 'Editor' || role === 'Admin') ? 'inline-flex' : 'none');
-            document.querySelectorAll('.edit-category-btn').forEach(btn => btn.style.display = (role === 'Admin') ? 'inline-flex' : 'none');
-            document.querySelectorAll('.delete-category-btn').forEach(btn => btn.style.display = (role === 'Admin') ? 'inline-flex' : 'none');
-            // NOVO: Botão de Log de Ciência
-            document.querySelectorAll('.science-log-btn').forEach(btn => btn.style.display = (role === 'Editor' || role === 'Admin') ? 'inline-flex' : 'none');
+            // CORREÇÃO BUG 3: A lógica de mostrar/esconder botões agora
+            // é feita 100% dentro do 'renderAdminArticles'
         }
 
 
         // --- GERENCIAMENTO DE CATEGORIAS (CRUD) ---
-        // (Inalterado, já usa monolito e modal)
-
+        // (Inalterado)
         categoryForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             const id = categoryIdInput.value;
-            const categoryData = {
-                name: categoryName.value,
-                color: categoryColor.value,
-                icon: categoryIcon.value,
-                slug: slugify(categoryName.value)
-            };
+            const categoryData = { name: categoryName.value, color: categoryColor.value, icon: categoryIcon.value, slug: slugify(categoryName.value) };
             try {
                 if (id) categoryData.id = id;
                 await fetchWithToken('admin/salvarCategoria', categoryData);
@@ -849,7 +852,6 @@
 
                 categories.forEach(category => {
                     allCategoriesMap.set(category.id, category);
-
                     const el = document.createElement('div');
                     el.className = 'flex justify-between items-center p-3 bg-slate-50 rounded-lg';
                     el.innerHTML = `
@@ -864,13 +866,11 @@
                         </div>
                     `;
                     categoryListAdmin.appendChild(el);
-
                     const opt = document.createElement('option');
                     opt.value = category.id;
                     opt.textContent = category.name;
                     articleCategory.appendChild(opt);
                 });
-
                 if (categories.length === 0) {
                     categoriesLoadingMsg.textContent = 'Nenhuma categoria encontrada.';
                     categoriesLoadingMsg.classList.remove('hidden');
@@ -881,14 +881,12 @@
                 categoriesLoadingMsg.classList.remove('hidden');
             }
         }
-
         categoryListAdmin.addEventListener('click', (e) => {
             const editBtn = e.target.closest('.edit-category-btn');
             const deleteBtn = e.target.closest('.delete-category-btn');
             if (editBtn) populateCategoryForm(editBtn.dataset.id);
             if (deleteBtn) deleteCategory(deleteBtn.dataset.id, deleteBtn.dataset.name);
         });
-
         function populateCategoryForm(id) {
             const category = allCategoriesMap.get(id);
             if (category) {
@@ -901,7 +899,6 @@
                 window.scrollTo({ top: categoryForm.offsetTop, behavior: 'smooth' });
             }
         }
-
         async function deleteCategory(id, name) {
             showConfirmModal(
                 'Deletar Categoria',
@@ -919,7 +916,6 @@
                 }
             );
         }
-
         function resetCategoryForm() {
             categoryForm.reset();
             categoryIdInput.value = '';
@@ -931,12 +927,11 @@
 
         // --- GERENCIAMENTO DE ARTIGOS (CRUD) ---
 
-        // Salvar/Atualizar Artigo (COM LÓGICA DE CIÊNCIA)
+        // Salvar/Atualizar Artigo
         articleForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             const id = articleIdInput.value;
             const publishedDate = articlePublishedAt.value;
-
             const tagsArray = articleTags.value.split(',').map(tag => tag.trim()).filter(tag => tag.length > 0);
             const linksArray = Array.from(linksContainer.querySelectorAll('input')).map(input => input.value.trim()).filter(link => link.length > 0);
 
@@ -959,7 +954,7 @@
                 await fetchWithToken('admin/salvarArtigo', articleData);
                 showStatusMessage(id ? 'Artigo atualizado!' : 'Artigo salvo!');
                 resetArticleForm();
-                await executeAdminSearch(true);
+                await executeAdminSearch(true); // REFRESH AUTOMÁTICO
             } catch (error) {
                 console.error("Erro ao salvar artigo: ", error);
                 showStatusMessage(error.message || 'Erro ao salvar artigo.', true);
@@ -986,20 +981,19 @@
                 executeAdminSearch(true);
             }, 300);
         });
-
         adminLoadMoreBtn.addEventListener('click', () => {
             if (!adminIsLoadingMore) {
                 executeAdminSearch(false);
             }
         });
 
-        // NOVO: Listener do Switch de Ciência
+        // Listener do Switch de Ciência
         scienceToggleSwitch.addEventListener('change', () => {
             // Apenas filtra a lista local, não faz re-fetch
             filterAdminListByScience();
         });
 
-        // NOVO: Filtro local do Switch de Ciência
+        // Filtro local do Switch de Ciência
         function filterAdminListByScience() {
             const showOnlyScience = scienceToggleSwitch.checked;
             let count = 0;
@@ -1013,17 +1007,15 @@
                         row.style.display = 'none';
                     }
                 } else {
-                    // Se o switch está desligado, apenas mostra
                     row.style.display = 'flex';
                     count++;
                 }
             });
-
             // Atualiza mensagem de "vazio"
-            if (count === 0 && showOnlyScience) {
-                articlesLoadingMsg.textContent = 'Nenhum artigo com "ciência" ativa foi encontrado.';
+            if (count === 0 && (showOnlyScience || adminSearchInput.value.trim() !== '')) {
+                articlesLoadingMsg.textContent = 'Nenhum artigo encontrado para este filtro.';
                 articlesLoadingMsg.style.display = 'block';
-            } else {
+            } else if (count > 0) {
                 articlesLoadingMsg.style.display = 'none';
             }
         }
@@ -1074,7 +1066,7 @@
 
                 renderAdminArticles(newArticles); // Renderiza apenas os novos
 
-                // NOVO: Aplica o filtro do switch após renderizar
+                // Aplica o filtro do switch de ciência
                 filterAdminListByScience();
 
             } catch (error) {
@@ -1086,18 +1078,18 @@
                 adminLoadMoreBtn.disabled = false;
 
                 // Lógica de exibição da mensagem de 'loading'
-                const anyArticlesVisible = adminArticlesCache.length > 0 && articlesListAdmin.querySelector('.article-row:not([style*="display: none"])');
+                const anyArticlesVisible = articlesListAdmin.querySelector('.article-row:not([style*="display: none"])');
 
                 if (anyArticlesVisible) {
                     articlesLoadingMsg.style.display = 'none';
-                }
-                if (adminArticlesCache.length === 0 && searchTerm !== '') {
+                } else if (adminArticlesCache.length === 0 && searchTerm !== '') {
                     articlesLoadingMsg.textContent = 'Nenhum artigo encontrado para esta busca.';
                     articlesLoadingMsg.style.display = 'block';
-                }
-                if (adminArticlesCache.length === 0 && searchTerm === '') {
+                } else if (adminArticlesCache.length === 0 && searchTerm === '') {
                     articlesLoadingMsg.textContent = 'Nenhum artigo publicado.';
                     articlesLoadingMsg.style.display = 'block';
+                } else if (!anyArticlesVisible && scienceToggleSwitch.checked) {
+                    // Já tratado por filterAdminListByScience
                 }
             }
         }
@@ -1109,8 +1101,6 @@
                 articlesLoadingMsg.textContent = 'Nenhum artigo encontrado.';
                 articlesLoadingMsg.style.display = 'block';
                 return;
-            } else {
-                articlesLoadingMsg.style.display = 'none';
             }
 
             const fragment = document.createDocumentFragment();
@@ -1122,7 +1112,6 @@
                     : 'Salvando...';
 
                 const el = document.createElement('div');
-                // NOVO: Adiciona 'article-row' e 'data-requires-science'
                 el.className = 'flex justify-between items-center p-4 bg-slate-50 rounded-lg article-row';
                 el.dataset.requiresScience = article.requiresScience || 'false';
 
@@ -1130,21 +1119,25 @@
                     ? `<svg class="w-4 h-4 text-red-500 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" title="Exige Ciência"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>`
                     : '';
 
+                // CORREÇÃO BUG 3: Botão de Log de Ciência agora é condicional
+                const scienceLogBtnHTML = (article.requiresScience && (currentUserRole === 'Editor' || currentUserRole === 'Admin'))
+                    ? `<button data-id="${article.id}" data-title="${article.title}" class="science-log-btn text-gray-500 hover:text-blue-600 focus-ring-visible rounded-md p-1" title="Ver Log de Ciência">
+                           <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                               <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                           </svg>
+                       </button>`
+                    : '';
+
                 el.innerHTML = `
                      <div class="flex items-center min-w-0">
                          <div class="min-w-0">
-                            <strong class="text-slate-800 truncate block">${article.title}</strong>
-                            <span class="block text-sm text-slate-500">${categoryName} - ${date}</span>
+                             <strong class="text-slate-800 truncate block">${article.title}</strong>
+                             <span class="block text-sm text-slate-500">${categoryName} - ${date}</span>
                          </div>
                          ${requiresScienceIcon}
                      </div>
                      <div class="flex gap-2 flex-shrink-0">
-                         <!-- NOVO: Botão de Auditoria -->
-                         <button data-id="${article.id}" data-title="${article.title}" class="science-log-btn text-gray-500 hover:text-blue-600 focus-ring-visible rounded-md p-1 ${article.requiresScience ? '' : 'hidden'}" title="Ver Log de Ciência" style="display: ${currentUserRole === 'Editor' || currentUserRole === 'Admin' ? 'inline-flex' : 'none'}">
-                             <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                             </svg>
-                         </button>
+                         ${scienceLogBtnHTML}
                          <button data-id="${article.id}" class="edit-article-btn text-blue-600 hover:text-blue-800 focus-ring-visible rounded-md p-1" style="display: ${currentUserRole === 'Editor' || currentUserRole === 'Admin' ? 'inline-flex' : 'none'}">
                              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.536L16.732 3.732z"></path></svg>
                          </button>
@@ -1153,8 +1146,9 @@
                          </button>
                      </div>
                  `;
-                articlesListAdmin.appendChild(el);
+                fragment.appendChild(el);
             });
+            articlesListAdmin.appendChild(fragment);
             // Atualiza a visibilidade dos botões recém-criados
             updateUIVisibility(currentUserRole);
         }
@@ -1220,6 +1214,15 @@
             }
         }
 
+        // Mostra/Esconde o botão de Resetar Ciência
+        requiresScienceCheckbox.addEventListener('change', () => {
+            if (requiresScienceCheckbox.checked && articleIdInput.value) {
+                resetScienceContainer.classList.remove('hidden');
+            } else {
+                resetScienceContainer.classList.add('hidden');
+            }
+        });
+
         // Deletar Artigo (COM MODAL CUSTOMIZADO)
         async function deleteArticle(id, title) {
             showConfirmModal(
@@ -1249,7 +1252,6 @@
             articleFormTitle.textContent = 'Adicionar Novo Artigo';
             cancelEditBtn.classList.add('hidden');
             resetLinksContainer();
-            // Reseta os campos de ciência
             resetScienceContainer.classList.add('hidden');
             isScienceResetInput.value = 'false';
         }
@@ -1329,7 +1331,7 @@
         }
 
         function renderUsers(users) {
-            userListAdmin.innerHTML = ''; // Limpa a lista
+            userListAdmin.innerHTML = '';
             if (users.length === 0) {
                 usersLoadingMsg.textContent = 'Nenhum usuário encontrado (além de você).';
                 usersLoadingMsg.style.display = 'block';
@@ -1342,13 +1344,10 @@
                 const el = document.createElement('div');
                 el.className = 'user-row flex justify-between items-center p-3 bg-slate-50 rounded-lg';
                 el.dataset.email = user.email;
-
                 const roleSelectId = `role-select-${user.uid}`;
-
                 el.innerHTML = `
                     <div class="flex-grow overflow-hidden">
                         <span class="font-medium text-slate-800 text-sm truncate block" title="${user.email}">${user.email}</span>
-                        <!-- <span class="text-xs text-slate-500">${user.uid}</span> -->
                     </div>
                     <div class="flex-shrink-0 ml-2">
                         <select id="${roleSelectId}" data-uid="${user.uid}" class="role-select w-full p-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white text-sm">
@@ -1363,7 +1362,6 @@
             });
         }
 
-        // Delegação de evento para os <select> de cargo
         userListAdmin.addEventListener('change', async (e) => {
             if (e.target.classList.contains('role-select')) {
                 const selectEl = e.target;
@@ -1378,7 +1376,7 @@
                         try {
                             await fetchWithToken('admin/updateUserRole', { uid: uid, role: newRole });
                             showStatusMessage('Cargo do usuário atualizado!');
-                            loadUsers(); // Recarrega a lista para garantir consistência
+                            loadUsers();
                         } catch (error) {
                             console.error("Erro ao atualizar cargo:", error);
                             showStatusMessage(error.message || 'Erro ao atualizar cargo.', true);
@@ -1424,7 +1422,6 @@
             onConfirmCallback = onConfirm;
             onCancelCallback = onCancel;
 
-            // Exibe o modal
             confirmModal.style.display = 'flex';
             setTimeout(() => {
                 modalBackdropConfirm.style.opacity = '1';
@@ -1439,11 +1436,10 @@
             modalBackdropConfirm.style.opacity = '0';
             setTimeout(() => {
                 confirmModal.style.display = 'none';
-                onConfirmCallback = null; // Limpa o callback
+                onConfirmCallback = null;
                 onCancelCallback = null;
-            }, 300); // Duração da animação
+            }, 300);
         }
-
         modalBackdropConfirm.addEventListener('click', closeConfirmModal);
 
 
@@ -1465,7 +1461,7 @@
             }, 10);
 
             try {
-                // Chama a (futura) API
+                // Chama a API de log
                 const { completed, pending } = await fetchWithToken('admin/getScienceLog', { articleId: articleId });
 
                 // Renderiza as listas
@@ -1533,7 +1529,6 @@
                 .replace(/[^\w-]+/g, '')
                 .replace(/--+/g, '-');
         }
-
 
     </script>
 

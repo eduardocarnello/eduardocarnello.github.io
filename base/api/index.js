@@ -5,7 +5,7 @@
  * Isso resolve o limite de 12 funções do Vercel.
  */
 // A importação do 'firebaseAdmin.js' agora é o nosso helper central
-import { db, auth, getUserRole, FieldValue, Timestamp } from './firebaseAdmin.js';
+import { db, auth, getUserRole, FieldValue, Timestamp, SUPER_ADMIN_EMAIL } from './firebaseAdmin.js';
 
 // --- Funções Auxiliares (Copiadas das APIs antigas) ---
 
@@ -17,6 +17,11 @@ function convertTimestamps(data) {
 
         if (data.hasOwnProperty(secondsKey) && data.hasOwnProperty(nanosKey)) {
             return { seconds: data[secondsKey], nanoseconds: data[nanosKey] };
+        }
+
+        // Trata Timestamps do Firestore { seconds, nanoseconds }
+        if (data.hasOwnProperty('seconds') && data.hasOwnProperty('nanoseconds')) {
+            return { seconds: data.seconds, nanoseconds: data.nanoseconds };
         }
 
         for (const key in data) {
@@ -431,7 +436,7 @@ async function handleUpdateUserRole(payload, adminUid, role, res) {
     return res.status(200).json({ message: 'Cargo do usuário atualizado com sucesso.' });
 }
 
-// --- ETAPA 3.C (NOVA): Log de Ciência ---
+// --- ETAPA 3.C (LOG DE CIÊNCIA - CORRIGIDO) ---
 async function handleGetScienceLog(payload, role, res) {
     // Permissão: Editor ou Admin podem ver o log
     if (role !== 'Editor' && role !== 'Admin') {
@@ -451,11 +456,9 @@ async function handleGetScienceLog(payload, role, res) {
     const usersSnapshot = await db.collection('users').get();
     const allUsers = new Map();
     usersSnapshot.forEach(doc => {
-        // Armazena apenas Leitores, Redatores e Editores (Admins não precisam dar ciência)
+        // **CORREÇÃO BUG 4**: Pega TODOS os usuários, incluindo Admins
         const user = doc.data();
-        if (user.role !== 'Admin') {
-            allUsers.set(doc.id, { email: user.email, uid: doc.id });
-        }
+        allUsers.set(doc.id, { email: user.email, uid: doc.id, role: user.role });
     });
 
     // 3. Busca todos os registros de ciência para este artigo
@@ -471,27 +474,33 @@ async function handleGetScienceLog(payload, role, res) {
         const cienciaData = doc.data();
         const userId = cienciaData.userId;
 
-        // Verifica se o usuário que deu ciência ainda existe na nossa lista de usuários
         if (allUsers.has(userId)) {
-            // Verifica se a versão da ciência é a mais recente
+            const user = allUsers.get(userId);
+
             if (cienciaData.scienceVersion >= currentScienceVersion) {
-                // Usuário deu ciência da versão atual ou mais nova
+                // Usuário deu ciência da versão atual
                 completed.push({
                     email: cienciaData.userEmail,
                     declaredAt: convertTimestamps(cienciaData.declaredAt)
                 });
             } else {
                 // Usuário deu ciência de uma versão antiga, ele está pendente
-                pending.push(allUsers.get(userId));
+                // **CORREÇÃO BUG 4**: Só adiciona a pendente se não for Admin
+                if (user.role !== 'Admin') {
+                    pending.push(user);
+                }
             }
             // Remove o usuário do map para sabermos quem sobrou (pendente)
             allUsers.delete(userId);
         }
     });
 
-    // 5. Adiciona os usuários restantes (que nunca deram ciência) à lista de pendentes
+    // 5. Adiciona os usuários restantes (que NUNCA deram ciência) à lista de pendentes
     allUsers.forEach(user => {
-        pending.push(user);
+        // **CORREÇÃO BUG 4**: Só adiciona a pendente se não for Admin
+        if (user.role !== 'Admin') {
+            pending.push(user);
+        }
     });
 
     // Ordena as listas por e-mail
