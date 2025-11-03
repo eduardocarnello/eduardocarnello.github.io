@@ -1107,24 +1107,66 @@
                 cienciaLoadingSpinner.style.display = 'none';
                 modalCienciaContent.style.display = 'block';
 
+                // NOVO: Reseta o scroll para o topo
+                modalCienciaBody.scrollTop = 0;
+
                 // Atualiza a navegação
                 cienciaCounter.textContent = `Artigo ${cienciaArtigoIndex + 1} de ${artigosParaCiencia.length}`;
 
+                // ----- INÍCIO DA NOVA LÓGICA DE SCROLL -----
+
+                // 1. Define qual botão é o "alvo" (Próximo ou Declarar Ciência)
+                const isLastArticle = cienciaArtigoIndex === artigosParaCiencia.length - 1;
+                const targetButton = isLastArticle ? declararCienciaBtn : cienciaNextBtn;
+
+                // 2. Desabilita o botão alvo por padrão
+                targetButton.disabled = true;
+                targetButton.classList.add('disabled:bg-gray-400', 'opacity-50');
+
+                // 3. Mostra o botão alvo (Próximo ou Declarar Ciência)
+                if (isLastArticle) {
+                    declararCienciaBtn.style.display = 'inline-flex';
+                } else {
+                    cienciaNextBtn.style.display = 'inline-flex';
+                }
+
+                // 4. Mostra o botão "Anterior" se não for o primeiro artigo
                 if (cienciaArtigoIndex > 0) {
                     cienciaPrevBtn.style.display = 'inline-flex';
                 }
-                if (cienciaArtigoIndex < artigosParaCiencia.length - 1) {
-                    cienciaNextBtn.style.display = 'inline-flex';
-                } else {
-                    // É o último artigo
-                    declararCienciaBtn.style.display = 'inline-flex';
-                }
+
+                // 5. Define a função que checa o scroll
+                const checkScroll = () => {
+                    // Checa se o usuário rolou até o fim (com 5px de margem de tolerância)
+                    const atBottom = modalCienciaBody.scrollHeight - modalCienciaBody.scrollTop <= modalCienciaBody.clientHeight + 5;
+
+                    if (atBottom) {
+                        targetButton.disabled = false;
+                        targetButton.classList.remove('disabled:bg-gray-400', 'opacity-50');
+                        // Remove o "ouvinte" para não rodar mais
+                        modalCienciaBody.onscroll = null;
+                    }
+                };
+
+                // 6. Limpa qualquer ouvinte de scroll antigo
+                modalCienciaBody.onscroll = null;
+
+                // 7. Roda a checagem 1x (caso o artigo seja curto e não precise de scroll)
+                // Usamos um pequeno timeout para garantir que o DOM (scrollHeight) foi calculado
+                setTimeout(checkScroll, 100);
+
+                // 8. Adiciona o novo "ouvinte" de scroll
+                modalCienciaBody.onscroll = checkScroll;
+
+                // ----- FIM DA NOVA LÓGICA DE SCROLL -----
+
             } catch (error) {
                 console.error("Erro ao carregar detalhe do artigo de ciência:", error);
                 modalCienciaTitle.textContent = 'Erro ao Carregar Artigo';
                 modalCienciaContent.innerHTML = `<p class="text-red-500">${error.message}</p>`;
                 cienciaLoadingSpinner.style.display = 'none';
                 modalCienciaContent.style.display = 'block';
+                D
             }
         }
 
@@ -1178,6 +1220,7 @@
             modalCienciaPanel.style.transform = 'scale(0.95)';
             modalCienciaPanel.style.opacity = '0';
             modalCienciaBackdrop.style.opacity = '0';
+            modalCienciaBody.onscroll = null; // Limpa o ouvinte de scroll
             setTimeout(() => {
                 modalCienciaBackdrop.style.display = 'none';
                 modalCienciaContainer.style.display = 'none';
