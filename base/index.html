@@ -321,14 +321,13 @@
         class="fixed inset-0 bg-black bg-opacity-75 z-50 hidden transition-opacity duration-300 ease-out"
         aria-hidden="true" style="opacity: 0;"></div>
 
-    <div id="modal-container" class="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-0 hidden"
-        role="dialog" aria-modal="true">
+    <div id="modal-container" class="fixed inset-0 z-50 hidden" role="dialog" aria-modal="true">
 
         <div id="modal-panel"
-            class="bg-white rounded-2xl shadow-xl w-full max-w-3xl max-h-[90vh] flex flex-col transform transition-all duration-300 ease-out scale-95 opacity-0">
+            class="bg-white rounded-2xl shadow-xl w-full h-full  transform transition-all duration-300 ease-out scale-95 opacity-0">
             <!-- Cabeçalho do Modal -->
             <header
-                class="sticky top-0 bg-white p-4 sm:p-6 border-b border-slate-200 rounded-t-2xl flex justify-between items-center">
+                class="sticky top-0 bg-white p-4 sm:p-6 border-b border-slate-200  flex justify-between items-center">
                 <h3 id="modal-title" class="text-xl sm:text-2xl font-bold text-slate-800 break-words pr-4">
                     Carregando Título...
                 </h3>
@@ -410,12 +409,12 @@
         class="fixed inset-0 bg-slate-900 bg-opacity-90 z-[60] hidden transition-opacity duration-300 ease-out"
         aria-hidden="true" style="opacity: 0;"></div>
 
-    <div id="modal-ciencia-container" class="fixed inset-0 z-[70] hidden" role="dialog" aria-modal="true"
-        aria-labelledby="modal-ciencia-title">
+    <div id="modal-ciencia-container" class="fixed inset-0 flex items-center justify-center p-4 sm:p-0 z-[70] hidden"
+        role="dialog" aria-modal="true" aria-labelledby="modal-ciencia-title">
 
         <!-- Painel de Tela Cheia -->
         <div id="modal-ciencia-panel"
-            class="bg-white w-full h-full flex flex-col transform transition-all duration-300 ease-out scale-95 opacity-0">
+            class="bg-white shadow-xl max-w-3xl flex flex-col transform transition-all duration-300 ease-out scale-95 opacity-0">
 
             <!-- Cabeçalho do Modal de Ciência -->
             <header
