@@ -9,7 +9,7 @@ import { db, auth, getUserRole, FieldValue, Timestamp, SUPER_ADMIN_EMAIL } from 
 // --- NOVO: WHITELIST (LISTA DE APROVADOS) ---
 // O SUPER_ADMIN_EMAIL é sempre permitido.
 const EMAIL_WHITELIST = [
-    SUPER_ADMIN_EMAIL, // eduardocarnello@gmail.com
+    SUPER_ADMIN_EMAIL, 'eduardocarnello@gmail.com',
     'camilaps05@gmail.com',
     // Adicione outros e-mails aprovados aqui
     // 'outro.email@tjsp.jus.br',
