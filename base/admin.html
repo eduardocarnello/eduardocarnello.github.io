@@ -17,6 +17,7 @@
             font-family: 'Inter', sans-serif;
         }
 
+        /* Ajusta a altura do editor Quill */
         #editor-container {
             height: 350px;
         }
@@ -29,6 +30,7 @@
             border-radius: 0 0 0.5rem 0.5rem !important;
         }
 
+        /* Foco personalizado para acessibilidade */
         .focus-ring-visible:focus-visible {
             outline: 2px solid #2563eb;
             outline-offset: 2px;
@@ -73,7 +75,6 @@
                         alt="Google icon">
                     Entrar com Google
                 </button>
-
                 <!-- NOVO: Botão Login Microsoft -->
                 <button id="microsoft-login-btn"
                     class="group relative w-full flex justify-center py-3 px-4 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors">
@@ -246,7 +247,18 @@
                                 <label class="block text-sm font-medium text-slate-700 mb-1">Conteúdo Completo</label>
                                 <div id="editor-container"></div> <!-- Container do Quill -->
                                 <p class="text-xs text-slate-500 mt-2">
-                                    <b>Para adicionar imagens:</b> ... (texto de ajuda)
+                                    <b>Para adicionar imagens:</b> Publique a imagem em um site (como
+                                    <a href="https://imgur.com/upload" target="_blank"
+                                        class="text-blue-600 hover:underline">Imgur</a> ou
+                                    <a href="https://postimages.org/" target="_blank"
+                                        class="text-blue-600 hover:underline">Postimages</a>),
+                                    copie o link direto da imagem (ex: .jpg, .png) e cole-o usando o ícone de imagem
+                                    <svg class="w-4 h-4 inline -mt-1" xmlns="http://www.w3.org/2000/svg" fill="none"
+                                        viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                            d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5zm10.5-11.25h.008v.008h-.008V8.25zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
+                                    </svg>
+                                    na barra de ferramentas.
                                 </p>
                             </div>
 
@@ -360,9 +372,7 @@
                                     </select>
                                 </div>
                             </div>
-                            <!-- ID Oculto (para edição) -->
                             <input type="hidden" id="category-id">
-                            <!-- Botões -->
                             <div class="flex gap-4">
                                 <button type="submit"
                                     class="flex-1 py-2 px-4 border border-transparent text-sm font-medium rounded-lg text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors">
@@ -379,7 +389,6 @@
                         <h3 class="text-lg font-bold text-slate-800 mb-4">Categorias Atuais</h3>
                         <div id="category-list-admin" class="space-y-3">
                             <p id="categories-loading-msg">Carregando categorias...</p>
-                            <!-- Lista preenchida pelo JS -->
                         </div>
                     </div>
 
@@ -395,7 +404,6 @@
                         </div>
                         <div id="user-list-admin" class="space-y-3 max-h-96 overflow-y-auto">
                             <p id="users-loading-msg">Carregando usuários...</p>
-                            <!-- Lista de usuários preenchida pelo JS -->
                         </div>
                     </div>
 
@@ -565,24 +573,26 @@
         }
 
         // --- FUNÇÃO WRAPPER DE FETCH (COM TOKEN) ---
-        async function fetchWithToken(apiUrl, options = {}) {
+        // (Refatorada para o Monolito)
+        async function fetchWithToken(action, payload = {}) {
             if (!auth.currentUser) {
                 showStatusMessage('Usuário não autenticado. Faça login novamente.', true);
                 signOut(auth);
                 throw new Error("Usuário não autenticado.");
             }
             try {
-                const token = await getIdToken(auth.currentUser);
-                options.headers = {
-                    ...options.headers,
-                    'Authorization': `Bearer ${token}`
-                };
-                options.method = options.method || 'GET';
-                if (options.body) {
-                    options.headers['Content-Type'] = 'application/json';
-                }
-                const relativeApiUrl = apiUrl.startsWith('/') ? apiUrl.substring(1) : apiUrl;
-                const response = await fetch(relativeApiUrl, options);
+                const token = await getIdToken(auth.currentUser, /* forceRefresh */ true);
+
+                // Todas as chamadas agora vão para 'api' (que o vercel.json roteia para api/index.js)
+                const response = await fetch('api', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ action, payload }) // Envia a ação e o payload
+                });
+
                 const responseText = await response.text();
                 if (!response.ok) {
                     let errorMessage = `Erro ${response.status}`;
@@ -595,7 +605,7 @@
                             errorMessage = `Erro ${response.status}: A API não foi encontrada ou retornou um erro inesperado.`;
                         }
                     }
-                    console.error(`Erro na API (${response.status}):`, errorMessage);
+                    console.error(`Erro na API (ação: ${action}, status: ${response.status}):`, errorMessage);
                     throw new Error(errorMessage);
                 }
                 if (!responseText) return null;
@@ -618,7 +628,7 @@
             if (user) {
                 try {
                     // NOVO: Chama a API upsert para registrar o usuário e obter seu cargo
-                    const { role, email } = await fetchWithToken('api/user/upsert', { method: 'POST' });
+                    const { role, email } = await fetchWithToken('user/upsert'); // Ação 'user/upsert'
                     currentUserRole = role; // Armazena o cargo globalmente
 
                     // Redireciona se for apenas Leitor
@@ -755,7 +765,6 @@
 
 
         // --- GERENCIAMENTO DE CATEGORIAS (CRUD) ---
-        // (Inalterado, exceto pela chamada de auto-refresh)
 
         // Salvar/Atualizar Categoria
         categoryForm.addEventListener('submit', async (e) => {
@@ -769,10 +778,8 @@
             };
             try {
                 if (id) categoryData.id = id;
-                await fetchWithToken('api/admin/salvarCategoria', {
-                    method: 'POST',
-                    body: JSON.stringify(categoryData)
-                });
+                // AÇÃO ATUALIZADA
+                await fetchWithToken('admin/salvarCategoria', categoryData);
                 showStatusMessage(id ? 'Categoria atualizada!' : 'Categoria salva!');
                 resetCategoryForm();
                 loadCategories(); // Auto-refresh
@@ -786,7 +793,8 @@
         async function loadCategories() {
             categoriesLoadingMsg.style.display = 'block';
             try {
-                const categories = await fetchWithToken('api/getCategorias');
+                // AÇÃO ATUALIZADA
+                const categories = await fetchWithToken('getCategorias');
                 categoriesLoadingMsg.classList.add('hidden');
                 categoryListAdmin.innerHTML = '';
                 articleCategory.innerHTML = '<option value="">-- Selecione uma categoria --</option>';
@@ -859,10 +867,8 @@
                 `Tem certeza que quer deletar a categoria "${name}"? Artigos nesta categoria ficarão órfãos.`,
                 async () => {
                     try {
-                        await fetchWithToken('api/admin/deletarCategoria', {
-                            method: 'POST',
-                            body: JSON.stringify({ id: id })
-                        });
+                        // AÇÃO ATUALIZADA
+                        await fetchWithToken('admin/deletarCategoria', { id: id });
                         showStatusMessage('Categoria deletada.');
                         resetCategoryForm();
                         loadCategories(); // Auto-refresh
@@ -912,11 +918,8 @@
             if (publishedDate) articleData.publishedAt = publishedDate;
 
             try {
-                await fetchWithToken('api/admin/salvarArtigo', {
-                    method: 'POST',
-                    body: JSON.stringify(articleData)
-                });
-
+                // AÇÃO ATUALIZADA
+                await fetchWithToken('admin/salvarArtigo', articleData);
                 showStatusMessage(id ? 'Artigo atualizado!' : 'Artigo salvo!');
                 resetArticleForm();
                 await executeAdminSearch(true); // REFRESH AUTOMÁTICO (força recarga)
@@ -977,14 +980,18 @@
                 if (searchTerm === '') {
                     // MODO PAGINAÇÃO (getArtigos)
                     adminIsSearchActive = false;
-                    const url = `api/getArtigos?limit=${limit}&category=TODOS`; // Admin sempre vê tudo
-                    articles = await fetchWithToken(url);
+                    // AÇÃO ATUALIZADA
+                    articles = await fetchWithToken('getArtigos', { limit: limit, category: 'TODOS' });
                 } else {
                     // MODO BUSCA (searchArtigos)
                     adminIsSearchActive = true;
-                    adminLoadMoreContainer.classList.add('hidden'); // Busca não tem "carregar mais"
-                    const url = `api/searchArtigos?term=${encodeURIComponent(searchTerm)}&scope=all&category=TODOS`;
-                    articles = await fetchWithToken(url);
+                    adminLoadMoreContainer.classList.add('hidden');
+                    // AÇÃO ATUALIZADA
+                    articles = await fetchWithToken('searchArtigos', {
+                        term: searchTerm,
+                        scope: 'all',
+                        category: 'TODOS'
+                    });
                 }
 
                 const newArticles = articles.filter(a => !adminArticlesCache.some(existing => existing.id === a.id));
@@ -1006,7 +1013,17 @@
                 adminIsLoadingMore = false;
                 adminLoadMoreBtn.textContent = 'Carregar Mais';
                 adminLoadMoreBtn.disabled = false;
-                if (adminArticlesCache.length > 0) articlesLoadingMsg.style.display = 'none';
+                if (adminArticlesCache.length > 0 || adminIsSearchActive) {
+                    articlesLoadingMsg.style.display = 'none';
+                }
+                if (adminArticlesCache.length === 0 && searchTerm !== '') {
+                    articlesLoadingMsg.textContent = 'Nenhum artigo encontrado para esta busca.';
+                    articlesLoadingMsg.style.display = 'block';
+                }
+                if (adminArticlesCache.length === 0 && searchTerm === '') {
+                    articlesLoadingMsg.textContent = 'Nenhum artigo publicado.';
+                    articlesLoadingMsg.style.display = 'block';
+                }
             }
         }
 
@@ -1047,7 +1064,11 @@
                  `;
                 articlesListAdmin.appendChild(el);
             });
+            // Atualiza a visibilidade dos botões recém-criados
+            updateUIVisibility(currentUserRole);
         }
+
+        // (loadArticles foi substituída por executeAdminSearch)
 
         // Delegação de Eventos para botões de Artigo
         articlesListAdmin.addEventListener('click', (e) => {
@@ -1057,10 +1078,11 @@
             if (deleteBtn) deleteArticle(deleteBtn.dataset.id, deleteBtn.dataset.title);
         });
 
-        // Preencher formulário de Artigo para edição (COM LÓGICA DE CIÊNCIA)
+        // Preencher formulário de Artigo para edição
         async function populateArticleForm(id) {
             try {
-                const article = await fetchWithToken(`api/getArtigoDetalhe?id=${id}`);
+                // AÇÃO ATUALIZADA
+                const article = await fetchWithToken('getArtigoDetalhe', { id: id });
 
                 articleFormTitle.textContent = 'Editar Artigo';
                 articleIdInput.value = id;
@@ -1076,10 +1098,9 @@
                     articlePublishedAt.value = '';
                 }
 
-                // Popula os links múltiplos
                 resetLinksContainer();
                 const linkInputs = linksContainer.querySelectorAll('input');
-                const links = article.links || [];
+                const links = article.links || (article.link ? [article.link] : []);
 
                 links.forEach((link, index) => {
                     if (index === 0) {
@@ -1089,14 +1110,14 @@
                     }
                 });
 
-                // NOVO: Popula dados de Ciência
+                // Popula dados de Ciência
                 requiresScienceCheckbox.checked = article.requiresScience || false;
                 if (article.requiresScience) {
                     resetScienceContainer.classList.remove('hidden');
                 } else {
                     resetScienceContainer.classList.add('hidden');
                 }
-                isScienceResetInput.value = 'false'; // Sempre reseta o botão
+                isScienceResetInput.value = 'false';
 
                 quill.root.innerHTML = article.content;
                 cancelEditBtn.classList.remove('hidden');
@@ -1108,27 +1129,15 @@
             }
         }
 
-        // NOVO: Mostra/Esconde o botão de Resetar Ciência
-        requiresScienceCheckbox.addEventListener('change', () => {
-            if (requiresScienceCheckbox.checked && articleIdInput.value) {
-                resetScienceContainer.classList.remove('hidden');
-            } else {
-                resetScienceContainer.classList.add('hidden');
-            }
-        });
-
-
         // Deletar Artigo (COM MODAL CUSTOMIZADO)
         async function deleteArticle(id, title) {
             showConfirmModal(
                 'Deletar Artigo',
-                `Tem certeza que quer deletar o artigo "${title}"?`,
+                `Tem certeza que quer deletar o artigo "${title || 'este artigo'}"?`,
                 async () => {
                     try {
-                        await fetchWithToken('api/admin/deletarArtigo', {
-                            method: 'POST',
-                            body: JSON.stringify({ id: id })
-                        });
+                        // AÇÃO ATUALIZADA
+                        await fetchWithToken('admin/deletarArtigo', { id: id });
                         showStatusMessage('Artigo deletado.');
                         resetArticleForm();
                         await executeAdminSearch(true); // REFRESH AUTOMÁTICO
@@ -1150,7 +1159,7 @@
             articleFormTitle.textContent = 'Adicionar Novo Artigo';
             cancelEditBtn.classList.add('hidden');
             resetLinksContainer();
-            // NOVO: Reseta os campos de ciência
+            // Reseta os campos de ciência
             resetScienceContainer.classList.add('hidden');
             isScienceResetInput.value = 'false';
         }
@@ -1219,7 +1228,8 @@
             allUsersCache = [];
 
             try {
-                const users = await fetchWithToken('api/admin/getUsers');
+                // AÇÃO ATUALIZADA
+                const users = await fetchWithToken('admin/getUsers');
                 allUsersCache = users;
                 renderUsers(users);
                 usersLoadingMsg.style.display = 'none';
@@ -1277,10 +1287,8 @@
                     `Tem certeza que quer mudar o cargo de ${userEmail} para ${newRole}?`,
                     async () => {
                         try {
-                            await fetchWithToken('api/admin/updateUserRole', {
-                                method: 'POST',
-                                body: JSON.stringify({ uid: uid, role: newRole })
-                            });
+                            // AÇÃO ATUALIZADA
+                            await fetchWithToken('admin/updateUserRole', { uid: uid, role: newRole });
                             showStatusMessage('Cargo do usuário atualizado!');
                             loadUsers(); // Recarrega a lista para garantir consistência
                         } catch (error) {
@@ -1309,18 +1317,21 @@
             confirmModalBtnConfirm.textContent = confirmText;
 
             // Limpa listeners antigos (essencial)
-            confirmModalBtnConfirm.onclick = null;
-            confirmModalBtnCancel.onclick = null;
+            const newConfirmBtn = confirmModalBtnConfirm.cloneNode(true);
+            confirmModalBtnConfirm.parentNode.replaceChild(newConfirmBtn, confirmModalBtnConfirm);
 
-            // Adiciona novos listeners
-            confirmModalBtnConfirm.onclick = () => {
+            const newCancelBtn = confirmModalBtnCancel.cloneNode(true);
+            confirmModalBtnCancel.parentNode.replaceChild(newCancelBtn, confirmModalBtnCancel);
+
+            // Re-seleciona os botões clonados
+            document.getElementById('confirm-modal-btn-confirm').addEventListener('click', () => {
                 if (onConfirmCallback) onConfirmCallback();
                 closeConfirmModal();
-            };
-            confirmModalBtnCancel.onclick = () => {
+            });
+            document.getElementById('confirm-modal-btn-cancel').addEventListener('click', () => {
                 if (onCancelCallback) onCancelCallback();
                 closeConfirmModal();
-            };
+            });
 
             onConfirmCallback = onConfirm;
             onCancelCallback = onCancel;
@@ -1350,8 +1361,6 @@
 
 
         // --- FUNÇÕES UTILITÁRIAS ---
-
-        // Mostrar mensagem de status (toast)
         let statusTimeout;
         function showStatusMessage(message, isError = false) {
             clearTimeout(statusTimeout);
@@ -1363,7 +1372,6 @@
             }, 3000);
         }
 
-        // Criar slug
         function slugify(text) {
             return text.toString().toLowerCase().trim()
                 .normalize('NFD') // remove acentos
