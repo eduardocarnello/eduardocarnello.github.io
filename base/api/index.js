@@ -4,17 +4,21 @@
  * Ele lê o campo 'action' do body para rotear a lógica.
  * Isso resolve o limite de 12 funções do Vercel.
  */
+// A importação do 'firebaseAdmin.js' agora é o nosso helper central
 import { db, auth, getUserRole, FieldValue, Timestamp } from './firebaseAdmin.js';
 
 // --- Funções Auxiliares (Copiadas das APIs antigas) ---
 
 function convertTimestamps(data) {
     if (data && typeof data === 'object') {
+        // Esta é a versão recursiva e segura
         const secondsKey = data.hasOwnProperty('_seconds') ? '_seconds' : 'seconds';
         const nanosKey = data.hasOwnProperty('_nanoseconds') ? '_nanoseconds' : 'nanoseconds';
+
         if (data.hasOwnProperty(secondsKey) && data.hasOwnProperty(nanosKey)) {
             return { seconds: data[secondsKey], nanoseconds: data[nanosKey] };
         }
+
         for (const key in data) {
             data[key] = convertTimestamps(data[key]);
         }
@@ -31,6 +35,11 @@ function stripHtml(html) {
 export default async function handler(req, res) {
     if (req.method !== 'POST') {
         return res.status(405).json({ error: 'Método não permitido (apenas POST)' });
+    }
+
+    if (!db || !auth) {
+        console.error("ERRO FATAL: O Firebase Admin não foi inicializado. A API não pode funcionar.");
+        return res.status(500).json({ error: 'Erro interno do servidor (Falha na inicialização do Admin)' });
     }
 
     try {
@@ -54,7 +63,6 @@ export default async function handler(req, res) {
             return res.status(401).json({ error: 'Token inválido ou usuário sem cargo.' });
         }
 
-        // Decodifica o token (necessário para UID/email em outras funções)
         const decodedToken = await auth.verifyIdToken(token);
 
         // --- ROTEADOR DE AÇÕES ---
@@ -89,8 +97,12 @@ export default async function handler(req, res) {
             case 'admin/updateUserRole':
                 return await handleUpdateUserRole(payload, decodedToken.uid, role, res);
 
+            // -- ETAPA 3.C (NOVA) --
+            case 'admin/getScienceLog':
+                return await handleGetScienceLog(payload, role, res);
+
             default:
-                return res.status(404).json({ error: 'Ação desconhecida.' });
+                return res.status(404).json({ error: `Ação desconhecida: ${action}` });
         }
     } catch (error) {
         console.error(`Erro fatal no handler principal (ação: ${req.body?.action}):`, error);
@@ -101,7 +113,7 @@ export default async function handler(req, res) {
     }
 }
 
-// --- Funções Lógicas (Copiadas das APIs antigas) ---
+// --- Funções Lógicas (Handlers) ---
 
 // (Lógica de api/user/upsert.js)
 async function handleUpsert(decodedToken) {
@@ -113,7 +125,6 @@ async function handleUpsert(decodedToken) {
     if (userSnap.exists) {
         return { role: userSnap.data().role, email: userSnap.data().email };
     } else {
-        const SUPER_ADMIN_EMAIL = 'eduardocarnello@gmail.com';
         const newRole = (email === SUPER_ADMIN_EMAIL) ? 'Admin' : 'Leitor';
         const newUserProfile = {
             email: email,
@@ -121,6 +132,11 @@ async function handleUpsert(decodedToken) {
             createdAt: FieldValue.serverTimestamp()
         };
         await userRef.set(newUserProfile);
+        try {
+            await auth.setCustomUserClaims(uid, { role: newRole });
+        } catch (claimsError) {
+            console.warn(`AVISO: Falha ao definir Custom Claim para ${uid}. Erro: ${claimsError.message}`);
+        }
         console.log(`Novo perfil criado para ${email} com cargo: ${newRole}`);
         return { role: newRole, email: email };
     }
@@ -130,11 +146,9 @@ async function handleUpsert(decodedToken) {
 async function handleGetArtigos(payload, res) {
     const limit = parseInt(payload.limit || 10, 10);
     const category = payload.category;
-
     let query = db.collection('artigos').orderBy('publishedAt', 'desc');
     const snapshot = await query.get();
     if (snapshot.empty) return res.status(200).json([]);
-
     const articles = [];
     snapshot.forEach(doc => {
         const article = doc.data();
@@ -156,15 +170,14 @@ async function handleGetArtigoDetalhe(payload, res) {
     const docRef = db.collection('artigos').doc(id);
     const docSnap = await docRef.get();
     if (!docSnap.exists) return res.status(404).json({ error: 'Artigo não encontrado.' });
-
     const data = docSnap.data();
-    const serializableData = convertTimestamps(data); // Usa a função recursiva
+    const serializableData = convertTimestamps(data);
     return res.status(200).json(serializableData);
 }
 
 // (Lógica de api/getCategorias.js)
 async function handleGetCategorias(res) {
-    const snapshot = await db.collection('categorias').get();
+    const snapshot = await db.collection('categorias').get(); // Removido o orderBy('name')
     if (snapshot.empty) return res.status(200).json([]);
     const categories = [];
     snapshot.forEach(doc => {
@@ -178,23 +191,19 @@ async function handleGetCategorias(res) {
 async function handleSearchArtigos(payload, res) {
     const { term, scope, category } = payload;
     if (!term) return res.status(400).json({ error: 'Termo de busca é obrigatório.' });
-
     const searchTerm = term.toLowerCase();
     const snapshot = await db.collection('artigos').orderBy('publishedAt', 'desc').get();
     if (snapshot.empty) return res.status(200).json([]);
-
     const searchResults = [];
     snapshot.forEach(doc => {
         const article = doc.data();
         const categoryMatch = (category === 'TODOS' || !category || article.categoryId === category);
         if (!categoryMatch) return;
-
         let textMatch = false;
         const title = article.title?.toLowerCase() || '';
         const summary = article.summary?.toLowerCase() || '';
         const content = stripHtml(article.content?.toLowerCase() || '');
         const tags = (article.tags || []).join(' ').toLowerCase();
-
         switch (scope) {
             case 'title': textMatch = title.includes(searchTerm); break;
             case 'summary': textMatch = summary.includes(searchTerm); break;
@@ -203,7 +212,6 @@ async function handleSearchArtigos(payload, res) {
             default: // 'all'
                 textMatch = title.includes(searchTerm) || summary.includes(searchTerm) || content.includes(searchTerm) || tags.includes(searchTerm);
         }
-
         if (textMatch) {
             const { content, ...articleSummary } = article;
             const convertedData = convertTimestamps(articleSummary);
@@ -242,10 +250,18 @@ async function handleGetArtigosParaCiencia(uid, res) {
             artigosPendentes.push({
                 id: artigoId,
                 title: artigo.title,
+                publishedAt: artigo.publishedAt, // Adiciona data para ordenação
                 scienceVersion: versaoArtigo
             });
         }
     });
+
+    artigosPendentes.sort((a, b) => {
+        const aDate = convertTimestamps(a.publishedAt)?.seconds || 0;
+        const bDate = convertTimestamps(b.publishedAt)?.seconds || 0;
+        return bDate - aDate;
+    });
+
     return res.status(200).json(artigosPendentes);
 }
 
@@ -282,48 +298,49 @@ async function handleDeclararCiencia(payload, uid, email, res) {
 async function handleSalvarArtigo(payload, role, uid, res) {
     const { id, ...articleData } = payload;
 
-    // Verifica permissão
-    if (id && role !== 'Editor' && role !== 'Admin') { // Edição
-        return res.status(403).json({ error: 'Acesso negado. Você não tem permissão para editar artigos.' });
-    }
-    if (!id && role !== 'Redator' && role !== 'Editor' && role !== 'Admin') { // Criação
-        return res.status(403).json({ error: 'Acesso negado. Você não tem permissão para criar artigos.' });
+    if (id) { // Edição
+        if (role !== 'Editor' && role !== 'Admin') {
+            return res.status(403).json({ error: 'Acesso negado. Você não tem permissão para editar artigos.' });
+        }
+    } else { // Criação
+        if (role !== 'Redator' && role !== 'Editor' && role !== 'Admin') {
+            return res.status(403).json({ error: 'Acesso negado. Você não tem permissão para criar artigos.' });
+        }
     }
 
-    // Lógica da API (copiada do arquivo)
     if (articleData.links && (!Array.isArray(articleData.links) || articleData.links.length > 5)) {
         return res.status(400).json({ error: 'Formato de links inválido ou limite de 5 excedido.' });
     }
+
     if (articleData.publishedAt) {
         articleData.publishedAt = Timestamp.fromDate(new Date(articleData.publishedAt + 'T12:00:00Z'));
     }
 
     articleData.updatedAt = FieldValue.serverTimestamp();
 
-    // Lógica de Ciência (Etapa 3.A)
     if (role === 'Admin') {
         const { isScienceReset, requiresScience } = payload;
-        articleData.requiresScience = requiresScience; // Salva o estado do checkbox
-
+        articleData.requiresScience = requiresScience;
         if (id && requiresScience && isScienceReset) {
-            // "Resetar" - Incrementa a versão
             articleData.scienceVersion = FieldValue.increment(1);
         } else if (!id && requiresScience) {
-            // Novo artigo com ciência
             articleData.scienceVersion = 1;
         }
-        // Se isScienceReset=false, ou se requiresScience=false, não faz nada com a versão
     }
+    delete articleData.isScienceReset;
 
     if (id) {
         const articleRef = db.collection('artigos').doc(id);
         await articleRef.set(articleData, { merge: true });
         return res.status(200).json({ message: 'Artigo atualizado com sucesso!' });
     } else {
+        articleData.authorUid = uid;
         articleData.createdAt = FieldValue.serverTimestamp();
-        articleData.authorUid = uid; // Salva quem criou
         if (!articleData.publishedAt) {
             articleData.publishedAt = FieldValue.serverTimestamp();
+        }
+        if (articleData.requiresScience && !articleData.scienceVersion) {
+            articleData.scienceVersion = 1;
         }
         const newDoc = await db.collection('artigos').add(articleData);
         return res.status(201).json({ message: 'Artigo salvo com sucesso!', id: newDoc.id });
@@ -337,6 +354,9 @@ async function handleDeletarArtigo(payload, role, res) {
     }
     const { id } = payload;
     if (!id) return res.status(400).json({ error: 'ID do artigo não fornecido.' });
+
+    // TODO: Deletar registros de ciência associados
+
     await db.collection('artigos').doc(id).delete();
     return res.status(200).json({ message: 'Artigo deletado com sucesso.' });
 }
@@ -410,3 +430,74 @@ async function handleUpdateUserRole(payload, adminUid, role, res) {
 
     return res.status(200).json({ message: 'Cargo do usuário atualizado com sucesso.' });
 }
+
+// --- ETAPA 3.C (NOVA): Log de Ciência ---
+async function handleGetScienceLog(payload, role, res) {
+    // Permissão: Editor ou Admin podem ver o log
+    if (role !== 'Editor' && role !== 'Admin') {
+        return res.status(403).json({ error: 'Acesso negado. Permissão insuficiente.' });
+    }
+
+    const { articleId } = payload;
+    if (!articleId) return res.status(400).json({ error: 'ID do artigo é obrigatório.' });
+
+    // 1. Busca a versão atual do artigo
+    const articleRef = db.collection('artigos').doc(articleId);
+    const articleSnap = await articleRef.get();
+    if (!articleSnap.exists) return res.status(404).json({ error: 'Artigo não encontrado.' });
+    const currentScienceVersion = articleSnap.data().scienceVersion || 1;
+
+    // 2. Busca todos os usuários
+    const usersSnapshot = await db.collection('users').get();
+    const allUsers = new Map();
+    usersSnapshot.forEach(doc => {
+        // Armazena apenas Leitores, Redatores e Editores (Admins não precisam dar ciência)
+        const user = doc.data();
+        if (user.role !== 'Admin') {
+            allUsers.set(doc.id, { email: user.email, uid: doc.id });
+        }
+    });
+
+    // 3. Busca todos os registros de ciência para este artigo
+    const cienciaSnapshot = await db.collection('ciencia')
+        .where('articleId', '==', articleId)
+        .get();
+
+    const completed = [];
+    const pending = [];
+
+    // 4. Compara as listas
+    cienciaSnapshot.forEach(doc => {
+        const cienciaData = doc.data();
+        const userId = cienciaData.userId;
+
+        // Verifica se o usuário que deu ciência ainda existe na nossa lista de usuários
+        if (allUsers.has(userId)) {
+            // Verifica se a versão da ciência é a mais recente
+            if (cienciaData.scienceVersion >= currentScienceVersion) {
+                // Usuário deu ciência da versão atual ou mais nova
+                completed.push({
+                    email: cienciaData.userEmail,
+                    declaredAt: convertTimestamps(cienciaData.declaredAt)
+                });
+            } else {
+                // Usuário deu ciência de uma versão antiga, ele está pendente
+                pending.push(allUsers.get(userId));
+            }
+            // Remove o usuário do map para sabermos quem sobrou (pendente)
+            allUsers.delete(userId);
+        }
+    });
+
+    // 5. Adiciona os usuários restantes (que nunca deram ciência) à lista de pendentes
+    allUsers.forEach(user => {
+        pending.push(user);
+    });
+
+    // Ordena as listas por e-mail
+    completed.sort((a, b) => a.email.localeCompare(b.email));
+    pending.sort((a, b) => a.email.localeCompare(b.email));
+
+    return res.status(200).json({ completed, pending });
+}
+
