@@ -325,7 +325,7 @@
     <div id="modal-container" class="fixed inset-0 z-50 hidden" role="dialog" aria-modal="true">
 
         <div id="modal-panel"
-            class="bg-white rounded-2xl shadow-xl w-full h-full  transform transition-all duration-300 ease-out scale-95 opacity-0">
+            class="bg-white rounded-2xl shadow-xl w-full h-full flex flex-col  transform transition-all duration-300 ease-out scale-95 opacity-0">
             <!-- Cabeçalho do Modal -->
             <header
                 class="sticky top-0 bg-white p-4 sm:p-6 border-b border-slate-200  flex justify-between items-center">
@@ -343,7 +343,7 @@
             </header>
 
             <!-- Conteúdo do Modal (com scroll) -->
-            <div id="modal-body" class="overflow-y-auto p-6 space-y-4">
+            <div id="modal-body" class="overflow-y-auto flex-1 p-6 space-y-4">
                 <!-- Carregador do Modal -->
                 <div id="modal-loading-spinner" class="text-center py-10">
                     <svg class="mx-auto h-8 w-8 text-slate-400 animate-spin" xmlns="http://www.w3.org/2000/svg"
