@@ -82,12 +82,6 @@
             <!-- Mensagem de Erro/Status -->
             <div id="login-status" class="text-center text-red-500 font-medium"></div>
 
-            <!-- Formulário de Login (REMOVIDO) -->
-            <!-- <form id="login-form" class="mt-8 space-y-6"> ... </form> -->
-
-            <!-- Divisor "OU" (REMOVIDO) -->
-            <!-- <div class="relative flex py-3 items-center"> ... </div> -->
-
             <div class="space-y-4 pt-6">
                 <!-- Botão Login Google -->
                 <button id="google-login-btn"
@@ -97,7 +91,13 @@
                     Entrar com Google
                 </button>
 
-
+                <!-- NOVO: Botão Login Microsoft 
+                <button id="microsoft-login-btn"
+                    class="group relative w-full flex justify-center py-3 px-4 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors">
+                    <img class="w-5 h-5 mr-2" src="https://www.svgrepo.com/show/303108/microsoft-icon-logo.svg"
+                        alt="Microsoft icon">
+                    Entrar com Microsoft
+                </button>-->
             </div>
 
             <!-- Link para o Site -->
@@ -347,7 +347,7 @@
                 <div class="lg:col-span-1 space-y-8">
 
                     <!-- Seção Gerenciar Categorias (Permissão: Admin) -->
-                    <div id="category-admin-section" class="bg-white p-6 sm:p-8 rounded-2xl shadow-lg  top-24"
+                    <div id="category-admin-section" class="bg-white p-6 sm:p-8 rounded-2xl shadow-lg top-24"
                         style="display: none;">
                         <h2 id="category-form-title" class="text-2xl font-bold text-slate-800 mb-6">Gerenciar Categorias
                         </h2>
@@ -693,6 +693,10 @@
                         }
                     }
                     console.error(`Erro na API (ação: ${action}, status: ${response.status}):`, errorMessage);
+                    // MUDANÇA WHITELIST: Lança o erro específico
+                    if (response.status === 403) {
+                        throw new Error('ACESSO_NEGADO: Seu e-mail não está autorizado.');
+                    }
                     throw new Error(errorMessage);
                 }
                 if (!responseText) return null;
@@ -710,7 +714,7 @@
         }
 
 
-        // --- AUTENTICAÇÃO (COM SISTEMA DE CARGOS) ---
+        // --- AUTENTICAÇÃO (COM SISTEMA DE CARGOS E WHITELIST) ---
         onAuthStateChanged(auth, async (user) => {
             if (user) {
                 try {
@@ -778,7 +782,17 @@
             signInWithPopup(auth, googleProvider).catch(handleAuthError);
         });
 
-
+        // Esconde o botão da Microsoft (você removeu do HTML, mas
+        // este código evita erro caso ele volte)
+        if (microsoftLoginBtn) {
+            microsoftLoginBtn.style.display = 'none';
+        }
+        /*
+        microsoftLoginBtn.addEventListener('click', () => {
+            loginStatus.textContent = 'Abrindo popup da Microsoft...';
+            signInWithPopup(auth, microsoftProvider).catch(handleAuthError);
+        });
+        */
 
         function handleAuthError(error) {
             console.error("Erro de login:", error.code, error.message);
@@ -1428,18 +1442,16 @@
             // Limpa listeners antigos (essencial)
             const newConfirmBtn = confirmBtn.cloneNode(true);
             confirmBtn.parentNode.replaceChild(newConfirmBtn, confirmBtn);
-            confirmBtn = newConfirmBtn; // Atualiza a referência
 
             const newCancelBtn = cancelBtn.cloneNode(true);
             cancelBtn.parentNode.replaceChild(newCancelBtn, cancelBtn);
-            cancelBtn = newCancelBtn; // Atualiza a referência
 
             // Adiciona novos listeners
-            confirmBtn.addEventListener('click', () => {
+            newConfirmBtn.addEventListener('click', () => {
                 if (onConfirmCallback) onConfirmCallback();
                 closeConfirmModal();
             });
-            cancelBtn.addEventListener('click', () => {
+            newCancelBtn.addEventListener('click', () => {
                 if (onCancelCallback) onCancelCallback();
                 closeConfirmModal();
             });
@@ -1479,6 +1491,7 @@
 
             scienceLogModal.style.display = 'flex';
             setTimeout(() => {
+                // CORREÇÃO: Variável com typo
                 modalBackdropScienceLog.style.opacity = '1';
                 modalPanelScienceLog.style.opacity = '1';
                 modalPanelScienceLog.style.transform = 'scale(1)';
