@@ -14,7 +14,7 @@
             scroll-behavior: smooth;
         }
 
-        /* Webkit Scrollbar */
+        /* ... (estilos de scrollbar inalterados) ... */
         ::-webkit-scrollbar {
             width: 12px;
             height: 12px;
@@ -34,17 +34,10 @@
             background: #94a3b8;
         }
 
-        /* Foco personalizado */
         .focus-ring-visible:focus-visible {
             outline: 2px solid #2563eb;
             outline-offset: 2px;
         }
-
-        /* CORREÇÃO PISCADA (FOUC): Esconde o conteúdo até o JS decidir o que mostrar */
-        /* .fouc-hidden {
-            display: none;
-        } */
-        /* Aplicado via style="display: none;" inline */
 
         /* Estilos do Conteúdo do Documento (Modal) */
         #modal-content h1,
@@ -142,6 +135,82 @@
         div#modal-metadata {
             margin-top: 0.2rem;
         }
+
+        /* NOVO: Estilos de Impressão */
+        @media print {
+
+            /* Esconde tudo por padrão */
+            body>section,
+            body>div:not(#modal-container) {
+                display: none !important;
+                visibility: hidden !important;
+            }
+
+            /* Garante que o modal e seus pais fiquem visíveis */
+            #modal-container,
+            #modal-panel,
+            #modal-body {
+                display: block !important;
+                visibility: visible !important;
+            }
+
+            /* Reseta o modal para preencher a página de impressão */
+            #modal-container {
+                position: static;
+                width: 100%;
+                height: 100%;
+                z-index: 9999;
+                padding: 0;
+            }
+
+            #modal-panel {
+                width: 100%;
+                max-width: 100%;
+                height: auto;
+                max-height: none;
+                box-shadow: none;
+                border: none;
+                transform: none !important;
+                opacity: 1 !important;
+                border-radius: 0;
+            }
+
+            /* Esconde os botões (fechar, imprimir) e o backdrop */
+            #modal-backdrop,
+            #modal-close-btn,
+            #modal-print-btn,
+            #modal-loading-spinner {
+                display: none !important;
+            }
+
+            /* Garante que o cabeçalho e o corpo sejam mostrados */
+            #modal-panel header,
+            #modal-body {
+                display: block !important;
+                visibility: visible !important;
+            }
+
+            /* Remove formatação desnecessária do header */
+            #modal-panel header {
+                position: static;
+                border: none;
+                border-radius: 0;
+            }
+
+            /* Garante que o corpo do modal possa ser rolado na impressão (se quebrar a página) */
+            #modal-body {
+                overflow: visible;
+                height: auto;
+                flex: none;
+                /* Reseta o flex-1 */
+            }
+
+            /* Evita que o conteúdo do quill seja cortado */
+            .ql-editor {
+                height: auto !important;
+                overflow: visible !important;
+            }
+        }
     </style>
 </head>
 
@@ -177,7 +246,6 @@
                     Entrar com Google
                 </button>
 
-
             </div>
 
         </div>
@@ -196,6 +264,7 @@
                             <path stroke-linecap="round" stroke-linejoin="round"
                                 d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18c-2.305 0-4.408.867-6 2.292m0-14.25v14.25" />
                         </svg>
+                        <!-- CORREÇÃO 1: Oculta o texto em telas pequenas (hidden) e mostra em 'sm' e maiores (sm:block) -->
                         <span class="ml-3 text-2xl font-bold text-slate-800 hidden sm:block">Base de Conhecimento</span>
                     </div>
 
@@ -340,14 +409,29 @@
                 <h3 id="modal-title" class="text-xl sm:text-2xl font-bold text-slate-800 break-words pr-4">
                     Carregando Título...
                 </h3>
-                <button id="modal-close-btn"
-                    class="p-2 -m-2 rounded-full text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors focus-ring-visible">
-                    <span class="sr-only">Fechar</span>
-                    <svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                        stroke-width="2" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                </button>
+
+                <!-- NOVO: Wrapper para botões -->
+                <div class="flex items-center gap-2 flex-shrink-0">
+                    <!-- NOVO: Botão de Impressão -->
+                    <button id="modal-print-btn"
+                        class="p-2 -m-2 rounded-full text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors focus-ring-visible">
+                        <span class="sr-only">Imprimir</span>
+                        <svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                            stroke-width="1.5" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M6.72 13.829c-.38.03-.73.06-1.06.09.4.02.75.05 1.11.08m-1.06-.09a1.5 1.5 0 00-1.42 1.42l-.02.02a1.5 1.5 0 001.42 1.42l.02.02a1.5 1.5 0 001.42-1.42l.02-.02a1.5 1.5 0 00-1.42-1.42m-1.06-.09a1.5 1.5 0 00-1.42 1.42l-.02.02a1.5 1.5 0 001.42 1.42l.02.02a1.5 1.5 0 001.42-1.42l.02-.02a1.5 1.5 0 00-1.42-1.42m0 0l.21 2.09.21 2.1a.5.5 0 00.5.5h4.5a.5.5 0 00.5-.5l.21-2.1.21-2.09m0 0l-4.5 0m4.5 0l.21 2.09.21 2.1a.5.5 0 00.5.5h4.5a.5.5 0 00.5-.5l.21-2.1.21-2.09m0 0l-4.5 0m4.5 0l.21 2.09.21 2.1a.5.5 0 00.5.5h4.5a.5.5 0 00.5-.5l.21-2.1.21-2.09m0 0l-4.5 0m-4.5 0l-.21-2.09-.21-2.1a.5.5 0 00-.5-.5h-4.5a.5.5 0 00-.5.5l-.21 2.1-.21 2.09m0 0l4.5 0m-4.5 0l-.21-2.09-.21-2.1a.5.5 0 00-.5-.5h-4.5a.5.5 0 00-.5.5l-.21 2.1-.21 2.09m0 0l4.5 0m0 0l-.21-2.09-.21-2.1a.5.5 0 00-.5-.5h-4.5a.5.5 0 00-.5.5l-.21 2.1-.21 2.09" />
+                        </svg>
+                    </button>
+                    <!-- Botão Fechar -->
+                    <button id="modal-close-btn"
+                        class="p-2 -m-2 rounded-full text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors focus-ring-visible">
+                        <span class="sr-only">Fechar</span>
+                        <svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                            stroke-width="2" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                </div>
             </header>
 
             <!-- Conteúdo do Modal (com scroll) -->
@@ -419,7 +503,7 @@
         aria-hidden="true" style="opacity: 0;"></div>
 
     <div id="modal-ciencia-container" class="fixed inset-0 z-[70] hidden flex items-center justify-center p-4"
-        role="dialog" aria-modal="true" aria-labelledby="modal-ciencia-title">
+        role="dialog" aria-modal="true" aria-labelledby="modal-ciencia-title" style="display: none;">
 
         <!-- Painel (NÃO TELA CHEIA) -->
         <div id="modal-ciencia-panel"
@@ -564,6 +648,7 @@
         const modalContainer = document.getElementById('modal-container');
         const modalPanel = document.getElementById('modal-panel');
         const modalCloseBtn = document.getElementById('modal-close-btn');
+        const modalPrintBtn = document.getElementById('modal-print-btn'); // NOVO: Botão de Imprimir
         const modalTitle = document.getElementById('modal-title');
         const modalBody = document.getElementById('modal-body');
         const modalLoadingSpinner = document.getElementById('modal-loading-spinner');
@@ -606,7 +691,6 @@
         let cienciaArtigoIndex = 0;
 
         // --- FUNÇÃO WRAPPER DE FETCH (COM TOKEN) ---
-        // (Atualizada para a API Monolito)
         async function fetchWithToken(action, payload = {}) {
             if (!currentUser) {
                 throw new Error("Usuário não autenticado.");
@@ -614,17 +698,16 @@
             try {
                 const token = await getIdToken(currentUser, /* forceRefresh */ true);
 
-                // Todas as chamadas agora vão para 'api' (que o vercel.json roteia para api/index.js)
                 const response = await fetch('api', {
                     method: 'POST',
                     headers: {
                         'Authorization': `Bearer ${token}`,
                         'Content-Type': 'application/json'
                     },
-                    body: JSON.stringify({ action, payload }) // Envia a ação e o payload
+                    body: JSON.stringify({ action, payload })
                 });
 
-                const responseText = await response.text(); // Lê o texto uma vez
+                const responseText = await response.text();
 
                 if (!response.ok) {
                     let errorData;
@@ -635,15 +718,22 @@
                         errorData = { error: `Erro ${response.status}: ${response.statusText || 'Erro no servidor'}` };
                     }
                     console.error(`Erro na API (ação: ${action}, status: ${response.status}):`, errorData.error);
+
+                    // MUDANÇA WHITELIST: Lança o erro específico
+                    if (response.status === 403 || errorData.error.includes('ACESSO_NEGADO')) {
+                        throw new Error('ACESSO_NEGADO'); // Erro específico
+                    }
                     if (response.status === 401) {
                         alert('Sua sessão expirou. Por favor, faça login novamente.');
                         await signOut(auth);
                     }
                     throw new Error(errorData.error || 'Erro na requisição');
                 }
+
                 if (response.status === 204) {
                     return null;
                 }
+
                 try {
                     return JSON.parse(responseText);
                 } catch (e) {
@@ -651,8 +741,7 @@
                 }
             } catch (error) {
                 console.error("Erro fatal no fetchWithToken:", error);
-                // MUDANÇA: Lança o erro para que o onAuthStateChanged possa pegá-lo
-                throw error;
+                throw error; // Lança o erro para que 'onAuthStateChanged' possa pegá-lo
             }
         }
 
@@ -662,8 +751,7 @@
             currentUser = user;
             if (user) {
                 try {
-                    // Chama a API upsert para registrar o usuário e obter seu cargo
-                    // Esta API agora também valida a WHITELIST
+                    // Chama a API upsert para registrar o usuário, validar a Whitelist e obter o cargo
                     const { role, email } = await fetchWithToken('user/upsert');
                     currentUserRole = role;
 
@@ -694,9 +782,12 @@
 
                 } catch (error) {
                     console.error("Erro ao verificar cargo do usuário:", error);
-                    // MUDANÇA: Trata o erro de Whitelist
+
+                    // MUDANÇA WHITELIST: Trata o erro de Acesso Negado
                     if (error.message.includes('ACESSO_NEGADO')) {
                         loginStatus.textContent = 'Acesso Negado. Seu e-mail não está autorizado.';
+                        loginSection.style.display = 'flex'; // Garante que o login seja exibido
+                        contentSection.style.display = 'none'; // Esconde o conteúdo
                     } else {
                         loginStatus.textContent = 'Erro ao verificar permissões. Tente novamente.';
                     }
@@ -718,12 +809,14 @@
             signInWithPopup(auth, googleProvider).catch(handleAuthError);
         });
 
-        // REMOVIDO: Botão Microsoft (com base no seu HTML)
-        // microsoftLoginBtn.addEventListener('click', ...);
+        // Esconde o botão da Microsoft (você removeu)
+        if (microsoftLoginBtn) {
+            microsoftLoginBtn.style.display = 'none';
+        }
 
         function handleAuthError(error) {
             console.error("Erro de login:", error.code, error.message);
-            // MUDANÇA: Trata o erro de Whitelist
+            // MUDANÇA WHITELIST: Trata o erro de Acesso Negado
             if (error.message.includes('ACESSO_NEGADO')) {
                 loginStatus.textContent = 'Acesso Negado. Seu e-mail não está autorizado.';
             } else if (error.code === 'auth/popup-closed-by-user') {
@@ -786,7 +879,6 @@
             categoriesLoading.textContent = 'Carregando categorias...';
             categoriesLoading.classList.remove('hidden');
             try {
-                // AÇÃO ATUALIZADA
                 const categories = await fetchWithToken('getCategorias');
                 allCategories = categories;
                 renderCategories(categories);
@@ -812,7 +904,6 @@
             loadMoreBtn.disabled = true;
 
             try {
-                // AÇÃO ATUALIZADA
                 const payload = { limit: limit, category: currentCategory };
                 const articles = await fetchWithToken('getArtigos', payload);
 
@@ -825,7 +916,7 @@
                 } else {
                     loadMoreContainer.classList.remove('hidden');
                 }
-                renderArticles(newArticles, false); // false = não limpar o grid
+                renderArticles(newArticles, false);
             } catch (error) {
                 console.error("Erro ao buscar mais documentos:", error);
                 articlesStatus.textContent = `Erro ao carregar documentos: ${error.message}`;
@@ -953,10 +1044,8 @@
                 articlesTitle.textContent = `Resultados da Busca por: "${searchTerm}"`;
                 loadMoreContainer.classList.add('hidden');
                 try {
-                    // AÇÃO ATUALIZADA
                     const payload = { term: searchTerm, scope: searchScope, category: currentCategory };
                     const searchResults = await fetchWithToken('searchArtigos', payload);
-
                     currentArticles = searchResults;
                     renderArticles(searchResults, true);
                 } catch (error) {
@@ -993,7 +1082,6 @@
             }, 10);
 
             try {
-                // AÇÃO ATUALIZADA
                 const article = await fetchWithToken('getArtigoDetalhe', { id: id });
 
                 modalTitle.textContent = article.title;
@@ -1070,6 +1158,11 @@
         modalCloseBtn.addEventListener('click', closeModal);
         modalBackdrop.addEventListener('click', closeModal);
 
+        // NOVO: Adiciona listener para o botão de imprimir
+        modalPrintBtn.addEventListener('click', () => {
+            window.print();
+        });
+
 
         // --- NOVO: LÓGICA DO MODAL DE CIÊNCIA ---
 
@@ -1097,7 +1190,7 @@
 
         function abrirModalCiencia() {
             modalCienciaBackdrop.style.display = 'block';
-            modalCienciaContainer.style.display = 'flex';
+            modalCienciaContainer.style.display = 'flex'; // Corrigido de 'block' para 'flex'
             setTimeout(() => {
                 modalCienciaBackdrop.style.opacity = '1';
                 modalCienciaPanel.style.opacity = '1';
