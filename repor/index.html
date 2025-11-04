@@ -1,0 +1,917 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Controle de Reposição de Horas</title>
+    <!-- Carrega o Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Carrega a biblioteca de ícones Lucide -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Fonte Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f4f7f6;
+            /* Fundo levemente acinzentado */
+        }
+
+        /* Estilos para a impressão */
+        @media print {
+            body * {
+                visibility: hidden;
+            }
+
+            #printArea,
+            #printArea * {
+                visibility: visible;
+            }
+
+            #printArea {
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 100%;
+                margin: 0;
+                padding: 0;
+            }
+
+            .no-print {
+                display: none !important;
+            }
+        }
+
+        /* Estiliza os inputs de tempo e data para mostrar o ícone */
+        input[type="time"]::-webkit-calendar-picker-indicator,
+        input[type="date"]::-webkit-calendar-picker-indicator {
+            opacity: 0.5;
+            cursor: pointer;
+        }
+    </style>
+</head>
+
+<body class="antialiased text-gray-800">
+
+    <div class="container mx-auto p-4 md:p-8 max-w-5xl">
+
+        <!-- Cabeçalho -->
+        <header class="mb-8 text-center">
+            <h1 class="text-3xl md:text-4xl font-bold text-blue-700">Controle de Reposição de Horas</h1>
+            <p class="text-lg text-gray-600 mt-2">Gerencie seu saldo de horas a compensar.</p>
+        </header>
+
+        <!-- Resumo Principal -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <div class="bg-white shadow-lg rounded-xl p-6 flex flex-col items-center justify-center">
+                <span class="text-sm font-medium text-gray-500 uppercase">Total a Repor</span>
+                <span id="totalOwed" class="text-3xl font-bold text-red-600 mt-2">00:00</span>
+            </div>
+            <div class="bg-white shadow-lg rounded-xl p-6 flex flex-col items-center justify-center">
+                <span class="text-sm font-medium text-gray-500 uppercase">Total Reposto</span>
+                <span id="totalCompensated" class="text-3xl font-bold text-green-600 mt-2">00:00</span>
+            </div>
+            <div class="bg-blue-700 text-white shadow-lg rounded-xl p-6 flex flex-col items-center justify-center">
+                <span class="text-sm font-medium text-blue-200 uppercase">Saldo Restante</span>
+                <span id="remainingBalance" class="text-3xl font-bold mt-2">00:00</span>
+            </div>
+        </div>
+
+        <!-- Seções Principais (Débito e Reposição) -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+            <!-- Seção 1: Adicionar Débito (Horas a Repor) -->
+            <div class="bg-white shadow-lg rounded-xl p-6">
+                <h2 class="text-2xl font-semibold mb-4 text-blue-700 flex items-center">
+                    <i data-lucide="calendar-plus" class="w-6 h-6 mr-2"></i>
+                    Horas a Repor (Débitos)
+                </h2>
+                <form id="debitForm" class="space-y-4">
+                    <div>
+                        <label for="debitReason" class="block text-sm font-medium text-gray-700 mb-1">Motivo (Feriado,
+                            Retirada, etc.)</label>
+                        <input type="text" id="debitReason" required
+                            class="w-full border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                            placeholder="Ex: Feriado de Corpus Christi">
+                    </div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label for="debitDate" class="block text-sm font-medium text-gray-700 mb-1">Data</label>
+                            <input type="date" id="debitDate" required
+                                class="w-full border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                        </div>
+                        <div>
+                            <label for="debitTime" class="block text-sm font-medium text-gray-700 mb-1">Horas
+                                (HH:mm)</label>
+                            <input type="time" id="debitTime" value="08:00" required
+                                class="w-full border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                        </div>
+                    </div>
+                    <button type="submit"
+                        class="w-full bg-blue-600 text-white font-medium rounded-lg px-5 py-2.5 text-center transition hover:bg-blue-700 shadow-md flex items-center justify-center">
+                        <i data-lucide="plus-circle" class="w-5 h-5 mr-2"></i>
+                        Adicionar Débito
+                    </button>
+                </form>
+
+                <!-- Lista de Débitos -->
+                <div class="mt-6">
+                    <h3 class="text-lg font-semibold mb-2">Histórico de Débitos</h3>
+                    <div id="debitList" class="space-y-2 max-h-60 overflow-y-auto pr-2">
+                        <!-- Itens inseridos via JS -->
+                        <p class="text-gray-500 text-center text-sm" id="noDebits">Nenhum débito adicionado.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Seção 2: Adicionar Reposição -->
+            <div class="bg-white shadow-lg rounded-xl p-6">
+                <h2 class="text-2xl font-semibold mb-4 text-green-700 flex items-center">
+                    <i data-lucide="clock" class="w-6 h-6 mr-2"></i>
+                    Lançar Reposição
+                </h2>
+                <form id="compForm" class="space-y-4">
+                    <div>
+                        <label for="compDate" class="block text-sm font-medium text-gray-700 mb-1">Data da
+                            Reposição</label>
+                        <input type="date" id="compDate" required
+                            class="w-full border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                    </div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label for="compStart" class="block text-sm font-medium text-gray-700 mb-1">Hora de
+                                Entrada</label>
+                            <input type="time" id="compStart" required
+                                class="w-full border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                        </div>
+                        <div>
+                            <label for="compEnd" class="block text-sm font-medium text-gray-700 mb-1">Hora de
+                                Saída</label>
+                            <input type="time" id="compEnd" required
+                                class="w-full border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                        </div>
+                    </div>
+                    <button type="submit"
+                        class="w-full bg-green-600 text-white font-medium rounded-lg px-5 py-2.5 text-center transition hover:bg-green-700 shadow-md flex items-center justify-center">
+                        <i data-lucide="check-circle" class="w-5 h-5 mr-2"></i>
+                        Adicionar Reposição
+                    </button>
+                </form>
+
+                <!-- Lista de Reposições -->
+                <div class="mt-6">
+                    <h3 class="text-lg font-semibold mb-2">Histórico de Reposições</h3>
+                    <div id="compensationList" class="space-y-2 max-h-60 overflow-y-auto pr-2">
+                        <!-- Itens inseridos via JS -->
+                        <p class="text-gray-500 text-center text-sm" id="noCompensations">Nenhuma reposição adicionada.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Seção 3: Ações (JSON e Impressão) -->
+        <div class="bg-white shadow-lg rounded-xl p-6 mt-6">
+            <h2 class="text-2xl font-semibold mb-4 text-gray-700">Ações</h2>
+            <div class="flex flex-wrap gap-4">
+                <!-- Exportar JSON -->
+                <button id="exportJson"
+                    class="flex-1 bg-gray-600 text-white font-medium rounded-lg px-5 py-2.5 text-center transition hover:bg-gray-700 flex items-center justify-center min-w-[150px]">
+                    <i data-lucide="download" class="w-5 h-5 mr-2"></i>
+                    Exportar JSON
+                </button>
+
+                <!-- Importar JSON -->
+                <label
+                    class="flex-1 bg-gray-100 text-gray-800 font-medium rounded-lg px-5 py-2.5 text-center transition hover:bg-gray-200 cursor-pointer flex items-center justify-center min-w-[150px]">
+                    <i data-lucide="upload" class="w-5 h-5 mr-2"></i>
+                    Importar JSON
+                    <input type="file" id="importJson" class="hidden" accept="application/json">
+                </label>
+
+                <!-- Imprimir Relatório -->
+                <button id="printReport"
+                    class="flex-1 bg-blue-600 text-white font-medium rounded-lg px-5 py-2.5 text-center transition hover:bg-blue-700 flex items-center justify-center min-w-[150px]">
+                    <i data-lucide="printer" class="w-5 h-5 mr-2"></i>
+                    Imprimir Relatório
+                </button>
+            </div>
+        </div>
+
+    </div> <!-- fim .container -->
+
+    <!-- Modal de Impressão -->
+    <div id="printModal"
+        class="fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center p-4 z-50 hidden">
+        <div class="bg-white rounded-xl shadow-2xl p-6 md:p-8 w-full max-w-md">
+            <h2 class="text-2xl font-semibold mb-6 text-center text-blue-700">Informações para o Relatório</h2>
+            <form id="printModalForm">
+                <div class="space-y-4">
+                    <div>
+                        <label for="employeeName" class="block text-sm font-medium text-gray-700 mb-1">Nome
+                            Completo</label>
+                        <input type="text" id="employeeName" required
+                            class="w-full border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                            placeholder="Seu nome completo">
+                    </div>
+                    <div>
+                        <label for="employeeId" class="block text-sm font-medium text-gray-700 mb-1">Matrícula</label>
+                        <input type="text" id="employeeId" required
+                            class="w-full border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                            placeholder="Sua matrícula">
+                    </div>
+                </div>
+                <div class="flex gap-4 mt-8">
+                    <button type="button" id="cancelPrint"
+                        class="flex-1 bg-gray-200 text-gray-800 font-medium rounded-lg px-5 py-2.5 text-center transition hover:bg-gray-300">
+                        Cancelar
+                    </button>
+                    <button type="submit"
+                        class="flex-1 bg-blue-600 text-white font-medium rounded-lg px-5 py-2.5 text-center transition hover:bg-blue-700">
+                        Gerar Relatório
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal de Edição -->
+    <div id="editModal"
+        class="fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center p-4 z-50 hidden">
+        <div class="bg-white rounded-xl shadow-2xl p-6 md:p-8 w-full max-w-md">
+            <h2 class="text-2xl font-semibold mb-6 text-center text-blue-700" id="editModalTitle">Editar Lançamento</h2>
+            <form id="editModalForm">
+                <input type="hidden" id="editItemId">
+                <input type="hidden" id="editItemType">
+
+                <!-- Campos de Débito -->
+                <div id="editDebitFields" class="space-y-4 hidden">
+                    <div>
+                        <label for="editDebitReason" class="block text-sm font-medium text-gray-700 mb-1">Motivo</label>
+                        <input type="text" id="editDebitReason" required
+                            class="w-full border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                    </div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label for="editDebitDate" class="block text-sm font-medium text-gray-700 mb-1">Data</label>
+                            <input type="date" id="editDebitDate" required
+                                class="w-full border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                        </div>
+                        <div>
+                            <label for="editDebitTime" class="block text-sm font-medium text-gray-700 mb-1">Horas
+                                (HH:mm)</label>
+                            <input type="time" id="editDebitTime" required
+                                class="w-full border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Campos de Reposição -->
+                <div id="editCompFields" class="space-y-4 hidden">
+                    <div>
+                        <label for="editCompDate" class="block text-sm font-medium text-gray-700 mb-1">Data da
+                            Reposição</label>
+                        <input type="date" id="editCompDate" required
+                            class="w-full border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                    </div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label for="editCompStart" class="block text-sm font-medium text-gray-700 mb-1">Hora de
+                                Entrada</label>
+                            <input type="time" id="editCompStart" required
+                                class="w-full border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                        </div>
+                        <div>
+                            <label for="editCompEnd" class="block text-sm font-medium text-gray-700 mb-1">Hora de
+                                Saída</label>
+                            <input type="time" id="editCompEnd" required
+                                class="w-full border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex gap-4 mt-8">
+                    <button type="button" id="cancelEdit"
+                        class="flex-1 bg-gray-200 text-gray-800 font-medium rounded-lg px-5 py-2.5 text-center transition hover:bg-gray-300">
+                        Cancelar
+                    </button>
+                    <button type="submit"
+                        class="flex-1 bg-blue-600 text-white font-medium rounded-lg px-5 py-2.5 text-center transition hover:bg-blue-700">
+                        Salvar Alterações
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal de Erro -->
+    <div id="errorModal"
+        class="fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center p-4 z-50 hidden">
+        <div class="bg-white rounded-xl shadow-2xl p-8 w-full max-w-sm text-center">
+            <i data-lucide="alert-triangle" class="w-16 h-16 text-red-500 mx-auto mb-4"></i>
+            <h2 class="text-2xl font-semibold mb-4">Atenção</h2>
+            <p id="errorMessage" class="text-gray-600 mb-6">Mensagem de erro aqui.</p>
+            <button id="closeErrorModal"
+                class="w-full bg-red-600 text-white font-medium rounded-lg px-5 py-2.5 text-center transition hover:bg-red-700">
+                Entendi
+            </button>
+        </div>
+    </div>
+
+    <!-- Área de Impressão (oculta) -->
+    <div id="printArea" class="hidden"></div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+
+            // --- CONSTANTES DE REGRAS ---
+            const MORNING_START = 7 * 60 + 30; // 07:30 em minutos
+            const MORNING_END = 9 * 60;         // 09:00 em minutos
+            const EVENING_START = 17 * 60;      // 17:00 em minutos
+            const EVENING_END = 17 * 60 + 30;   // 17:30 em minutos
+            const MIN_COMPENSATION = 30;        // 30 minutos
+
+            // --- ESTADO DA APLICAÇÃO ---
+            let state = {
+                debits: [], // { id, reason, date, timeOwed (HH:mm) }
+                compensations: [] // { id, date, start (HH:mm), end (HH:mm), calculated (HH:mm) }
+            };
+
+            // --- SELETORES DO DOM ---
+            const debitForm = document.getElementById('debitForm');
+            const compForm = document.getElementById('compForm');
+            const debitList = document.getElementById('debitList');
+            const compensationList = document.getElementById('compensationList');
+            const totalOwedEl = document.getElementById('totalOwed');
+            const totalCompensatedEl = document.getElementById('totalCompensated');
+            const remainingBalanceEl = document.getElementById('remainingBalance');
+            const noDebits = document.getElementById('noDebits');
+            const noCompensations = document.getElementById('noCompensations');
+
+            // Botões de Ação
+            const exportJsonBtn = document.getElementById('exportJson');
+            const importJsonInput = document.getElementById('importJson');
+            const printReportBtn = document.getElementById('printReport');
+
+            // Modais
+            const errorModal = document.getElementById('errorModal');
+            const errorMessage = document.getElementById('errorMessage');
+            const closeErrorModalBtn = document.getElementById('closeErrorModal');
+            const printModal = document.getElementById('printModal');
+            const printModalForm = document.getElementById('printModalForm');
+            const cancelPrintBtn = document.getElementById('cancelPrint');
+            const printArea = document.getElementById('printArea');
+
+            // Seletores Modal Edição
+            const editModal = document.getElementById('editModal');
+            const editModalForm = document.getElementById('editModalForm');
+            const editModalTitle = document.getElementById('editModalTitle');
+            const cancelEditBtn = document.getElementById('cancelEdit');
+            const editItemId = document.getElementById('editItemId');
+            const editItemType = document.getElementById('editItemType');
+            const editDebitFields = document.getElementById('editDebitFields');
+            const editCompFields = document.getElementById('editCompFields');
+
+            // --- FUNÇÕES AUXILIARES (Tempo e Formatação) ---
+
+            /** Converte "HH:mm" para minutos totais */
+            function timeToMinutes(timeStr) {
+                if (!timeStr || timeStr.indexOf(':') === -1) return 0;
+                const [hours, minutes] = timeStr.split(':').map(Number);
+                return (hours * 60) + minutes;
+            }
+
+            /** Converte minutos totais para "HH:mm", lidando com negativos */
+            function minutesToTime(totalMinutes) {
+                const sign = totalMinutes < 0 ? "-" : "";
+                const absMinutes = Math.abs(totalMinutes);
+                const hours = Math.floor(absMinutes / 60);
+                const minutes = absMinutes % 60;
+                return `${sign}${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
+            }
+
+            /** Formata "YYYY-MM-DD" para "DD/MM/YYYY" */
+            function formatDate(dateStr) {
+                if (!dateStr) return 'N/A';
+                const [year, month, day] = dateStr.split('-');
+                return `${day}/${month}/${year}`;
+            }
+
+            /** Mostra o modal de erro */
+            function showErrorModal(message) {
+                errorMessage.textContent = message;
+                errorModal.classList.remove('hidden');
+            }
+
+            /** Fecha modais */
+            function closeModal() {
+                errorModal.classList.add('hidden');
+                printModal.classList.add('hidden');
+                editModal.classList.add('hidden');
+            }
+
+            // --- FUNÇÃO PRINCIPAL DE CÁLCULO ---
+
+            /**
+             * Calcula o tempo de reposição válido com base nas regras.
+             * @param {string} start - Hora de início ("HH:mm")
+             * @param {string} end - Hora de término ("HH:mm")
+             * @param {number} remainingBalanceMinutes - Saldo restante atual em minutos
+             * @returns {number} - Minutos de reposição válidos
+             */
+            function calculateCompensation(start, end, remainingBalanceMinutes) {
+                const startMin = timeToMinutes(start);
+                const endMin = timeToMinutes(end);
+
+                if (startMin >= endMin) {
+                    showErrorModal("A hora de saída deve ser maior que a hora de entrada.");
+                    return 0;
+                }
+
+                // Calcula sobreposição com a janela da manhã (07:30 - 09:00)
+                const morningMinutes = Math.max(0, Math.min(endMin, MORNING_END) - Math.max(startMin, MORNING_START));
+
+                // Calcula sobreposição com a janela da tarde (17:00 - 17:30)
+                const eveningMinutes = Math.max(0, Math.min(endMin, EVENING_END) - Math.max(startMin, EVENING_START));
+
+                const totalCompensated = morningMinutes + eveningMinutes;
+
+                if (totalCompensated === 0) {
+                    showErrorModal("O horário inserido está fora das janelas de reposição permitidas (07:30-09:00 e 17:00-17:30).");
+                    return 0;
+                }
+
+                // Regra da Exceção: Saldo restante é menor que 30 min
+                const isException = remainingBalanceMinutes > 0 && remainingBalanceMinutes < MIN_COMPENSATION;
+
+                if (isException) {
+                    // Se estiver na exceção, creditamos qualquer valor, limitado ao saldo restante.
+                    return Math.min(totalCompensated, remainingBalanceMinutes);
+                } else {
+                    // Regra Normal: Deve atingir o mínimo de 30 min
+                    if (totalCompensated < MIN_COMPENSATION) {
+                        showErrorModal(`Reposição de ${totalCompensated} min é inferior ao mínimo de 30 minutos e não foi considerada.`);
+                        return 0;
+                    }
+                    return totalCompensated;
+                }
+            }
+
+            // --- LÓGICA DE ATUALIZAÇÃO DA UI ---
+
+            /** Recalcula todos os totais e atualiza o DOM */
+            function updateUI() {
+                // Calcula totais
+                const totalOwedMinutes = state.debits.reduce((sum, debit) => sum + timeToMinutes(debit.timeOwed), 0);
+                const totalCompensatedMinutes = state.compensations.reduce((sum, comp) => sum + timeToMinutes(comp.calculated), 0);
+                const remainingMinutes = totalOwedMinutes - totalCompensatedMinutes;
+
+                // Atualiza resumos
+                totalOwedEl.textContent = minutesToTime(totalOwedMinutes);
+                totalCompensatedEl.textContent = minutesToTime(totalCompensatedMinutes);
+                remainingBalanceEl.textContent = minutesToTime(remainingMinutes);
+
+                // Muda a cor do saldo restante
+                remainingBalanceEl.classList.toggle('text-red-400', remainingMinutes > 0);
+                remainingBalanceEl.classList.toggle('text-white', remainingMinutes <= 0);
+
+
+                // Renderiza lista de débitos
+                debitList.innerHTML = '';
+                if (state.debits.length === 0) {
+                    debitList.appendChild(noDebits);
+                } else {
+                    state.debits.forEach(debit => {
+                        const item = document.createElement('div');
+                        item.className = 'flex justify-between items-center p-3 bg-gray-50 rounded-lg shadow-sm';
+                        item.innerHTML = `
+                            <div>
+                                <span class="font-medium text-gray-800">${debit.reason}</span>
+                                <span class="block text-sm text-gray-600">${formatDate(debit.date)} - <strong class="text-red-600">${debit.timeOwed}</strong></span>
+                            </div>
+                            <div class="flex items-center">
+                                <button data-id="${debit.id}" data-type="debit" class="edit-btn text-blue-500 hover:text-blue-700 transition p-1" title="Editar">
+                                    <i data-lucide="pencil" class="w-4 h-4"></i>
+                                </button>
+                                <button data-id="${debit.id}" data-type="debit" class="delete-btn text-red-500 hover:text-red-700 transition p-1" title="Excluir">
+                                    <i data-lucide="trash-2" class="w-4 h-4"></i>
+                                </button>
+                            </div>
+                        `;
+                        debitList.appendChild(item);
+                    });
+                }
+
+                // Renderiza lista de reposições
+                compensationList.innerHTML = '';
+                if (state.compensations.length === 0) {
+                    compensationList.appendChild(noCompensations);
+                } else {
+                    state.compensations.forEach(comp => {
+                        const item = document.createElement('div');
+                        item.className = 'flex justify-between items-center p-3 bg-gray-50 rounded-lg shadow-sm';
+                        item.innerHTML = `
+                            <div>
+                                <span class="font-medium text-gray-800">${formatDate(comp.date)}</span>
+                                <span class="block text-sm text-gray-600">${comp.start} às ${comp.end} = <strong class="text-green-600">${comp.calculated}</strong></span>
+                            </div>
+                            <div class="flex items-center">
+                                <button data-id="${comp.id}" data-type="compensation" class="edit-btn text-blue-500 hover:text-blue-700 transition p-1" title="Editar">
+                                    <i data-lucide="pencil" class="w-4 h-4"></i>
+                                </button>
+                                <button data-id="${comp.id}" data-type="compensation" class="delete-btn text-red-500 hover:text-red-700 transition p-1" title="Excluir">
+                                    <i data-lucide="trash-2" class="w-4 h-4"></i>
+                                </button>
+                            </div>
+                        `;
+                        compensationList.appendChild(item);
+                    });
+                }
+
+                // Atualiza os ícones do Lucide
+                lucide.createIcons();
+                // Salva no LocalStorage
+                saveToLocalStorage();
+            }
+
+            // --- MANIPULADORES DE EVENTOS (Forms) ---
+
+            debitForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const reason = document.getElementById('debitReason').value;
+                const date = document.getElementById('debitDate').value;
+                const timeOwed = document.getElementById('debitTime').value;
+
+                if (timeToMinutes(timeOwed) <= 0) {
+                    showErrorModal("O tempo a repor deve ser maior que 00:00.");
+                    return;
+                }
+
+                state.debits.push({
+                    id: Date.now(),
+                    reason,
+                    date,
+                    timeOwed
+                });
+
+                debitForm.reset();
+                document.getElementById('debitTime').value = '08:00'; // Reseta o padrão
+                updateUI();
+            });
+
+            compForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const date = document.getElementById('compDate').value;
+                const start = document.getElementById('compStart').value;
+                const end = document.getElementById('compEnd').value;
+
+                // Pega o saldo restante ATUAL para aplicar a regra de exceção
+                const totalOwed = state.debits.reduce((sum, debit) => sum + timeToMinutes(debit.timeOwed), 0);
+                const totalComp = state.compensations.reduce((sum, comp) => sum + timeToMinutes(comp.calculated), 0);
+                const remainingBalance = totalOwed - totalComp;
+
+                const calculatedMinutes = calculateCompensation(start, end, remainingBalance);
+
+                if (calculatedMinutes > 0) {
+                    state.compensations.push({
+                        id: Date.now(),
+                        date,
+                        start,
+                        end,
+                        calculated: minutesToTime(calculatedMinutes)
+                    });
+
+                    compForm.reset();
+                    updateUI();
+                }
+            });
+
+            // Event listener para botões de deletar (usando delegação de evento)
+            document.body.addEventListener('click', (e) => {
+                const deleteBtn = e.target.closest('.delete-btn');
+                const editBtn = e.target.closest('.edit-btn');
+
+                if (editBtn) {
+                    const id = Number(editBtn.dataset.id);
+                    const type = editBtn.dataset.type;
+                    openEditModal(id, type);
+                    return;
+                }
+
+                if (deleteBtn) {
+                    const id = Number(deleteBtn.dataset.id);
+                    const type = deleteBtn.dataset.type;
+
+                    if (type === 'debit') {
+                        state.debits = state.debits.filter(d => d.id !== id);
+                    } else if (type === 'compensation') {
+                        state.compensations = state.compensations.filter(c => c.id !== id);
+                    }
+                    updateUI();
+                }
+            });
+
+            // --- ABRIR E SALVAR MODAL DE EDIÇÃO ---
+
+            function openEditModal(id, type) {
+                editItemId.value = id;
+                editItemType.value = type;
+
+                if (type === 'debit') {
+                    const debit = state.debits.find(d => d.id === id);
+                    if (!debit) return;
+
+                    document.getElementById('editDebitReason').value = debit.reason;
+                    document.getElementById('editDebitDate').value = debit.date;
+                    document.getElementById('editDebitTime').value = debit.timeOwed;
+
+                    editModalTitle.textContent = "Editar Débito";
+                    editDebitFields.classList.remove('hidden');
+                    editCompFields.classList.add('hidden');
+
+                } else if (type === 'compensation') {
+                    const comp = state.compensations.find(c => c.id === id);
+                    if (!comp) return;
+
+                    document.getElementById('editCompDate').value = comp.date;
+                    document.getElementById('editCompStart').value = comp.start;
+                    document.getElementById('editCompEnd').value =
+
+                        editModalTitle.textContent = "Editar Reposição";
+                    editDebitFields.classList.add('hidden');
+                    editCompFields.classList.remove('hidden');
+                }
+
+                editModal.classList.remove('hidden');
+            }
+
+            editModalForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const id = Number(editItemId.value);
+                const type = editItemType.value;
+
+                if (type === 'debit') {
+                    const index = state.debits.findIndex(d => d.id === id);
+                    if (index === -1) return;
+
+                    const newTime = document.getElementById('editDebitTime').value;
+                    if (timeToMinutes(newTime) <= 0) {
+                        showErrorModal("O tempo a repor deve ser maior que 00:00.");
+                        return;
+                    }
+
+                    state.debits[index] = {
+                        ...state.debits[index],
+                        reason: document.getElementById('editDebitReason').value,
+                        date: document.getElementById('editDebitDate').value,
+                        timeOwed: newTime,
+                    };
+
+                } else if (type === 'compensation') {
+                    const index = state.compensations.findIndex(c => c.id === id);
+                    if (index === -1) return;
+
+                    const date = document.getElementById('editCompDate').value;
+                    const start = document.getElementById('editCompStart').value;
+                    const end = document.getElementById('editCompEnd').value;
+
+                    // Para calcular a reposição, precisamos do saldo *antes* desta entrada.
+                    // Vamos recalcular o saldo total e subtrair o valor *antigo* desta entrada.
+                    const totalOwed = state.debits.reduce((sum, debit) => sum + timeToMinutes(debit.timeOwed), 0);
+                    const totalComp = state.compensations.reduce((sum, comp) => sum + timeToMinutes(comp.calculated), 0);
+                    const oldCompValue = timeToMinutes(state.compensations[index].calculated);
+                    const remainingBalanceBeforeThisEntry = (totalOwed - totalComp) + oldCompValue;
+
+                    const calculatedMinutes = calculateCompensation(start, end, remainingBalanceBeforeThisEntry);
+
+                    if (calculatedMinutes === 0 && (start === end)) {
+                        // Permite salvar com 00:00 se o usuário zerar (ou se o cálculo falhar e ele não tentar submeter algo inválido)
+                    } else if (calculatedMinutes === 0 && (start !== end)) {
+                        // O cálculo falhou (mostrou modal de erro), não salvamos
+                        return;
+                    }
+
+                    state.compensations[index] = {
+                        ...state.compensations[index],
+                        date,
+                        start,
+                        end,
+                        calculated: minutesToTime(calculatedMinutes)
+                    };
+                }
+
+                closeModal();
+                updateUI();
+            });
+
+
+            // --- PERSISTÊNCIA (LocalStorage e JSON) ---
+
+            function saveToLocalStorage() {
+                localStorage.setItem('compensaHorasState', JSON.stringify(state));
+            }
+
+            function loadFromLocalStorage() {
+                const savedState = localStorage.getItem('compensaHorasState');
+                if (savedState) {
+                    state = JSON.parse(savedState);
+                }
+                updateUI();
+            }
+
+            exportJsonBtn.addEventListener('click', () => {
+                const dataStr = JSON.stringify(state, null, 2);
+                const dataBlob = new Blob([dataStr], { type: 'application/json' });
+                const url = URL.createObjectURL(dataBlob);
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = 'backup_compensacao_horas.json';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                URL.revokeObjectURL(url);
+            });
+
+            importJsonInput.addEventListener('change', (e) => {
+                const file = e.target.files[0];
+                if (!file) return;
+
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    try {
+                        const importedState = JSON.parse(event.target.result);
+                        // Validação simples
+                        if (importedState.debits && importedState.compensations) {
+                            state = importedState;
+                            updateUI();
+                            saveToLocalStorage();
+                        } else {
+                            showErrorModal("Arquivo JSON inválido ou mal formatado.");
+                        }
+                    } catch (err) {
+                        showErrorModal("Erro ao ler o arquivo JSON.");
+                    }
+                };
+                reader.readAsText(file);
+                // Reseta o input para permitir carregar o mesmo arquivo novamente
+                importJsonInput.value = null;
+            });
+
+            // --- LÓGICA DE IMPRESSÃO ---
+
+            printReportBtn.addEventListener('click', () => {
+                printModal.classList.remove('hidden');
+            });
+
+            cancelPrintBtn.addEventListener('click', closeModal);
+            cancelEditBtn.addEventListener('click', closeModal);
+            closeErrorModalBtn.addEventListener('click', closeModal);
+
+            printModalForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const name = document.getElementById('employeeName').value;
+                const id = document.getElementById('employeeId').value;
+
+                generatePrintReport(name, id);
+                closeModal();
+
+                printArea.classList.remove('hidden'); // <-- CORREÇÃO
+
+                // Espera um pouco para o DOM atualizar antes de imprimir
+                setTimeout(() => {
+                    window.print();
+                    printArea.classList.add('hidden'); // <-- CORREÇÃO
+                }, 250); // Tempo aumentado
+            });
+
+            /** Gera o HTML do relatório e insere na #printArea */
+            function generatePrintReport(name, id) {
+                const generationDate = new Date().toLocaleString('pt-BR', { dateStyle: 'long', timeStyle: 'short' });
+
+                const totalOwedMinutes = state.debits.reduce((sum, debit) => sum + timeToMinutes(debit.timeOwed), 0);
+                const totalCompensatedMinutes = state.compensations.reduce((sum, comp) => sum + timeToMinutes(comp.calculated), 0);
+                const remainingMinutes = totalOwedMinutes - totalCompensatedMinutes;
+
+                // Gera HTML da tabela de débitos
+                const debitsHtml = state.debits.map(d => `
+                    <tr>
+                        <td>${formatDate(d.date)}</td>
+                        <td>${d.reason}</td>
+                        <td class="time-cell">${d.timeOwed}</td>
+                    </tr>
+                `).join('');
+
+                // Gera HTML da tabela de reposições com saldo corrente
+                let runningBalance = totalOwedMinutes;
+                const compensationsHtml = state.compensations.map(c => {
+                    const compMinutes = timeToMinutes(c.calculated);
+                    runningBalance -= compMinutes;
+                    return `
+                        <tr>
+                            <td>${formatDate(c.date)}</td>
+                            <td>${c.start}</td>
+                            <td>${c.end}</td>
+                            <td class="time-cell">${c.calculated}</td>
+                            <td class="time-cell">${minutesToTime(runningBalance)}</td>
+                        </tr>
+                    `;
+                }).join('');
+
+                const reportHtml = `
+                    <style>
+                        body { font-family: Arial, sans-serif; margin: 20px; }
+                        h1 { color: #1d4ed8; border-bottom: 2px solid #1d4ed8; padding-bottom: 5px; }
+                        h2 { color: #333; border-bottom: 1px solid #ccc; padding-bottom: 3px; margin-top: 25px; }
+                        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+                        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+                        th { background-color: #f4f4f4; }
+                        .header-info, .summary-info { margin-top: 15px; font-size: 1.1em; }
+                        .summary-info strong { display: inline-block; min-width: 150px; }
+                        .time-cell { text-align: right; font-family: 'Courier New', monospace; }
+                        footer { margin-top: 30px; font-size: 0.9em; color: #777; text-align: center; }
+                    </style>
+                    <h1>Relatório de Reposição de Horas</h1>
+                    <div class="header-info">
+                        <p><strong>Funcionário:</strong> ${name}</p>
+                        <p><strong>Matrícula:</strong> ${id}</p>
+                        <p><strong>Relatório gerado em:</strong> ${generationDate}</p>
+                    </div>
+
+                    <h2>Horas a Repor (Débitos)</h2>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Data</th>
+                                <th>Motivo</th>
+                                <th class="time-cell">Horas</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${debitsHtml || '<tr><td colspan="3">Nenhum débito registrado.</td></tr>'}
+                        </tbody>
+                    </table>
+
+                    <h2>Reposições Efetuadas</h2>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Data</th>
+                                <th>Entrada</th>
+                                <th>Saída</th>
+                                <th class="time-cell">Reposto no Dia</th>
+                                <th class="time-cell">Saldo Restante</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${compensationsHtml || '<tr><td colspan="5">Nenhuma reposição registrada.</td></tr>'}
+                        </tbody>
+                    </table>
+
+                    <h2>Resumo Final</h2>
+                    <div class="summary-info">
+                        <p><strong>Total a Repor:</strong> <span class="time-cell">${minutesToTime(totalOwedMinutes)}</span></p>
+                        <p><strong>Total Reposto:</strong> <span class="time-cell">${minutesToTime(totalCompensatedMinutes)}</span></p>
+                        <p><strong>Saldo Restante:</strong> <span class="time-cell">${minutesToTime(remainingMinutes)}</span></p>
+                    </div>
+                    
+                    <footer>
+                        Assinatura do Funcionário: _________________________________________
+                    </footer>
+                `;
+
+                printArea.innerHTML = reportHtml;
+            }
+
+            // --- VALIDAÇÕES ADICIONAIS ---
+
+            /** Verifica se a data selecionada é um fim de semana */
+            function checkWeekend(e) {
+                const dateStr = e.target.value;
+                if (!dateStr) return;
+
+                // Usamos UTC para evitar problemas de fuso horário ao verificar o dia
+                const [year, month, day] = dateStr.split('-').map(Number);
+                const utcDate = new Date(Date.UTC(year, month - 1, day));
+                const dayOfWeek = utcDate.getUTCDay();
+
+                if (dayOfWeek === 0 || dayOfWeek === 6) { // 0 = Domingo, 6 = Sábado
+                    showErrorModal("Não é permitido lançar reposições aos sábados ou domingos.");
+                    e.target.value = ''; // Limpa o valor inválido
+                }
+            }
+
+            // --- INICIALIZAÇÃO ---
+            loadFromLocalStorage();
+
+            // Adiciona listeners de validação de fim de semana
+            document.getElementById('compDate').addEventListener('change', checkWeekend);
+            document.getElementById('editCompDate').addEventListener('change', checkWeekend);
+        });
+    </script>
+</body>
+
+</html>
