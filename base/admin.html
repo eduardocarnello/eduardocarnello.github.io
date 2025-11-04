@@ -91,13 +91,7 @@
                     Entrar com Google
                 </button>
 
-                <!-- NOVO: Botão Login Microsoft 
-                <button id="microsoft-login-btn"
-                    class="group relative w-full flex justify-center py-3 px-4 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors">
-                    <img class="w-5 h-5 mr-2" src="https://www.svgrepo.com/show/303108/microsoft-icon-logo.svg"
-                        alt="Microsoft icon">
-                    Entrar com Microsoft
-                </button>-->
+
             </div>
 
             <!-- Link para o Site -->
@@ -161,6 +155,20 @@
 
                 <!-- Coluna Principal (Formulário de Documento e Lista) -->
                 <div class="lg:col-span-2 space-y-8">
+
+                    <!-- NOVO: Botão para Mostrar/Esconder Formulário -->
+                    <div id="show-article-form-btn-container"
+                        class="permission-redator permission-editor permission-admin" style="display: none;">
+                        <button id="show-article-form-btn" type="button"
+                            class="flex w-full justify-center items-center gap-2 py-3 px-6 border border-transparent text-base font-medium rounded-lg text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors shadow-md">
+                            <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"
+                                fill="currentColor">
+                                <path
+                                    d="M10.75 4.75a.75.75 0 00-1.5 0v4.5h-4.5a.75.75 0 000 1.5h4.5v4.5a.75.75 0 001.5 0v-4.5h4.5a.75.75 0 000-1.5h-4.5v-4.5z" />
+                            </svg>
+                            Adicionar Novo Documento
+                        </button>
+                    </div>
 
                     <!-- Formulário de Documento (Permissão: Redator, Editor, Admin) -->
                     <div id="article-form-section" class="bg-white p-6 sm:p-8 rounded-2xl shadow-lg"
@@ -578,6 +586,10 @@
         const categoryAdminSection = document.getElementById('category-admin-section');
         const userAdminSection = document.getElementById('user-admin-section');
 
+        // NOVO: Botão de Adicionar Documento
+        const showArticleFormBtnContainer = document.getElementById('show-article-form-btn-container');
+        const showArticleFormBtn = document.getElementById('show-article-form-btn');
+
         // Formulário de Documento
         const articleForm = document.getElementById('article-form');
         const articleFormTitle = document.getElementById('article-form-title');
@@ -828,7 +840,11 @@
 
         // Controla a visibilidade da UI com base no cargo
         function updateUIVisibility(role) {
-            articleFormSection.style.display = (role === 'Redator' || role === 'Editor' || role === 'Admin') ? 'block' : 'none';
+            // CORREÇÃO: Esconde o formulário por padrão, mostra o BOTÃO
+            articleFormSection.style.display = 'none';
+            showArticleFormBtnContainer.style.display = (role === 'Redator' || role === 'Editor' || role === 'Admin') ? 'block' : 'none';
+
+            // O restante das permissões
             categoryAdminSection.style.display = (role === 'Admin') ? 'block' : 'none';
             userAdminSection.style.display = (role === 'Admin') ? 'block' : 'none';
             document.getElementById('science-filter-container').style.display = (role === 'Editor' || role === 'Admin') ? 'flex' : 'none';
@@ -842,7 +858,7 @@
                 el.style.display = (role === 'Admin') ? 'block' : 'none';
             });
 
-            // CORREÇÃO BUG 3: A lógica de mostrar/esconder botões agora
+            // A lógica de mostrar/esconder botões agora
             // é feita 100% dentro do 'renderAdminArticles'
         }
 
@@ -950,7 +966,7 @@
         cancelCategoryEditBtn.addEventListener('click', resetCategoryForm);
 
 
-        // --- GERENCIAMENTO DE ARTIGOS (CRUD) ---
+        // --- GERENCIAMENTO DE DOCUMENTOS (CRUD) ---
 
         // Salvar/Atualizar Documento (COM LÓGICA DE CIÊNCIA)
         articleForm.addEventListener('submit', async (e) => {
@@ -1042,7 +1058,6 @@
             } else if (count > 0) {
                 articlesLoadingMsg.style.display = 'none';
             } else if (count === 0 && adminArticlesCache.length > 0) {
-                // Caso onde o filtro de ciência não encontra nada, mas o cache não está vazio
                 articlesLoadingMsg.textContent = 'Nenhum documento encontrado para este filtro.';
                 articlesLoadingMsg.style.display = 'block';
             }
@@ -1153,7 +1168,7 @@
 
                 // CORREÇÃO BUG 3: Botão de Log de Ciência agora é condicional
                 const scienceLogBtnHTML = (article.requiresScience && (currentUserRole === 'Editor' || currentUserRole === 'Admin'))
-                    ? `<button data-id="${article.id}" data-title="${article.title}" class="science-log-btn text-gray-500 hover:text-blue-600 focus-ring-visible rounded-md p-1" title="Ver Log de Ciência">
+                    ? `<button data-id="${article.id}" data-title="${article.title}" class="science-log-btn text-gray-500 hover:text-blue-600 focus:ring-visible rounded-md p-1" title="Ver Log de Ciência">
                            <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
                                <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                            </svg>
@@ -1199,6 +1214,10 @@
         // Preencher formulário de Documento para edição
         async function populateArticleForm(id) {
             try {
+                // NOVO: Mostra o form e esconde o botão
+                articleFormSection.style.display = 'block';
+                showArticleFormBtnContainer.style.display = 'none';
+
                 const article = await fetchWithToken('getArtigoDetalhe', { id: id });
 
                 articleFormTitle.textContent = 'Editar Documento';
@@ -1238,7 +1257,7 @@
 
                 quill.root.innerHTML = article.content;
                 cancelEditBtn.classList.remove('hidden');
-                window.scrollTo({ top: articleForm.offsetTop, behavior: 'smooth' });
+                window.scrollTo({ top: articleFormSection.offsetTop - 100, behavior: 'smooth' });
 
             } catch (error) {
                 console.error("Erro ao buscar documento:", error);
@@ -1286,6 +1305,12 @@
             resetLinksContainer();
             resetScienceContainer.classList.add('hidden');
             isScienceResetInput.value = 'false';
+
+            // NOVO: Esconde o form e mostra o botão
+            articleFormSection.style.display = 'none';
+            if (currentUserRole !== 'Leitor') {
+                showArticleFormBtnContainer.style.display = 'block';
+            }
         }
         cancelEditBtn.addEventListener('click', resetArticleForm);
 
@@ -1491,7 +1516,6 @@
 
             scienceLogModal.style.display = 'flex';
             setTimeout(() => {
-                // CORREÇÃO: Variável com typo
                 modalBackdropScienceLog.style.opacity = '1';
                 modalPanelScienceLog.style.opacity = '1';
                 modalPanelScienceLog.style.transform = 'scale(1)';
@@ -1569,6 +1593,14 @@
                 .replace(/[^\w-]+/g, '')
                 .replace(/--+/g, '-');
         }
+
+        // NOVO: Event listener para o botão de "Adicionar Documento"
+        showArticleFormBtn.addEventListener('click', () => {
+            resetArticleForm(); // Limpa o formulário
+            articleFormSection.style.display = 'block'; // Mostra o formulário
+            showArticleFormBtnContainer.style.display = 'none'; // Esconde o botão
+            window.scrollTo({ top: articleFormSection.offsetTop - 100, behavior: 'smooth' }); // Rola para o formulário
+        });
 
     </script>
 
