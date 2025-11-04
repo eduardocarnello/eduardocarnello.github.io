@@ -51,6 +51,49 @@
             opacity: 0.5;
             cursor: pointer;
         }
+
+        /* Estilo para Tooltip */
+        .tooltip {
+            position: relative;
+            display: inline-block;
+        }
+
+        .tooltip .tooltiptext {
+            visibility: hidden;
+            width: 250px;
+            background-color: #555;
+            color: #fff;
+            text-align: center;
+            border-radius: 6px;
+            padding: 8px;
+            position: absolute;
+            z-index: 1;
+            bottom: 125%;
+            /* Posiciona acima do ícone */
+            left: 50%;
+            margin-left: -125px;
+            /* Metade da largura para centralizar */
+            opacity: 0;
+            transition: opacity 0.3s;
+            font-size: 0.875rem;
+            font-weight: normal;
+        }
+
+        .tooltip .tooltiptext::after {
+            content: "";
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            margin-left: -5px;
+            border-width: 5px;
+            border-style: solid;
+            border-color: #555 transparent transparent transparent;
+        }
+
+        .tooltip:hover .tooltiptext {
+            visibility: visible;
+            opacity: 1;
+        }
     </style>
 </head>
 
@@ -176,20 +219,27 @@
 
         <!-- Seção 3: Ações (JSON e Impressão) -->
         <div class="bg-white shadow-lg rounded-xl p-6 mt-6">
-            <h2 class="text-2xl font-semibold mb-4 text-gray-700">Ações</h2>
+            <div class="flex items-center mb-4">
+                <h2 class="text-2xl font-semibold text-gray-700 mr-2">Ações</h2>
+                <div class="tooltip">
+                    <i data-lucide="info" class="w-5 h-5 text-gray-500 cursor-help"></i>
+                    <span class="tooltiptext">Use 'Salvar Cópia' para baixar um arquivo de backup dos seus dados. Use
+                        'Carregar Cópia' para restaurar dados no navegador (útil para trocar de computador).</span>
+                </div>
+            </div>
             <div class="flex flex-wrap gap-4">
                 <!-- Exportar JSON -->
                 <button id="exportJson"
                     class="flex-1 bg-gray-600 text-white font-medium rounded-lg px-5 py-2.5 text-center transition hover:bg-gray-700 flex items-center justify-center min-w-[150px]">
-                    <i data-lucide="download" class="w-5 h-5 mr-2"></i>
-                    Exportar JSON
+                    <i data-lucide="save" class="w-5 h-5 mr-2"></i>
+                    Salvar Cópia (Backup)
                 </button>
 
                 <!-- Importar JSON -->
                 <label
                     class="flex-1 bg-gray-100 text-gray-800 font-medium rounded-lg px-5 py-2.5 text-center transition hover:bg-gray-200 cursor-pointer flex items-center justify-center min-w-[150px]">
                     <i data-lucide="upload" class="w-5 h-5 mr-2"></i>
-                    Importar JSON
+                    Carregar Cópia (Backup)
                     <input type="file" id="importJson" class="hidden" accept="application/json">
                 </label>
 
@@ -574,6 +624,14 @@
                 const totalComp = state.compensations.reduce((sum, comp) => sum + timeToMinutes(comp.calculated), 0);
                 const remainingBalance = totalOwed - totalComp;
 
+                // <-- INÍCIO DA VALIDAÇÃO -->
+                const isDuplicate = state.compensations.some(comp => comp.date === date);
+                if (isDuplicate) {
+                    showErrorModal("Esta data já possui um lançamento de reposição. Edite o lançamento existente.");
+                    return;
+                }
+                // <-- FIM DA VALIDAÇÃO -->
+
                 const calculatedMinutes = calculateCompensation(start, end, remainingBalance);
 
                 if (calculatedMinutes > 0) {
@@ -678,6 +736,16 @@
                     const date = document.getElementById('editCompDate').value;
                     const start = document.getElementById('editCompStart').value;
                     const end = document.getElementById('editCompEnd').value;
+
+                    // <-- INÍCIO DA VALIDAÇÃO -->
+                    const isDuplicate = state.compensations.some(comp => {
+                        return comp.date === date && comp.id !== id; // Checa duplicata ignorando o próprio item
+                    });
+                    if (isDuplicate) {
+                        showErrorModal("Esta data já pertence a outro lançamento de reposição.");
+                        return;
+                    }
+                    // <-- FIM DA VALIDAÇÃO -->
 
                     // Para calcular a reposição, precisamos do saldo *antes* desta entrada.
                     // Vamos recalcular o saldo total e subtrair o valor *antigo* desta entrada.
@@ -875,7 +943,7 @@
                     <div class="summary-info">
                         <p><strong>Total a Repor:</strong> <span class="time-cell">${minutesToTime(totalOwedMinutes)}</span></p>
                         <p><strong>Total Reposto:</strong> <span class="time-cell">${minutesToTime(totalCompensatedMinutes)}</span></p>
-                        <p><strong>Saldo Restante:</strong> <span class="time-cell">${minutesToTime(remainingMinutes)}</span></p>
+                        <p><strong>Saldo Restante:</strong> <strong class="time-cell">${minutesToTime(remainingMinutes)}</strong></p>
                     </div>
                     
                     <footer>
@@ -904,12 +972,41 @@
                 }
             }
 
+            /** Verifica se a data selecionada já foi usada */
+            function checkDuplicateDate(e, isEditing = false) {
+                const dateStr = e.target.value;
+                if (!dateStr) return;
+
+                let currentId = null;
+                if (isEditing) {
+                    const idVal = document.getElementById('editItemId').value;
+                    const typeVal = document.getElementById('editItemType').value;
+                    if (typeVal === 'compensation' && idVal) {
+                        currentId = Number(idVal);
+                    }
+                }
+
+                const isDuplicate = state.compensations.some(comp => {
+                    return comp.date === dateStr && comp.id !== currentId;
+                });
+
+                if (isDuplicate) {
+                    showErrorModal("Esta data já possui um lançamento de reposição. Edite o lançamento existente.");
+                    e.target.value = ''; // Limpa o valor inválido
+                }
+            }
+
+
             // --- INICIALIZAÇÃO ---
             loadFromLocalStorage();
 
             // Adiciona listeners de validação de fim de semana
             document.getElementById('compDate').addEventListener('change', checkWeekend);
             document.getElementById('editCompDate').addEventListener('change', checkWeekend);
+
+            // Adiciona listeners de validação de data duplicada
+            document.getElementById('compDate').addEventListener('change', (e) => checkDuplicateDate(e, false));
+            document.getElementById('editCompDate').addEventListener('change', (e) => checkDuplicateDate(e, true));
         });
     </script>
 </body>
