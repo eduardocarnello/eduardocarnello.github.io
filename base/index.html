@@ -144,6 +144,12 @@
 
             div#modal-body {
                 padding: 0.5rem 1.5rem;
+
+            }
+
+            #modal-content p.print-hide-empty,
+            #modal-content p:empty {
+                display: none;
             }
 
             /* Esconde tudo por padrão */
@@ -1168,7 +1174,31 @@
 
         // NOVO: Adiciona listener para o botão de imprimir
         modalPrintBtn.addEventListener('click', () => {
+
+            // 1. Encontra todos os parágrafos dentro do modal
+            const paragraphs = modalContent.querySelectorAll('p');
+            const paragraphsToClean = [];
+
+            // 2. Loop para encontrar os "vazios"
+            paragraphs.forEach(p => {
+                const html = p.innerHTML.trim(); // Limpa espaços em branco
+
+                // Verifica se o parágrafo está vazio ou só contém &nbsp; ou <br>
+                if (html === '' || html === '&nbsp;' || html === '<br>') {
+                    p.classList.add('print-hide-empty'); // Adiciona a classe CSS
+                    paragraphsToClean.push(p); // Salva para limpar depois
+                }
+            });
+
+            // 3. Chama a impressão (AGORA, o CSS de impressão vai esconder esses parágrafos)
             window.print();
+
+            // 4. DEPOIS que a caixa de impressão fechar,
+            //    remove a classe para que os parágrafos voltem
+            //    ao normal na tela.
+            paragraphsToClean.forEach(p => {
+                p.classList.remove('print-hide-empty');
+            });
         });
 
 
