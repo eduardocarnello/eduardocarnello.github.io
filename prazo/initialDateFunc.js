@@ -26,45 +26,14 @@ function initialDateFunc() {
         today: true,
         text: calendarTextConfig,
 
-        // CONFIGURAÇÃO DO POPUP E EXPANSÃO
+        // CONFIGURAÇÃO DO POPUP
+        // Como o CSS (.card { overflow: visible }) já trata a exibição,
+        // não precisamos mais de lógica complexa de redimensionamento aqui.
         popupOptions: {
             position: "bottom left",
             lastResort: "bottom left",
             prefer: "opposite",
-            hideOnScroll: false,
-
-            // AO ABRIR O CALENDÁRIO
-            onShow: function () {
-                var $card = $('#initialDate').closest('.card');
-                var $cardBody = $('#initialDate').closest('.card-body');
-
-                // 1. Garante que o calendário possa sair das bordas se necessário
-                $card.css('overflow', 'visible');
-                $cardBody.css('overflow', 'visible');
-
-                // 2. Aumenta a altura mínima para criar espaço físico para o calendário
-                // Aumentamos apenas o corpo para que o cartão cresça organicamente
-                $cardBody.css('min-height', '550px');
-
-                // 3. Previne que o cartão "suba" saindo da tela (correção do pulo)
-                // Rola suavemente para garantir que o campo de data continue visível e centralizado
-                $('html, body').animate({
-                    scrollTop: $("#initialDate").offset().top - 150
-                }, 200);
-            },
-
-            // AO FECHAR O CALENDÁRIO
-            onHide: function () {
-                var $card = $('#initialDate').closest('.card');
-                var $cardBody = $('#initialDate').closest('.card-body');
-
-                // Remove a altura forçada, voltando ao tamanho original
-                $cardBody.css('min-height', '');
-
-                // Remove o overflow explícito para restaurar o comportamento padrão do CSS
-                $card.css('overflow', '');
-                $cardBody.css('overflow', '');
-            }
+            hideOnScroll: false
         },
 
         // Ação ao selecionar uma data
