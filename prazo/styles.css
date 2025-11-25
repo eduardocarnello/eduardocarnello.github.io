@@ -471,6 +471,8 @@ input#reset1 {
   height: 40px;
 }
 
-.card-body {
-  min-height: 560px;
+
+
+.card.shadow-sm {
+  overflow: visible;
 }

@@ -26,18 +26,48 @@ function initialDateFunc() {
         today: true,
         text: calendarTextConfig,
 
-        // CORREÇÃO DEFINITIVA: CONTAINER BODY
-        // A propriedade 'container: body' remove o popup de dentro do card e o coloca
-        // na raiz do site. Isso impede que ele seja cortado por overflow ou empurre o layout.
+        // CONFIGURAÇÃO DO POPUP E EXPANSÃO
         popupOptions: {
             position: "bottom left",
             lastResort: "bottom left",
             prefer: "opposite",
             hideOnScroll: false,
-            container: 'body' // <--- AQUI ESTÁ A SOLUÇÃO DEFINITIVA
+
+            // AO ABRIR O CALENDÁRIO
+            onShow: function () {
+                var $card = $('#initialDate').closest('.card');
+                var $cardBody = $('#initialDate').closest('.card-body');
+
+                // 1. Garante que o calendário possa sair das bordas se necessário
+                $card.css('overflow', 'visible');
+                $cardBody.css('overflow', 'visible');
+
+                // 2. Aumenta a altura mínima para criar espaço físico para o calendário
+                // Aumentamos apenas o corpo para que o cartão cresça organicamente
+                $cardBody.css('min-height', '550px');
+
+                // 3. Previne que o cartão "suba" saindo da tela (correção do pulo)
+                // Rola suavemente para garantir que o campo de data continue visível e centralizado
+                $('html, body').animate({
+                    scrollTop: $("#initialDate").offset().top - 150
+                }, 200);
+            },
+
+            // AO FECHAR O CALENDÁRIO
+            onHide: function () {
+                var $card = $('#initialDate').closest('.card');
+                var $cardBody = $('#initialDate').closest('.card-body');
+
+                // Remove a altura forçada, voltando ao tamanho original
+                $cardBody.css('min-height', '');
+
+                // Remove o overflow explícito para restaurar o comportamento padrão do CSS
+                $card.css('overflow', '');
+                $cardBody.css('overflow', '');
+            }
         },
 
-        // Ação ao selecionar uma data no calendário
+        // Ação ao selecionar uma data
         onSelect: function (date, mode) {
             const formattedDate = moment(date).format("DD/MM/YYYY");
             $(this).val(formattedDate);
@@ -67,14 +97,14 @@ function initialDateFunc() {
     });
 
     /* ==========================================================================================
-       CORREÇÃO: VÍNCULO DO ÍCONE COM O CALENDÁRIO PRINCIPAL
+       VÍNCULO DO ÍCONE COM O CALENDÁRIO PRINCIPAL
        ========================================================================================== */
     $("#button_calendar").on("click", function () {
         $("#initialDate").calendar("popup show");
     });
 
     /* ==========================================================================================
-       NAVEGAÇÃO INTELIGENTE (CORREÇÃO DO TAB)
+       NAVEGAÇÃO INTELIGENTE (TAB)
        ========================================================================================== */
     $("#initialDate").on('keydown', function (e) {
         // Se apertar TAB (código 9) sem Shift
@@ -96,7 +126,6 @@ function initialDateFunc() {
         const now = moment();
         let parsedDate = null;
 
-        // Autocomplete Inteligente
         if (digits.length > 0 && digits.length <= 2) {
             const day = digits.padStart(2, '0');
             parsedDate = moment(`${day}/${now.format('MM/YYYY')}`, "DD/MM/YYYY");
@@ -119,7 +148,6 @@ function initialDateFunc() {
         }
     });
 
-    // Atualiza variável global se necessário
     if (typeof update === 'function') {
         update();
     }
