@@ -1,0 +1,786 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculadora Judicial TJSP (Lei 14.905/24)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Merriweather:wght@400;700&display=swap');
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f1f5f9;
+            color: #334155;
+        }
+
+        /* Header Gradiente */
+        .tjsp-header {
+            background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%);
+        }
+
+        /* Card Base */
+        .card {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            border: 1px solid #e2e8f0;
+        }
+
+        /* Botões */
+        .btn-primary {
+            background-color: #1e40af;
+            color: white;
+            transition: all 0.2s;
+        }
+
+        .btn-primary:hover {
+            background-color: #1e3a8a;
+            transform: translateY(-1px);
+        }
+
+        .btn-secondary {
+            background-color: white;
+            border: 1px solid #cbd5e1;
+            color: #475569;
+        }
+
+        .btn-secondary:hover {
+            background-color: #f8fafc;
+            border-color: #94a3b8;
+        }
+
+        /* Inputs */
+        .input-field {
+            border: 1px solid #cbd5e1;
+            padding: 0.5rem;
+            border-radius: 0.375rem;
+            width: 100%;
+            font-size: 0.9rem;
+            transition: border-color 0.2s;
+        }
+
+        .input-field:focus {
+            outline: none;
+            border-color: #3b82f6;
+            ring: 2px solid #bfdbfe;
+        }
+
+        /* Estilos de Impressão (PDF) - HARMONIZAÇÃO FINAL */
+        @media print {
+            @page {
+                margin: 1.5cm;
+                size: A4;
+            }
+
+            body {
+                background-color: white;
+                font-family: 'Inter', sans-serif;
+                color: #0f172a;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+
+            /* Ocultar Elementos de UI */
+            .no-print,
+            header,
+            footer,
+            #addItemBtn,
+            .remove-btn,
+            #calcActions,
+            #apiStatusCard,
+            .btn-add-row,
+            .juros-check,
+            .input-field,
+            label {
+                display: none !important;
+            }
+
+            /* Layout Limpo */
+            .card {
+                box-shadow: none;
+                border: none;
+                padding: 0 !important;
+                margin: 0 !important;
+                border-radius: 0;
+            }
+
+            main {
+                padding: 0 !important;
+                margin: 0 !important;
+                max-width: 100% !important;
+                width: 100% !important;
+            }
+
+            #resultsArea {
+                display: block !important;
+                margin-top: 0 !important;
+            }
+
+            .print-only {
+                display: block !important;
+            }
+
+            /* Cabeçalho do Relatório */
+            #printHeader {
+                border-bottom: 2px solid #1e3a8a;
+                padding-bottom: 15px;
+                margin-bottom: 20px;
+                text-align: center;
+            }
+
+            #printHeader h1 {
+                font-size: 14pt;
+                font-weight: 800;
+                margin: 0;
+                color: #1e3a8a;
+                text-transform: uppercase;
+                font-family: 'Merriweather', serif;
+                letter-spacing: 0.5px;
+            }
+
+            #printHeader p {
+                font-size: 9pt;
+                margin: 4px 0 0 0;
+                color: #475569;
+                font-weight: 500;
+            }
+
+            /* Tabela */
+            .overflow-x-auto {
+                overflow: visible !important;
+                display: block;
+                width: 100%;
+            }
+
+            table {
+                width: 100% !important;
+                border-collapse: collapse;
+                margin-top: 10px;
+                table-layout: fixed;
+            }
+
+            /* Bordas Gerais - Finas e Elegantes */
+            th,
+            td {
+                border: 1px solid #cbd5e1 !important;
+                padding: 4px 4px !important;
+                vertical-align: middle;
+            }
+
+            /* 1. CABEÇALHO DA TABELA */
+            th {
+                background-color: #1e3a8a !important;
+                color: white !important;
+                font-weight: 700;
+                text-transform: uppercase;
+                text-align: center;
+                font-size: 8pt;
+                border-color: #1e3a8a !important;
+            }
+
+            /* 2. LINHA PRINCIPAL (DADOS) */
+            tr.main-row td {
+                border-bottom: none !important;
+                /* Remove borda inferior para conectar com detalhe */
+                padding-bottom: 1px !important;
+                font-size: 9pt;
+                /* Tamanho base */
+                color: #1e293b;
+                height: 24px;
+                /* Altura mínima para consistência */
+            }
+
+            /* Ajustes Específicos de Coluna (Total 100%) */
+            /* Descrição: Reduzida para dar espaço aos dados críticos */
+            td:nth-child(1) {
+                width: 26%;
+                text-align: left;
+                font-weight: 600;
+            }
+
+            /* Período: Fonte REDUZIDA para evitar overflow */
+            td:nth-child(2) {
+                width: 17%;
+                /* Aumentado ligeiramente */
+                text-align: center;
+                white-space: nowrap;
+                font-size: 7pt !important;
+                /* Fonte menor */
+                letter-spacing: -0.2px;
+                /* Ajuste fino de kerning */
+                font-family: 'Courier New', monospace;
+                /* Monoespaçada para alinhar números */
+            }
+
+            /* Valores Monetários */
+            td:nth-child(3),
+            td:nth-child(4),
+            td:nth-child(6) {
+                font-variant-numeric: tabular-nums;
+            }
+
+            td:nth-child(3) {
+                width: 12%;
+                text-align: right;
+                white-space: nowrap;
+            }
+
+            /* Orig */
+            td:nth-child(4) {
+                width: 12%;
+                text-align: right;
+                white-space: nowrap;
+                font-weight: 600;
+                color: #1e3a8a;
+            }
+
+            /* Corr */
+            td:nth-child(5) {
+                width: 8%;
+                text-align: center;
+                font-size: 7.5pt;
+            }
+
+            /* Juros % */
+            td:nth-child(6) {
+                width: 10%;
+                text-align: right;
+                white-space: nowrap;
+                color: #b91c1c !important;
+            }
+
+            /* Juros $ */
+
+            /* Total: Aumentado para garantir que caiba R$ X.XXX.XXX,XX */
+            td:nth-child(7) {
+                width: 15%;
+                text-align: right;
+                white-space: nowrap;
+                font-weight: 700;
+                background-color: #f0f9ff !important;
+                color: #0c4a6e !important;
+                font-size: 9pt;
+            }
+
+            /* 3. LINHA DE DETALHE (ÍNDICES) - Fonte MIÚDA */
+            tr.detail-row td {
+                border-top: none !important;
+                padding-top: 0px !important;
+                padding-bottom: 6px !important;
+                background-color: transparent !important;
+                color: #64748b !important;
+                font-style: italic;
+                font-size: 6pt !important;
+                /* Reduzido para ficar harmônico */
+                line-height: 1.1;
+            }
+
+            /* 4. RODAPÉ DE TOTAIS */
+            tfoot {
+                border-top: 2px solid #1e3a8a !important;
+            }
+
+            tfoot td {
+                font-weight: 800;
+                background-color: #e2e8f0 !important;
+                color: #0f172a !important;
+                font-size: 10pt;
+                padding: 8px 4px !important;
+                white-space: nowrap;
+            }
+
+            /* Assinatura e Disclaimer */
+            .signature-line {
+                margin-top: 40px;
+                border-top: 1px solid #334155;
+                width: 40%;
+                text-align: center;
+                padding-top: 5px;
+                float: right;
+                font-size: 8pt;
+            }
+
+            #technicalFooter {
+                font-size: 6.5pt !important;
+                text-align: justify;
+                margin-top: 20px;
+                border-top: 1px solid #cbd5e1;
+                padding-top: 8px;
+                color: #64748b;
+                line-height: 1.2;
+            }
+        }
+
+        .print-only {
+            display: none;
+        }
+    </style>
+</head>
+
+<body class="flex flex-col min-h-screen">
+
+    <!-- Header (Tela) -->
+    <header class="tjsp-header text-white p-6 shadow-md no-print">
+        <div class="max-w-6xl mx-auto flex items-center justify-between">
+            <div class="flex items-center gap-4">
+                <div class="text-4xl opacity-90"><i class="fas fa-gavel"></i></div>
+                <div>
+                    <h1 class="text-2xl font-bold tracking-tight">Calculadora Judicial TJSP</h1>
+                    <p class="text-blue-200 text-xs mt-1 font-mono">
+                        <i class="fas fa-cloud-download-alt mr-1"></i>Integração API BCB (Séries 7478 & 4390)
+                    </p>
+                </div>
+            </div>
+            <div id="apiStatus" class="text-xs bg-blue-900/50 px-3 py-1 rounded-full flex items-center gap-2">
+                <div class="w-2 h-2 bg-yellow-400 rounded-full animate-pulse" id="statusDot"></div>
+                <span id="statusText">Sincronizando...</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- Conteúdo Principal -->
+    <main class="flex-grow p-4 md:p-8 max-w-6xl mx-auto w-full">
+
+        <!-- Área de Inputs -->
+        <div class="space-y-6 no-print">
+
+            <div class="flex justify-between items-center">
+                <h2 class="text-lg font-bold text-slate-700">Itens do Cálculo</h2>
+                <button onclick="adicionarItem()"
+                    class="btn-secondary px-4 py-2 rounded text-sm font-semibold flex items-center gap-2 btn-add-row">
+                    <i class="fas fa-plus text-blue-600"></i> Adicionar Verba
+                </button>
+            </div>
+
+            <!-- Container de Itens -->
+            <div id="itemsContainer" class="space-y-4">
+                <!-- Os itens serão inseridos aqui via JS -->
+            </div>
+
+            <!-- Botões de Ação -->
+            <div id="calcActions" class="flex flex-col md:flex-row gap-4 pt-4 border-t border-slate-200">
+                <button onclick="calcularTudo()"
+                    class="btn-primary flex-1 py-3 rounded-lg font-bold text-lg shadow-lg flex justify-center items-center gap-2">
+                    <i class="fas fa-calculator"></i> Calcular Atualização & Juros
+                </button>
+                <button onclick="imprimirRelatorio()"
+                    class="btn-secondary flex-none md:w-48 py-3 rounded-lg font-semibold shadow flex justify-center items-center gap-2">
+                    <i class="fas fa-print"></i> Imprimir Relatório
+                </button>
+            </div>
+        </div>
+
+        <!-- Área de Resultados (Visível após cálculo e na impressão) -->
+        <div id="resultsArea" class="hidden mt-8">
+
+            <!-- Cabeçalho Apenas para Impressão -->
+            <div id="printHeader" class="print-only">
+                <h1>MEMÓRIA DE CÁLCULO JUDICIAL</h1>
+                <p>Atualização Monetária (Tabela Prática TJSP) + Juros de Mora (CC/2002 e Lei 14.905/24)</p>
+                <p>Data do Cálculo: <span id="printDate"></span></p>
+            </div>
+
+            <div class="card p-6 overflow-hidden">
+                <h3 class="text-lg font-bold text-slate-800 mb-4 border-b pb-2 no-print">Resumo do Cálculo</h3>
+
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm text-left">
+                        <thead class="bg-slate-50 text-slate-700 font-bold uppercase text-xs">
+                            <tr>
+                                <th class="p-3 border-b">Descrição</th>
+                                <th class="p-3 border-b text-center">Período Correção</th>
+                                <th class="p-3 border-b text-right">Valor Orig.</th>
+                                <th class="p-3 border-b text-right">Valor Corr.</th>
+                                <th class="p-3 border-b text-center">Juros (%)</th>
+                                <th class="p-3 border-b text-right">Valor Juros</th>
+                                <th class="p-3 border-b text-right bg-blue-50">Total</th>
+                            </tr>
+                        </thead>
+                        <tbody id="resultsTableBody" class="divide-y divide-slate-100">
+                            <!-- Linhas de resultado via JS -->
+                        </tbody>
+                        <tfoot class="bg-slate-50 font-bold text-slate-800 border-t-2 border-slate-200">
+                            <tr>
+                                <td colspan="3" class="p-4 text-right uppercase text-xs text-slate-600">TOTAIS GERAIS:
+                                </td>
+                                <td class="p-4 text-right text-blue-900" id="totalCorrigido">R$ 0,00</td>
+                                <td></td>
+                                <td class="p-4 text-right text-red-800" id="totalJuros">R$ 0,00</td>
+                                <td class="p-4 text-right text-lg text-blue-900" id="totalGeral">R$ 0,00</td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+
+                <!-- Rodapé Técnico -->
+                <div id="technicalFooter"
+                    class="mt-6 text-[10px] text-slate-500 space-y-1 border-t pt-4 leading-relaxed">
+                    <p><strong>Critérios Utilizados:</strong></p>
+                    <ul class="list-disc pl-5 space-y-1">
+                        <li><strong>Correção Monetária:</strong> Tabela Prática do TJSP (INPC até 08/2024, IPCA-15 a
+                            partir de 09/2024). Fator acumulado aplicado sobre o valor original.</li>
+                        <li><strong>Juros de Mora (Fase 1 - até 28/08/2024):</strong> 1% ao mês simples (Art. 406 CC/02
+                            c/c Art. 161 CTN).</li>
+                        <li><strong>Juros de Mora (Fase 2 - a partir de 29/08/2024):</strong> Taxa Legal (SELIC)
+                            deduzida do índice de correção monetária (Lei 14.905/2024). Quando a SELIC for superior ao
+                            índice de correção, a diferença corresponde aos juros. Caso contrário, juros zero.</li>
+                    </ul>
+                </div>
+
+                <div class="signature-line print-only">
+                    Responsável Técnico
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Template de Linha (Oculto) -->
+    <template id="itemTemplate">
+        <div class="card p-4 relative item-row transition-all hover:shadow-md bg-white border-l-4 border-l-blue-500">
+            <button onclick="removerItem(this)"
+                class="absolute top-2 right-2 text-slate-300 hover:text-red-500 transition remove-btn"
+                title="Remover item">
+                <i class="fas fa-times"></i>
+            </button>
+
+            <div class="grid grid-cols-1 md:grid-cols-12 gap-4 items-end">
+                <!-- Descrição -->
+                <div class="md:col-span-3">
+                    <label class="block text-xs font-bold text-slate-500 mb-1">Descrição</label>
+                    <input type="text" class="input-field desc-input" placeholder="Ex: Condenação Principal">
+                </div>
+
+                <!-- Valor -->
+                <div class="md:col-span-2">
+                    <label class="block text-xs font-bold text-slate-500 mb-1">Valor (R$)</label>
+                    <input type="number" step="0.01" class="input-field valor-input" placeholder="0,00">
+                </div>
+
+                <!-- Data Inicial (Correção) -->
+                <div class="md:col-span-2">
+                    <label class="block text-xs font-bold text-slate-500 mb-1">Início Correção</label>
+                    <input type="month" class="input-field data-ini-input">
+                </div>
+
+                <!-- Data Final (Correção) - NOVO -->
+                <div class="md:col-span-2">
+                    <label class="block text-xs font-bold text-slate-500 mb-1">Termo Final</label>
+                    <input type="month" class="input-field data-fim-input">
+                </div>
+
+                <!-- Juros Toggle -->
+                <div class="md:col-span-3 border-l pl-4 border-slate-100">
+                    <label class="flex items-center gap-2 cursor-pointer mb-2 select-none">
+                        <input type="checkbox" class="juros-check w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
+                            onchange="toggleJurosFields(this)">
+                        <span class="text-xs font-bold text-slate-700">Add Juros?</span>
+                    </label>
+
+                    <div class="juros-fields grid grid-cols-2 gap-2 opacity-50 pointer-events-none transition-opacity">
+                        <div>
+                            <label class="block text-[10px] text-slate-400 mb-1">Início Juros</label>
+                            <input type="date" class="input-field py-1 text-xs juros-ini-input">
+                        </div>
+                        <div>
+                            <label class="block text-[10px] text-slate-400 mb-1">Fim Juros</label>
+                            <input type="date" class="input-field py-1 text-xs juros-fim-input">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </template>
+
+    <script>
+        // --- 1. DADOS E CONFIGURAÇÃO ---
+
+        // Tabela Prática (Híbrida: Base PDF + Expansão API)
+        let tabelaTJSP = {
+            '1995-01': 12.705865, '2000-01': 20.435874, '2010-01': 40.965147, '2015-01': 55.565321, '2020-01': 72.965360,
+            '2023-01': 89.857648, '2023-02': 90.262016, '2023-03': 90.957028, '2023-04': 91.539166,
+            '2023-05': 92.024335, '2023-06': 92.355628, '2023-07': 92.263269, '2023-08': 92.180230,
+            '2023-09': 92.364593, '2023-10': 92.466196, '2023-11': 92.577158, '2023-12': 92.669738,
+            '2024-01': 93.168579, '2024-02': 93.699639, '2024-03': 94.458606, '2024-04': 94.638077,
+            '2024-05': 94.988237, '2024-06': 95.425182, '2024-07': 95.663744, '2024-08': 95.912469,
+            '2024-09': 96.094702, '2024-10': 96.219625, '2024-11': 96.739210, '2024-12': 97.338993,
+            '2025-01': 97.669945, '2025-02': 97.777381, '2025-03': 98.980042, '2025-04': 99.613514,
+            '2025-05': 100.041852, '2025-06': 100.402002, '2025-07': 100.663047, '2025-08': 100.995235,
+            '2025-09': 100.853841, '2025-10': 101.337939, '2025-11': 101.520347
+        };
+
+        let selicMensal = {};
+        const DATA_CORTE_LEI = new Date('2024-08-28');
+
+        // --- 2. INICIALIZAÇÃO E API ---
+
+        async function init() {
+            adicionarItem(); // Adiciona primeira linha
+            await carregarIndicesBCB();
+        }
+
+        async function carregarIndicesBCB() {
+            const statusDot = document.getElementById('statusDot');
+            const statusText = document.getElementById('statusText');
+
+            try {
+                const anoAtual = new Date().getFullYear();
+
+                const respIPCA = await fetch(`https://api.bcb.gov.br/dados/serie/bcdata.sgs.7478/dados?formato=json&dataInicial=01/01/${anoAtual}`);
+                if (respIPCA.ok) {
+                    const dadosIPCA = await respIPCA.json();
+                    processarIPCA15(dadosIPCA);
+                }
+
+                const respSELIC = await fetch(`https://api.bcb.gov.br/dados/serie/bcdata.sgs.4390/dados?formato=json&dataInicial=01/01/2024`);
+                if (respSELIC.ok) {
+                    const dadosSELIC = await respSELIC.json();
+                    dadosSELIC.forEach(d => {
+                        const [dia, mes, ano] = d.data.split('/');
+                        selicMensal[`${ano}-${mes}`] = parseFloat(d.valor);
+                    });
+                }
+
+                statusDot.classList.remove('bg-yellow-400', 'animate-pulse');
+                statusDot.classList.add('bg-green-500');
+                statusText.innerText = "Dados BCB Sincronizados";
+
+            } catch (e) {
+                console.error("Erro API BCB:", e);
+                statusDot.classList.replace('bg-yellow-400', 'bg-red-500');
+                statusText.innerText = "Modo Offline (Base PDF)";
+            }
+        }
+
+        function processarIPCA15(dados) {
+            dados.forEach(item => {
+                const [d, m, y] = item.data.split('/');
+                let mesTabela = parseInt(m) + 1;
+                let anoTabela = parseInt(y);
+                if (mesTabela > 12) { mesTabela = 1; anoTabela++; }
+
+                const chave = `${anoTabela}-${String(mesTabela).padStart(2, '0')}`;
+
+                if (!tabelaTJSP[chave]) {
+                    let mA = mesTabela - 1; let aA = anoTabela;
+                    if (mA === 0) { mA = 12; aA--; }
+                    const chaveAnt = `${aA}-${String(mA).padStart(2, '0')}`;
+
+                    if (tabelaTJSP[chaveAnt]) {
+                        tabelaTJSP[chave] = tabelaTJSP[chaveAnt] * (1 + (parseFloat(item.valor) / 100));
+                    }
+                }
+            });
+        }
+
+        // --- 3. MANIPULAÇÃO DA INTERFACE (ITEMS) ---
+
+        function adicionarItem() {
+            const container = document.getElementById('itemsContainer');
+            const template = document.getElementById('itemTemplate');
+            const clone = template.content.cloneNode(true);
+
+            const hoje = new Date();
+            const mesAtualStr = hoje.toISOString().slice(0, 7);
+            const hojeStr = hoje.toISOString().split('T')[0];
+
+            clone.querySelector('.data-fim-input').value = mesAtualStr;
+            clone.querySelector('.juros-fim-input').value = hojeStr;
+
+            container.appendChild(clone);
+        }
+
+        function removerItem(btn) {
+            const container = document.getElementById('itemsContainer');
+            if (container.children.length > 1) {
+                btn.closest('.item-row').remove();
+            } else {
+                const row = btn.closest('.item-row');
+                row.querySelector('.desc-input').value = '';
+                row.querySelector('.valor-input').value = '';
+                row.querySelector('.data-ini-input').value = '';
+
+                const hoje = new Date();
+                row.querySelector('.data-fim-input').value = hoje.toISOString().slice(0, 7);
+                row.querySelector('.juros-fim-input').value = hoje.toISOString().split('T')[0];
+
+                row.querySelector('.juros-check').checked = false;
+                toggleJurosFields(row.querySelector('.juros-check'));
+            }
+        }
+
+        function toggleJurosFields(checkbox) {
+            const fields = checkbox.closest('.md\\:col-span-3').querySelector('.juros-fields');
+            if (checkbox.checked) {
+                fields.classList.remove('opacity-50', 'pointer-events-none');
+                const row = checkbox.closest('.item-row');
+                const dataBase = row.querySelector('.data-ini-input').value;
+                const dataJuros = row.querySelector('.juros-ini-input');
+                if (!dataJuros.value && dataBase) {
+                    dataJuros.value = `${dataBase}-01`;
+                }
+            } else {
+                fields.classList.add('opacity-50', 'pointer-events-none');
+            }
+        }
+
+        // --- 4. CÁLCULO CORE ---
+
+        function calcularTudo() {
+            const rows = document.querySelectorAll('.item-row');
+            const tbody = document.getElementById('resultsTableBody');
+            tbody.innerHTML = ''; // Limpa resultados
+
+            let totalCorrigidoGeral = 0;
+            let totalJurosGeral = 0;
+
+            rows.forEach((row, index) => {
+                const desc = row.querySelector('.desc-input').value || `Item ${index + 1}`;
+                const valorOrig = parseFloat(row.querySelector('.valor-input').value);
+                const dataIni = row.querySelector('.data-ini-input').value;
+                const dataFim = row.querySelector('.data-fim-input').value;
+                const aplicaJuros = row.querySelector('.juros-check').checked;
+
+                if (!valorOrig || !dataIni || !dataFim) return;
+
+                if (!tabelaTJSP[dataIni] && dataIni < '1995-01') {
+                    alert(`Data inicial (${dataIni}) anterior ao Plano Real não suportada nesta versão Web.`);
+                    return;
+                }
+
+                // Verifica se dataFim existe, senão usa última
+                const ultimasChaves = Object.keys(tabelaTJSP).sort();
+                const ultimaDisponivel = ultimasChaves[ultimasChaves.length - 1];
+                const chaveFimEfetiva = tabelaTJSP[dataFim] ? dataFim : ultimaDisponivel;
+
+                const fatorIni = tabelaTJSP[dataIni] || 1;
+                const fatorFim = tabelaTJSP[chaveFimEfetiva];
+
+                const valorCorrigido = valorOrig * (fatorFim / fatorIni);
+
+                let valorJuros = 0;
+                let taxaJurosTotal = 0;
+
+                if (aplicaJuros) {
+                    const dataJurosIni = new Date(row.querySelector('.juros-ini-input').value);
+                    const dataJurosFim = new Date(row.querySelector('.juros-fim-input').value);
+
+                    if (!isNaN(dataJurosIni) && !isNaN(dataJurosFim)) {
+                        let dataMarco = new Date(DATA_CORTE_LEI);
+                        let fimFase1 = (dataJurosFim < dataMarco) ? dataJurosFim : dataMarco;
+
+                        if (dataJurosIni < fimFase1) {
+                            const diffTime = Math.abs(fimFase1 - dataJurosIni);
+                            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                            const mesesFase1 = diffDays / 30;
+                            taxaJurosTotal += (mesesFase1 * 1.0);
+                        }
+
+                        if (dataJurosFim > dataMarco) {
+                            let inicioFase2 = (dataJurosIni > dataMarco) ? dataJurosIni : new Date(dataMarco.getTime() + 86400000);
+                            let current = new Date(inicioFase2);
+
+                            while (current < dataJurosFim) {
+                                const m = String(current.getMonth() + 1).padStart(2, '0');
+                                const y = current.getFullYear();
+                                const key = `${y}-${m}`;
+
+                                let fatorMes = tabelaTJSP[key];
+                                let mA = parseInt(m) - 1; let aA = parseInt(y);
+                                if (mA === 0) { mA = 12; aA--; }
+                                let keyAnt = `${aA}-${String(mA).padStart(2, '0')}`;
+                                let fatorAnt = tabelaTJSP[keyAnt];
+
+                                let ipcaMensal = 0;
+                                if (fatorMes && fatorAnt) {
+                                    ipcaMensal = ((fatorMes / fatorAnt) - 1) * 100;
+                                }
+
+                                let selic = selicMensal[key] || 0.85;
+                                let spread = selic - ipcaMensal;
+                                if (spread < 0) spread = 0;
+
+                                taxaJurosTotal += spread;
+                                current.setMonth(current.getMonth() + 1);
+                            }
+                        }
+                    }
+
+                    valorJuros = valorCorrigido * (taxaJurosTotal / 100);
+                }
+
+                const totalLinha = valorCorrigido + valorJuros;
+                totalCorrigidoGeral += valorCorrigido;
+                totalJurosGeral += valorJuros;
+
+                // --- RENDERIZAÇÃO COM DUAS LINHAS (Layout de Impressão Otimizado) ---
+                // Linha 1: Valores Principais
+                const trMain = document.createElement('tr');
+                trMain.className = 'main-row';
+                trMain.innerHTML = `
+                    <td class="p-3 border-b font-medium text-slate-700">${desc}</td>
+                    <td class="p-3 border-b text-center whitespace-nowrap text-xs text-slate-600">
+                        ${formatData(dataIni)} a ${formatData(chaveFimEfetiva)}
+                    </td>
+                    <td class="p-3 border-b text-right text-slate-500">${formatMoeda(valorOrig)}</td>
+                    <td class="p-3 border-b text-right font-bold text-slate-700">${formatMoeda(valorCorrigido)}</td>
+                    <td class="p-3 border-b text-center text-xs text-slate-500">
+                        ${aplicaJuros ? taxaJurosTotal.toFixed(4) + '%' : '-'}
+                    </td>
+                    <td class="p-3 border-b text-right text-red-600 font-medium">
+                        ${aplicaJuros ? formatMoeda(valorJuros) : '-'}
+                    </td>
+                    <td class="p-3 border-b text-right font-bold bg-blue-50 text-blue-900">${formatMoeda(totalLinha)}</td>
+                `;
+                tbody.appendChild(trMain);
+
+                // Linha 2: Detalhe dos Fatores (Ocupando largura total abaixo)
+                const trDetail = document.createElement('tr');
+                trDetail.className = 'detail-row';
+                // Usei colspan 7 para cobrir todas as colunas da linha de cima
+                // Visível na impressão para mostrar os fatores sem espremer
+                trDetail.innerHTML = `
+                    <td colspan="7" class="p-2 text-[10px] text-slate-400 italic border-b text-left bg-white">
+                        <span class="font-semibold ml-2">Dados Técnicos:</span> 
+                        Fator Inicial (${formatData(dataIni)}): ${fatorIni.toFixed(6)} &nbsp;|&nbsp; 
+                        Fator Final (${formatData(chaveFimEfetiva)}): ${fatorFim.toFixed(6)} &nbsp;|&nbsp; 
+                        Coeficiente: ${(fatorFim / fatorIni).toFixed(8)}
+                    </td>
+                `;
+                tbody.appendChild(trDetail);
+            });
+
+            // Atualiza Rodapé
+            document.getElementById('totalCorrigido').innerText = formatMoeda(totalCorrigidoGeral);
+            document.getElementById('totalJuros').innerText = formatMoeda(totalJurosGeral);
+            document.getElementById('totalGeral').innerText = formatMoeda(totalCorrigidoGeral + totalJurosGeral);
+
+            document.getElementById('resultsArea').classList.remove('hidden');
+        }
+
+        // --- 5. UTILITÁRIOS E IMPRESSÃO ---
+
+        function formatMoeda(val) {
+            return val.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+        }
+
+        function formatData(isoStr) {
+            const [ano, mes] = isoStr.split('-');
+            return `${mes}/${ano}`;
+        }
+
+        function imprimirRelatorio() {
+            const hoje = new Date().toLocaleDateString('pt-BR');
+            document.getElementById('printDate').innerText = hoje;
+            window.print();
+        }
+
+        init();
+
+    </script>
+</body>
+
+</html>
