@@ -13,16 +13,16 @@ $(document).ready(function () {
     $('#deadlineCalc').on('submit', function (e) {
         e.preventDefault();
 
-        // Feedback visual imediato (esconde abas anteriores)
+        // Feedback visual imediato
         $('#collapseReport').collapse('hide');
         $('#collapseCalendar').collapse('hide');
 
-        // Pequeno delay para garantir a renderização da UI e animação
+        // Pequeno delay para garantir a renderização da UI
         const timeout = ($('#results').is(':visible')) ? 0 : 500;
         setTimeout(calculateResults, timeout);
     });
 
-    // 2. Botão de scroll suave para resultados (caso clicado fora do fluxo normal)
+    // 2. Botão de scroll
     $('#calcBtn').click(function (e) {
         if ($('#results').is(':visible')) {
             $('html,body').animate({
@@ -31,7 +31,7 @@ $(document).ready(function () {
         }
     });
 
-    // 3. Auto-scroll ao abrir as abas de Relatório e Calendário
+    // 3. Auto-scroll
     $('#collapseReport, #collapseCalendar').on('shown.bs.collapse', function () {
         this.scrollIntoView({ behavior: "smooth" });
     });
@@ -45,14 +45,14 @@ $(document).ready(function () {
 function calculateResults() {
     // 1. Captura e Validação de Inputs
     const initialDateInput = $('#initialDate').val();
-    if (!initialDateInput) return; // Sai se estiver vazio
+    if (!initialDateInput) return;
 
     const inputs = {
         initialDate: moment(initialDateInput, 'DD/MM/YYYY'),
         days: parseInt($('#days').val()) || 0,
-        calcType: $('#calcType').val(), // 'workingDays', 'calendarDays', 'months'
+        calcType: $('#calcType').val(),
         calcTypeText: $('#calcType option:selected').text(),
-        countType: $('#countType').val(), // '0', '1', '2', '3'
+        countType: $('#countType').val(),
         countTypeText: $('#countType option:selected').text(),
         chosenCity: 'Marília'
     };
@@ -62,17 +62,16 @@ function calculateResults() {
         return;
     }
 
-    // 2. Configuração de Feriados (Moment + Plugin)
+    // 2. Configuração de Feriados
     configureHolidays(inputs);
 
-    // 3. Helpers de Verificação (Feriados e Indisponibilidades)
+    // 3. Helpers de Verificação
     const checkSystemDown = (dateStr) => {
         if (typeof sistDown === 'undefined') return false;
         const d = sistDown.find(down => down.downDate === dateStr);
         return d ? d.description : false;
     };
 
-    // Recria lista completa para uso visual (descrições)
     const holidayListVisual = getFullHolidayList(inputs);
     const getHolidayDescription = (dateStr) => {
         const h = holidayListVisual.find(item => item.holidayDate === dateStr);
@@ -91,10 +90,8 @@ function calculateResults() {
     }
     else if (inputs.countType === '3') { // Portal Eletrônico
         dispDate = dateForCalc.clone();
-        // Intimação tácita
         const dateAfterGap = dispDate.clone().businessAdd(5);
         dateForCalc = dateAfterGap.clone();
-        // Gap para renderização
         iPortal = dateForCalc.diff(dispDate, 'days');
     }
 
@@ -102,7 +99,6 @@ function calculateResults() {
     let dueDate = dateForCalc.clone();
 
     if (inputs.calcType === 'workingDays') {
-        // LÓGICA MANUAL SEGURA: Soma dias úteis um a um
         let daysToAdd = inputs.days;
         while (daysToAdd > 0) {
             dueDate.add(1, 'days');
@@ -110,8 +106,7 @@ function calculateResults() {
                 daysToAdd--;
             }
         }
-
-        // Prorrogação por Indisponibilidade (no vencimento)
+        // Prorrogação por Indisponibilidade
         while (checkSystemDown(dueDate.format('DD/MM/YYYY'))) {
             dueDate.add(1, 'days');
             while (!dueDate.isBusinessDay()) {
@@ -120,10 +115,7 @@ function calculateResults() {
         }
     }
     else if (inputs.calcType === 'months') {
-        // Meses
         dueDate.add(inputs.days, 'months');
-
-        // Prorroga se cair em indisponibilidade ou dia não útil
         while (checkSystemDown(dueDate.format('DD/MM/YYYY'))) {
             dueDate.businessAdd(1);
         }
@@ -131,22 +123,20 @@ function calculateResults() {
             dueDate.add(1, 'days');
         }
     }
-    else { // calendarDays (Dias Corridos)
+    else { // Dias Corridos
         dueDate.add(inputs.days, 'days');
-
-        // Prorroga se cair em dia não útil OU indisponibilidade
         while (!dueDate.isBusinessDay() || checkSystemDown(dueDate.format('DD/MM/YYYY'))) {
             dueDate.add(1, 'days');
         }
     }
 
     // 6. Geração dos Dados do Relatório
-    // Montamos a lista visual dia-a-dia
     let listaDiasComTipo = [];
     let w = 0; // Contador visual de dias
 
-    // (A) Cabeçalhos de Disponibilização (se houver)
+    // (A) Cabeçalhos de Disponibilização (DJE e Portal)
     if (dispDate) {
+        // Linha 1: Data da Disponibilização
         listaDiasComTipo.push({
             index: '-',
             date: dispDate.format('DD/MM/YYYY'),
@@ -154,26 +144,33 @@ function calculateResults() {
             class: 'susp'
         });
 
-        // Se for Portal, mostra o gap de carência
-        if (inputs.countType === '3') {
-            let tempD = dispDate.clone();
-            while (tempD.add(1, 'days').isBefore(dateForCalc, 'day')) {
+        // RESTAURADO: Loop para preencher o GAP entre Disponibilização e Publicação
+        // Isso cobre fins de semana ou feriados entre a disp e a pub
+        let tempD = dispDate.clone().add(1, 'days');
+        while (tempD.isBefore(dateForCalc, 'day')) {
+            let desc = '';
+            let classe = 'susp';
+
+            // Se for Portal, lógica específica
+            if (inputs.countType === '3') {
                 if (tempD.isBusinessDay()) {
-                    listaDiasComTipo.push({
-                        index: '-',
-                        date: tempD.format('DD/MM/YYYY'),
-                        _type: `Aguardando leitura tácita`,
-                        class: 'susp'
-                    });
+                    desc = 'Aguardando leitura tácita';
+                } else {
+                    desc = 'Fim de Semana / Feriado (Gap Portal)';
                 }
+            } else {
+                // Se for DJE, são dias não úteis entre Disp e Pub
+                desc = tempD.isBusinessDay() ? 'Dia de intervalo' : 'Fim de Semana / Feriado';
             }
-            // Marca o início real
+
             listaDiasComTipo.push({
-                index: '<b>-</b>',
-                date: dateForCalc.format('DD/MM/YYYY'),
-                _type: 'Início do Prazo (art. 231, IX, do CPC)',
-                class: 'susp'
+                index: '-',
+                date: tempD.format('DD/MM/YYYY'),
+                _type: desc,
+                class: classe
             });
+
+            tempD.add(1, 'days');
         }
     }
 
@@ -205,12 +202,11 @@ function calculateResults() {
             row._type = `Indisponibilidade: ${sysDesc}`;
             row.class = 'susp';
         } else if (holDesc) {
-            // CORREÇÃO APRIMORADA: Verifica palavras-chave (recesso, suspensão, indisponibilidade, ritjsp)
             const lowerDesc = holDesc.toLowerCase();
             if (lowerDesc.includes('recesso') ||
                 lowerDesc.includes('suspensão') ||
                 lowerDesc.includes('indisponibilidade') ||
-                lowerDesc.includes('ritjsp')) { // Adicionado RITJSP para pegar "Art. 116..."
+                lowerDesc.includes('ritjsp')) {
                 row._type = holDesc;
             } else {
                 row._type = `Feriado: ${holDesc}`;
@@ -220,8 +216,16 @@ function calculateResults() {
             row._type = 'Fim de Semana';
             row.class = 'susp';
         } else if (isStart) {
-            row._type = 'Dia do Início (não conta)';
+            // CORREÇÃO: Descrição específica para o dia da Publicação
+            if (inputs.countType === '1') {
+                row._type = 'Data da Publicação no DJE (não conta)';
+            } else if (inputs.countType === '3') {
+                row._type = 'Início do Prazo (art. 231, IX, do CPC)';
+            } else {
+                row._type = 'Dia do Início (não conta)';
+            }
             row.class = 'start';
+            row.index = '-';
         } else if (isEnd) {
             row._type = `${currentDate.format('dddd')} (Fim do Prazo)`;
             row.class = 'end';
@@ -285,7 +289,7 @@ function configureHolidays(inputs) {
     moment.updateLocale('pt-br', {
         holidays: validHolidays.map(h => h.holidayDate),
         holidayFormat: 'DD/MM/YYYY',
-        workingWeekdays: [1, 2, 3, 4, 5] // CRÍTICO: Força dias úteis (Seg-Sex)
+        workingWeekdays: [1, 2, 3, 4, 5]
     });
 }
 
@@ -308,7 +312,7 @@ function renderTables(rows, dueDate, inputs) {
                     <tr><td><b>Comarca:</b></td><td>${inputs.chosenCity}</td></tr>
                     <tr><td><b>Contagem:</b></td><td>${inputs.calcTypeText}</td></tr>
                     <tr><td><b>Marco Inicial (${inputs.countTypeText}):</b></td><td>${inputs.initialDate.format("DD/MM/YYYY")}</td></tr>
-                    ${(inputs.countType === '1') ? `<tr><td><b>Data da Publicação:</b></td><td>${rows[0] && rows[0].date ? rows[0].date : ''}</td></tr>` : ''}
+                    ${(inputs.countType === '1') ? `<tr><td><b>Data da Publicação:</b></td><td>${rows.find(r => r.class === 'start') ? rows.find(r => r.class === 'start').date : ''}</td></tr>` : ''}
                     <tr><td><b>Prazo:</b></td><td>${inputs.days} dias</td></tr>
                     <tr class="table-active text-success"><td><b>Vencimento:</b></td><td><b>${dueDate.format("DD/MM/YYYY")}</b></td></tr>
                 </tbody>
