@@ -117,6 +117,7 @@
                                 <option value="Dano Moral">Dano Moral</option>
                                 <option value="Restituição">Restituição</option>
                                 <option value="Multa">Multa</option>
+                                <option value="Multa (%)">Multa (%)</option>
                                 <option value="Última Atualização">Última Atualização</option>
                                 <option value="Dedução/Pagamento Parcial">Dedução/Pagamento Parcial</option>
                                 <option value="Outro">Outro</option>
@@ -172,7 +173,7 @@
                             <option value="execucao">Acordo Descumprido em Execução/Cumprimento de Sentença</option>
                         </select>
                     </div>
-                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 items-end">
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 items-start">
                         <div>
                             <label class="block text-sm font-medium text-gray-700">Nº de Parcelas Totais</label>
                             <input id="agreement-total-installments" type="number"
@@ -189,6 +190,20 @@
                             <input id="agreement-installment-value" type="text"
                                 class="value-input w-full mt-1 p-2 border border-gray-300 rounded-lg shadow-sm"
                                 placeholder="500,00">
+
+                            <div class="mt-2">
+                                <label class="flex items-center space-x-2 cursor-pointer">
+                                    <input type="checkbox" id="agreement-last-different-check"
+                                        class="h-4 w-4 text-indigo-600 border-gray-300 rounded">
+                                    <span class="text-xs text-indigo-700 font-semibold">Última parcela diferente?</span>
+                                </label>
+                            </div>
+                            <div id="agreement-last-value-container" class="hidden mt-1">
+                                <label class="block text-xs font-medium text-gray-700">Valor da Última (R$)</label>
+                                <input id="agreement-last-installment-value" type="text"
+                                    class="value-input w-full mt-1 p-2 border border-gray-300 rounded-lg shadow-sm bg-yellow-50"
+                                    placeholder="Ex: 50,00">
+                            </div>
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700">Data Início do Acordo</label>
@@ -202,15 +217,7 @@
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 items-start">
                             <select id="agreement-penalty"
                                 class="w-full mt-1 p-2 border border-gray-300 rounded-lg shadow-sm bg-white">
-                                <option value="0">Sem multa</option>
-                                <option value="5">5%</option>
-                                <option value="10">10%</option>
-                                <option value="15">15%</option>
-                                <option value="20">20%</option>
-                                <option value="25">25%</option>
-                                <option value="30">30%</option>
-                                <option value="50">50%</option>
-                                <option value="100">100%</option>
+                                <!-- Opções serão preenchidas via JavaScript para cobrir de 0 a 100% -->
                             </select>
                             <div class="mt-1 space-y-1">
                                 <label class="flex items-center text-sm">
@@ -448,6 +455,9 @@
             const intimationRequestContainer = document.getElementById('intimation-request-container');
             const includeIntimationCheckbox = document.getElementById('include-intimation-checkbox');
             const intimationDeadlineWrapper = document.getElementById('intimation-deadline-wrapper');
+            const agreementLastDifferentCheck = document.getElementById('agreement-last-different-check');
+            const agreementLastValueContainer = document.getElementById('agreement-last-value-container');
+            const agreementPenaltySelect = document.getElementById('agreement-penalty');
 
             // --- DADOS ECONÔMICOS ---
             let ipcaData = {};
@@ -456,6 +466,15 @@
             let lastCalculationData = null;
 
             // --- FUNÇÕES DE SETUP E UI ---
+
+            const populateAgreementPenaltyOptions = () => {
+                let optionsHTML = '<option value="0">Sem multa</option>';
+                for (let i = 5; i <= 100; i += 5) {
+                    optionsHTML += `<option value="${i}">${i}%</option>`;
+                }
+                agreementPenaltySelect.innerHTML = optionsHTML;
+                agreementPenaltySelect.value = "20"; // Valor padrão mantido
+            };
 
             const fetchEconomicData = async () => {
                 const today = new Date();
@@ -537,6 +556,24 @@
                 const select = newRow.querySelector('.description-select');
                 select.selectedIndex = 0;
                 newRow.querySelector('.other-description-input').classList.add('hidden');
+
+                // Resetar estado visual da linha e rótulo
+                const interestDateInput = newRow.querySelector('.interest-date-input');
+                const correctionDateInput = newRow.querySelector('.correction-date-input');
+                const valueInput = newRow.querySelector('.value-input');
+                const valueLabel = newRow.querySelectorAll('label')[1];
+
+                valueLabel.textContent = 'Valor (R$)';
+                interestDateInput.disabled = false;
+                interestDateInput.classList.remove('bg-gray-100', 'cursor-not-allowed');
+                interestDateInput.placeholder = 'DD/MM/AAAA';
+
+                correctionDateInput.disabled = false;
+                correctionDateInput.classList.remove('bg-gray-100', 'cursor-not-allowed');
+                correctionDateInput.placeholder = 'DD/MM/AAAA';
+
+                valueInput.placeholder = '1.000,00';
+
                 rowsContainer.appendChild(newRow);
                 addInputBehaviors(newRow);
             };
@@ -641,16 +678,27 @@
 
                 let positiveRows = [];
                 let deductionRows = [];
+                let percentageFineRows = [];
 
+                // Primeira passada: Calcular linhas padrão e deduções
                 document.querySelectorAll('.calculation-row').forEach(row => {
                     const descriptionSelect = row.querySelector('.description-select');
                     let description = descriptionSelect.value;
+                    const rawValue = row.querySelector('.value-input').value;
+                    const originalValue = parseFloat(rawValue.replace(/\./g, '').replace(',', '.')) || 0;
+
+                    if (description === 'Multa (%)') {
+                        // Guardar para segunda passada
+                        if (originalValue > 0) {
+                            percentageFineRows.push({ description: `Multa (${originalValue}%)`, percentage: originalValue });
+                        }
+                        return;
+                    }
+
                     if (description === 'Outro') {
                         description = row.querySelector('.other-description-input').value.trim() || 'Outro (não especificado)';
                     }
 
-                    const rawValue = row.querySelector('.value-input').value;
-                    const originalValue = parseFloat(rawValue.replace(/\./g, '').replace(',', '.')) || 0;
                     const correctionDate = parseDate(row.querySelector('.correction-date-input').value);
                     const interestDate = parseDate(row.querySelector('.interest-date-input').value);
 
@@ -692,17 +740,44 @@
                     }
                 });
 
+                // Calcular Subtotal Atual
+                const currentPosSubtotal = positiveRows.reduce((acc, row) => acc + row.finalValueForRow, 0);
+                const currentDedTotal = deductionRows.reduce((acc, row) => acc + row.finalValueForRow, 0);
+                const baseForFines = currentPosSubtotal - currentDedTotal;
+
+                // Segunda passada: Calcular Multas Porcentuais
+                percentageFineRows.forEach(fine => {
+                    const fineAmount = baseForFines * (fine.percentage / 100);
+                    // Adiciona como uma linha positiva, mas sem correção/juros explícitos (já inclusos no cálculo da base)
+                    // Marcamos explicitamente com originalValue = 0 para identificar na renderização
+                    const rowData = {
+                        description: fine.description,
+                        originalValue: 0,
+                        totalCorrection: 0,
+                        totalInterest: 0,
+                        finalValueForRow: fineAmount
+                    };
+                    positiveRows.push(rowData);
+                });
+
                 calculationResult.rows = [...positiveRows, ...deductionRows];
 
-                const positiveSubtotal = positiveRows.reduce((acc, row) => acc + row.finalValueForRow, 0);
-                const totalDeductions = deductionRows.reduce((acc, row) => acc + row.finalValueForRow, 0);
+                const finalPositiveSubtotal = positiveRows.reduce((acc, row) => acc + row.finalValueForRow, 0);
+                // Total Deductions já calculado
 
-                const subtotal = positiveSubtotal - totalDeductions;
+                const subtotal = finalPositiveSubtotal - currentDedTotal;
                 const addFine = addFineCheckbox.checked;
                 const fineValue = addFine ? subtotal * 0.10 : 0;
                 const grandTotal = subtotal + fineValue;
 
-                calculationResult.summary = { subtotal, addFine, fineValue, grandTotal, totalDeductions, positiveSubtotal };
+                calculationResult.summary = {
+                    subtotal,
+                    addFine,
+                    fineValue,
+                    grandTotal,
+                    totalDeductions: currentDedTotal,
+                    positiveSubtotal: finalPositiveSubtotal
+                };
 
                 return (calculationResult.rows.length === 0) ? null : calculationResult;
             };
@@ -710,14 +785,26 @@
             const performAgreementCalculation = () => {
                 const totalInstallments = parseInt(document.getElementById('agreement-total-installments').value) || 0;
                 const paidInstallments = parseInt(document.getElementById('agreement-paid-installments').value) || 0;
+
+                // Lógica de valores de parcela
                 const rawInstallmentValue = document.getElementById('agreement-installment-value').value;
-                const installmentValue = parseFloat(rawInstallmentValue.replace(/\./g, '').replace(',', '.')) || 0;
+                const standardInstallmentValue = parseFloat(rawInstallmentValue.replace(/\./g, '').replace(',', '.')) || 0;
+
+                // Lógica da última parcela diferente
+                const hasDifferentLastInstallment = document.getElementById('agreement-last-different-check').checked;
+                const rawLastInstallmentValue = document.getElementById('agreement-last-installment-value').value;
+                let lastInstallmentValue = 0;
+
+                if (hasDifferentLastInstallment) {
+                    lastInstallmentValue = parseFloat(rawLastInstallmentValue.replace(/\./g, '').replace(',', '.')) || 0;
+                }
+
                 const startDate = parseDate(document.getElementById('agreement-start-date').value);
                 const penaltyPercent = parseFloat(document.getElementById('agreement-penalty').value) || 0;
                 const penaltyBaseType = document.querySelector('input[name="penalty-base"]:checked').value;
 
 
-                if (totalInstallments <= 0 || installmentValue <= 0 || !startDate) {
+                if (totalInstallments <= 0 || standardInstallmentValue <= 0 || !startDate) {
                     alert('Preencha todos os campos do acordo: parcelas totais, valor da parcela e data de início.');
                     return null;
                 }
@@ -734,15 +821,28 @@
                     return updated;
                 };
 
+                let totalOriginalDebt = 0;
+
                 for (let i = 0; i < totalInstallments; i++) {
                     const installmentDate = new Date(startDate);
                     installmentDate.setMonth(startDate.getMonth() + i);
-                    const updatedInstallment = updateValue(installmentValue, installmentDate, finalCalcDate);
+
+                    // Determina o valor da parcela atual
+                    let currentInstallmentValue = standardInstallmentValue;
+
+                    // Se for a última parcela e a checkbox estiver marcada, usa o valor diferenciado
+                    if (hasDifferentLastInstallment && i === (totalInstallments - 1)) {
+                        currentInstallmentValue = lastInstallmentValue;
+                    }
+
+                    totalOriginalDebt += currentInstallmentValue;
+
+                    const updatedInstallment = updateValue(currentInstallmentValue, installmentDate, finalCalcDate);
 
                     installmentsDetails.push({
                         number: i + 1,
                         originalDate: installmentDate,
-                        originalValue: installmentValue,
+                        originalValue: currentInstallmentValue,
                         updatedValue: updatedInstallment,
                         status: i < paidInstallments ? 'Paga' : 'Não Paga'
                     });
@@ -750,8 +850,9 @@
 
                 const totalUpdatedValue = installmentsDetails.reduce((sum, inst) => sum + inst.updatedValue, 0);
                 const paidUpdatedValue = installmentsDetails.filter(inst => inst.status === 'Paga').reduce((sum, inst) => sum + inst.updatedValue, 0);
+                const paidOriginalValue = installmentsDetails.filter(inst => inst.status === 'Paga').reduce((sum, inst) => sum + inst.originalValue, 0);
+
                 const updatedDebt = totalUpdatedValue - paidUpdatedValue;
-                const totalOriginalDebt = totalInstallments * installmentValue;
 
                 let penaltyBaseValue = 0;
                 if (penaltyBaseType === 'remaining') {
@@ -778,8 +879,8 @@
                     installments: installmentsDetails,
                     summary: {
                         totalOriginal: totalOriginalDebt,
-                        paidOriginal: paidInstallments * installmentValue,
-                        remainingOriginal: totalOriginalDebt - (paidInstallments * installmentValue),
+                        paidOriginal: paidOriginalValue,
+                        remainingOriginal: totalOriginalDebt - paidOriginalValue,
                         totalUpdated: totalUpdatedValue,
                         paidUpdated: paidUpdatedValue,
                         updatedDebt: updatedDebt,
@@ -863,7 +964,19 @@
                 let html = '<h3 class="text-xl font-bold text-gray-800 mb-4">Resumo do Cálculo de Condenação</h3><div class="space-y-6">';
                 data.rows.forEach((row, index) => {
                     const isDeduction = data.summary.totalDeductions > 0 && row.description.includes('Dedução');
-                    html += `<div class="p-4 border rounded-lg bg-white"><p class="font-semibold text-lg ${isDeduction ? 'text-red-600' : 'text-indigo-700'}">${index + 1}. ${row.description}</p><div class="grid grid-cols-2 md:grid-cols-4 gap-x-4 gap-y-2 mt-2 text-sm"><div><span class="font-medium text-gray-600">Valor Original:</span><br>${formatCurrency(row.originalValue)}</div><div><span class="font-medium text-gray-600">Correção (IPCA):</span><br>${formatCurrency(row.totalCorrection)}</div><div><span class="font-medium text-gray-600">Juros de Mora:</span><br>${formatCurrency(row.totalInterest)}</div><div class="font-bold"><span class="font-medium text-gray-600">Subtotal:</span><br>${formatCurrency(row.finalValueForRow)}</div></div></div>`;
+
+                    // Renderização especial para "Multa (%)"
+                    if (row.description.startsWith('Multa (') && row.originalValue === 0) {
+                        html += `<div class="p-4 border rounded-lg bg-white border-l-4 border-yellow-500">
+                            <p class="font-semibold text-lg text-gray-800">${index + 1}. ${row.description}</p>
+                            <div class="mt-2 text-right">
+                                <span class="font-medium text-gray-600 mr-2">Valor da Multa:</span>
+                                <span class="text-xl font-bold text-gray-800">${formatCurrency(row.finalValueForRow)}</span>
+                            </div>
+                        </div>`;
+                    } else {
+                        html += `<div class="p-4 border rounded-lg bg-white"><p class="font-semibold text-lg ${isDeduction ? 'text-red-600' : 'text-indigo-700'}">${index + 1}. ${row.description}</p><div class="grid grid-cols-2 md:grid-cols-4 gap-x-4 gap-y-2 mt-2 text-sm"><div><span class="font-medium text-gray-600">Valor Original:</span><br>${formatCurrency(row.originalValue)}</div><div><span class="font-medium text-gray-600">Correção (IPCA):</span><br>${formatCurrency(row.totalCorrection)}</div><div><span class="font-medium text-gray-600">Juros de Mora:</span><br>${formatCurrency(row.totalInterest)}</div><div class="font-bold"><span class="font-medium text-gray-600">Subtotal:</span><br>${formatCurrency(row.finalValueForRow)}</div></div></div>`;
+                    }
                 });
                 html += `</div>`;
 
@@ -1020,7 +1133,7 @@
                 let penhoraRequestsHTML = '';
                 if (requests.length > 0) {
                     let penhoraHeader = 'Caso não haja o pagamento voluntário, requer o prosseguimento da execução com as seguintes medidas:';
-                    if (data.type === 'agreement' && !includeIntimationCheckbox.checked) {
+                    if (data.type === 'agreement' && !document.getElementById('include-intimation-checkbox').checked) {
                         penhoraHeader = 'Requer a realização das seguintes medidas para constrição e penhora:';
                     }
                     penhoraRequestsHTML = `
@@ -1139,13 +1252,24 @@
                 pdf.text(`Processo nº: ${data.processNumber}`, 15, 40);
 
                 const head = [['Descrição', 'Valor Original', 'Correção (IPCA)', 'Juros de Mora', 'Subtotal']];
-                const body = data.rows.map(row => [
-                    row.description,
-                    { content: formatCurrency(row.originalValue), styles: { halign: 'right' } },
-                    { content: formatCurrency(row.totalCorrection), styles: { halign: 'right' } },
-                    { content: formatCurrency(row.totalInterest), styles: { halign: 'right' } },
-                    { content: formatCurrency(row.finalValueForRow), styles: { halign: 'right' } }
-                ]);
+                const body = data.rows.map(row => {
+                    if (row.description.startsWith('Multa (') && row.originalValue === 0) {
+                        return [
+                            row.description,
+                            { content: '-', styles: { halign: 'center' } },
+                            { content: '-', styles: { halign: 'center' } },
+                            { content: '-', styles: { halign: 'center' } },
+                            { content: formatCurrency(row.finalValueForRow), styles: { halign: 'right' } }
+                        ];
+                    }
+                    return [
+                        row.description,
+                        { content: formatCurrency(row.originalValue), styles: { halign: 'right' } },
+                        { content: formatCurrency(row.totalCorrection), styles: { halign: 'right' } },
+                        { content: formatCurrency(row.totalInterest), styles: { halign: 'right' } },
+                        { content: formatCurrency(row.finalValueForRow), styles: { halign: 'right' } }
+                    ];
+                });
 
                 pdf.autoTable({
                     startY: 50, head: head, body: body,
@@ -1478,21 +1602,63 @@
                 intimationDeadlineWrapper.classList.toggle('hidden', !includeIntimationCheckbox.checked);
             });
 
+            // Listener novo para mostrar/esconder o campo da última parcela
+            agreementLastDifferentCheck.addEventListener('change', () => {
+                agreementLastValueContainer.classList.toggle('hidden', !agreementLastDifferentCheck.checked);
+            });
+
+
             condemnationContainer.addEventListener('change', (e) => {
                 if (e.target.classList.contains('description-select')) {
                     const row = e.target.closest('.calculation-row');
                     const otherInput = row.querySelector('.other-description-input');
                     const interestDateInput = row.querySelector('.interest-date-input');
+                    const correctionDateInput = row.querySelector('.correction-date-input');
+                    const valueInput = row.querySelector('.value-input');
+                    const valueLabel = row.querySelectorAll('label')[1]; // Label do valor
+
                     const isDeduction = e.target.value === 'Dedução/Pagamento Parcial';
+                    const isMultaPercent = e.target.value === 'Multa (%)';
 
                     otherInput.classList.toggle('hidden', e.target.value !== 'Outro');
 
-                    interestDateInput.disabled = isDeduction;
-                    if (isDeduction) {
+                    if (isMultaPercent) {
+                        valueLabel.textContent = 'Porcentagem (%)';
+                        interestDateInput.disabled = true;
+                        interestDateInput.classList.add('bg-gray-100', 'cursor-not-allowed');
+                        interestDateInput.placeholder = '';
                         interestDateInput.value = '';
-                        interestDateInput.placeholder = 'N/A';
+
+                        correctionDateInput.disabled = true;
+                        correctionDateInput.classList.add('bg-gray-100', 'cursor-not-allowed');
+                        correctionDateInput.placeholder = '';
+                        correctionDateInput.value = '';
+
+                        valueInput.placeholder = 'Ex: 10';
                     } else {
-                        interestDateInput.placeholder = 'DD/MM/AAAA';
+                        valueLabel.textContent = 'Valor (R$)';
+                        if (isDeduction) {
+                            interestDateInput.disabled = true;
+                            interestDateInput.placeholder = 'N/A';
+                            interestDateInput.value = '';
+                            interestDateInput.classList.remove('bg-gray-100', 'cursor-not-allowed');
+
+                            correctionDateInput.disabled = false;
+                            correctionDateInput.placeholder = 'DD/MM/AAAA';
+                            correctionDateInput.classList.remove('bg-gray-100', 'cursor-not-allowed');
+
+                            valueInput.placeholder = '1.000,00';
+                        } else {
+                            interestDateInput.disabled = false;
+                            interestDateInput.placeholder = 'DD/MM/AAAA';
+                            interestDateInput.classList.remove('bg-gray-100', 'cursor-not-allowed');
+
+                            correctionDateInput.disabled = false;
+                            correctionDateInput.placeholder = 'DD/MM/AAAA';
+                            correctionDateInput.classList.remove('bg-gray-100', 'cursor-not-allowed');
+
+                            valueInput.placeholder = '1.000,00';
+                        }
                     }
                 }
             });
@@ -1530,7 +1696,7 @@
             addInputBehaviors(document.body);
             fetchEconomicData();
             toggleCalculationView();
-            document.getElementById('agreement-penalty').value = '20';
+            populateAgreementPenaltyOptions(); // Preencher dropdown de multa
 
             // Preenche a data final com a data de hoje por padrão
             const today = new Date();
