@@ -111,21 +111,11 @@ function calculateResults() {
     };
 
     // DEFINIÇÃO DE "DIA ÚTIL PARA CONTAGEM" (WORKING DAY)
-    // Um dia conta no prazo se:
-    // 1. Não é Fim de Semana
-    // 2. Não é Feriado/Recesso
-    // 3. Não é Indisponibilidade SEVERA
-    // (Obs: Indisponibilidade NORMAL CONTA como dia útil)
     const isCountableDay = (dateMoment) => {
         return !isWeekend(dateMoment) && !isHolidayExplicit(dateMoment) && !isSevereDowntime(dateMoment);
     };
 
     // DEFINIÇÃO DE "DIA ÚTIL PARA VENCIMENTO" (DUE DATE CHECK)
-    // O prazo não pode vencer em:
-    // 1. Fim de Semana
-    // 2. Feriado
-    // 3. Indisponibilidade SEVERA
-    // 4. Indisponibilidade NORMAL (Aqui ela afeta!)
     const isValidDueDate = (dateMoment) => {
         return isCountableDay(dateMoment) && !isNormalDowntime(dateMoment);
     };
@@ -146,7 +136,6 @@ function calculateResults() {
 
     if (inputs.countType === '1') { // DJE
         dispDate = dateForCalc.clone();
-        // A publicação ocorre no próximo dia ÚTIL (considerando feriados/severas)
         dateForCalc.add(1, 'days');
         while (!isCountableDay(dateForCalc)) {
             dateForCalc.add(1, 'days');
@@ -154,7 +143,6 @@ function calculateResults() {
     }
     else if (inputs.countType === '3') { // Portal
         dispDate = dateForCalc.clone();
-        // 5 dias úteis de carência
         let gapDays = 5;
         let tempDate = dispDate.clone();
         while (gapDays > 0) {
@@ -170,23 +158,42 @@ function calculateResults() {
 
     if (inputs.calcType === 'workingDays') {
         let daysToAdd = inputs.days;
-        // Soma dias que são "Countable" (úteis + indisponibilidade normal)
         while (daysToAdd > 0) {
             dueDate.add(1, 'days');
             if (isCountableDay(dueDate)) {
                 daysToAdd--;
             }
         }
+
+        // Prorrogação
+        while (checkSystemDown(dueDate.format('DD/MM/YYYY'))) {
+            dueDate.add(1, 'days');
+            while (!isWorkingDayManual(dueDate)) { // isWorkingDayManual usado abaixo, mas aqui podemos usar isCountableDay? Não, isCountableDay permite normal down.
+                // Correção: Para sair de FDS/Feriado após prorrogar, usamos isCountableDay que já checa isso.
+                // Mas isCountableDay retorna TRUE para dia com indisponibilidade normal.
+                // Então precisamos checar isValidDueDate.
+                if (!isCountableDay(dueDate)) dueDate.add(1, 'days');
+                else break;
+            }
+        }
     }
     else if (inputs.calcType === 'months') {
         dueDate.add(inputs.days, 'months');
+        while (checkSystemDown(dueDate.format('DD/MM/YYYY'))) {
+            dueDate.add(1, 'days');
+        }
+        while (!isCountableDay(dueDate)) { // Usando lógica manual equivalente
+            dueDate.add(1, 'days');
+        }
     }
-    else { // calendarDays
+    else { // Dias Corridos
         dueDate.add(inputs.days, 'days');
+        while (!isValidDueDate(dueDate)) { // Usa check completo de vencimento
+            dueDate.add(1, 'days');
+        }
     }
 
-    // --- Prorrogação Final (Para todos os tipos) ---
-    // Se cair em dia inválido (FDS, Feriado, Severa OU Normal), joga para o próximo
+    // Garantia final de prorrogação (Loop seguro)
     while (!isValidDueDate(dueDate)) {
         dueDate.add(1, 'days');
     }
@@ -231,7 +238,6 @@ function calculateResults() {
     let currentDate = dateForCalc.clone();
     let safety = 0;
 
-    // Itera até a data final calculada
     while (currentDate.isSameOrBefore(dueDate) && safety < 2000) {
         safety++;
 
@@ -243,6 +249,8 @@ function calculateResults() {
         const normalInfo = isNormalDowntime(currentDate) ? getSystemDownInfo(dateStr) : null;
         const holDesc = getHolidayDescription(dateStr);
         const isWknd = isWeekend(currentDate);
+        const isStart = (dateStr === dateForCalc.format('DD/MM/YYYY'));
+        const isEnd = (dateStr === dueDate.format('DD/MM/YYYY'));
 
         let row = {
             index: '-',
@@ -252,13 +260,26 @@ function calculateResults() {
             rawDate: currentDate.toDate()
         };
 
-        const isStart = (dateStr === dateForCalc.format('DD/MM/YYYY'));
-        const isEnd = (dateStr === dueDate.format('DD/MM/YYYY'));
+        // PRIORIDADE VISUAL: INÍCIO > SEVERA > FERIADO > FDS > NORMAL > FIM > DIA ÚTIL
+        if (isStart) {
+            // Configuração base do texto de início
+            if (inputs.countType === '1') row._type = 'Data da Publicação no DJE (não conta)';
+            else if (inputs.countType === '3') row._type = 'Início do Prazo (art. 231, IX, do CPC)';
+            else row._type = 'Dia do Início (não conta)';
 
-        // Lógica de Renderização Visual (Prioridade de mensagens)
-        if (severeInfo) {
+            // Adiciona motivo se for dia não útil (Feriado ou Fim de Semana), ignorando indisponibilidade
+            if (holDesc) {
+                row._type += ` - ${holDesc}`;
+            } else if (isWknd) {
+                row._type += ' - Fim de Semana';
+            }
+
+            row.class = 'start'; // Sempre azul (text-primary)
+            row.index = '-';
+        }
+        else if (severeInfo) {
             row._type = `Indisponibilidade SEVERA: ${severeInfo.description}`;
-            row.class = 'red'; // Severa é vermelha (suspende)
+            row.class = 'red';
         } else if (holDesc) {
             const lowerDesc = holDesc.toLowerCase();
             if (lowerDesc.includes('recesso') ||
@@ -274,15 +295,8 @@ function calculateResults() {
             row._type = 'Fim de Semana';
             row.class = 'susp';
         } else if (normalInfo) {
-            // Indisponibilidade Normal: Amarelo, mas CONTA como dia (se não for início)
             row._type = `Indisponibilidade: ${normalInfo.description}`;
             row.class = 'susp';
-        } else if (isStart) {
-            if (inputs.countType === '1') row._type = 'Data da Publicação no DJE (não conta)';
-            else if (inputs.countType === '3') row._type = 'Início do Prazo (art. 231, IX, do CPC)';
-            else row._type = 'Dia do Início (não conta)';
-            row.class = 'start';
-            row.index = '-';
         } else if (isEnd) {
             row._type = `${currentDate.format('dddd')} (Fim do Prazo)`;
             row.class = 'end';
@@ -331,7 +345,7 @@ function calculateResults() {
 
 function getHolidayList(inputs) {
     const currentYear = inputs.initialDate.year();
-    const finalYear = moment(inputs.initialDate).add(inputs.days + 365, 'days').year(); // Margem maior
+    const finalYear = moment(inputs.initialDate).add(inputs.days + 365, 'days').year();
 
     if (typeof holidaysFunc === 'undefined') return { list: [] };
 
