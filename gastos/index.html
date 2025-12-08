@@ -6,7 +6,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Controle de Gastos Mensal</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Chart.js para Gráficos -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
@@ -30,7 +29,6 @@
             -moz-appearance: textfield;
         }
 
-        /* Garante que o hidden do Tailwind tenha prioridade */
         .hidden {
             display: none !important;
         }
@@ -63,7 +61,6 @@
                 margin-bottom: 1.5rem;
             }
 
-            /* Ajuste para caber os cards na impressão */
             #summary-cards {
                 display: grid !important;
                 grid-template-columns: repeat(4, 1fr) !important;
@@ -71,7 +68,6 @@
                 padding: 0 !important;
             }
 
-            /* Ajuste para o gráfico na impressão */
             #statistics-section {
                 page-break-before: always;
             }
@@ -115,7 +111,6 @@
             display: none;
         }
 
-        /* Tela de Login */
         #login-screen {
             position: fixed;
             top: 0;
@@ -126,7 +121,6 @@
             z-index: 50;
         }
 
-        /* Spinner */
         .loader {
             border: 4px solid #f3f3f3;
             border-top: 4px solid #4f46e5;
@@ -152,64 +146,79 @@
 <body class="bg-gray-100 p-4 md:p-8">
 
     <!-- Tela de Login -->
-    <div id="login-screen" class="flex flex-col justify-center items-center">
-        <h1 class="text-4xl font-bold text-gray-800 mb-2">Controle de Gastos</h1>
-        <p class="text-gray-600 mb-8">Faça login para acessar suas planilhas</p>
+    <div id="login-screen" class="flex flex-col justify-center items-center p-4">
+        <h1 class="text-4xl font-bold text-gray-800 mb-2 text-center">Controle de Gastos</h1>
+        <p class="text-gray-600 mb-8 text-center">Faça login para acessar suas planilhas</p>
 
         <div id="auth-loading" class="flex flex-col items-center">
             <div class="loader"></div>
             <p class="text-gray-500">Verificando autenticação...</p>
         </div>
 
-        <div id="auth-buttons" class="hidden flex flex-col items-center">
+        <div id="auth-buttons" class="hidden flex flex-col items-center w-full max-w-sm">
             <button id="google-login-btn"
-                class="bg-white text-gray-700 font-semibold py-3 px-6 border border-gray-300 rounded-lg shadow-sm flex items-center space-x-3 hover:bg-gray-50 transition-colors">
+                class="w-full bg-white text-gray-700 font-semibold py-3 px-6 border border-gray-300 rounded-lg shadow-sm flex items-center justify-center space-x-3 hover:bg-gray-50 transition-colors">
                 <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" class="w-6 h-6"
                     alt="Google Logo">
                 <span>Entrar com Google</span>
             </button>
-            <p id="login-status" class="text-gray-500 mt-4 text-sm hidden">Redirecionando para o Google...</p>
-            <p id="login-error"
-                class="text-red-500 mt-4 hidden font-medium text-center max-w-md bg-red-50 p-3 rounded border border-red-200">
-            </p>
+            <p id="login-status" class="text-indigo-600 mt-4 text-sm hidden font-medium animate-pulse">Redirecionando
+                para o Google...</p>
+
+            <!-- Área de Diagnóstico de Erro -->
+            <div id="login-error-container" class="hidden mt-6 w-full">
+                <div class="bg-red-50 border-l-4 border-red-500 p-4 rounded shadow-sm">
+                    <div class="flex">
+                        <div class="flex-shrink-0">
+                            <i class="fas fa-exclamation-circle text-red-500"></i>
+                        </div>
+                        <div class="ml-3">
+                            <p class="text-sm text-red-700 font-bold">Erro ao entrar:</p>
+                            <p id="login-error-msg" class="text-sm text-red-600 mt-1 break-words"></p>
+                        </div>
+                    </div>
+                </div>
+                <p class="text-xs text-gray-500 mt-2 text-center">Tente limpar o cache ou usar o Chrome/Safari normal
+                    (sem ser anônimo).</p>
+            </div>
         </div>
     </div>
 
     <!-- Conteúdo Principal -->
     <div id="app-content" class="max-w-7xl mx-auto hidden">
 
-        <!-- Cabeçalho -->
-        <header class="mb-6 no-print flex justify-between items-center">
+        <header class="mb-6 no-print flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
             <div>
-                <h1 class="text-3xl font-bold text-gray-800">Meu Controle de Gastos</h1>
+                <h1 class="text-2xl md:text-3xl font-bold text-gray-800">Meu Controle de Gastos</h1>
                 <p class="text-sm text-gray-500">
                     Logado como: <span id="user-email-display" class="font-medium text-indigo-600">...</span>
                 </p>
             </div>
-            <button id="logout-btn" class="text-sm text-gray-500 hover:text-red-600 underline">Sair</button>
+            <button id="logout-btn" class="text-sm text-gray-500 hover:text-red-600 underline flex items-center">
+                <i class="fas fa-sign-out-alt mr-2"></i> Sair
+            </button>
         </header>
 
-        <!-- Seletores e Botão de Impressão -->
         <div class="flex flex-col md:flex-row justify-between items-center mb-6 space-y-4 md:space-y-0 no-print">
-            <div class="flex flex-col space-y-2">
+            <div class="flex flex-col space-y-2 w-full md:w-auto">
                 <div class="flex space-x-4">
-                    <div>
+                    <div class="w-1/2 md:w-auto">
                         <label for="month-select" class="block text-sm font-medium text-gray-700">Mês</label>
                         <select id="month-select"
                             class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md shadow-sm"></select>
                     </div>
-                    <div>
+                    <div class="w-1/2 md:w-auto">
                         <label for="year-select" class="block text-sm font-medium text-gray-700">Ano</label>
                         <select id="year-select"
                             class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md shadow-sm"></select>
                     </div>
                 </div>
 
-                <!-- Toggle Renda/Saldo -->
                 <div class="flex items-center">
                     <input id="toggle-income-checkbox" type="checkbox"
                         class="h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500">
-                    <label for="toggle-income-checkbox" class="ml-2 block text-sm text-gray-600 cursor-pointer">
+                    <label for="toggle-income-checkbox"
+                        class="ml-2 block text-sm text-gray-600 cursor-pointer select-none">
                         Mostrar Renda e Saldo
                     </label>
                 </div>
@@ -227,28 +236,23 @@
 
             <!-- Cards de Resumo -->
             <div id="summary-cards" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-                <!-- Card Renda -->
                 <div id="card-income" class="bg-white p-6 rounded-lg shadow-md border border-gray-200">
                     <h2 class="text-sm font-medium text-green-600">Renda Total</h2>
                     <p id="total-income" class="text-3xl font-semibold text-gray-900 mt-2">R$ 0,00</p>
                 </div>
-                <!-- Card Despesa -->
                 <div class="bg-white p-6 rounded-lg shadow-md border border-gray-200">
                     <h2 class="text-sm font-medium text-red-600">Despesa Total</h2>
                     <p id="total-expense" class="text-3xl font-semibold text-gray-900 mt-2">R$ 0,00</p>
                 </div>
-                <!-- Card Cid -->
                 <div class="bg-white p-6 rounded-lg shadow-md border border-gray-200">
                     <h2 class="text-sm font-medium text-purple-600">Gastos do Cid</h2>
                     <p id="total-cid" class="text-3xl font-semibold text-gray-900 mt-2">R$ 0,00</p>
                 </div>
-                <!-- Card Saldo -->
                 <div id="card-balance" class="bg-white p-6 rounded-lg shadow-md border border-gray-200">
                     <h2 class="text-sm font-medium text-blue-600">Saldo</h2>
                     <p id="total-balance" class="text-3xl font-semibold text-gray-900 mt-2">R$ 0,00</p>
                 </div>
 
-                <!-- Card de Acerto de Contas -->
                 <div
                     class="col-span-1 sm:col-span-2 lg:col-span-4 bg-white p-6 rounded-lg shadow-md border border-gray-200">
                     <h2 class="text-xl font-semibold text-gray-800 mb-4">Acerto de Contas (Compartilhados)</h2>
@@ -272,15 +276,12 @@
                 </div>
             </div>
 
-            <!-- NOVA SEÇÃO: Análise de Gastos (Gráfico e Tabela) -->
             <div id="statistics-section" class="bg-white p-6 rounded-lg shadow-md border border-gray-200 mb-8">
                 <h2 class="text-xl font-semibold text-gray-800 mb-6">Análise de Gastos por Categoria</h2>
                 <div class="flex flex-col md:flex-row items-center justify-between gap-8">
-                    <!-- Gráfico -->
                     <div class="w-full md:w-1/2 h-64 md:h-80 flex justify-center">
                         <canvas id="expenseChart"></canvas>
                     </div>
-                    <!-- Tabela de Detalhes -->
                     <div class="w-full md:w-1/2 overflow-x-auto">
                         <table class="min-w-full divide-y divide-gray-200">
                             <thead class="bg-gray-50">
@@ -292,18 +293,13 @@
                                     <th class="px-3 py-2 text-right text-xs font-medium text-gray-500 uppercase">%</th>
                                 </tr>
                             </thead>
-                            <tbody id="category-stats-body" class="divide-y divide-gray-200">
-                                <!-- Linhas geradas via JS -->
-                            </tbody>
+                            <tbody id="category-stats-body" class="divide-y divide-gray-200"></tbody>
                         </table>
                     </div>
                 </div>
             </div>
 
-            <!-- Formulários e Listas -->
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-
-                <!-- Coluna: Formulários -->
                 <div class="space-y-8 no-print">
                     <div class="bg-white p-6 rounded-lg shadow-md border border-gray-200 relative">
                         <h2 class="text-xl font-semibold text-gray-800 mb-4">
@@ -373,7 +369,6 @@
                         </form>
                     </div>
 
-                    <!-- Formulário de Renda -->
                     <div id="form-container-income" class="bg-white p-6 rounded-lg shadow-md border border-gray-200">
                         <h2 class="text-xl font-semibold text-gray-800 mb-4">
                             <span id="income-form-title">Adicionar Renda</span>
@@ -417,7 +412,6 @@
                     </div>
                 </div>
 
-                <!-- Coluna: Listas -->
                 <div class="space-y-8">
                     <div class="bg-white p-6 rounded-lg shadow-md border border-gray-200">
                         <h2 class="text-xl font-semibold text-gray-800 mb-4">Despesas do Mês</h2>
@@ -450,7 +444,6 @@
                         </div>
                     </div>
 
-                    <!-- Lista de Rendas -->
                     <div id="table-container-income" class="bg-white p-6 rounded-lg shadow-md border border-gray-200">
                         <h2 class="text-xl font-semibold text-gray-800 mb-4">Rendas do Mês</h2>
                         <div class="overflow-x-auto">
@@ -489,9 +482,7 @@
         import { getAuth, signInWithRedirect, getRedirectResult, GoogleAuthProvider, onAuthStateChanged, signOut, setPersistence, browserLocalPersistence } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, doc, collection, addDoc, updateDoc, deleteDoc, onSnapshot, query, where } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        // =========================================================================
-        // ATENÇÃO: CONFIGURAÇÃO DO FIREBASE
-        // =========================================================================
+        // CONFIGURAÇÃO
         const firebaseConfig = {
             apiKey: "AIzaSyD2Mn2I9ell-bA7RZavH-JxHJid9wTDZe8",
             authDomain: "controle-gastos-c4c4d.firebaseapp.com",
@@ -505,7 +496,6 @@
             "eduardocarnello@gmail.com",
             "camilaps05@gmail.com"
         ];
-        // =========================================================================
 
         let app, db, auth;
         let userId = null;
@@ -513,33 +503,29 @@
         let unsubscribeIncome = () => { };
         let currentExpenses = [];
         let currentIncomes = [];
-        let expenseChartInstance = null; // Variável para guardar o gráfico
+        let expenseChartInstance = null;
 
-        // Estado de Edição
         let editingExpenseId = null;
         let editingIncomeId = null;
 
-        // Elementos UI
         const loginScreen = document.getElementById('login-screen');
         const authLoading = document.getElementById('auth-loading');
         const authButtons = document.getElementById('auth-buttons');
         const appContent = document.getElementById('app-content');
         const googleLoginBtn = document.getElementById('google-login-btn');
-        const loginError = document.getElementById('login-error');
+        const loginErrorContainer = document.getElementById('login-error-container');
+        const loginErrorMsg = document.getElementById('login-error-msg');
         const loginStatus = document.getElementById('login-status');
         const userEmailDisplay = document.getElementById('user-email-display');
         const logoutBtn = document.getElementById('logout-btn');
 
-        // Elementos de Dados e Controle
         const monthSelect = document.getElementById('month-select');
         const yearSelect = document.getElementById('year-select');
         const toggleIncomeCheckbox = document.getElementById('toggle-income-checkbox');
-
         const cardIncome = document.getElementById('card-income');
         const cardBalance = document.getElementById('card-balance');
         const formContainerIncome = document.getElementById('form-container-income');
         const tableContainerIncome = document.getElementById('table-container-income');
-
         const summaryIncome = document.getElementById('total-income');
         const summaryExpense = document.getElementById('total-expense');
         const summaryBalance = document.getElementById('total-balance');
@@ -547,16 +533,21 @@
         const summaryCamilaPaidForEduardo = document.getElementById('summary-camila-paid-for-eduardo');
         const summaryEduardoPaidForCamila = document.getElementById('summary-eduardo-paid-for-camila');
         const summaryNetTransfer = document.getElementById('summary-net-transfer');
-
         const expenseForm = document.getElementById('expense-form');
         const incomeForm = document.getElementById('income-form');
         const expenseTableBody = document.getElementById('expense-table-body');
         const incomeTableBody = document.getElementById('income-table-body');
-
-        // Elementos de Estatística
         const categoryStatsBody = document.getElementById('category-stats-body');
 
-        // Inicialização
+        // Função para mostrar erro de login de forma amigável
+        function showLoginError(msg) {
+            loginStatus.classList.add('hidden');
+            loginErrorMsg.textContent = msg;
+            loginErrorContainer.classList.remove('hidden');
+            authButtons.classList.remove('hidden');
+            authLoading.classList.add('hidden');
+        }
+
         try {
             app = initializeApp(firebaseConfig);
             db = getFirestore(app);
@@ -564,22 +555,29 @@
             const provider = new GoogleAuthProvider();
 
             if (window.location.protocol === 'file:') {
-                alert("ERRO CRÍTICO: O Login com Google NÃO funciona abrindo o arquivo direto (file://).");
+                alert("Erro: Não use 'file://'. Use localhost ou GitHub Pages.");
             }
 
+            // Tenta definir persistência ANTES de monitorar o estado
             setPersistence(auth, browserLocalPersistence)
                 .then(() => {
+                    // Monitorar Estado de Autenticação
                     onAuthStateChanged(auth, (user) => {
-                        authLoading.classList.add('hidden');
-                        loginStatus.classList.add('hidden');
+                        // Verifica se estamos no meio de um redirect antes de mudar a tela
+                        // Se não tiver usuário, só mostramos a tela de login DEPOIS que o getRedirectResult falhar/terminar
+                        // Para evitar piscadas, se tiver user, mostramos o app direto.
 
                         if (user) {
-                            if (!ALLOWED_EMAILS.includes(user.email)) {
-                                console.warn(`Tentativa de acesso negada: ${user.email}`);
+                            authLoading.classList.add('hidden');
+                            loginStatus.classList.add('hidden');
+
+                            const emailLower = user.email.toLowerCase();
+                            const isAllowed = ALLOWED_EMAILS.some(allowed => allowed.toLowerCase() === emailLower);
+
+                            if (!isAllowed) {
+                                console.warn(`Acesso negado: ${user.email}`);
                                 signOut(auth);
-                                loginError.textContent = `Acesso negado. O e-mail ${user.email} não tem permissão.`;
-                                loginError.classList.remove('hidden');
-                                authButtons.classList.remove('hidden');
+                                showLoginError(`O e-mail ${user.email} não tem permissão.`);
                                 return;
                             }
 
@@ -589,72 +587,56 @@
                             appContent.classList.remove('hidden');
                             loadDataForMonth();
                         } else {
-                            userId = null;
-                            loginScreen.classList.remove('hidden');
-                            authButtons.classList.remove('hidden');
-                            appContent.classList.add('hidden');
-                            unsubscribeExpenses();
-                            unsubscribeIncome();
+                            // Se não tem usuário, esperamos o getRedirectResult decidir se mostra o botão ou não
+                            // O código abaixo no getRedirectResult vai lidar com erros ou sucesso pendente
                         }
                     });
                 })
-                .catch((error) => console.error("Erro na persistência:", error));
+                .catch((error) => console.error("Erro persistência:", error));
 
+            // Tratamento do Redirect (Importante para Mobile)
             getRedirectResult(auth)
-                .then((result) => { if (result) console.log("Retorno do Redirect com sucesso"); })
-                .catch((error) => {
-                    console.error("Erro no retorno do login:", error);
-                    authLoading.classList.add('hidden');
-                    authButtons.classList.remove('hidden');
-                    loginStatus.classList.add('hidden');
-                    let msg = error.message;
-                    if (error.code === 'auth/unauthorized-domain') {
-                        msg = `Domínio não autorizado. Verifique o Console do Firebase.`;
+                .then((result) => {
+                    authLoading.classList.add('hidden'); // Terminou de carregar
+                    if (result) {
+                        console.log("Login Redirect Sucesso");
+                        // onAuthStateChanged vai assumir
+                    } else {
+                        // Se não houve redirect e não tem user (visto pelo onAuthStateChanged), mostra login
+                        if (!auth.currentUser) {
+                            authButtons.classList.remove('hidden');
+                        }
                     }
-                    loginError.textContent = "Erro: " + msg;
-                    loginError.classList.remove('hidden');
+                })
+                .catch((error) => {
+                    console.error("Erro Redirect:", error);
+                    let msg = error.message;
+                    if (error.code === 'auth/unauthorized-domain') msg = "Domínio não autorizado no Firebase.";
+                    if (error.code === 'auth/popup-blocked') msg = "Pop-up bloqueado. Tente novamente.";
+                    showLoginError(msg);
                 });
 
             googleLoginBtn.addEventListener('click', () => {
-                loginError.classList.add('hidden');
+                loginErrorContainer.classList.add('hidden');
                 loginStatus.classList.remove('hidden');
+
                 signInWithRedirect(auth, provider).catch((error) => {
-                    console.error("Erro ao iniciar redirect:", error);
-                    loginStatus.classList.add('hidden');
-                    loginError.textContent = "Erro ao iniciar login: " + error.message;
-                    loginError.classList.remove('hidden');
+                    console.error("Erro ao iniciar:", error);
+                    showLoginError(error.message);
                 });
             });
 
-            logoutBtn.addEventListener('click', () => signOut(auth));
+            logoutBtn.addEventListener('click', () => {
+                signOut(auth).then(() => {
+                    window.location.reload(); // Recarrega para limpar estados
+                });
+            });
 
         } catch (e) {
-            console.error("Erro config Firebase:", e);
-            alert("Erro na configuração do Firebase. Verifique console.");
+            console.error("Erro config:", e);
+            showLoginError("Erro na configuração do App. Veja o console.");
         }
 
-        // --- Lógica de Toggle Renda/Saldo ---
-        function initializeToggle() {
-            const savedState = localStorage.getItem('showFinancials') === 'true';
-            toggleIncomeCheckbox.checked = savedState;
-            applyVisibility(savedState);
-
-            toggleIncomeCheckbox.addEventListener('change', (e) => {
-                const show = e.target.checked;
-                localStorage.setItem('showFinancials', show);
-                applyVisibility(show);
-            });
-        }
-
-        function applyVisibility(show) {
-            const method = show ? 'remove' : 'add';
-            cardIncome.classList[method]('hidden');
-            cardBalance.classList[method]('hidden');
-            formContainerIncome.classList[method]('hidden');
-            tableContainerIncome.classList[method]('hidden');
-        }
-
-        // Funções Auxiliares
         function formatCurrencyBRL(value) {
             if (isNaN(value)) value = 0;
             return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value);
@@ -680,7 +662,6 @@
             }
         }
 
-        // Lógica do App
         function initializeSelectors() {
             const months = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
             const now = new Date();
@@ -708,14 +689,11 @@
 
         function loadDataForMonth() {
             if (!userId) return;
-
-            // Atualiza título de impressão com Mês/Ano
             const monthName = monthSelect.options[monthSelect.selectedIndex].text;
             document.getElementById('print-title').textContent = `Relatório Mensal - ${monthName}/${yearSelect.value}`;
 
             unsubscribeExpenses();
             unsubscribeIncome();
-
             window.cancelEditExpense();
             window.cancelEditIncome();
 
@@ -728,7 +706,7 @@
                 currentExpenses.sort((a, b) => new Date(a.date) - new Date(b.date));
                 renderTables();
                 updateSummary();
-                updateCharts(); // Atualiza gráfico e tabela de estatísticas
+                updateCharts();
             });
 
             const qIncome = query(collection(db, `${userDocPath}/income`), where("monthYear", "==", monthYear));
@@ -744,7 +722,6 @@
             expenseTableBody.innerHTML = currentExpenses.length ? '' : '<tr><td colspan="6" class="px-4 py-4 text-center text-gray-500">Nenhuma despesa.</td></tr>';
             currentExpenses.forEach(item => {
                 const rowClass = item.sharingType === 'cid_expense' ? 'bg-purple-50 hover:bg-purple-100' : 'hover:bg-gray-50';
-
                 expenseTableBody.innerHTML += `
                     <tr class="${rowClass}">
                         <td class="px-4 py-3 text-sm">${item.description}</td>
@@ -792,7 +769,6 @@
 
             currentExpenses.forEach(item => {
                 const amount = item.amount;
-
                 if (item.sharingType === 'cid_expense') {
                     totalCidAmount += amount;
                 } else if (item.sharingType === 'shared_50_50') {
@@ -820,47 +796,29 @@
             }
         }
 
-        // --- Lógica de Gráficos e Estatísticas ---
         function updateCharts() {
-            // 1. Agrupar despesas por categoria
             const categoryTotals = {};
             let totalExpenseValue = 0;
 
             currentExpenses.forEach(item => {
-                // Opcional: Se quiser excluir gastos do Cid do gráfico, descomente abaixo:
-                // if (item.sharingType === 'cid_expense') return;
-
                 const cat = item.category || 'Outros';
                 if (!categoryTotals[cat]) categoryTotals[cat] = 0;
                 categoryTotals[cat] += item.amount;
                 totalExpenseValue += item.amount;
             });
 
-            // Se não houver despesas, limpa tudo
             if (totalExpenseValue === 0) {
-                if (expenseChartInstance) {
-                    expenseChartInstance.destroy();
-                    expenseChartInstance = null;
-                }
+                if (expenseChartInstance) { expenseChartInstance.destroy(); expenseChartInstance = null; }
                 categoryStatsBody.innerHTML = '<tr><td colspan="3" class="px-4 py-4 text-center text-gray-500">Sem dados para exibir.</td></tr>';
                 return;
             }
 
-            // 2. Preparar dados para o gráfico e tabela
             const categories = Object.keys(categoryTotals);
             const dataValues = Object.values(categoryTotals);
+            const backgroundColors = ['#3B82F6', '#EF4444', '#10B981', '#F59E0B', '#8B5CF6', '#EC4899', '#6366F1', '#14B8A6', '#F97316', '#64748B'];
 
-            // Cores bonitas para o gráfico
-            const backgroundColors = [
-                '#3B82F6', '#EF4444', '#10B981', '#F59E0B', '#8B5CF6',
-                '#EC4899', '#6366F1', '#14B8A6', '#F97316', '#64748B'
-            ];
-
-            // 3. Renderizar Tabela de Detalhes (Ordenada por valor)
             const sortedCategories = categories.map((cat, i) => ({
-                cat,
-                val: dataValues[i],
-                perc: (dataValues[i] / totalExpenseValue * 100).toFixed(1)
+                cat, val: dataValues[i], perc: (dataValues[i] / totalExpenseValue * 100).toFixed(1)
             })).sort((a, b) => b.val - a.val);
 
             categoryStatsBody.innerHTML = '';
@@ -870,35 +828,23 @@
                         <td class="px-3 py-2 text-sm text-gray-700">${item.cat}</td>
                         <td class="px-3 py-2 text-sm text-right font-medium text-gray-900">${formatCurrencyBRL(item.val)}</td>
                         <td class="px-3 py-2 text-sm text-right text-gray-500">${item.perc}%</td>
-                    </tr>
-                `;
+                    </tr>`;
             });
 
-            // 4. Renderizar Gráfico
             const ctx = document.getElementById('expenseChart').getContext('2d');
-
-            if (expenseChartInstance) {
-                expenseChartInstance.destroy();
-            }
+            if (expenseChartInstance) expenseChartInstance.destroy();
 
             expenseChartInstance = new Chart(ctx, {
-                type: 'doughnut', // ou 'pie'
+                type: 'doughnut',
                 data: {
                     labels: categories,
-                    datasets: [{
-                        data: dataValues,
-                        backgroundColor: backgroundColors,
-                        borderWidth: 1
-                    }]
+                    datasets: [{ data: dataValues, backgroundColor: backgroundColors, borderWidth: 1 }]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
                     plugins: {
-                        legend: {
-                            position: 'bottom',
-                            labels: { boxWidth: 12, font: { size: 11 } }
-                        },
+                        legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 11 } } },
                         tooltip: {
                             callbacks: {
                                 label: function (context) {
@@ -915,12 +861,9 @@
             });
         }
 
-        // --- Funções de Edição (Globais) ---
-
         window.startEditExpense = (id) => {
             const expense = currentExpenses.find(e => e.id === id);
             if (!expense) return;
-
             editingExpenseId = id;
             document.getElementById('expense-desc').value = expense.description;
             document.getElementById('expense-amount').value = expense.amount;
@@ -928,11 +871,9 @@
             document.getElementById('expense-category').value = expense.category;
             document.getElementById('expense-paid-by').value = expense.paidBy;
             document.getElementById('expense-sharing-type').value = expense.sharingType;
-
             document.getElementById('expense-submit-btn').textContent = "Atualizar Despesa";
             document.getElementById('expense-form-title').textContent = "Editar Despesa";
             document.getElementById('expense-cancel-btn').classList.remove('hidden');
-
             document.getElementById('expense-form').scrollIntoView({ behavior: 'smooth' });
         };
 
@@ -940,7 +881,6 @@
             editingExpenseId = null;
             document.getElementById('expense-form').reset();
             document.getElementById('expense-date').value = new Date().toISOString().split('T')[0];
-
             document.getElementById('expense-submit-btn').textContent = "Adicionar Despesa";
             document.getElementById('expense-form-title').textContent = "Adicionar Despesa";
             document.getElementById('expense-cancel-btn').classList.add('hidden');
@@ -949,17 +889,14 @@
         window.startEditIncome = (id) => {
             const income = currentIncomes.find(i => i.id === id);
             if (!income) return;
-
             editingIncomeId = id;
             document.getElementById('income-desc').value = income.description;
             document.getElementById('income-amount').value = income.amount;
             document.getElementById('income-date').value = income.date;
             document.getElementById('income-source').value = income.source;
-
             document.getElementById('income-submit-btn').textContent = "Atualizar Renda";
             document.getElementById('income-form-title').textContent = "Editar Renda";
             document.getElementById('income-cancel-btn').classList.remove('hidden');
-
             document.getElementById('income-form').scrollIntoView({ behavior: 'smooth' });
         };
 
@@ -967,7 +904,6 @@
             editingIncomeId = null;
             document.getElementById('income-form').reset();
             document.getElementById('income-date').value = new Date().toISOString().split('T')[0];
-
             document.getElementById('income-submit-btn').textContent = "Adicionar Renda";
             document.getElementById('income-form-title').textContent = "Adicionar Renda";
             document.getElementById('income-cancel-btn').classList.add('hidden');
@@ -979,12 +915,10 @@
             try {
                 if (type === 'expense' && editingExpenseId === id) window.cancelEditExpense();
                 if (type === 'income' && editingIncomeId === id) window.cancelEditIncome();
-
                 await deleteDoc(doc(db, `users/${userId}/${col}/${id}`));
             } catch (e) { alert("Erro ao deletar: " + e.message); }
         };
 
-        // Listeners de Formulário
         expenseForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             if (!userId) return;
@@ -999,9 +933,7 @@
                 monthYear: getMonthYear(date),
                 createdAt: editingExpenseId ? undefined : new Date()
             };
-
             if (editingExpenseId) delete data.createdAt;
-
             try {
                 if (editingExpenseId) {
                     await updateDoc(doc(db, `users/${userId}/expenses/${editingExpenseId}`), data);
@@ -1011,10 +943,7 @@
                     expenseForm.reset();
                     document.getElementById('expense-date').value = new Date().toISOString().split('T')[0];
                 }
-            } catch (error) {
-                console.error("Erro ao salvar:", error);
-                alert("Erro ao salvar despesa.");
-            }
+            } catch (error) { console.error("Erro ao salvar:", error); alert("Erro ao salvar."); }
         });
 
         incomeForm.addEventListener('submit', async (e) => {
@@ -1029,9 +958,7 @@
                 monthYear: getMonthYear(date),
                 createdAt: editingIncomeId ? undefined : new Date()
             };
-
             if (editingIncomeId) delete data.createdAt;
-
             try {
                 if (editingIncomeId) {
                     await updateDoc(doc(db, `users/${userId}/income/${editingIncomeId}`), data);
@@ -1041,10 +968,7 @@
                     incomeForm.reset();
                     document.getElementById('income-date').value = new Date().toISOString().split('T')[0];
                 }
-            } catch (error) {
-                console.error("Erro ao salvar:", error);
-                alert("Erro ao salvar renda.");
-            }
+            } catch (error) { console.error("Erro ao salvar:", error); alert("Erro ao salvar."); }
         });
 
         document.getElementById('print-button').addEventListener('click', () => window.print());
