@@ -5,7 +5,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Controle de Gastos Mensal</title>
+    <!-- Configuração para silenciar o aviso do Tailwind -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = { theme: { extend: {} } }
+    </script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
@@ -146,7 +150,7 @@
 <body class="bg-gray-100 p-4 md:p-8">
 
     <!-- Tela de Login -->
-    <div id="login-screen" class="flex flex-col justify-center items-center p-4">
+    <div id="login-screen" class="flex flex-col justify-center items-center p-4 overflow-y-auto">
         <h1 class="text-4xl font-bold text-gray-800 mb-2 text-center">Controle de Gastos</h1>
         <p class="text-gray-600 mb-8 text-center">Faça login para acessar suas planilhas</p>
 
@@ -155,15 +159,24 @@
             <p class="text-gray-500">Verificando autenticação...</p>
         </div>
 
-        <div id="auth-buttons" class="hidden flex flex-col items-center w-full max-w-sm">
-            <button id="google-login-btn"
+        <div id="auth-buttons" class="hidden flex flex-col items-center w-full max-w-sm space-y-4">
+            <!-- Botão Principal (Redirect - Melhor para Celular) -->
+            <button id="google-login-redirect-btn"
                 class="w-full bg-white text-gray-700 font-semibold py-3 px-6 border border-gray-300 rounded-lg shadow-sm flex items-center justify-center space-x-3 hover:bg-gray-50 transition-colors">
                 <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" class="w-6 h-6"
                     alt="Google Logo">
-                <span>Entrar com Google</span>
+                <span>Entrar (Recomendado Celular)</span>
             </button>
-            <p id="login-status" class="text-indigo-600 mt-4 text-sm hidden font-medium animate-pulse">Redirecionando
-                para o Google...</p>
+
+            <!-- Botão Secundário (Popup - Melhor para PC com bloqueio) -->
+            <button id="google-login-popup-btn"
+                class="w-full bg-indigo-600 text-white font-semibold py-3 px-6 border border-transparent rounded-lg shadow-sm flex items-center justify-center space-x-3 hover:bg-indigo-700 transition-colors">
+                <i class="fab fa-google"></i>
+                <span>Entrar com Pop-up (PC)</span>
+            </button>
+
+            <p id="login-status" class="text-indigo-600 mt-4 text-sm hidden font-medium animate-pulse text-center">
+                Processando login...</p>
 
             <!-- Área de Diagnóstico de Erro -->
             <div id="login-error-container" class="hidden mt-6 w-full">
@@ -178,8 +191,10 @@
                         </div>
                     </div>
                 </div>
-                <p class="text-xs text-gray-500 mt-2 text-center">Tente limpar o cache ou usar o Chrome/Safari normal
-                    (sem ser anônimo).</p>
+                <p class="text-xs text-gray-500 mt-2 text-center px-4">
+                    Dica: Se estiver usando Edge ou modo Anônimo, desbloqueie cookies de terceiros ou tente o botão
+                    "Pop-up".
+                </p>
             </div>
         </div>
     </div>
@@ -479,7 +494,7 @@
     <!-- Firebase JS SDK -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInWithRedirect, getRedirectResult, GoogleAuthProvider, onAuthStateChanged, signOut, setPersistence, browserLocalPersistence } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getAuth, signInWithRedirect, signInWithPopup, getRedirectResult, GoogleAuthProvider, onAuthStateChanged, signOut, setPersistence, browserLocalPersistence, inMemoryPersistence } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, doc, collection, addDoc, updateDoc, deleteDoc, onSnapshot, query, where } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         // CONFIGURAÇÃO
@@ -512,7 +527,8 @@
         const authLoading = document.getElementById('auth-loading');
         const authButtons = document.getElementById('auth-buttons');
         const appContent = document.getElementById('app-content');
-        const googleLoginBtn = document.getElementById('google-login-btn');
+        const googleLoginRedirectBtn = document.getElementById('google-login-redirect-btn');
+        const googleLoginPopupBtn = document.getElementById('google-login-popup-btn');
         const loginErrorContainer = document.getElementById('login-error-container');
         const loginErrorMsg = document.getElementById('login-error-msg');
         const loginStatus = document.getElementById('login-status');
@@ -539,7 +555,6 @@
         const incomeTableBody = document.getElementById('income-table-body');
         const categoryStatsBody = document.getElementById('category-stats-body');
 
-        // Função para mostrar erro de login de forma amigável
         function showLoginError(msg) {
             loginStatus.classList.add('hidden');
             loginErrorMsg.textContent = msg;
@@ -554,20 +569,17 @@
             auth = getAuth(app);
             const provider = new GoogleAuthProvider();
 
-            if (window.location.protocol === 'file:') {
-                alert("Erro: Não use 'file://'. Use localhost ou GitHub Pages.");
-            }
-
-            // Tenta definir persistência ANTES de monitorar o estado
+            // Tenta definir persistência Local. Se o navegador bloquear, tenta "em memória" (o usuário loga, mas perde se fechar a aba)
             setPersistence(auth, browserLocalPersistence)
+                .catch((err) => {
+                    console.warn("Persistência local bloqueada, tentando inMemory:", err);
+                    return setPersistence(auth, inMemoryPersistence);
+                })
                 .then(() => {
-                    // Monitorar Estado de Autenticação
+                    // Monitorar Estado
                     onAuthStateChanged(auth, (user) => {
-                        // Verifica se estamos no meio de um redirect antes de mudar a tela
-                        // Se não tiver usuário, só mostramos a tela de login DEPOIS que o getRedirectResult falhar/terminar
-                        // Para evitar piscadas, se tiver user, mostramos o app direto.
-
                         if (user) {
+                            // Limpa UI de login se tiver sucesso
                             authLoading.classList.add('hidden');
                             loginStatus.classList.add('hidden');
 
@@ -575,7 +587,6 @@
                             const isAllowed = ALLOWED_EMAILS.some(allowed => allowed.toLowerCase() === emailLower);
 
                             if (!isAllowed) {
-                                console.warn(`Acesso negado: ${user.email}`);
                                 signOut(auth);
                                 showLoginError(`O e-mail ${user.email} não tem permissão.`);
                                 return;
@@ -587,55 +598,58 @@
                             appContent.classList.remove('hidden');
                             loadDataForMonth();
                         } else {
-                            // Se não tem usuário, esperamos o getRedirectResult decidir se mostra o botão ou não
-                            // O código abaixo no getRedirectResult vai lidar com erros ou sucesso pendente
+                            // Se o getRedirectResult ainda não rodou, não mostre os botões ainda (evita flash)
+                            // O código do getRedirectResult cuidará disso se não houver user
                         }
                     });
-                })
-                .catch((error) => console.error("Erro persistência:", error));
+                });
 
-            // Tratamento do Redirect (Importante para Mobile)
             getRedirectResult(auth)
                 .then((result) => {
-                    authLoading.classList.add('hidden'); // Terminou de carregar
+                    authLoading.classList.add('hidden');
                     if (result) {
-                        console.log("Login Redirect Sucesso");
-                        // onAuthStateChanged vai assumir
-                    } else {
-                        // Se não houve redirect e não tem user (visto pelo onAuthStateChanged), mostra login
-                        if (!auth.currentUser) {
-                            authButtons.classList.remove('hidden');
-                        }
+                        console.log("Sucesso no Redirect");
+                    } else if (!auth.currentUser) {
+                        authButtons.classList.remove('hidden');
                     }
                 })
                 .catch((error) => {
                     console.error("Erro Redirect:", error);
-                    let msg = error.message;
-                    if (error.code === 'auth/unauthorized-domain') msg = "Domínio não autorizado no Firebase.";
-                    if (error.code === 'auth/popup-blocked') msg = "Pop-up bloqueado. Tente novamente.";
-                    showLoginError(msg);
+                    showLoginError("Erro no redirecionamento. Tente o botão 'Entrar com Pop-up'.");
                 });
 
-            googleLoginBtn.addEventListener('click', () => {
+            // Opção 1: Redirect
+            googleLoginRedirectBtn.addEventListener('click', () => {
                 loginErrorContainer.classList.add('hidden');
                 loginStatus.classList.remove('hidden');
+                loginStatus.textContent = "Redirecionando para o Google...";
+                signInWithRedirect(auth, provider).catch((error) => showLoginError(error.message));
+            });
 
-                signInWithRedirect(auth, provider).catch((error) => {
-                    console.error("Erro ao iniciar:", error);
-                    showLoginError(error.message);
-                });
+            // Opção 2: Pop-up (Funciona melhor em desktop bloqueado)
+            googleLoginPopupBtn.addEventListener('click', () => {
+                loginErrorContainer.classList.add('hidden');
+                loginStatus.classList.remove('hidden');
+                loginStatus.textContent = "Abrindo janela do Google...";
+
+                signInWithPopup(auth, provider)
+                    .catch((error) => {
+                        console.error("Erro Popup:", error);
+                        showLoginError("Erro no Pop-up: " + error.message);
+                    });
             });
 
             logoutBtn.addEventListener('click', () => {
-                signOut(auth).then(() => {
-                    window.location.reload(); // Recarrega para limpar estados
-                });
+                signOut(auth).then(() => window.location.reload());
             });
 
         } catch (e) {
-            console.error("Erro config:", e);
-            showLoginError("Erro na configuração do App. Veja o console.");
+            console.error("Erro Geral:", e);
+            showLoginError("Erro crítico no app.");
         }
+
+        // --- Funções Auxiliares e Lógica do App ---
+        // (O restante do código de lógica permanece igual)
 
         function formatCurrencyBRL(value) {
             if (isNaN(value)) value = 0;
@@ -861,7 +875,6 @@
             });
         }
 
-        // --- Lógica de Toggle Renda/Saldo ---
         function initializeToggle() {
             const savedState = localStorage.getItem('showFinancials') === 'true';
             toggleIncomeCheckbox.checked = savedState;
