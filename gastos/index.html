@@ -5,11 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Controle de Gastos Mensal</title>
-    <!-- Configuração para silenciar o aviso do Tailwind -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = { theme: { extend: {} } }
-    </script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
@@ -151,51 +147,45 @@
 
     <!-- Tela de Login -->
     <div id="login-screen" class="flex flex-col justify-center items-center p-4 overflow-y-auto">
-        <h1 class="text-4xl font-bold text-gray-800 mb-2 text-center">Controle de Gastos</h1>
-        <p class="text-gray-600 mb-8 text-center">Faça login para acessar suas planilhas</p>
+        <div
+            class="bg-white p-8 rounded-xl shadow-lg w-full max-w-md flex flex-col items-center border border-gray-100">
+            <div class="mb-6 bg-indigo-100 p-3 rounded-full">
+                <i class="fas fa-wallet text-3xl text-indigo-600"></i>
+            </div>
+            <h1 class="text-3xl font-bold text-gray-800 mb-2 text-center">Controle de Gastos</h1>
+            <p class="text-gray-500 mb-8 text-center">Acesso compartilhado da Família</p>
 
-        <div id="auth-loading" class="flex flex-col items-center">
-            <div class="loader"></div>
-            <p class="text-gray-500">Verificando autenticação...</p>
-        </div>
+            <div id="auth-loading" class="flex flex-col items-center">
+                <div class="loader"></div>
+                <p class="text-gray-500 text-sm">Conectando...</p>
+            </div>
 
-        <div id="auth-buttons" class="hidden flex flex-col items-center w-full max-w-sm space-y-4">
-            <!-- Botão Principal (Redirect - Melhor para Celular) -->
-            <button id="google-login-redirect-btn"
-                class="w-full bg-white text-gray-700 font-semibold py-3 px-6 border border-gray-300 rounded-lg shadow-sm flex items-center justify-center space-x-3 hover:bg-gray-50 transition-colors hidden">
-                <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" class="w-6 h-6"
-                    alt="Google Logo">
-                <span>Entrar (Recomendado Celular)</span>
-            </button>
+            <div id="auth-buttons" class="hidden flex flex-col items-center w-full space-y-4">
+                <!-- Botão Único de Login (Popup) -->
+                <button id="google-login-btn"
+                    class="w-full bg-white text-gray-700 font-semibold py-3 px-6 border border-gray-300 rounded-lg shadow-sm flex items-center justify-center space-x-3 hover:bg-gray-50 hover:border-gray-400 transition-all transform active:scale-95">
+                    <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" class="w-6 h-6"
+                        alt="Google Logo">
+                    <span>Entrar com Google</span>
+                </button>
 
-            <!-- Botão Secundário (Popup - Melhor para PC com bloqueio) -->
-            <button id="google-login-popup-btn"
-                class="w-full bg-white text-gray-700 font-semibold py-3 px-6 border border-gray-300 rounded-lg shadow-sm flex items-center justify-center space-x-3 hover:bg-gray-50 transition-colors">
-                <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" class="w-6 h-6"
-                    alt="Google Logo">
-                <span>Entrar com Google</span>
-            </button>
+                <p id="login-status" class="text-indigo-600 mt-4 text-sm hidden font-medium animate-pulse text-center">
+                    Abrindo janela de login...</p>
 
-            <p id="login-status" class="text-indigo-600 mt-4 text-sm hidden font-medium animate-pulse text-center">
-                Processando login...</p>
-
-            <!-- Área de Diagnóstico de Erro -->
-            <div id="login-error-container" class="hidden mt-6 w-full">
-                <div class="bg-red-50 border-l-4 border-red-500 p-4 rounded shadow-sm">
-                    <div class="flex">
-                        <div class="flex-shrink-0">
-                            <i class="fas fa-exclamation-circle text-red-500"></i>
-                        </div>
-                        <div class="ml-3">
-                            <p class="text-sm text-red-700 font-bold">Erro ao entrar:</p>
-                            <p id="login-error-msg" class="text-sm text-red-600 mt-1 break-words"></p>
+                <!-- Área de Diagnóstico de Erro -->
+                <div id="login-error-container" class="hidden mt-6 w-full">
+                    <div class="bg-red-50 border-l-4 border-red-500 p-4 rounded shadow-sm">
+                        <div class="flex">
+                            <div class="flex-shrink-0">
+                                <i class="fas fa-exclamation-circle text-red-500"></i>
+                            </div>
+                            <div class="ml-3">
+                                <p class="text-sm text-red-700 font-bold">Erro ao entrar:</p>
+                                <p id="login-error-msg" class="text-sm text-red-600 mt-1 break-words"></p>
+                            </div>
                         </div>
                     </div>
                 </div>
-                <p class="text-xs text-gray-500 mt-2 text-center px-4">
-                    Dica: Se estiver usando Edge ou modo Anônimo, desbloqueie cookies de terceiros ou tente o botão
-                    "Pop-up".
-                </p>
             </div>
         </div>
     </div>
@@ -205,12 +195,16 @@
 
         <header class="mb-6 no-print flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
             <div>
-                <h1 class="text-2xl md:text-3xl font-bold text-gray-800">Meu Controle de Gastos</h1>
-                <p class="text-sm text-gray-500">
-                    Logado como: <span id="user-email-display" class="font-medium text-indigo-600">...</span>
+                <h1 class="text-2xl md:text-3xl font-bold text-gray-800">
+                    <i class="fas fa-chart-pie text-indigo-600 mr-2"></i>Controle de Gastos
+                </h1>
+                <p class="text-sm text-gray-500 mt-1">
+                    Conta: <span id="user-email-display"
+                        class="font-medium text-indigo-600 bg-indigo-50 px-2 py-1 rounded">...</span>
                 </p>
             </div>
-            <button id="logout-btn" class="text-sm text-gray-500 hover:text-red-600 underline flex items-center">
+            <button id="logout-btn"
+                class="text-sm text-gray-500 hover:text-red-600 flex items-center bg-white px-3 py-2 rounded border border-gray-200 shadow-sm transition-colors">
                 <i class="fas fa-sign-out-alt mr-2"></i> Sair
             </button>
         </header>
@@ -495,7 +489,7 @@
     <!-- Firebase JS SDK -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInWithRedirect, signInWithPopup, getRedirectResult, GoogleAuthProvider, onAuthStateChanged, signOut, setPersistence, browserLocalPersistence, inMemoryPersistence } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut, setPersistence, browserLocalPersistence, inMemoryPersistence } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, doc, collection, addDoc, updateDoc, deleteDoc, onSnapshot, query, where } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         // CONFIGURAÇÃO
@@ -510,11 +504,16 @@
 
         const ALLOWED_EMAILS = [
             "eduardocarnello@gmail.com",
-            "camilaps05@gmail.com"
+            "camilaps05@gmail.com",
+
         ];
 
+        // --- CAMINHO COMPARTILHADO ---
+        // Para que todos vejam os mesmos dados, usamos uma coleção fixa
+        // em vez de "users/userId".
+        const DB_BASE_PATH = "conta_compartilhada/dados";
+
         let app, db, auth;
-        let userId = null;
         let unsubscribeExpenses = () => { };
         let unsubscribeIncome = () => { };
         let currentExpenses = [];
@@ -528,8 +527,7 @@
         const authLoading = document.getElementById('auth-loading');
         const authButtons = document.getElementById('auth-buttons');
         const appContent = document.getElementById('app-content');
-        const googleLoginRedirectBtn = document.getElementById('google-login-redirect-btn');
-        const googleLoginPopupBtn = document.getElementById('google-login-popup-btn');
+        const googleLoginBtn = document.getElementById('google-login-btn');
         const loginErrorContainer = document.getElementById('login-error-container');
         const loginErrorMsg = document.getElementById('login-error-msg');
         const loginStatus = document.getElementById('login-status');
@@ -570,7 +568,11 @@
             auth = getAuth(app);
             const provider = new GoogleAuthProvider();
 
-            // Tenta definir persistência Local. Se o navegador bloquear, tenta "em memória" (o usuário loga, mas perde se fechar a aba)
+            if (window.location.protocol === 'file:') {
+                alert("Erro: Não use 'file://'. Use localhost ou GitHub Pages.");
+            }
+
+            // Tenta definir persistência Local
             setPersistence(auth, browserLocalPersistence)
                 .catch((err) => {
                     console.warn("Persistência local bloqueada, tentando inMemory:", err);
@@ -580,7 +582,6 @@
                     // Monitorar Estado
                     onAuthStateChanged(auth, (user) => {
                         if (user) {
-                            // Limpa UI de login se tiver sucesso
                             authLoading.classList.add('hidden');
                             loginStatus.classList.add('hidden');
 
@@ -593,42 +594,19 @@
                                 return;
                             }
 
-                            userId = user.uid;
                             userEmailDisplay.textContent = user.email;
                             loginScreen.classList.add('hidden');
                             appContent.classList.remove('hidden');
-                            loadDataForMonth();
+                            loadDataForMonth(); // Carrega os dados da pasta COMPARTILHADA
                         } else {
-                            // Se o getRedirectResult ainda não rodou, não mostre os botões ainda (evita flash)
-                            // O código do getRedirectResult cuidará disso se não houver user
+                            authLoading.classList.add('hidden');
+                            authButtons.classList.remove('hidden');
                         }
                     });
                 });
 
-            getRedirectResult(auth)
-                .then((result) => {
-                    authLoading.classList.add('hidden');
-                    if (result) {
-                        console.log("Sucesso no Redirect");
-                    } else if (!auth.currentUser) {
-                        authButtons.classList.remove('hidden');
-                    }
-                })
-                .catch((error) => {
-                    console.error("Erro Redirect:", error);
-                    showLoginError("Erro no redirecionamento. Tente o botão 'Entrar com Pop-up'.");
-                });
-
-            // Opção 1: Redirect
-            googleLoginRedirectBtn.addEventListener('click', () => {
-                loginErrorContainer.classList.add('hidden');
-                loginStatus.classList.remove('hidden');
-                loginStatus.textContent = "Redirecionando para o Google...";
-                signInWithRedirect(auth, provider).catch((error) => showLoginError(error.message));
-            });
-
-            // Opção 2: Pop-up (Funciona melhor em desktop bloqueado)
-            googleLoginPopupBtn.addEventListener('click', () => {
+            // Opção Única: Pop-up
+            googleLoginBtn.addEventListener('click', () => {
                 loginErrorContainer.classList.add('hidden');
                 loginStatus.classList.remove('hidden');
                 loginStatus.textContent = "Abrindo janela do Google...";
@@ -650,7 +628,6 @@
         }
 
         // --- Funções Auxiliares e Lógica do App ---
-        // (O restante do código de lógica permanece igual)
 
         function formatCurrencyBRL(value) {
             if (isNaN(value)) value = 0;
@@ -703,7 +680,10 @@
         }
 
         function loadDataForMonth() {
-            if (!userId) return;
+            // Agora não dependemos mais de "userId" para o caminho dos dados
+            // Se o usuário está logado (auth.currentUser), carregamos do caminho COMPARTILHADO
+            if (!auth.currentUser) return;
+
             const monthName = monthSelect.options[monthSelect.selectedIndex].text;
             document.getElementById('print-title').textContent = `Relatório Mensal - ${monthName}/${yearSelect.value}`;
 
@@ -713,9 +693,9 @@
             window.cancelEditIncome();
 
             const monthYear = `${monthSelect.value}-${yearSelect.value}`;
-            const userDocPath = `users/${userId}`;
 
-            const qExpenses = query(collection(db, `${userDocPath}/expenses`), where("monthYear", "==", monthYear));
+            // --- MUDANÇA: Usando DB_BASE_PATH fixo ---
+            const qExpenses = query(collection(db, `${DB_BASE_PATH}/expenses`), where("monthYear", "==", monthYear));
             unsubscribeExpenses = onSnapshot(qExpenses, (snapshot) => {
                 currentExpenses = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                 currentExpenses.sort((a, b) => new Date(a.date) - new Date(b.date));
@@ -724,7 +704,7 @@
                 updateCharts();
             });
 
-            const qIncome = query(collection(db, `${userDocPath}/income`), where("monthYear", "==", monthYear));
+            const qIncome = query(collection(db, `${DB_BASE_PATH}/income`), where("monthYear", "==", monthYear));
             unsubscribeIncome = onSnapshot(qIncome, (snapshot) => {
                 currentIncomes = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                 currentIncomes.sort((a, b) => new Date(a.date) - new Date(b.date));
@@ -950,13 +930,15 @@
             try {
                 if (type === 'expense' && editingExpenseId === id) window.cancelEditExpense();
                 if (type === 'income' && editingIncomeId === id) window.cancelEditIncome();
-                await deleteDoc(doc(db, `users/${userId}/${col}/${id}`));
+
+                // MUDANÇA: Deleta do caminho COMPARTILHADO
+                await deleteDoc(doc(db, `${DB_BASE_PATH}/${col}/${id}`));
             } catch (e) { alert("Erro ao deletar: " + e.message); }
         };
 
         expenseForm.addEventListener('submit', async (e) => {
             e.preventDefault();
-            if (!userId) return;
+            if (!auth.currentUser) return;
             const date = document.getElementById('expense-date').value;
             const data = {
                 description: document.getElementById('expense-desc').value,
@@ -971,10 +953,10 @@
             if (editingExpenseId) delete data.createdAt;
             try {
                 if (editingExpenseId) {
-                    await updateDoc(doc(db, `users/${userId}/expenses/${editingExpenseId}`), data);
+                    await updateDoc(doc(db, `${DB_BASE_PATH}/expenses/${editingExpenseId}`), data);
                     window.cancelEditExpense();
                 } else {
-                    await addDoc(collection(db, `users/${userId}/expenses`), data);
+                    await addDoc(collection(db, `${DB_BASE_PATH}/expenses`), data);
                     expenseForm.reset();
                     document.getElementById('expense-date').value = new Date().toISOString().split('T')[0];
                 }
@@ -983,7 +965,7 @@
 
         incomeForm.addEventListener('submit', async (e) => {
             e.preventDefault();
-            if (!userId) return;
+            if (!auth.currentUser) return;
             const date = document.getElementById('income-date').value;
             const data = {
                 description: document.getElementById('income-desc').value,
@@ -996,10 +978,10 @@
             if (editingIncomeId) delete data.createdAt;
             try {
                 if (editingIncomeId) {
-                    await updateDoc(doc(db, `users/${userId}/income/${editingIncomeId}`), data);
+                    await updateDoc(doc(db, `${DB_BASE_PATH}/income/${editingIncomeId}`), data);
                     window.cancelEditIncome();
                 } else {
-                    await addDoc(collection(db, `users/${userId}/income`), data);
+                    await addDoc(collection(db, `${DB_BASE_PATH}/income`), data);
                     incomeForm.reset();
                     document.getElementById('income-date').value = new Date().toISOString().split('T')[0];
                 }
