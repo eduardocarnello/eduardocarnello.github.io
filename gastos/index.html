@@ -276,10 +276,23 @@
                     <h2 class="text-sm font-medium text-red-600">Despesa Total</h2>
                     <p id="total-expense" class="text-3xl font-semibold text-gray-900 mt-2">R$ 0,00</p>
                 </div>
-                <div class="bg-white p-6 rounded-lg shadow-md border border-gray-200">
+                <!-- Card Cid -->
+                <div id="card-cid" class="bg-white p-6 rounded-lg shadow-md border border-gray-200 hidden">
                     <h2 class="text-sm font-medium text-purple-600">Gastos do Cid</h2>
                     <p id="total-cid" class="text-3xl font-semibold text-gray-900 mt-2">R$ 0,00</p>
                 </div>
+                <!-- Card Praia (Novo) -->
+                <div id="card-praia" class="bg-white p-6 rounded-lg shadow-md border border-gray-200 hidden">
+                    <h2 class="text-sm font-medium text-cyan-600">Gastos Praia</h2>
+                    <p id="total-praia" class="text-3xl font-semibold text-gray-900 mt-2">R$ 0,00</p>
+                </div>
+                <!-- Card Outros (Novo) -->
+                <div id="card-others-autonomous"
+                    class="bg-white p-6 rounded-lg shadow-md border border-gray-200 hidden">
+                    <h2 class="text-sm font-medium text-gray-600">Outros (Autônomo)</h2>
+                    <p id="total-others-autonomous" class="text-3xl font-semibold text-gray-900 mt-2">R$ 0,00</p>
+                </div>
+
                 <div id="card-balance" class="bg-white p-6 rounded-lg shadow-md border border-gray-200">
                     <h2 class="text-sm font-medium text-blue-600">Saldo</h2>
                     <p id="total-balance" class="text-3xl font-semibold text-gray-900 mt-2">R$ 0,00</p>
@@ -372,6 +385,24 @@
                                         <option>Saúde</option>
                                         <option>Presentes</option>
                                         <option>Outros</option>
+                                        <!-- Novas Categorias -->
+                                        <option>Educação</option>
+                                        <option>Vestuário</option>
+                                        <option>Higiene Pessoal</option>
+                                        <option>Limpeza</option>
+                                        <option>Assinaturas/Streaming</option>
+                                        <option>Pet</option>
+                                        <option>Viagem</option>
+                                        <option>Eletrônicos</option>
+                                        <option>Casa/Decoração</option>
+                                        <option>Beleza/Estética</option>
+                                        <option>Esportes/Academia</option>
+                                        <option>Impostos/Taxas</option>
+                                        <option>Seguros</option>
+                                        <option>Doações</option>
+                                        <option>Manutenção Carro</option>
+                                        <option>Manutenção Casa</option>
+                                        <option>Trabalho</option>
                                     </select>
                                 </div>
                                 <div>
@@ -390,6 +421,8 @@
                                     <option value="shared_50_50" selected>Compartilhado (50/50)</option>
                                     <option value="not_shared">Não Compartilhado (100% pagador)</option>
                                     <option value="cid_expense">Gasto do Cid (Autônomo)</option>
+                                    <option value="praia_expense">Gasto Praia (Autônomo)</option>
+                                    <option value="others_autonomous">Outros (Autônomo)</option>
                                     <option value="other_person_100">Gasto da Outra Pessoa (100%)</option>
                                 </select>
                             </div>
@@ -537,7 +570,6 @@
         const ALLOWED_EMAILS = [
             "eduardocarnello@gmail.com",
             "camilaps05@gmail.com",
-
         ];
 
         const DB_BASE_PATH = "conta_compartilhada/dados";
@@ -574,6 +606,12 @@
         const summaryExpense = document.getElementById('total-expense');
         const summaryBalance = document.getElementById('total-balance');
         const summaryCid = document.getElementById('total-cid');
+        const summaryPraia = document.getElementById('total-praia'); // Novo
+        const summaryOthersAuto = document.getElementById('total-others-autonomous'); // Novo
+        const cardCid = document.getElementById('card-cid');
+        const cardPraia = document.getElementById('card-praia'); // Novo
+        const cardOthersAuto = document.getElementById('card-others-autonomous'); // Novo
+
         const summaryCamilaPaidForEduardo = document.getElementById('summary-camila-paid-for-eduardo');
         const summaryEduardoPaidForCamila = document.getElementById('summary-eduardo-paid-for-camila');
         const summaryNetTransfer = document.getElementById('summary-net-transfer');
@@ -675,6 +713,8 @@
                 case 'shared_50_50': return '50/50';
                 case 'not_shared': return '100% Pagador';
                 case 'cid_expense': return 'Gasto do Cid';
+                case 'praia_expense': return 'Gasto Praia';
+                case 'others_autonomous': return 'Outros (Autônomo)';
                 case 'other_person_100': return '100% Outra Pessoa';
                 default: return type || 'N/A';
             }
@@ -739,7 +779,11 @@
         function renderTables() {
             expenseTableBody.innerHTML = currentExpenses.length ? '' : '<tr><td colspan="6" class="px-4 py-4 text-center text-gray-500">Nenhuma despesa.</td></tr>';
             currentExpenses.forEach(item => {
-                const rowClass = item.sharingType === 'cid_expense' ? 'bg-purple-50 hover:bg-purple-100' : 'hover:bg-gray-50';
+                let rowClass = 'hover:bg-gray-50';
+                if (item.sharingType === 'cid_expense') rowClass = 'bg-purple-50 hover:bg-purple-100';
+                else if (item.sharingType === 'praia_expense') rowClass = 'bg-cyan-50 hover:bg-cyan-100';
+                else if (item.sharingType === 'others_autonomous') rowClass = 'bg-gray-100 hover:bg-gray-200';
+
                 expenseTableBody.innerHTML += `
                     <tr class="${rowClass}">
                         <td class="px-4 py-3 text-sm">${item.description}</td>
@@ -784,11 +828,18 @@
             let eduardoPaidForCamila = 0;
             let camilaPaidForEduardo = 0;
             let totalCidAmount = 0;
+            let totalPraiaAmount = 0;
+            let totalOthersAutoAmount = 0;
 
             currentExpenses.forEach(item => {
                 const amount = item.amount;
+
                 if (item.sharingType === 'cid_expense') {
                     totalCidAmount += amount;
+                } else if (item.sharingType === 'praia_expense') {
+                    totalPraiaAmount += amount;
+                } else if (item.sharingType === 'others_autonomous') {
+                    totalOthersAutoAmount += amount;
                 } else if (item.sharingType === 'shared_50_50') {
                     if (item.paidBy === 'Eduardo') { netBalance += amount / 2; eduardoPaidForCamila += amount / 2; }
                     else if (item.paidBy === 'Camila') { netBalance -= amount / 2; camilaPaidForEduardo += amount / 2; }
@@ -798,7 +849,18 @@
                 }
             });
 
+            // Atualiza textos
             summaryCid.textContent = formatCurrencyBRL(totalCidAmount);
+            summaryPraia.textContent = formatCurrencyBRL(totalPraiaAmount);
+            summaryOthersAuto.textContent = formatCurrencyBRL(totalOthersAutoAmount);
+
+            // Controle de visibilidade dos cards especiais
+            const toggleMethod = (el, show) => el.classList[show ? 'remove' : 'add']('hidden');
+
+            toggleMethod(cardCid, totalCidAmount > 0);
+            toggleMethod(cardPraia, totalPraiaAmount > 0);
+            toggleMethod(cardOthersAuto, totalOthersAutoAmount > 0);
+
             summaryCamilaPaidForEduardo.textContent = formatCurrencyBRL(camilaPaidForEduardo);
             summaryEduardoPaidForCamila.textContent = formatCurrencyBRL(eduardoPaidForCamila);
 
@@ -833,7 +895,7 @@
 
             const categories = Object.keys(categoryTotals);
             const dataValues = Object.values(categoryTotals);
-            const backgroundColors = ['#3B82F6', '#EF4444', '#10B981', '#F59E0B', '#8B5CF6', '#EC4899', '#6366F1', '#14B8A6', '#F97316', '#64748B'];
+            const backgroundColors = ['#3B82F6', '#EF4444', '#10B981', '#F59E0B', '#8B5CF6', '#EC4899', '#6366F1', '#14B8A6', '#F97316', '#64748B', '#06B6D4', '#8B5CF6', '#D946EF', '#F43F5E', '#84CC16', '#EAB308'];
 
             const sortedCategories = categories.map((cat, i) => ({
                 cat, val: dataValues[i], perc: (dataValues[i] / totalExpenseValue * 100).toFixed(1)
