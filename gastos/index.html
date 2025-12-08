@@ -861,6 +861,27 @@
             });
         }
 
+        // --- Lógica de Toggle Renda/Saldo ---
+        function initializeToggle() {
+            const savedState = localStorage.getItem('showFinancials') === 'true';
+            toggleIncomeCheckbox.checked = savedState;
+            applyVisibility(savedState);
+
+            toggleIncomeCheckbox.addEventListener('change', (e) => {
+                const show = e.target.checked;
+                localStorage.setItem('showFinancials', show);
+                applyVisibility(show);
+            });
+        }
+
+        function applyVisibility(show) {
+            const method = show ? 'remove' : 'add';
+            if (cardIncome) cardIncome.classList[method]('hidden');
+            if (cardBalance) cardBalance.classList[method]('hidden');
+            if (formContainerIncome) formContainerIncome.classList[method]('hidden');
+            if (tableContainerIncome) tableContainerIncome.classList[method]('hidden');
+        }
+
         window.startEditExpense = (id) => {
             const expense = currentExpenses.find(e => e.id === id);
             if (!expense) return;
