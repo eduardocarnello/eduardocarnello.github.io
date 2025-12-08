@@ -115,6 +115,27 @@
             justify-content: center;
             align-items: center;
         }
+
+        /* Spinner */
+        .loader {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #4f46e5;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin-bottom: 1rem;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
     </style>
 </head>
 
@@ -124,14 +145,26 @@
     <div id="login-screen">
         <h1 class="text-4xl font-bold text-gray-800 mb-2">Controle de Gastos</h1>
         <p class="text-gray-600 mb-8">Faça login para acessar suas planilhas</p>
-        <button id="google-login-btn"
-            class="bg-white text-gray-700 font-semibold py-3 px-6 border border-gray-300 rounded-lg shadow-sm flex items-center space-x-3 hover:bg-gray-50 transition-colors">
-            <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" class="w-6 h-6"
-                alt="Google Logo">
-            <span>Entrar com Google</span>
-        </button>
-        <p id="login-status" class="text-gray-500 mt-4 text-sm hidden">Redirecionando para o Google...</p>
-        <p id="login-error" class="text-red-500 mt-4 hidden font-medium text-center max-w-md">Erro ao fazer login.</p>
+
+        <!-- Estado Inicial: Carregando -->
+        <div id="auth-loading" class="flex flex-col items-center">
+            <div class="loader"></div>
+            <p class="text-gray-500">Verificando autenticação...</p>
+        </div>
+
+        <!-- Botão de Login (Oculto inicialmente) -->
+        <div id="auth-buttons" class="hidden flex flex-col items-center">
+            <button id="google-login-btn"
+                class="bg-white text-gray-700 font-semibold py-3 px-6 border border-gray-300 rounded-lg shadow-sm flex items-center space-x-3 hover:bg-gray-50 transition-colors">
+                <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" class="w-6 h-6"
+                    alt="Google Logo">
+                <span>Entrar com Google</span>
+            </button>
+            <p id="login-status" class="text-gray-500 mt-4 text-sm hidden">Redirecionando para o Google...</p>
+            <p id="login-error"
+                class="text-red-500 mt-4 hidden font-medium text-center max-w-md bg-red-50 p-3 rounded border border-red-200">
+            </p>
+        </div>
     </div>
 
     <!-- Conteúdo Principal (Escondido até logar) -->
@@ -376,8 +409,7 @@
     <!-- Firebase JS SDK -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        // ALTERADO: Importamos signInWithRedirect e getRedirectResult em vez de signInWithPopup
-        import { getAuth, signInWithRedirect, getRedirectResult, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getAuth, signInWithRedirect, getRedirectResult, GoogleAuthProvider, onAuthStateChanged, signOut, setPersistence, browserLocalPersistence } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, doc, collection, addDoc, deleteDoc, onSnapshot, query, where } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         const firebaseConfig = {
@@ -389,7 +421,7 @@
             appId: "1:515466326654:web:0f841817662029d12a1e2f"
         };
 
-        // LISTA DE EMAILS PERMITIDOS (Adicione o seu aqui!)
+
         const ALLOWED_EMAILS = [
             "eduardocarnello@gmail.com",
 
@@ -405,6 +437,8 @@
 
         // Elementos UI
         const loginScreen = document.getElementById('login-screen');
+        const authLoading = document.getElementById('auth-loading');
+        const authButtons = document.getElementById('auth-buttons');
         const appContent = document.getElementById('app-content');
         const googleLoginBtn = document.getElementById('google-login-btn');
         const loginError = document.getElementById('login-error');
@@ -433,10 +467,77 @@
             auth = getAuth(app);
             const provider = new GoogleAuthProvider();
 
-            // Listener de Login ALTERADO PARA REDIRECT
+            // Verificação de Protocolo
+            if (window.location.protocol === 'file:') {
+                alert("ERRO CRÍTICO: O Login com Google NÃO funciona abrindo o arquivo direto (file://). Você precisa rodar em um servidor local (localhost) ou hospedar no GitHub Pages. Seus dados não serão salvos assim.");
+            }
+
+            // Configurar persistência local explícita
+            setPersistence(auth, browserLocalPersistence)
+                .then(() => {
+                    // Monitorar Estado de Autenticação
+                    onAuthStateChanged(auth, (user) => {
+                        authLoading.classList.add('hidden'); // Esconde o spinner inicial
+                        loginStatus.classList.add('hidden');
+
+                        if (user) {
+                            console.log("Usuário detectado:", user.email);
+                            // VERIFICAÇÃO DE SEGURANÇA (WHITELIST)
+                            if (!ALLOWED_EMAILS.includes(user.email)) {
+                                console.warn(`Tentativa de acesso negada: ${user.email}`);
+                                signOut(auth);
+                                loginError.textContent = `Acesso negado. O e-mail ${user.email} não tem permissão.`;
+                                loginError.classList.remove('hidden');
+                                authButtons.classList.remove('hidden'); // Mostra botão de login novamente
+                                return;
+                            }
+
+                            userId = user.uid;
+                            userEmailDisplay.textContent = user.email;
+                            loginScreen.classList.add('hidden');
+                            appContent.classList.remove('hidden');
+                            loadDataForMonth();
+                        } else {
+                            console.log("Nenhum usuário logado.");
+                            userId = null;
+                            loginScreen.classList.remove('hidden');
+                            authButtons.classList.remove('hidden'); // Mostra botão de login
+                            appContent.classList.add('hidden');
+                            unsubscribeExpenses();
+                            unsubscribeIncome();
+                        }
+                    });
+                })
+                .catch((error) => {
+                    console.error("Erro na persistência:", error);
+                });
+
+            // Verificar se voltamos de um redirecionamento com erro
+            getRedirectResult(auth)
+                .then((result) => {
+                    if (result) {
+                        console.log("Retorno do Redirect com sucesso:", result.user);
+                        // O onAuthStateChanged vai lidar com a UI
+                    }
+                })
+                .catch((error) => {
+                    console.error("Erro no retorno do login (Redirect):", error);
+                    authLoading.classList.add('hidden');
+                    authButtons.classList.remove('hidden');
+                    loginStatus.classList.add('hidden');
+
+                    let msg = error.message;
+                    if (error.code === 'auth/unauthorized-domain') {
+                        msg = `Domínio não autorizado (${window.location.hostname}). Adicione este domínio no Console do Firebase em Authentication > Configurações > Domínios Autorizados.`;
+                    }
+                    loginError.textContent = "Erro: " + msg;
+                    loginError.classList.remove('hidden');
+                });
+
+            // Listener de Login
             googleLoginBtn.addEventListener('click', () => {
                 loginError.classList.add('hidden');
-                loginStatus.classList.remove('hidden'); // Mostra aviso de redirecionamento
+                loginStatus.classList.remove('hidden');
 
                 signInWithRedirect(auth, provider).catch((error) => {
                     console.error("Erro ao iniciar redirect:", error);
@@ -446,47 +547,12 @@
                 });
             });
 
-            // Verificar se voltamos de um redirecionamento com erro
-            getRedirectResult(auth).catch((error) => {
-                console.error("Erro no retorno do login:", error);
-                loginStatus.classList.add('hidden');
-                loginError.textContent = "Erro no login: " + error.message;
-                loginError.classList.remove('hidden');
-            });
-
             // Botão de Logout
             logoutBtn.addEventListener('click', () => signOut(auth));
 
-            // Monitorar Estado de Autenticação
-            onAuthStateChanged(auth, (user) => {
-                loginStatus.classList.add('hidden'); // Esconde mensagem de carregando
-                if (user) {
-                    // VERIFICAÇÃO DE SEGURANÇA (WHITELIST)
-                    if (!ALLOWED_EMAILS.includes(user.email)) {
-                        console.warn(`Tentativa de acesso negada: ${user.email}`);
-                        signOut(auth);
-                        loginError.textContent = `Acesso negado. O e-mail ${user.email} não tem permissão para acessar este sistema.`;
-                        loginError.classList.remove('hidden');
-                        return;
-                    }
-
-                    userId = user.uid;
-                    userEmailDisplay.textContent = user.email;
-                    loginScreen.classList.add('hidden');
-                    appContent.classList.remove('hidden');
-                    loadDataForMonth();
-                } else {
-                    userId = null;
-                    loginScreen.classList.remove('hidden');
-                    appContent.classList.add('hidden');
-                    unsubscribeExpenses();
-                    unsubscribeIncome();
-                }
-            });
-
         } catch (e) {
             console.error("Erro config Firebase:", e);
-            alert("Erro na configuração do Firebase. Verifique se você colou as chaves corretamente no código.");
+            alert("Erro na configuração do Firebase. Verifique console.");
         }
 
         // Funções Auxiliares
