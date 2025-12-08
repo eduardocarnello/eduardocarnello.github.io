@@ -666,6 +666,9 @@
         }
 
         function loadDataForMonth() {
+            const monthName = monthSelect.options[monthSelect.selectedIndex].text;
+            document.getElementById('print-title').textContent = `Relatório Mensal - ${monthName}/${yearSelect.value}`;
+            // --------------------------
             if (!userId) return;
             unsubscribeExpenses();
             unsubscribeIncome();
