@@ -27,6 +27,11 @@
             -moz-appearance: textfield;
         }
 
+        /* Garante que o hidden do Tailwind tenha prioridade */
+        .hidden {
+            display: none !important;
+        }
+
         @media print {
             .no-print {
                 display: none !important;
@@ -101,7 +106,7 @@
             display: none;
         }
 
-        /* Tela de Login */
+        /* Tela de Login - Removido display:flex daqui para não conflitar com .hidden */
         #login-screen {
             position: fixed;
             top: 0;
@@ -110,10 +115,6 @@
             height: 100vh;
             background-color: #f3f4f6;
             z-index: 50;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
         }
 
         /* Spinner */
@@ -142,7 +143,8 @@
 <body class="bg-gray-100 p-4 md:p-8">
 
     <!-- Tela de Login (Aparece se não estiver logado) -->
-    <div id="login-screen">
+    <!-- Adicionado classes flex aqui para substituir o CSS do ID -->
+    <div id="login-screen" class="flex flex-col justify-center items-center">
         <h1 class="text-4xl font-bold text-gray-800 mb-2">Controle de Gastos</h1>
         <p class="text-gray-600 mb-8">Faça login para acessar suas planilhas</p>
 
@@ -421,11 +423,9 @@
             appId: "1:515466326654:web:0f841817662029d12a1e2f"
         };
 
-
+        // LISTA DE EMAILS PERMITIDOS
         const ALLOWED_EMAILS = [
             "eduardocarnello@gmail.com",
-            "eduardocarnello@gmail.com"
-
         ];
         // =========================================================================
 
