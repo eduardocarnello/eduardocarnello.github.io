@@ -6,6 +6,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Controle de Gastos Mensal</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Chart.js para Gráficos -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -60,12 +63,17 @@
                 margin-bottom: 1.5rem;
             }
 
-            /* Ajuste para caber 4 cards na impressão */
+            /* Ajuste para caber os cards na impressão */
             #summary-cards {
                 display: grid !important;
                 grid-template-columns: repeat(4, 1fr) !important;
                 gap: 1rem !important;
                 padding: 0 !important;
+            }
+
+            /* Ajuste para o gráfico na impressão */
+            #statistics-section {
+                page-break-before: always;
             }
 
             table {
@@ -229,7 +237,7 @@
                     <h2 class="text-sm font-medium text-red-600">Despesa Total</h2>
                     <p id="total-expense" class="text-3xl font-semibold text-gray-900 mt-2">R$ 0,00</p>
                 </div>
-                <!-- Card Cid (NOVO) -->
+                <!-- Card Cid -->
                 <div class="bg-white p-6 rounded-lg shadow-md border border-gray-200">
                     <h2 class="text-sm font-medium text-purple-600">Gastos do Cid</h2>
                     <p id="total-cid" class="text-3xl font-semibold text-gray-900 mt-2">R$ 0,00</p>
@@ -260,6 +268,34 @@
                             <p id="summary-net-transfer" class="text-xl md:text-2xl font-semibold text-indigo-900 mt-1">
                                 Calculando...</p>
                         </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- NOVA SEÇÃO: Análise de Gastos (Gráfico e Tabela) -->
+            <div id="statistics-section" class="bg-white p-6 rounded-lg shadow-md border border-gray-200 mb-8">
+                <h2 class="text-xl font-semibold text-gray-800 mb-6">Análise de Gastos por Categoria</h2>
+                <div class="flex flex-col md:flex-row items-center justify-between gap-8">
+                    <!-- Gráfico -->
+                    <div class="w-full md:w-1/2 h-64 md:h-80 flex justify-center">
+                        <canvas id="expenseChart"></canvas>
+                    </div>
+                    <!-- Tabela de Detalhes -->
+                    <div class="w-full md:w-1/2 overflow-x-auto">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">
+                                        Categoria</th>
+                                    <th class="px-3 py-2 text-right text-xs font-medium text-gray-500 uppercase">Valor
+                                        (R$)</th>
+                                    <th class="px-3 py-2 text-right text-xs font-medium text-gray-500 uppercase">%</th>
+                                </tr>
+                            </thead>
+                            <tbody id="category-stats-body" class="divide-y divide-gray-200">
+                                <!-- Linhas geradas via JS -->
+                            </tbody>
+                        </table>
                     </div>
                 </div>
             </div>
@@ -467,6 +503,7 @@
 
         const ALLOWED_EMAILS = [
             "eduardocarnello@gmail.com",
+            "outro-email-se-quiser@gmail.com"
         ];
         // =========================================================================
 
@@ -476,6 +513,7 @@
         let unsubscribeIncome = () => { };
         let currentExpenses = [];
         let currentIncomes = [];
+        let expenseChartInstance = null; // Variável para guardar o gráfico
 
         // Estado de Edição
         let editingExpenseId = null;
@@ -505,7 +543,7 @@
         const summaryIncome = document.getElementById('total-income');
         const summaryExpense = document.getElementById('total-expense');
         const summaryBalance = document.getElementById('total-balance');
-        const summaryCid = document.getElementById('total-cid'); // Novo
+        const summaryCid = document.getElementById('total-cid');
         const summaryCamilaPaidForEduardo = document.getElementById('summary-camila-paid-for-eduardo');
         const summaryEduardoPaidForCamila = document.getElementById('summary-eduardo-paid-for-camila');
         const summaryNetTransfer = document.getElementById('summary-net-transfer');
@@ -514,6 +552,9 @@
         const incomeForm = document.getElementById('income-form');
         const expenseTableBody = document.getElementById('expense-table-body');
         const incomeTableBody = document.getElementById('income-table-body');
+
+        // Elementos de Estatística
+        const categoryStatsBody = document.getElementById('category-stats-body');
 
         // Inicialização
         try {
@@ -666,10 +707,12 @@
         }
 
         function loadDataForMonth() {
+            if (!userId) return;
+
+            // Atualiza título de impressão com Mês/Ano
             const monthName = monthSelect.options[monthSelect.selectedIndex].text;
             document.getElementById('print-title').textContent = `Relatório Mensal - ${monthName}/${yearSelect.value}`;
-            // --------------------------
-            if (!userId) return;
+
             unsubscribeExpenses();
             unsubscribeIncome();
 
@@ -685,6 +728,7 @@
                 currentExpenses.sort((a, b) => new Date(a.date) - new Date(b.date));
                 renderTables();
                 updateSummary();
+                updateCharts(); // Atualiza gráfico e tabela de estatísticas
             });
 
             const qIncome = query(collection(db, `${userDocPath}/income`), where("monthYear", "==", monthYear));
@@ -699,7 +743,6 @@
         function renderTables() {
             expenseTableBody.innerHTML = currentExpenses.length ? '' : '<tr><td colspan="6" class="px-4 py-4 text-center text-gray-500">Nenhuma despesa.</td></tr>';
             currentExpenses.forEach(item => {
-                // Destaca linha do Cid com uma cor leve
                 const rowClass = item.sharingType === 'cid_expense' ? 'bg-purple-50 hover:bg-purple-100' : 'hover:bg-gray-50';
 
                 expenseTableBody.innerHTML += `
@@ -752,7 +795,6 @@
 
                 if (item.sharingType === 'cid_expense') {
                     totalCidAmount += amount;
-                    // Cid é autônomo, não entra na divisão de dívidas
                 } else if (item.sharingType === 'shared_50_50') {
                     if (item.paidBy === 'Eduardo') { netBalance += amount / 2; eduardoPaidForCamila += amount / 2; }
                     else if (item.paidBy === 'Camila') { netBalance -= amount / 2; camilaPaidForEduardo += amount / 2; }
@@ -776,6 +818,101 @@
                 summaryNetTransfer.innerHTML = 'Contas zeradas <span class="font-bold block">(R$ 0,00)</span>';
                 summaryNetTransfer.className = "text-xl md:text-2xl font-semibold mt-1 text-gray-900";
             }
+        }
+
+        // --- Lógica de Gráficos e Estatísticas ---
+        function updateCharts() {
+            // 1. Agrupar despesas por categoria
+            const categoryTotals = {};
+            let totalExpenseValue = 0;
+
+            currentExpenses.forEach(item => {
+                // Opcional: Se quiser excluir gastos do Cid do gráfico, descomente abaixo:
+                // if (item.sharingType === 'cid_expense') return;
+
+                const cat = item.category || 'Outros';
+                if (!categoryTotals[cat]) categoryTotals[cat] = 0;
+                categoryTotals[cat] += item.amount;
+                totalExpenseValue += item.amount;
+            });
+
+            // Se não houver despesas, limpa tudo
+            if (totalExpenseValue === 0) {
+                if (expenseChartInstance) {
+                    expenseChartInstance.destroy();
+                    expenseChartInstance = null;
+                }
+                categoryStatsBody.innerHTML = '<tr><td colspan="3" class="px-4 py-4 text-center text-gray-500">Sem dados para exibir.</td></tr>';
+                return;
+            }
+
+            // 2. Preparar dados para o gráfico e tabela
+            const categories = Object.keys(categoryTotals);
+            const dataValues = Object.values(categoryTotals);
+
+            // Cores bonitas para o gráfico
+            const backgroundColors = [
+                '#3B82F6', '#EF4444', '#10B981', '#F59E0B', '#8B5CF6',
+                '#EC4899', '#6366F1', '#14B8A6', '#F97316', '#64748B'
+            ];
+
+            // 3. Renderizar Tabela de Detalhes (Ordenada por valor)
+            const sortedCategories = categories.map((cat, i) => ({
+                cat,
+                val: dataValues[i],
+                perc: (dataValues[i] / totalExpenseValue * 100).toFixed(1)
+            })).sort((a, b) => b.val - a.val);
+
+            categoryStatsBody.innerHTML = '';
+            sortedCategories.forEach(item => {
+                categoryStatsBody.innerHTML += `
+                    <tr>
+                        <td class="px-3 py-2 text-sm text-gray-700">${item.cat}</td>
+                        <td class="px-3 py-2 text-sm text-right font-medium text-gray-900">${formatCurrencyBRL(item.val)}</td>
+                        <td class="px-3 py-2 text-sm text-right text-gray-500">${item.perc}%</td>
+                    </tr>
+                `;
+            });
+
+            // 4. Renderizar Gráfico
+            const ctx = document.getElementById('expenseChart').getContext('2d');
+
+            if (expenseChartInstance) {
+                expenseChartInstance.destroy();
+            }
+
+            expenseChartInstance = new Chart(ctx, {
+                type: 'doughnut', // ou 'pie'
+                data: {
+                    labels: categories,
+                    datasets: [{
+                        data: dataValues,
+                        backgroundColor: backgroundColors,
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: { boxWidth: 12, font: { size: 11 } }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function (context) {
+                                    let label = context.label || '';
+                                    if (label) label += ': ';
+                                    const value = context.raw;
+                                    const percentage = (value / totalExpenseValue * 100).toFixed(1) + '%';
+                                    return label + formatCurrencyBRL(value) + ' (' + percentage + ')';
+                                }
+                            }
+                        }
+                    }
+                }
+            });
         }
 
         // --- Funções de Edição (Globais) ---
