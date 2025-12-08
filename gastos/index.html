@@ -483,6 +483,13 @@
                     </div>
                 </div>
             </div>
+
+            <!-- Botão de Migração -->
+            <!--div class="mt-8 text-center no-print">
+                <button onclick="window.migrateData()" class="text-xs text-gray-400 hover:text-gray-600 underline">
+                    Importar dados do perfil antigo para o compartilhado
+                </button>
+            </div-->
         </div>
     </div>
 
@@ -490,7 +497,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut, setPersistence, browserLocalPersistence, inMemoryPersistence } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, collection, addDoc, updateDoc, deleteDoc, onSnapshot, query, where } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFirestore, doc, collection, addDoc, updateDoc, deleteDoc, getDocs, onSnapshot, query, where } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         // CONFIGURAÇÃO
         const firebaseConfig = {
@@ -508,9 +515,6 @@
 
         ];
 
-        // --- CAMINHO COMPARTILHADO ---
-        // Para que todos vejam os mesmos dados, usamos uma coleção fixa
-        // em vez de "users/userId".
         const DB_BASE_PATH = "conta_compartilhada/dados";
 
         let app, db, auth;
@@ -572,14 +576,12 @@
                 alert("Erro: Não use 'file://'. Use localhost ou GitHub Pages.");
             }
 
-            // Tenta definir persistência Local
             setPersistence(auth, browserLocalPersistence)
                 .catch((err) => {
                     console.warn("Persistência local bloqueada, tentando inMemory:", err);
                     return setPersistence(auth, inMemoryPersistence);
                 })
                 .then(() => {
-                    // Monitorar Estado
                     onAuthStateChanged(auth, (user) => {
                         if (user) {
                             authLoading.classList.add('hidden');
@@ -597,7 +599,7 @@
                             userEmailDisplay.textContent = user.email;
                             loginScreen.classList.add('hidden');
                             appContent.classList.remove('hidden');
-                            loadDataForMonth(); // Carrega os dados da pasta COMPARTILHADA
+                            loadDataForMonth();
                         } else {
                             authLoading.classList.add('hidden');
                             authButtons.classList.remove('hidden');
@@ -605,7 +607,6 @@
                     });
                 });
 
-            // Opção Única: Pop-up
             googleLoginBtn.addEventListener('click', () => {
                 loginErrorContainer.classList.add('hidden');
                 loginStatus.classList.remove('hidden');
@@ -680,8 +681,6 @@
         }
 
         function loadDataForMonth() {
-            // Agora não dependemos mais de "userId" para o caminho dos dados
-            // Se o usuário está logado (auth.currentUser), carregamos do caminho COMPARTILHADO
             if (!auth.currentUser) return;
 
             const monthName = monthSelect.options[monthSelect.selectedIndex].text;
@@ -694,7 +693,6 @@
 
             const monthYear = `${monthSelect.value}-${yearSelect.value}`;
 
-            // --- MUDANÇA: Usando DB_BASE_PATH fixo ---
             const qExpenses = query(collection(db, `${DB_BASE_PATH}/expenses`), where("monthYear", "==", monthYear));
             unsubscribeExpenses = onSnapshot(qExpenses, (snapshot) => {
                 currentExpenses = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
@@ -931,9 +929,34 @@
                 if (type === 'expense' && editingExpenseId === id) window.cancelEditExpense();
                 if (type === 'income' && editingIncomeId === id) window.cancelEditIncome();
 
-                // MUDANÇA: Deleta do caminho COMPARTILHADO
                 await deleteDoc(doc(db, `${DB_BASE_PATH}/${col}/${id}`));
             } catch (e) { alert("Erro ao deletar: " + e.message); }
+        };
+
+        window.migrateData = async () => {
+            if (!confirm("Isso copiará seus dados antigos para a nova pasta compartilhada. Continuar?")) return;
+
+            const uid = auth.currentUser.uid;
+            let count = 0;
+
+            try {
+                const oldExpenses = await getDocs(collection(db, `users/${uid}/expenses`));
+                for (const d of oldExpenses.docs) {
+                    await addDoc(collection(db, `${DB_BASE_PATH}/expenses`), d.data());
+                    count++;
+                }
+
+                const oldIncome = await getDocs(collection(db, `users/${uid}/income`));
+                for (const d of oldIncome.docs) {
+                    await addDoc(collection(db, `${DB_BASE_PATH}/income`), d.data());
+                    count++;
+                }
+
+                alert(`Migração completa! ${count} registros copiados.`);
+            } catch (e) {
+                console.error(e);
+                alert("Erro na migração: " + e.message);
+            }
         };
 
         expenseForm.addEventListener('submit', async (e) => {
