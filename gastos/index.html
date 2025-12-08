@@ -1,0 +1,659 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Controle de Gastos Mensal</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6;
+        }
+
+        input[type=number]::-webkit-inner-spin-button,
+        input[type=number]::-webkit-outer-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+
+        input[type=number] {
+            -moz-appearance: textfield;
+        }
+
+        @media print {
+            .no-print {
+                display: none !important;
+            }
+
+            body {
+                background-color: #ffffff;
+                margin: 0;
+                padding: 0;
+            }
+
+            #print-area {
+                display: block !important;
+                width: 100% !important;
+                padding: 0;
+                margin: 0;
+                box-shadow: none;
+                border: none;
+            }
+
+            #print-title {
+                display: block !important;
+                text-align: center;
+                font-size: 1.5rem;
+                font-weight: 600;
+                margin-bottom: 1.5rem;
+            }
+
+            #summary-cards {
+                display: grid !important;
+                grid-template-columns: repeat(3, 1fr) !important;
+                gap: 1rem !important;
+                padding: 0 !important;
+            }
+
+            table {
+                width: 100% !important;
+                border-collapse: collapse !important;
+                margin-top: 1rem !important;
+            }
+
+            th,
+            td {
+                border: 1px solid #ddd !important;
+                padding: 8px !important;
+                text-align: left !important;
+                font-size: 10pt !important;
+            }
+
+            th {
+                background-color: #f4f4f4 !important;
+                -webkit-print-color-adjust: exact;
+                color-adjust: exact;
+            }
+
+            tr,
+            td,
+            th {
+                page-break-inside: avoid !important;
+            }
+
+            h2 {
+                font-size: 1.25rem !important;
+                font-weight: 600 !important;
+                margin-top: 1.5rem !important;
+                page-break-before: auto !important;
+                page-break-after: avoid !important;
+            }
+        }
+
+        #print-title {
+            display: none;
+        }
+
+        /* Tela de Login */
+        #login-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background-color: #f3f4f6;
+            z-index: 50;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+    </style>
+</head>
+
+<body class="bg-gray-100 p-4 md:p-8">
+
+    <!-- Tela de Login (Aparece se não estiver logado) -->
+    <div id="login-screen">
+        <h1 class="text-4xl font-bold text-gray-800 mb-2">Controle de Gastos</h1>
+        <p class="text-gray-600 mb-8">Faça login para acessar suas planilhas</p>
+        <button id="google-login-btn"
+            class="bg-white text-gray-700 font-semibold py-3 px-6 border border-gray-300 rounded-lg shadow-sm flex items-center space-x-3 hover:bg-gray-50 transition-colors">
+            <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" class="w-6 h-6"
+                alt="Google Logo">
+            <span>Entrar com Google</span>
+        </button>
+        <p id="login-error" class="text-red-500 mt-4 hidden">Erro ao fazer login.</p>
+    </div>
+
+    <!-- Conteúdo Principal (Escondido até logar) -->
+    <div id="app-content" class="max-w-7xl mx-auto hidden">
+
+        <!-- Cabeçalho -->
+        <header class="mb-6 no-print flex justify-between items-center">
+            <div>
+                <h1 class="text-3xl font-bold text-gray-800">Meu Controle de Gastos</h1>
+                <p class="text-sm text-gray-500">
+                    Logado como: <span id="user-email-display" class="font-medium text-indigo-600">...</span>
+                </p>
+            </div>
+            <button id="logout-btn" class="text-sm text-gray-500 hover:text-red-600 underline">Sair</button>
+        </header>
+
+        <!-- Seletores e Botão de Impressão -->
+        <div class="flex flex-col md:flex-row justify-between items-center mb-6 space-y-4 md:space-y-0 no-print">
+            <div class="flex space-x-4">
+                <div>
+                    <label for="month-select" class="block text-sm font-medium text-gray-700">Mês</label>
+                    <select id="month-select"
+                        class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md shadow-sm"></select>
+                </div>
+                <div>
+                    <label for="year-select" class="block text-sm font-medium text-gray-700">Ano</label>
+                    <select id="year-select"
+                        class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md shadow-sm"></select>
+                </div>
+            </div>
+            <button id="print-button"
+                class="w-full md:w-auto bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-2 px-4 rounded-md shadow-sm flex items-center justify-center space-x-2 transition-colors">
+                <i class="fas fa-print"></i>
+                <span>Imprimir Relatório (PDF)</span>
+            </button>
+        </div>
+
+        <div id="print-area">
+            <h1 id="print-title">Relatório Mensal</h1>
+
+            <!-- Cards de Resumo -->
+            <div id="summary-cards" class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                <div class="bg-white p-6 rounded-lg shadow-md border border-gray-200">
+                    <h2 class="text-sm font-medium text-green-600">Renda Total</h2>
+                    <p id="total-income" class="text-3xl font-semibold text-gray-900 mt-2">R$ 0,00</p>
+                </div>
+                <div class="bg-white p-6 rounded-lg shadow-md border border-gray-200">
+                    <h2 class="text-sm font-medium text-red-600">Despesa Total</h2>
+                    <p id="total-expense" class="text-3xl font-semibold text-gray-900 mt-2">R$ 0,00</p>
+                </div>
+                <div class="bg-white p-6 rounded-lg shadow-md border border-gray-200">
+                    <h2 class="text-sm font-medium text-blue-600">Saldo</h2>
+                    <p id="total-balance" class="text-3xl font-semibold text-gray-900 mt-2">R$ 0,00</p>
+                </div>
+
+                <!-- Card de Acerto de Contas -->
+                <div class="md:col-span-3 bg-white p-6 rounded-lg shadow-md border border-gray-200">
+                    <h2 class="text-xl font-semibold text-gray-800 mb-4">Acerto de Contas (Compartilhados)</h2>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-center md:text-left">
+                        <div class="bg-gray-50 p-4 rounded-lg">
+                            <h3 class="text-sm font-medium text-gray-600">Camila pagou por Eduardo</h3>
+                            <p id="summary-camila-paid-for-eduardo" class="text-2xl font-semibold text-gray-900 mt-1">R$
+                                0,00</p>
+                        </div>
+                        <div class="bg-gray-50 p-4 rounded-lg">
+                            <h3 class="text-sm font-medium text-gray-600">Eduardo pagou por Camila</h3>
+                            <p id="summary-eduardo-paid-for-camila" class="text-2xl font-semibold text-gray-900 mt-1">R$
+                                0,00</p>
+                        </div>
+                        <div class="bg-indigo-50 p-4 rounded-lg border border-indigo-200 md:col-span-1">
+                            <h3 class="text-sm font-medium text-indigo-700">Transferência Necessária</h3>
+                            <p id="summary-net-transfer" class="text-xl md:text-2xl font-semibold text-indigo-900 mt-1">
+                                Calculando...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Formulários e Listas -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <div class="space-y-8 no-print">
+                    <div class="bg-white p-6 rounded-lg shadow-md border border-gray-200">
+                        <h2 class="text-xl font-semibold text-gray-800 mb-4">Adicionar Despesa</h2>
+                        <form id="expense-form" class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">Descrição</label>
+                                <input type="text" id="expense-desc" required
+                                    class="mt-1 block w-full border-gray-300 rounded-md shadow-sm sm:text-sm p-2 border">
+                            </div>
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700">Valor (R$)</label>
+                                    <input type="number" id="expense-amount" step="0.01" min="0" required
+                                        class="mt-1 block w-full border-gray-300 rounded-md shadow-sm sm:text-sm p-2 border">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700">Data</label>
+                                    <input type="date" id="expense-date" required
+                                        class="mt-1 block w-full border-gray-300 rounded-md shadow-sm sm:text-sm p-2 border">
+                                </div>
+                            </div>
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700">Categoria</label>
+                                    <select id="expense-category"
+                                        class="mt-1 block w-full border-gray-300 rounded-md shadow-sm sm:text-sm p-2 border">
+                                        <option>Moradia</option>
+                                        <option>Contas (Luz, Água, Net)</option>
+                                        <option>Mercado</option>
+                                        <option>Alimentação (iFood, etc)</option>
+                                        <option>Transporte/Carro</option>
+                                        <option>Lazer</option>
+                                        <option>Saúde</option>
+                                        <option>Presentes</option>
+                                        <option>Outros</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700">Quem Pagou?</label>
+                                    <select id="expense-paid-by"
+                                        class="mt-1 block w-full border-gray-300 rounded-md shadow-sm sm:text-sm p-2 border">
+                                        <option>Eduardo</option>
+                                        <option>Camila</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">Tipo de Gasto</label>
+                                <select id="expense-sharing-type"
+                                    class="mt-1 block w-full border-gray-300 rounded-md shadow-sm sm:text-sm p-2 border">
+                                    <option value="shared_50_50" selected>Compartilhado (50/50)</option>
+                                    <option value="not_shared">Não Compartilhado (100% pagador)</option>
+                                    <option value="other_person_100">Gasto da Outra Pessoa (100%)</option>
+                                </select>
+                            </div>
+                            <button type="submit"
+                                class="w-full bg-red-600 hover:bg-red-700 text-white font-medium py-2 px-4 rounded-md shadow-sm transition-colors">Adicionar
+                                Despesa</button>
+                        </form>
+                    </div>
+
+                    <div class="bg-white p-6 rounded-lg shadow-md border border-gray-200">
+                        <h2 class="text-xl font-semibold text-gray-800 mb-4">Adicionar Renda</h2>
+                        <form id="income-form" class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">Descrição</label>
+                                <input type="text" id="income-desc" required
+                                    class="mt-1 block w-full border-gray-300 rounded-md shadow-sm sm:text-sm p-2 border">
+                            </div>
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700">Valor (R$)</label>
+                                    <input type="number" id="income-amount" step="0.01" min="0" required
+                                        class="mt-1 block w-full border-gray-300 rounded-md shadow-sm sm:text-sm p-2 border">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700">Data</label>
+                                    <input type="date" id="income-date" required
+                                        class="mt-1 block w-full border-gray-300 rounded-md shadow-sm sm:text-sm p-2 border">
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">Fonte</label>
+                                <select id="income-source"
+                                    class="mt-1 block w-full border-gray-300 rounded-md shadow-sm sm:text-sm p-2 border">
+                                    <option>Eduardo</option>
+                                    <option>Camila</option>
+                                    <option>Outros</option>
+                                </select>
+                            </div>
+                            <button type="submit"
+                                class="w-full bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded-md shadow-sm transition-colors">Adicionar
+                                Renda</button>
+                        </form>
+                    </div>
+                </div>
+
+                <div class="space-y-8">
+                    <div class="bg-white p-6 rounded-lg shadow-md border border-gray-200">
+                        <h2 class="text-xl font-semibold text-gray-800 mb-4">Despesas do Mês</h2>
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full divide-y divide-gray-200">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th
+                                            class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            Descrição</th>
+                                        <th
+                                            class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            Valor</th>
+                                        <th
+                                            class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            Data</th>
+                                        <th
+                                            class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            Tipo</th>
+                                        <th
+                                            class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            Pago por</th>
+                                        <th
+                                            class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider no-print">
+                                            Ação</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="expense-table-body" class="bg-white divide-y divide-gray-200"></tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="bg-white p-6 rounded-lg shadow-md border border-gray-200">
+                        <h2 class="text-xl font-semibold text-gray-800 mb-4">Rendas do Mês</h2>
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full divide-y divide-gray-200">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th
+                                            class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            Descrição</th>
+                                        <th
+                                            class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            Valor</th>
+                                        <th
+                                            class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            Data</th>
+                                        <th
+                                            class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            Fonte</th>
+                                        <th
+                                            class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider no-print">
+                                            Ação</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="income-table-body" class="bg-white divide-y divide-gray-200"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase JS SDK -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, collection, addDoc, deleteDoc, onSnapshot, query, where } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyD2Mn2I9ell-bA7RZavH-JxHJid9wTDZe8",
+            authDomain: "controle-gastos-c4c4d.firebaseapp.com",
+            projectId: "controle-gastos-c4c4d",
+            storageBucket: "controle-gastos-c4c4d.firebasestorage.app",
+            messagingSenderId: "515466326654",
+            appId: "1:515466326654:web:0f841817662029d12a1e2f"
+        };
+        // =========================================================================
+
+        let app, db, auth;
+        let userId = null;
+        let unsubscribeExpenses = () => { };
+        let unsubscribeIncome = () => { };
+        let currentExpenses = [];
+        let currentIncomes = [];
+
+        // Elementos UI
+        const loginScreen = document.getElementById('login-screen');
+        const appContent = document.getElementById('app-content');
+        const googleLoginBtn = document.getElementById('google-login-btn');
+        const loginError = document.getElementById('login-error');
+        const userEmailDisplay = document.getElementById('user-email-display');
+        const logoutBtn = document.getElementById('logout-btn');
+
+        // Elementos de Dados
+        const monthSelect = document.getElementById('month-select');
+        const yearSelect = document.getElementById('year-select');
+        const summaryIncome = document.getElementById('total-income');
+        const summaryExpense = document.getElementById('total-expense');
+        const summaryBalance = document.getElementById('total-balance');
+        const summaryCamilaPaidForEduardo = document.getElementById('summary-camila-paid-for-eduardo');
+        const summaryEduardoPaidForCamila = document.getElementById('summary-eduardo-paid-for-camila');
+        const summaryNetTransfer = document.getElementById('summary-net-transfer');
+        const expenseForm = document.getElementById('expense-form');
+        const incomeForm = document.getElementById('income-form');
+        const expenseTableBody = document.getElementById('expense-table-body');
+        const incomeTableBody = document.getElementById('income-table-body');
+
+        // Inicialização
+        try {
+            app = initializeApp(firebaseConfig);
+            db = getFirestore(app);
+            auth = getAuth(app);
+            const provider = new GoogleAuthProvider();
+
+            // Listener de Login
+            googleLoginBtn.addEventListener('click', () => {
+                signInWithPopup(auth, provider).catch((error) => {
+                    console.error("Erro login:", error);
+                    loginError.textContent = "Erro ao logar: " + error.message;
+                    loginError.classList.remove('hidden');
+                });
+            });
+
+            // Botão de Logout
+            logoutBtn.addEventListener('click', () => signOut(auth));
+
+            // Monitorar Estado de Autenticação
+            onAuthStateChanged(auth, (user) => {
+                if (user) {
+                    userId = user.uid;
+                    userEmailDisplay.textContent = user.email;
+                    loginScreen.classList.add('hidden');
+                    appContent.classList.remove('hidden');
+                    loadDataForMonth();
+                } else {
+                    userId = null;
+                    loginScreen.classList.remove('hidden');
+                    appContent.classList.add('hidden');
+                    unsubscribeExpenses();
+                    unsubscribeIncome();
+                }
+            });
+
+        } catch (e) {
+            console.error("Erro config Firebase:", e);
+            alert("Erro na configuração do Firebase. Verifique se você colou as chaves corretamente no código.");
+        }
+
+        // Funções Auxiliares
+        function formatCurrencyBRL(value) {
+            if (isNaN(value)) value = 0;
+            return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value);
+        }
+        function formatDate(dateString) {
+            if (!dateString) return 'N/A';
+            const [year, month, day] = dateString.split('-');
+            return `${day}/${month}/${year}`;
+        }
+        function getMonthYear(dateInput) {
+            const date = new Date(dateInput + 'T12:00:00');
+            const month = (date.getMonth() + 1).toString().padStart(2, '0');
+            const year = date.getFullYear();
+            return `${month}-${year}`;
+        }
+        function formatSharingType(type) {
+            switch (type) {
+                case 'shared_50_50': return '50/50';
+                case 'not_shared': return '100% Pagador';
+                case 'other_person_100': return '100% Outra Pessoa';
+                default: return type || 'N/A';
+            }
+        }
+
+        // Lógica do App
+        function initializeSelectors() {
+            const months = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
+            const now = new Date();
+            months.forEach((m, i) => {
+                const opt = document.createElement('option');
+                opt.value = (i + 1).toString().padStart(2, '0');
+                opt.textContent = m;
+                if (i === now.getMonth()) opt.selected = true;
+                monthSelect.appendChild(opt);
+            });
+            for (let y = now.getFullYear() - 3; y <= now.getFullYear() + 2; y++) {
+                const opt = document.createElement('option');
+                opt.value = y;
+                opt.textContent = y;
+                if (y === now.getFullYear()) opt.selected = true;
+                yearSelect.appendChild(opt);
+            }
+            const today = now.toISOString().split('T')[0];
+            document.getElementById('expense-date').value = today;
+            document.getElementById('income-date').value = today;
+
+            monthSelect.addEventListener('change', loadDataForMonth);
+            yearSelect.addEventListener('change', loadDataForMonth);
+        }
+
+        function loadDataForMonth() {
+            if (!userId) return;
+            unsubscribeExpenses();
+            unsubscribeIncome();
+
+            const monthYear = `${monthSelect.value}-${yearSelect.value}`;
+            const userDocPath = `users/${userId}`; // Caminho simplificado
+
+            const qExpenses = query(collection(db, `${userDocPath}/expenses`), where("monthYear", "==", monthYear));
+            unsubscribeExpenses = onSnapshot(qExpenses, (snapshot) => {
+                currentExpenses = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                currentExpenses.sort((a, b) => new Date(a.date) - new Date(b.date));
+                renderTables();
+                updateSummary();
+            });
+
+            const qIncome = query(collection(db, `${userDocPath}/income`), where("monthYear", "==", monthYear));
+            unsubscribeIncome = onSnapshot(qIncome, (snapshot) => {
+                currentIncomes = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                currentIncomes.sort((a, b) => new Date(a.date) - new Date(b.date));
+                renderTables();
+                updateSummary();
+            });
+        }
+
+        function renderTables() {
+            expenseTableBody.innerHTML = currentExpenses.length ? '' : '<tr><td colspan="6" class="px-4 py-4 text-center text-gray-500">Nenhuma despesa.</td></tr>';
+            currentExpenses.forEach(item => {
+                expenseTableBody.innerHTML += `
+                    <tr class="hover:bg-gray-50">
+                        <td class="px-4 py-3 text-sm">${item.description}</td>
+                        <td class="px-4 py-3 text-sm text-red-600 font-medium">${formatCurrencyBRL(item.amount)}</td>
+                        <td class="px-4 py-3 text-sm text-gray-600">${formatDate(item.date)}</td>
+                        <td class="px-4 py-3 text-sm text-gray-600">${formatSharingType(item.sharingType)}</td>
+                        <td class="px-4 py-3 text-sm text-gray-600">${item.paidBy}</td>
+                        <td class="px-4 py-3 text-center no-print">
+                            <button class="delete-btn text-red-500 hover:text-red-700" onclick="window.deleteItem('${item.id}', 'expense')"><i class="fas fa-trash-alt"></i></button>
+                        </td>
+                    </tr>`;
+            });
+
+            incomeTableBody.innerHTML = currentIncomes.length ? '' : '<tr><td colspan="5" class="px-4 py-4 text-center text-gray-500">Nenhuma renda.</td></tr>';
+            currentIncomes.forEach(item => {
+                incomeTableBody.innerHTML += `
+                    <tr class="hover:bg-gray-50">
+                        <td class="px-4 py-3 text-sm">${item.description}</td>
+                        <td class="px-4 py-3 text-sm text-green-600 font-medium">${formatCurrencyBRL(item.amount)}</td>
+                        <td class="px-4 py-3 text-sm text-gray-600">${formatDate(item.date)}</td>
+                        <td class="px-4 py-3 text-sm text-gray-600">${item.source}</td>
+                        <td class="px-4 py-3 text-center no-print">
+                            <button class="delete-btn text-red-500 hover:text-red-700" onclick="window.deleteItem('${item.id}', 'income')"><i class="fas fa-trash-alt"></i></button>
+                        </td>
+                    </tr>`;
+            });
+        }
+
+        function updateSummary() {
+            const totalIncome = currentIncomes.reduce((sum, i) => sum + i.amount, 0);
+            const totalExpense = currentExpenses.reduce((sum, i) => sum + i.amount, 0);
+            const balance = totalIncome - totalExpense;
+
+            summaryIncome.textContent = formatCurrencyBRL(totalIncome);
+            summaryExpense.textContent = formatCurrencyBRL(totalExpense);
+            summaryBalance.textContent = formatCurrencyBRL(balance);
+            summaryBalance.className = `text-3xl font-semibold mt-2 ${balance > 0 ? 'text-green-600' : balance < 0 ? 'text-red-600' : 'text-gray-900'}`;
+
+            let netBalance = 0;
+            let eduardoPaidForCamila = 0;
+            let camilaPaidForEduardo = 0;
+
+            currentExpenses.forEach(item => {
+                const amount = item.amount;
+                if (item.sharingType === 'shared_50_50') {
+                    if (item.paidBy === 'Eduardo') { netBalance += amount / 2; eduardoPaidForCamila += amount / 2; }
+                    else if (item.paidBy === 'Camila') { netBalance -= amount / 2; camilaPaidForEduardo += amount / 2; }
+                } else if (item.sharingType === 'other_person_100') {
+                    if (item.paidBy === 'Eduardo') { netBalance += amount; eduardoPaidForCamila += amount; }
+                    else if (item.paidBy === 'Camila') { netBalance -= amount; camilaPaidForEduardo += amount; }
+                }
+            });
+
+            summaryCamilaPaidForEduardo.textContent = formatCurrencyBRL(camilaPaidForEduardo);
+            summaryEduardoPaidForCamila.textContent = formatCurrencyBRL(eduardoPaidForCamila);
+
+            if (netBalance > 0) {
+                summaryNetTransfer.innerHTML = `Camila deve a Eduardo: <span class="font-bold block">${formatCurrencyBRL(netBalance)}</span>`;
+                summaryNetTransfer.className = "text-xl md:text-2xl font-semibold mt-1 text-red-700";
+            } else if (netBalance < 0) {
+                summaryNetTransfer.innerHTML = `Eduardo deve a Camila: <span class="font-bold block">${formatCurrencyBRL(Math.abs(netBalance))}</span>`;
+                summaryNetTransfer.className = "text-xl md:text-2xl font-semibold mt-1 text-green-700";
+            } else {
+                summaryNetTransfer.innerHTML = 'Contas zeradas <span class="font-bold block">(R$ 0,00)</span>';
+                summaryNetTransfer.className = "text-xl md:text-2xl font-semibold mt-1 text-gray-900";
+            }
+        }
+
+        // Funções Globais para o OnClick
+        window.deleteItem = async (id, type) => {
+            if (!confirm("Tem certeza que deseja deletar?")) return;
+            const col = type === 'expense' ? 'expenses' : 'income';
+            try {
+                await deleteDoc(doc(db, `users/${userId}/${col}/${id}`));
+            } catch (e) { alert("Erro ao deletar: " + e.message); }
+        };
+
+        // Listeners de Formulário
+        expenseForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            if (!userId) return;
+            const date = document.getElementById('expense-date').value;
+            const data = {
+                description: document.getElementById('expense-desc').value,
+                amount: parseFloat(document.getElementById('expense-amount').value),
+                date: date,
+                category: document.getElementById('expense-category').value,
+                paidBy: document.getElementById('expense-paid-by').value,
+                sharingType: document.getElementById('expense-sharing-type').value,
+                monthYear: getMonthYear(date),
+                createdAt: new Date()
+            };
+            await addDoc(collection(db, `users/${userId}/expenses`), data);
+            expenseForm.reset();
+            document.getElementById('expense-date').value = new Date().toISOString().split('T')[0];
+        });
+
+        incomeForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            if (!userId) return;
+            const date = document.getElementById('income-date').value;
+            const data = {
+                description: document.getElementById('income-desc').value,
+                amount: parseFloat(document.getElementById('income-amount').value),
+                date: date,
+                source: document.getElementById('income-source').value,
+                monthYear: getMonthYear(date),
+                createdAt: new Date()
+            };
+            await addDoc(collection(db, `users/${userId}/income`), data);
+            incomeForm.reset();
+            document.getElementById('income-date').value = new Date().toISOString().split('T')[0];
+        });
+
+        document.getElementById('print-button').addEventListener('click', () => window.print());
+        initializeSelectors();
+    </script>
+</body>
+
+</html>
