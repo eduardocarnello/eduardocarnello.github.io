@@ -130,7 +130,7 @@
                 alt="Google Logo">
             <span>Entrar com Google</span>
         </button>
-        <p id="login-error" class="text-red-500 mt-4 hidden">Erro ao fazer login.</p>
+        <p id="login-error" class="text-red-500 mt-4 hidden font-medium text-center max-w-md">Erro ao fazer login.</p>
     </div>
 
     <!-- Conteúdo Principal (Escondido até logar) -->
@@ -386,6 +386,13 @@
             messagingSenderId: "515466326654",
             appId: "1:515466326654:web:0f841817662029d12a1e2f"
         };
+
+        // LISTA DE EMAILS PERMITIDOS (Adicione o seu aqui!)
+        // O login só será permitido se o email estiver nesta lista.
+        const ALLOWED_EMAILS = [
+            "eduardocarnello@gmail.com",
+
+        ];
         // =========================================================================
 
         let app, db, auth;
@@ -426,6 +433,7 @@
 
             // Listener de Login
             googleLoginBtn.addEventListener('click', () => {
+                loginError.classList.add('hidden'); // Limpa erros antigos
                 signInWithPopup(auth, provider).catch((error) => {
                     console.error("Erro login:", error);
                     loginError.textContent = "Erro ao logar: " + error.message;
@@ -439,6 +447,15 @@
             // Monitorar Estado de Autenticação
             onAuthStateChanged(auth, (user) => {
                 if (user) {
+                    // VERIFICAÇÃO DE SEGURANÇA (WHITELIST)
+                    if (!ALLOWED_EMAILS.includes(user.email)) {
+                        console.warn(`Tentativa de acesso negada: ${user.email}`);
+                        signOut(auth); // Desloga imediatamente
+                        loginError.textContent = `Acesso negado. O e-mail ${user.email} não tem permissão para acessar este sistema.`;
+                        loginError.classList.remove('hidden');
+                        return;
+                    }
+
                     userId = user.uid;
                     userEmailDisplay.textContent = user.email;
                     loginScreen.classList.add('hidden');
