@@ -130,6 +130,7 @@
                 alt="Google Logo">
             <span>Entrar com Google</span>
         </button>
+        <p id="login-status" class="text-gray-500 mt-4 text-sm hidden">Redirecionando para o Google...</p>
         <p id="login-error" class="text-red-500 mt-4 hidden font-medium text-center max-w-md">Erro ao fazer login.</p>
     </div>
 
@@ -375,7 +376,8 @@
     <!-- Firebase JS SDK -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        // ALTERADO: Importamos signInWithRedirect e getRedirectResult em vez de signInWithPopup
+        import { getAuth, signInWithRedirect, getRedirectResult, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, doc, collection, addDoc, deleteDoc, onSnapshot, query, where } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         const firebaseConfig = {
@@ -388,7 +390,6 @@
         };
 
         // LISTA DE EMAILS PERMITIDOS (Adicione o seu aqui!)
-        // O login só será permitido se o email estiver nesta lista.
         const ALLOWED_EMAILS = [
             "eduardocarnello@gmail.com",
 
@@ -407,6 +408,7 @@
         const appContent = document.getElementById('app-content');
         const googleLoginBtn = document.getElementById('google-login-btn');
         const loginError = document.getElementById('login-error');
+        const loginStatus = document.getElementById('login-status');
         const userEmailDisplay = document.getElementById('user-email-display');
         const logoutBtn = document.getElementById('logout-btn');
 
@@ -431,14 +433,25 @@
             auth = getAuth(app);
             const provider = new GoogleAuthProvider();
 
-            // Listener de Login
+            // Listener de Login ALTERADO PARA REDIRECT
             googleLoginBtn.addEventListener('click', () => {
-                loginError.classList.add('hidden'); // Limpa erros antigos
-                signInWithPopup(auth, provider).catch((error) => {
-                    console.error("Erro login:", error);
-                    loginError.textContent = "Erro ao logar: " + error.message;
+                loginError.classList.add('hidden');
+                loginStatus.classList.remove('hidden'); // Mostra aviso de redirecionamento
+
+                signInWithRedirect(auth, provider).catch((error) => {
+                    console.error("Erro ao iniciar redirect:", error);
+                    loginStatus.classList.add('hidden');
+                    loginError.textContent = "Erro ao iniciar login: " + error.message;
                     loginError.classList.remove('hidden');
                 });
+            });
+
+            // Verificar se voltamos de um redirecionamento com erro
+            getRedirectResult(auth).catch((error) => {
+                console.error("Erro no retorno do login:", error);
+                loginStatus.classList.add('hidden');
+                loginError.textContent = "Erro no login: " + error.message;
+                loginError.classList.remove('hidden');
             });
 
             // Botão de Logout
@@ -446,11 +459,12 @@
 
             // Monitorar Estado de Autenticação
             onAuthStateChanged(auth, (user) => {
+                loginStatus.classList.add('hidden'); // Esconde mensagem de carregando
                 if (user) {
                     // VERIFICAÇÃO DE SEGURANÇA (WHITELIST)
                     if (!ALLOWED_EMAILS.includes(user.email)) {
                         console.warn(`Tentativa de acesso negada: ${user.email}`);
-                        signOut(auth); // Desloga imediatamente
+                        signOut(auth);
                         loginError.textContent = `Acesso negado. O e-mail ${user.email} não tem permissão para acessar este sistema.`;
                         loginError.classList.remove('hidden');
                         return;
@@ -532,7 +546,7 @@
             unsubscribeIncome();
 
             const monthYear = `${monthSelect.value}-${yearSelect.value}`;
-            const userDocPath = `users/${userId}`; // Caminho simplificado
+            const userDocPath = `users/${userId}`;
 
             const qExpenses = query(collection(db, `${userDocPath}/expenses`), where("monthYear", "==", monthYear));
             unsubscribeExpenses = onSnapshot(qExpenses, (snapshot) => {
