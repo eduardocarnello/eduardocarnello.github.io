@@ -60,9 +60,10 @@
                 margin-bottom: 1.5rem;
             }
 
+            /* Ajuste para caber 4 cards na impressão */
             #summary-cards {
                 display: grid !important;
-                grid-template-columns: repeat(3, 1fr) !important;
+                grid-template-columns: repeat(4, 1fr) !important;
                 gap: 1rem !important;
                 padding: 0 !important;
             }
@@ -217,7 +218,7 @@
             <h1 id="print-title">Relatório Mensal</h1>
 
             <!-- Cards de Resumo -->
-            <div id="summary-cards" class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <div id="summary-cards" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
                 <!-- Card Renda -->
                 <div id="card-income" class="bg-white p-6 rounded-lg shadow-md border border-gray-200">
                     <h2 class="text-sm font-medium text-green-600">Renda Total</h2>
@@ -228,6 +229,11 @@
                     <h2 class="text-sm font-medium text-red-600">Despesa Total</h2>
                     <p id="total-expense" class="text-3xl font-semibold text-gray-900 mt-2">R$ 0,00</p>
                 </div>
+                <!-- Card Cid (NOVO) -->
+                <div class="bg-white p-6 rounded-lg shadow-md border border-gray-200">
+                    <h2 class="text-sm font-medium text-purple-600">Gastos do Cid</h2>
+                    <p id="total-cid" class="text-3xl font-semibold text-gray-900 mt-2">R$ 0,00</p>
+                </div>
                 <!-- Card Saldo -->
                 <div id="card-balance" class="bg-white p-6 rounded-lg shadow-md border border-gray-200">
                     <h2 class="text-sm font-medium text-blue-600">Saldo</h2>
@@ -235,7 +241,8 @@
                 </div>
 
                 <!-- Card de Acerto de Contas -->
-                <div class="md:col-span-3 bg-white p-6 rounded-lg shadow-md border border-gray-200">
+                <div
+                    class="col-span-1 sm:col-span-2 lg:col-span-4 bg-white p-6 rounded-lg shadow-md border border-gray-200">
                     <h2 class="text-xl font-semibold text-gray-800 mb-4">Acerto de Contas (Compartilhados)</h2>
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-center md:text-left">
                         <div class="bg-gray-50 p-4 rounded-lg">
@@ -315,6 +322,7 @@
                                     class="mt-1 block w-full border-gray-300 rounded-md shadow-sm sm:text-sm p-2 border">
                                     <option value="shared_50_50" selected>Compartilhado (50/50)</option>
                                     <option value="not_shared">Não Compartilhado (100% pagador)</option>
+                                    <option value="cid_expense">Gasto do Cid (Autônomo)</option>
                                     <option value="other_person_100">Gasto da Outra Pessoa (100%)</option>
                                 </select>
                             </div>
@@ -497,6 +505,7 @@
         const summaryIncome = document.getElementById('total-income');
         const summaryExpense = document.getElementById('total-expense');
         const summaryBalance = document.getElementById('total-balance');
+        const summaryCid = document.getElementById('total-cid'); // Novo
         const summaryCamilaPaidForEduardo = document.getElementById('summary-camila-paid-for-eduardo');
         const summaryEduardoPaidForCamila = document.getElementById('summary-eduardo-paid-for-camila');
         const summaryNetTransfer = document.getElementById('summary-net-transfer');
@@ -624,6 +633,7 @@
             switch (type) {
                 case 'shared_50_50': return '50/50';
                 case 'not_shared': return '100% Pagador';
+                case 'cid_expense': return 'Gasto do Cid';
                 case 'other_person_100': return '100% Outra Pessoa';
                 default: return type || 'N/A';
             }
@@ -660,7 +670,6 @@
             unsubscribeExpenses();
             unsubscribeIncome();
 
-            // Cancela edições se mudar o mês
             window.cancelEditExpense();
             window.cancelEditIncome();
 
@@ -687,8 +696,11 @@
         function renderTables() {
             expenseTableBody.innerHTML = currentExpenses.length ? '' : '<tr><td colspan="6" class="px-4 py-4 text-center text-gray-500">Nenhuma despesa.</td></tr>';
             currentExpenses.forEach(item => {
+                // Destaca linha do Cid com uma cor leve
+                const rowClass = item.sharingType === 'cid_expense' ? 'bg-purple-50 hover:bg-purple-100' : 'hover:bg-gray-50';
+
                 expenseTableBody.innerHTML += `
-                    <tr class="hover:bg-gray-50">
+                    <tr class="${rowClass}">
                         <td class="px-4 py-3 text-sm">${item.description}</td>
                         <td class="px-4 py-3 text-sm text-red-600 font-medium">${formatCurrencyBRL(item.amount)}</td>
                         <td class="px-4 py-3 text-sm text-gray-600">${formatDate(item.date)}</td>
@@ -730,10 +742,15 @@
             let netBalance = 0;
             let eduardoPaidForCamila = 0;
             let camilaPaidForEduardo = 0;
+            let totalCidAmount = 0;
 
             currentExpenses.forEach(item => {
                 const amount = item.amount;
-                if (item.sharingType === 'shared_50_50') {
+
+                if (item.sharingType === 'cid_expense') {
+                    totalCidAmount += amount;
+                    // Cid é autônomo, não entra na divisão de dívidas
+                } else if (item.sharingType === 'shared_50_50') {
                     if (item.paidBy === 'Eduardo') { netBalance += amount / 2; eduardoPaidForCamila += amount / 2; }
                     else if (item.paidBy === 'Camila') { netBalance -= amount / 2; camilaPaidForEduardo += amount / 2; }
                 } else if (item.sharingType === 'other_person_100') {
@@ -742,6 +759,7 @@
                 }
             });
 
+            summaryCid.textContent = formatCurrencyBRL(totalCidAmount);
             summaryCamilaPaidForEduardo.textContent = formatCurrencyBRL(camilaPaidForEduardo);
             summaryEduardoPaidForCamila.textContent = formatCurrencyBRL(eduardoPaidForCamila);
 
@@ -775,7 +793,6 @@
             document.getElementById('expense-form-title').textContent = "Editar Despesa";
             document.getElementById('expense-cancel-btn').classList.remove('hidden');
 
-            // Rola até o formulário
             document.getElementById('expense-form').scrollIntoView({ behavior: 'smooth' });
         };
 
@@ -803,7 +820,6 @@
             document.getElementById('income-form-title').textContent = "Editar Renda";
             document.getElementById('income-cancel-btn').classList.remove('hidden');
 
-            // Rola até o formulário
             document.getElementById('income-form').scrollIntoView({ behavior: 'smooth' });
         };
 
@@ -821,7 +837,6 @@
             if (!confirm("Tem certeza que deseja deletar?")) return;
             const col = type === 'expense' ? 'expenses' : 'income';
             try {
-                // Se deletar o item que está sendo editado, cancela a edição
                 if (type === 'expense' && editingExpenseId === id) window.cancelEditExpense();
                 if (type === 'income' && editingIncomeId === id) window.cancelEditIncome();
 
@@ -842,17 +857,15 @@
                 paidBy: document.getElementById('expense-paid-by').value,
                 sharingType: document.getElementById('expense-sharing-type').value,
                 monthYear: getMonthYear(date),
-                // Mantém a data de criação original se estiver editando, senão cria nova
                 createdAt: editingExpenseId ? undefined : new Date()
             };
 
-            // Remove campo undefined se for atualização (createdAt)
             if (editingExpenseId) delete data.createdAt;
 
             try {
                 if (editingExpenseId) {
                     await updateDoc(doc(db, `users/${userId}/expenses/${editingExpenseId}`), data);
-                    window.cancelEditExpense(); // Sai do modo de edição
+                    window.cancelEditExpense();
                 } else {
                     await addDoc(collection(db, `users/${userId}/expenses`), data);
                     expenseForm.reset();
