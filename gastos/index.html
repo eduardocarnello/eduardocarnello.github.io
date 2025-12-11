@@ -291,16 +291,16 @@
                         <span id="comparison-icon"></span> <span id="comparison-text"></span> vs mês ant.
                     </div>
                 </div>
-                <div id="card-cid" class="bg-white p-6 rounded-lg shadow-md border border-gray-200 hidden">
+                <div id="card-cid" class="bg-purple-50 p-6 rounded-lg shadow-md border border-purple-200 hidden">
                     <h2 class="text-sm font-medium text-purple-600">Gastos do Cid</h2>
                     <p id="total-cid" class="money-display text-3xl font-semibold text-gray-900 mt-2">R$ 0,00</p>
                 </div>
-                <div id="card-praia" class="bg-white p-6 rounded-lg shadow-md border border-gray-200 hidden">
+                <div id="card-praia" class="bg-cyan-50 p-6 rounded-lg shadow-md border border-cyan-200 hidden">
                     <h2 class="text-sm font-medium text-cyan-600">Gastos Praia</h2>
                     <p id="total-praia" class="money-display text-3xl font-semibold text-gray-900 mt-2">R$ 0,00</p>
                 </div>
                 <div id="card-others-autonomous"
-                    class="bg-white p-6 rounded-lg shadow-md border border-gray-200 hidden">
+                    class="bg-yellow-50 p-6 rounded-lg shadow-md border border-yellow-200 hidden">
                     <h2 class="text-sm font-medium text-gray-600">Outros (Autônomo)</h2>
                     <p id="total-others-autonomous" class="money-display text-3xl font-semibold text-gray-900 mt-2">R$
                         0,00</p>
@@ -524,6 +524,8 @@
                                             Valor</th>
                                         <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Data
                                         </th>
+                                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                                            Categoria</th>
                                         <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tipo
                                         </th>
                                         <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Pago
@@ -785,19 +787,28 @@
         const renderTables = () => {
             // Tabela Despesas
             const expBody = document.getElementById('expense-table-body');
-            expBody.innerHTML = currentExpenses.map(item => `
-                <tr class="hover:bg-gray-50 transition">
+            expBody.innerHTML = currentExpenses.map(item => {
+                let rowClass = 'hover:bg-gray-50 transition';
+                if (item.sharingType === 'cid_expense') rowClass = 'bg-purple-50 hover:bg-purple-100 transition';
+                else if (item.sharingType === 'praia_expense') rowClass = 'bg-cyan-50 hover:bg-cyan-100 transition';
+                else if (item.sharingType === 'others_autonomous') rowClass = 'bg-yellow-50 hover:bg-yellow-100 transition';
+                else if (item.sharingType === 'other_person_100') rowClass = 'bg-orange-50 hover:bg-orange-100 transition';
+                else if (item.sharingType === 'not_shared') rowClass = 'bg-blue-50 hover:bg-blue-100 transition';
+
+                return `
+                <tr class="${rowClass}">
                     <td class="px-4 py-3 text-sm text-gray-900">${item.description}</td>
                     <td class="px-4 py-3 text-sm font-medium text-red-600 money-display">${formatCurrencyBRL(item.amount)}</td>
                     <td class="px-4 py-3 text-sm text-gray-500">${new Date(item.date + 'T12:00:00').toLocaleDateString('pt-BR')}</td>
                     <td class="px-4 py-3 text-sm text-gray-500">${item.category}</td>
+                    <td class="px-4 py-3 text-sm text-gray-500">${formatSharingType(item.sharingType)}</td>
                     <td class="px-4 py-3 text-sm text-gray-500">${item.paidBy}</td>
                     <td class="px-4 py-3 text-right text-sm font-medium no-print">
                         <button onclick="window.startEditExpense('${item.id}')" class="text-indigo-600 hover:text-indigo-900 mr-3"><i class="fas fa-edit"></i></button>
                         <button onclick="window.deleteItem('${item.id}', 'expense')" class="text-red-600 hover:text-red-900"><i class="fas fa-trash"></i></button>
                     </td>
                 </tr>
-            `).join('');
+            `}).join('');
 
             // Tabela Rendas
             const incBody = document.getElementById('income-table-body');
@@ -835,6 +846,18 @@
 
             applyPrivacyMode();
         };
+
+        function formatSharingType(type) {
+            switch (type) {
+                case 'shared_50_50': return '50/50';
+                case 'not_shared': return '100% Pagador';
+                case 'cid_expense': return 'Gasto do Cid';
+                case 'praia_expense': return 'Gasto Praia';
+                case 'others_autonomous': return 'Outros (Autônomo)';
+                case 'other_person_100': return '100% Outra Pessoa';
+                default: return type || 'N/A';
+            }
+        }
 
         // 6. Atualização de Gráficos (Chart.js)
         const updateCharts = () => {
