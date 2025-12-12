@@ -206,6 +206,51 @@
             padding: 0.85rem 1.25rem;
         }
 
+        .sticky-privacy-btn {
+            width: 36px;
+            height: 36px;
+            border-radius: 999px;
+            border: 1px solid #e2e8f0;
+            background: #ffffff;
+            color: #475569;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.85rem;
+            box-shadow: 0 6px 14px rgba(15, 23, 42, 0.12);
+            transition: transform 0.2s ease, color 0.2s ease, border-color 0.2s ease, background 0.2s ease;
+        }
+
+        .sticky-privacy-btn:hover {
+            transform: translateY(-1px);
+            border-color: #c7d2fe;
+            color: #312e81;
+        }
+
+        .sticky-add-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            padding: 0.45rem 0.9rem;
+            border-radius: 999px;
+            border: 1px solid #fecaca;
+            background: linear-gradient(135deg, #fee2e2, #fecaca);
+            color: #991b1b;
+            font-size: 0.78rem;
+            font-weight: 600;
+            box-shadow: 0 6px 18px rgba(248, 113, 113, 0.35);
+            transition: transform 0.15s ease, box-shadow 0.15s ease;
+        }
+
+        .sticky-add-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 10px 22px rgba(248, 113, 113, 0.4);
+        }
+
+        .sticky-add-btn i {
+            font-size: 0.65rem;
+        }
+
         .sticky-trigger-wrapper {
             position: relative;
             display: inline-block;
@@ -1391,6 +1436,17 @@
             background: #1e293b;
             color: #fef3c7;
             border-color: #475569;
+        }
+
+        body.theme-dark .sticky-privacy-btn {
+            background: rgba(15, 23, 42, 0.85);
+            border-color: #334155;
+            color: #e2e8f0;
+        }
+
+        body.theme-dark .sticky-privacy-btn:hover {
+            color: #c7d2fe;
+            border-color: #6366f1;
         }
 
         body.theme-dark .bg-white,
@@ -3224,7 +3280,7 @@
                 <button onclick="window.openSettingsModal()"
                     class="p-2 rounded-full bg-white border border-gray-200 text-gray-600 hover:text-indigo-600 transition-all shadow-sm"
                     title="Configurações"><i class="fas fa-cog"></i></button>
-                <button id="privacy-toggle-btn"
+                <button id="privacy-toggle-btn" type="button" data-privacy-toggle
                     class="p-2 rounded-full bg-white border border-gray-200 text-gray-500 hover:text-indigo-600 transition-all shadow-sm"><i
                         class="fas fa-eye"></i></button>
                 <button id="logout-btn"
@@ -3258,13 +3314,19 @@
                         <p class="text-sm text-gray-500">Escolha mês, ano e controle a privacidade dos cartões de
                             renda e saldo.</p>
                     </div>
-                    <div class="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
+                    <div class="flex flex-col sm:flex-row sm:flex-wrap gap-3 w-full md:w-auto">
                         <button id="print-button"
                             class="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-2 px-4 rounded-md shadow-sm flex items-center justify-center space-x-2 transition-colors"><i
                                 class="fas fa-print mr-2"></i> Imprimir completo</button>
                         <button id="print-basic-button" data-plan-section="premium"
                             class="flex-1 hidden border border-indigo-200 text-indigo-700 hover:bg-indigo-50 font-medium py-2 px-4 rounded-md shadow flex items-center justify-center space-x-2 transition-colors"><i
                                 class="fas fa-file-lines mr-2"></i> PDF simplificado</button>
+                        <button id="export-csv-button"
+                            class="flex-1 border border-gray-200 text-gray-700 hover:bg-gray-50 font-medium py-2 px-4 rounded-md shadow flex items-center justify-center space-x-2 transition-colors"><i
+                                class="fas fa-download mr-2"></i> Exportar mês (CSV)</button>
+                        <button id="annual-report-button"
+                            class="flex-1 border border-indigo-200 text-indigo-700 hover:bg-indigo-50 font-medium py-2 px-4 rounded-md shadow flex items-center justify-center space-x-2 transition-colors"><i
+                                class="fas fa-chart-line mr-2"></i> Relatório anual</button>
                     </div>
                 </div>
                 <div class="grid gap-6 md:grid-cols-3 items-end">
@@ -3358,7 +3420,7 @@
                             </div>
                         </div>
                     </div>
-                    <div class="flex items-center gap-3">
+                    <div class="flex items-center gap-3 flex-wrap justify-end">
                         <div class="sticky-extra-toggle hidden no-print" data-plan-section="premium"
                             data-premium-extras-wrapper="true">
                             <span
@@ -3374,6 +3436,14 @@
                             data-theme-toggle>
                             <i class="fas fa-moon" data-theme-icon></i>
                             <span data-theme-label>Modo escuro</span>
+                        </button>
+                        <button type="button" id="sticky-privacy-toggle-btn" class="sticky-privacy-btn"
+                            data-privacy-toggle aria-label="Alternar privacidade" title="Alternar privacidade">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                        <button type="button" id="sticky-add-expense-btn" class="sticky-add-btn">
+                            <i class="fas fa-plus"></i>
+                            <span>Nova despesa</span>
                         </button>
                     </div>
                 </div>
@@ -3854,7 +3924,7 @@
                                 <input type="text" id="expense-desc" required
                                     class="mt-1 block w-full border-gray-300 rounded-md shadow-sm p-2 border">
                             </div>
-                            <div class="grid grid-cols-2 gap-4">
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                 <div>
                                     <label class="block text-sm font-medium text-gray-700">Valor (R$)</label>
                                     <input type="text" id="expense-amount" data-money-input="true" inputmode="numeric"
@@ -3878,7 +3948,7 @@
                                         class="mt-1 block w-full border-gray-300 rounded-md shadow-sm p-2 border">
                                 </div>
                             </div>
-                            <div class="grid grid-cols-2 gap-4">
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                 <div>
                                     <label class="block text-sm font-medium text-gray-700">Categoria</label>
                                     <select id="expense-category"
@@ -3949,7 +4019,7 @@
                                         class="text-[10px] font-semibold text-indigo-600 bg-indigo-100 px-2 py-0.5 rounded-full"
                                         id="recurrence-premium-chip">Premium</span>
                                 </label>
-                                <div class="flex space-x-2">
+                                <div class="flex flex-col sm:flex-row gap-2">
                                     <select id="expense-recurrence-type"
                                         class="block w-full border-gray-300 rounded-md shadow-sm p-2 border text-sm"
                                         onchange="window.toggleRecurrenceInput()">
@@ -3975,7 +4045,7 @@
                                 </div>
                             </div>
 
-                            <div class="flex space-x-3">
+                            <div class="flex flex-col sm:flex-row gap-3">
                                 <button type="submit" id="expense-submit-btn"
                                     class="flex-1 bg-red-600 hover:bg-red-700 text-white font-medium py-2 px-4 rounded-md shadow-sm transition-colors">Adicionar
                                     Despesa</button>
@@ -3996,7 +4066,7 @@
                             <input type="text" id="income-desc" required
                                 class="mt-1 block w-full border-gray-300 rounded-md shadow-sm p-2 border">
                         </div>
-                        <div class="grid grid-cols-2 gap-4">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div>
                                 <label class="block text-sm font-medium text-gray-700">Valor (R$)</label>
                                 <input type="text" id="income-amount" data-money-input="true" inputmode="numeric"
@@ -4024,7 +4094,7 @@
                             <select id="income-source"
                                 class="mt-1 block w-full border-gray-300 rounded-md shadow-sm p-2 border"></select>
                         </div>
-                        <div class="flex space-x-3">
+                        <div class="flex flex-col sm:flex-row gap-3">
                             <button type="submit" id="income-submit-btn"
                                 class="flex-1 bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded-md shadow-sm transition-colors">Adicionar
                                 Renda</button>
@@ -4358,7 +4428,7 @@
             <h2 class="text-xl font-bold text-gray-800 mb-4" id="goal-contrib-title">Adicionar Aporte</h2>
             <form id="goal-contrib-form" class="space-y-4 mb-6">
                 <input type="hidden" id="goal-contrib-goal-id">
-                <div class="grid grid-cols-2 gap-4">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div><label class="block text-xs text-gray-500">Valor</label><input type="text"
                             id="goal-contrib-amount" data-money-input="true" inputmode="numeric" autocomplete="off"
                             class="w-full border rounded p-2" placeholder="0,00" required></div>
@@ -4401,6 +4471,74 @@
         </div>
     </div>
 
+    <!-- MODAL ANNUAL REPORT -->
+    <div id="modal-annual-report"
+        class="hidden fixed inset-0 z-50 flex items-center justify-center bg-gray-900 bg-opacity-50 backdrop-blur-sm modal">
+        <div
+            class="bg-white rounded-2xl shadow-2xl w-full max-w-4xl p-6 m-4 modal-content max-h-[92vh] overflow-y-auto">
+            <div class="flex flex-col gap-2 md:flex-row md:items-start md:justify-between mb-4">
+                <div>
+                    <p class="text-xs font-semibold uppercase tracking-[0.4em] text-indigo-400">Relatórios</p>
+                    <h2 class="text-2xl font-bold text-gray-800">Resumo anual <span
+                            id="annual-report-year-label"></span></h2>
+                    <p class="text-sm text-gray-500">Consolide gastos e rendas do ano selecionado em um único
+                        lugar.</p>
+                </div>
+                <button type="button" onclick="window.closeAnnualReportModal()"
+                    class="self-start text-gray-400 hover:text-gray-600 text-xl"><i class="fas fa-times"></i></button>
+            </div>
+            <div id="annual-report-loading"
+                class="py-12 flex flex-col items-center justify-center gap-2 text-sm text-gray-500">
+                <i class="fas fa-circle-notch fa-spin text-indigo-500 text-xl"></i>
+                <span>Carregando dados do ano...</span>
+            </div>
+            <div id="annual-report-content" class="hidden space-y-6">
+                <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                    <div class="rounded-xl border border-gray-100 p-4 bg-gray-50">
+                        <p class="text-xs font-semibold text-gray-500 uppercase">Total gasto</p>
+                        <p id="annual-report-total-expense" class="text-2xl font-bold text-red-600">R$ 0,00</p>
+                    </div>
+                    <div class="rounded-xl border border-gray-100 p-4 bg-gray-50">
+                        <p class="text-xs font-semibold text-gray-500 uppercase">Total recebido</p>
+                        <p id="annual-report-total-income" class="text-2xl font-bold text-green-600">R$ 0,00</p>
+                    </div>
+                    <div class="rounded-xl border border-gray-100 p-4 bg-gray-50">
+                        <p class="text-xs font-semibold text-gray-500 uppercase">Saldo do ano</p>
+                        <p id="annual-report-total-balance" class="text-2xl font-bold text-gray-800">R$ 0,00</p>
+                    </div>
+                </div>
+                <div class="grid gap-6 lg:grid-cols-2">
+                    <div class="rounded-xl border border-gray-100 p-4 bg-white">
+                        <div class="flex items-center justify-between mb-2">
+                            <h3 class="text-lg font-semibold text-gray-800">Totais mensais</h3>
+                            <span class="text-xs font-semibold text-gray-400 uppercase">Gasto x renda</span>
+                        </div>
+                        <div id="annual-report-monthly-body" class="divide-y divide-gray-100 text-sm"></div>
+                    </div>
+                    <div class="rounded-xl border border-gray-100 p-4 bg-white">
+                        <div class="flex items-center justify-between mb-2">
+                            <h3 class="text-lg font-semibold text-gray-800">Top categorias</h3>
+                            <span class="text-xs font-semibold text-gray-400 uppercase">Participação</span>
+                        </div>
+                        <div id="annual-report-category-body" class="space-y-2 text-sm"></div>
+                    </div>
+                </div>
+                <div class="rounded-xl border border-dashed border-gray-200 p-4 bg-gray-50 text-sm text-gray-600">
+                    <p>Os valores são consolidados diretamente da base do ano selecionado. Para análises adicionais,
+                        exporte os dados brutos em CSV.</p>
+                </div>
+                <div class="flex flex-col sm:flex-row gap-3">
+                    <button type="button" id="annual-report-export-button"
+                        class="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 px-4 rounded-lg shadow-sm flex items-center justify-center gap-2">
+                        <i class="fas fa-file-export"></i> Exportar CSV do ano</button>
+                    <button type="button"
+                        class="flex-1 border border-gray-200 text-gray-700 hover:bg-white bg-gray-50 font-semibold py-2 px-4 rounded-lg shadow-sm"
+                        onclick="window.closeAnnualReportModal()">Fechar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- MODALS (Budget/Goal) -->
     <div id="modal-goal"
         class="hidden fixed inset-0 z-50 flex items-center justify-center bg-gray-900 bg-opacity-50 backdrop-blur-sm modal">
@@ -4438,7 +4576,8 @@
                         inputmode="decimal" placeholder="0,00">
                     <p id="goal-strategy-value-hint" class="goal-strategy-tooltip hidden"></p>
                 </div>
-                <div class="flex justify-end space-x-3 mt-6"><button type="button" onclick="window.closeGoalModal()"
+                <div class="flex flex-col sm:flex-row sm:justify-end gap-3 mt-6"><button type="button"
+                        onclick="window.closeGoalModal()"
                         class="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200">Cancelar</button><button
                         type="submit" class="px-4 py-2 text-white bg-indigo-600 rounded-lg hover:bg-indigo-700">Salvar
                         Meta</button></div>
@@ -4457,7 +4596,8 @@
                         id="budget-amount" data-money-input="true" inputmode="numeric" autocomplete="off"
                         class="mt-1 block w-full border-gray-300 rounded-md shadow-sm p-2 border" placeholder="0,00"
                         required></div>
-                <div class="flex justify-end space-x-3 mt-6"><button type="button" onclick="window.closeBudgetModal()"
+                <div class="flex flex-col sm:flex-row sm:justify-end gap-3 mt-6"><button type="button"
+                        onclick="window.closeBudgetModal()"
                         class="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200">Cancelar</button><button
                         type="submit" class="px-4 py-2 text-white bg-orange-600 rounded-lg hover:bg-orange-700">Salvar
                         Limite</button></div>
@@ -4647,6 +4787,7 @@
         let premiumCharts = { person: null, type: null, food: null, categoryTrend: null, recurring: null };
         let previousMonthCategoryTotals = {};
         let previousMonthLabel = '';
+        let latestAnnualReportData = null;
 
         let appSettings = {
             people: [{ id: 'p1', name: 'Eduardo' }, { id: 'p2', name: 'Camila' }],
@@ -5012,6 +5153,240 @@
             if (el) highlightColorDot(col);
             setTypeColorValue(col);
         };
+
+        function getSelectedFilterYear() {
+            const yearSelect = document.getElementById('year-select');
+            const fallback = new Date().getFullYear();
+            if (!yearSelect) return fallback;
+            const numeric = Number(yearSelect.value);
+            return Number.isFinite(numeric) ? numeric : fallback;
+        }
+
+        function resolveExpenseTypeLabel(expense) {
+            if (!expense) return 'N/D';
+            const match = appSettings.expenseTypes?.find(t => t.id === expense.typeId);
+            return match?.label || expense.sharingType || 'N/D';
+        }
+
+        function formatNumberForCSV(value) {
+            const amount = Number(value) || 0;
+            return amount.toFixed(2).replace('.', ',');
+        }
+
+        function sanitizeCSVValue(value) {
+            return `"${String(value ?? '').replace(/"/g, '""')}"`;
+        }
+
+        function buildFinanceCSVRows(expenses = [], incomes = []) {
+            const rows = [[
+                'Tipo',
+                'Descrição',
+                'Valor (R$)',
+                'Data',
+                'Categoria/Fonte',
+                'Responsável',
+                'Modo/Tipo',
+                'Beneficiário'
+            ]];
+
+            expenses.forEach(expense => {
+                const amount = formatNumberForCSV(expense.amount);
+                const typeConfig = appSettings.expenseTypes?.find(t => t.id === expense.typeId);
+                const beneficiary = expense.beneficiary || (typeConfig?.isThirdParty ? 'Outro participante' : '');
+                rows.push([
+                    'Despesa',
+                    expense.description || 'Sem descrição',
+                    amount,
+                    expense.date || '',
+                    expense.category || 'Outros',
+                    expense.paidBy || 'N/D',
+                    resolveExpenseTypeLabel(expense),
+                    beneficiary
+                ]);
+            });
+
+            incomes.forEach(income => {
+                const amount = formatNumberForCSV(income.amount);
+                rows.push([
+                    'Renda',
+                    income.description || 'Sem descrição',
+                    amount,
+                    income.date || '',
+                    income.source || 'Outros',
+                    '-',
+                    'Renda',
+                    '-'
+                ]);
+            });
+
+            return rows;
+        }
+
+        function convertRowsToCSV(rows) {
+            if (!rows?.length) return '';
+            return rows.map(row => row.map(sanitizeCSVValue).join(';')).join('\n');
+        }
+
+        function downloadCSV(rows, filename) {
+            if (!rows || rows.length <= 1) {
+                alert('Não há dados suficientes para exportar.');
+                return;
+            }
+            const csvContent = convertRowsToCSV(rows);
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = filename;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+        }
+
+        function exportCurrentDataToCSV() {
+            const rows = buildFinanceCSVRows(currentExpenses, currentIncomes);
+            const monthYear = getCurrentFilterMonthYear().replace('-', '_');
+            downloadCSV(rows, `flux-${monthYear}-mensal.csv`);
+        }
+
+        async function openAnnualReportModal() {
+            const modal = document.getElementById('modal-annual-report');
+            if (!modal) return;
+            modal.classList.remove('hidden');
+            requestAnimationFrame(() => modal.classList.add('active'));
+            const year = getSelectedFilterYear();
+            const loading = document.getElementById('annual-report-loading');
+            const content = document.getElementById('annual-report-content');
+            if (loading) {
+                loading.innerHTML = '<i class="fas fa-circle-notch fa-spin text-indigo-500 text-xl"></i><span>Carregando dados do ano...</span>';
+                loading.classList.remove('hidden');
+            }
+            if (content) content.classList.add('hidden');
+            const labelEl = document.getElementById('annual-report-year-label');
+            if (labelEl) labelEl.textContent = year;
+            try {
+                const data = await fetchAnnualReportData(year);
+                latestAnnualReportData = data;
+                renderAnnualReport(data);
+            } catch (error) {
+                console.error('Erro ao carregar relatório anual', error);
+                if (loading) {
+                    loading.innerHTML = '<p class="text-sm text-red-600">Não foi possível carregar os dados.</p>';
+                }
+            }
+        }
+
+        function closeAnnualReportModal() {
+            const modal = document.getElementById('modal-annual-report');
+            if (!modal) return;
+            modal.classList.remove('active');
+            setTimeout(() => modal.classList.add('hidden'), 250);
+        }
+
+        async function fetchAnnualReportData(year) {
+            const months = Array.from({ length: 12 }, (_, idx) => `${String(idx + 1).padStart(2, '0')}-${year}`);
+            const expenses = [];
+            const incomes = [];
+            for (const monthKey of months) {
+                const [expSnap, incSnap] = await Promise.all([
+                    getDocs(query(collection(db, `${DB_BASE_PATH}/expenses`), where('monthYear', '==', monthKey))),
+                    getDocs(query(collection(db, `${DB_BASE_PATH}/income`), where('monthYear', '==', monthKey)))
+                ]);
+                expSnap.forEach(docSnap => expenses.push({ id: docSnap.id, ...docSnap.data() }));
+                incSnap.forEach(docSnap => incomes.push({ id: docSnap.id, ...docSnap.data() }));
+            }
+            return { year, months, expenses, incomes };
+        }
+
+        function renderAnnualReport(data) {
+            if (!data) return;
+            const loading = document.getElementById('annual-report-loading');
+            const content = document.getElementById('annual-report-content');
+            if (loading) loading.classList.add('hidden');
+            if (content) content.classList.remove('hidden');
+
+            const totalExpense = data.expenses.reduce((sum, exp) => sum + (Number(exp.amount) || 0), 0);
+            const totalIncome = data.incomes.reduce((sum, inc) => sum + (Number(inc.amount) || 0), 0);
+            const balance = totalIncome - totalExpense;
+
+            const totalExpenseEl = document.getElementById('annual-report-total-expense');
+            const totalIncomeEl = document.getElementById('annual-report-total-income');
+            const totalBalanceEl = document.getElementById('annual-report-total-balance');
+            if (totalExpenseEl) totalExpenseEl.textContent = formatCurrencyBRL(totalExpense);
+            if (totalIncomeEl) totalIncomeEl.textContent = formatCurrencyBRL(totalIncome);
+            if (totalBalanceEl) {
+                totalBalanceEl.textContent = formatCurrencyBRL(balance);
+                totalBalanceEl.classList.toggle('text-green-600', balance >= 0);
+                totalBalanceEl.classList.toggle('text-red-600', balance < 0);
+            }
+
+            const monthMap = {};
+            data.months.forEach(month => { monthMap[month] = { expenses: 0, incomes: 0 }; });
+            data.expenses.forEach(expense => {
+                const key = expense.monthYear || getMonthYear(expense.date);
+                if (!monthMap[key]) monthMap[key] = { expenses: 0, incomes: 0 };
+                monthMap[key].expenses += Number(expense.amount) || 0;
+            });
+            data.incomes.forEach(income => {
+                const key = income.monthYear || getMonthYear(income.date);
+                if (!monthMap[key]) monthMap[key] = { expenses: 0, incomes: 0 };
+                monthMap[key].incomes += Number(income.amount) || 0;
+            });
+
+            const monthlyBody = document.getElementById('annual-report-monthly-body');
+            if (monthlyBody) {
+                monthlyBody.innerHTML = data.months.map(monthKey => {
+                    const metrics = monthMap[monthKey] || { expenses: 0, incomes: 0 };
+                    const label = formatMonthYearLabel(monthKey);
+                    return `
+                        <div class="py-2 flex items-start justify-between gap-3">
+                            <div>
+                                <p class="font-semibold text-gray-800">${label}</p>
+                                <p class="text-[11px] text-gray-500">Saldo ${formatCurrencyBRL(metrics.incomes - metrics.expenses)}</p>
+                            </div>
+                            <div class="text-right text-xs">
+                                <p class="text-red-600 font-semibold">${formatCurrencyBRL(metrics.expenses)}</p>
+                                <p class="text-green-600 font-semibold">${formatCurrencyBRL(metrics.incomes)}</p>
+                            </div>
+                        </div>`;
+                }).join('');
+            }
+
+            const categoryTotals = calculateCategoryTotals(data.expenses);
+            const categoryBody = document.getElementById('annual-report-category-body');
+            if (categoryBody) {
+                const entries = Object.entries(categoryTotals).sort((a, b) => b[1] - a[1]).slice(0, 6);
+                if (!entries.length) {
+                    categoryBody.innerHTML = '<p class="text-xs text-gray-400 italic">Sem despesas registradas no ano.</p>';
+                } else {
+                    const total = Object.values(categoryTotals).reduce((sum, value) => sum + value, 0) || 1;
+                    categoryBody.innerHTML = entries.map(([label, value]) => {
+                        const percent = ((value / total) * 100).toFixed(1);
+                        return `
+                            <div>
+                                <div class="flex items-center justify-between text-sm font-semibold text-gray-800">
+                                    <span>${label}</span>
+                                    <span>${percent}%</span>
+                                </div>
+                                <div class="w-full h-2 bg-gray-100 rounded-full mt-1">
+                                    <div class="h-full rounded-full bg-indigo-500" style="width:${percent}%;"></div>
+                                </div>
+                                <p class="text-xs text-gray-500 mt-1">${formatCurrencyBRL(value)}</p>
+                            </div>`;
+                    }).join('');
+                }
+            }
+        }
+
+        function exportAnnualReportCSV() {
+            if (!latestAnnualReportData) {
+                alert('Abra o relatório anual antes de exportar.');
+                return;
+            }
+            const rows = buildFinanceCSVRows(latestAnnualReportData.expenses, latestAnnualReportData.incomes);
+            downloadCSV(rows, `flux-${latestAnnualReportData.year}-anual.csv`);
+        }
         function getCurrentFilterMonthYear() {
             const monthSelect = document.getElementById('month-select');
             const yearSelect = document.getElementById('year-select');
@@ -5162,9 +5537,9 @@
             if (!stickyBar || !filterControls) return;
             stickyObserver = new IntersectionObserver(([entry]) => {
                 if (!entry) return;
-                if (entry.isIntersecting) stickyBar.classList.remove('sticky-visible');
-                else stickyBar.classList.add('sticky-visible');
-            }, { threshold: 0.99 });
+                const stillVisible = entry.isIntersecting && entry.intersectionRatio > 0;
+                stickyBar.classList.toggle('sticky-visible', !stillVisible);
+            }, { threshold: [0, 1] });
             stickyObserver.observe(filterControls);
         }
 
@@ -5234,6 +5609,13 @@
             if (!expenseFormInlineMount) expenseFormInlineMount = document.getElementById('expense-form-inline-mount');
             if (!expenseFormModalMount) expenseFormModalMount = document.getElementById('expense-form-modal-mount');
             if (!expenseFormCard) expenseFormCard = document.getElementById('expense-form-card');
+        }
+
+        function scrollToExpenseForm() {
+            ensureExpenseFormElements();
+            if (!expenseFormCard) expenseFormCard = document.getElementById('expense-form-card');
+            if (!expenseFormCard) return;
+            expenseFormCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
 
         function mountExpenseFormInline() {
@@ -6035,8 +6417,16 @@
         function applyPrivacyMode() {
             const isPriv = localStorage.getItem('privacyMode') === 'true';
             document.querySelectorAll('.money-display').forEach(el => isPriv ? el.classList.add('blur-sensitive') : el.classList.remove('blur-sensitive'));
-            const btn = document.getElementById('privacy-toggle-btn');
-            if (btn) btn.innerHTML = isPriv ? '<i class="fas fa-eye-slash"></i>' : '<i class="fas fa-eye"></i>';
+            document.querySelectorAll('[data-privacy-toggle]').forEach(btn => {
+                btn.setAttribute('aria-pressed', String(isPriv));
+                btn.innerHTML = isPriv ? '<i class="fas fa-eye-slash"></i>' : '<i class="fas fa-eye"></i>';
+            });
+        }
+
+        function togglePrivacyMode() {
+            const isPriv = localStorage.getItem('privacyMode') === 'true';
+            localStorage.setItem('privacyMode', isPriv ? 'false' : 'true');
+            applyPrivacyMode();
         }
 
         function applyIncomeVisibility(shouldShow) {
@@ -8432,7 +8822,7 @@
             });
             document.getElementById('google-login-btn').addEventListener('click', () => signInWithPopup(auth, provider));
             document.getElementById('logout-btn').addEventListener('click', () => signOut(auth).then(() => window.location.reload()));
-            document.getElementById('privacy-toggle-btn').addEventListener('click', () => { localStorage.setItem('privacyMode', localStorage.getItem('privacyMode') !== 'true'); applyPrivacyMode(); });
+            document.querySelectorAll('[data-privacy-toggle]').forEach(btn => btn.addEventListener('click', togglePrivacyMode));
             const slider = document.getElementById('split-slider');
             if (slider) {
                 slider.addEventListener('input', (e) => setSplitValue(e.target.value, { skipSliderUpdate: true }));
@@ -8457,6 +8847,14 @@
             if (printBtn) printBtn.addEventListener('click', () => triggerPrint(false));
             const printBasicBtn = document.getElementById('print-basic-button');
             if (printBasicBtn) printBasicBtn.addEventListener('click', () => triggerPrint(true));
+            const exportCsvBtn = document.getElementById('export-csv-button');
+            if (exportCsvBtn) exportCsvBtn.addEventListener('click', exportCurrentDataToCSV);
+            const annualReportBtn = document.getElementById('annual-report-button');
+            if (annualReportBtn) annualReportBtn.addEventListener('click', () => openAnnualReportModal());
+            const annualExportBtn = document.getElementById('annual-report-export-button');
+            if (annualExportBtn) annualExportBtn.addEventListener('click', exportAnnualReportCSV);
+            const stickyAddExpenseBtn = document.getElementById('sticky-add-expense-btn');
+            if (stickyAddExpenseBtn) stickyAddExpenseBtn.addEventListener('click', scrollToExpenseForm);
             const planToastClose = document.getElementById('plan-restriction-toast-close');
             if (planToastClose) planToastClose.addEventListener('click', hidePlanRestrictionToast);
 
@@ -8485,6 +8883,8 @@
         window.closeBudgetModal = closeBudgetModal;
         window.openBudgetAlertsModal = openBudgetAlertsModal;
         window.closeBudgetAlertsModal = closeBudgetAlertsModal;
+        window.openAnnualReportModal = openAnnualReportModal;
+        window.closeAnnualReportModal = closeAnnualReportModal;
         window.openPremiumModal = openPremiumModal;
         window.closePremiumModal = closePremiumModal;
         window.requestPremiumInvite = requestPremiumInvite;
