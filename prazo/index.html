@@ -266,6 +266,102 @@
 
     <!-- Scripts da Aplicação (Ordem de Dependência) -->
     <script src="holidaysFunc.js"></script>
+
+    <!-- Firebase Integration for Prazo -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getFirestore, collection, onSnapshot } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyDIYB0Mpk0cXXEeui8ylsit2SZRSvtkazk",
+            authDomain: "calendariojec.firebaseapp.com",
+            projectId: "calendariojec",
+            storageBucket: "calendariojec.firebasestorage.app",
+            messagingSenderId: "389901694336",
+            appId: "1:389901694336:web:4c784e106a6235b53dfd65"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        // Store initial state to avoid duplicates on re-render
+        const initialAmendmentLength = amendment.length;
+        const initialSistDownLength = sistDown.length;
+
+        // Save original function
+        window.originalHolidaysFunc = window.holidaysFunc;
+
+        onSnapshot(collection(db, 'events'), (snapshot) => {
+            const events = [];
+            snapshot.forEach(doc => events.push(doc.data()));
+
+            // Reset arrays to initial state (removing previous dynamic events)
+            amendment.length = initialAmendmentLength;
+            sistDown.length = initialSistDownLength;
+
+            const suspensions = events.filter(e => ['suspensao', 'feriado', 'recesso', 'falta', 'substituicao', 'outro'].includes(e.type) && e.type !== 'moved_holiday');
+            const indisponibilities = events.filter(e => ['indisponibilidade', 'severa'].includes(e.type));
+            const movedHolidays = events.filter(e => e.type === 'moved_holiday');
+
+            // Inject Suspensions
+            suspensions.forEach(e => {
+                amendment.push({ holidayDate: e.startDate, description: e.description });
+                // Handle range if endDate exists
+                if (e.endDate) {
+                    // Simple range expansion logic if needed, or just rely on start/end logic in calc?
+                    // calcDate.js usually expects individual dates in 'amendment' or 'holidays'.
+                    // If 'amendment' supports ranges, good. If not, we might need to expand.
+                    // Looking at holidaysFunc, it seems to list individual dates.
+                    // I'll expand the range here to be safe.
+                    let current = moment(e.startDate, 'DD/MM/YYYY');
+                    const end = moment(e.endDate, 'DD/MM/YYYY');
+                    while (current.isBefore(end)) {
+                        current.add(1, 'days');
+                        amendment.push({ holidayDate: current.format('DD/MM/YYYY'), description: e.description });
+                    }
+                }
+            });
+
+            // Inject Indisponibilities
+            indisponibilities.forEach(e => {
+                sistDown.push({ downDate: e.startDate, description: e.description });
+                if (e.endDate) {
+                    let current = moment(e.startDate, 'DD/MM/YYYY');
+                    const end = moment(e.endDate, 'DD/MM/YYYY');
+                    while (current.isBefore(end)) {
+                        current.add(1, 'days');
+                        sistDown.push({ downDate: current.format('DD/MM/YYYY'), description: e.description });
+                    }
+                }
+            });
+
+            // Inject Moved Holidays (New Dates)
+            movedHolidays.forEach(m => {
+                amendment.push({ holidayDate: m.newDate, description: `${m.holidayName} - ${m.provimento}` });
+            });
+
+            // Overwrite holidaysFunc to filter old dates
+            window.holidaysFunc = function (startYear, endYear) {
+                let data = window.originalHolidaysFunc(startYear, endYear);
+
+                const filterFn = h => {
+                    if (!h.holidayDate) return true;
+                    const hYear = parseInt(h.holidayDate.split('/')[2]);
+                    const isMoved = movedHolidays.some(m => m.holidayName === h.description && parseInt(m.year) === hYear);
+                    return !isMoved;
+                };
+
+                if (data.nationalHolidays) data.nationalHolidays = data.nationalHolidays.filter(filterFn);
+                if (data.stateHolidays) data.stateHolidays = data.stateHolidays.filter(filterFn);
+                if (data.cityHolidays) data.cityHolidays = data.cityHolidays.filter(filterFn);
+
+                return data;
+            };
+
+            console.log("Prazo: Events updated from Firebase.");
+        });
+    </script>
+
     <script src="initialDateFunc.js"></script>
     <script src="code.js"></script>
     <script src="calcDate.js"></script>
