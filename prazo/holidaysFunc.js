@@ -1,7 +1,7 @@
 /* ==============================================================================================
    LISTA DE EMENDAS E SUSPENSÕES (PROVIMENTOS CSM)
    ============================================================================================== */
-const amendment = [
+var amendment = [
     // 2022
     { holidayDate: "22/04/2022", description: "Suspensão de expediente (Prov. CSM 2641/2021)" },
     { holidayDate: "17/06/2022", description: "Suspensão de expediente (Prov. CSM 2641/2021)" },
@@ -49,7 +49,7 @@ const amendment = [
    § 3º A prorrogação de que trata este artigo será feita automaticamente pelo sistema que eventualmente controle o prazo.
 */
 
-const sistDown = [
+var sistDown = [
     // --- 2022 ---
     { downDate: '09/02/2022', description: "INSTABILIDADE DO PETICIONAMENTO DE INICIAL E INTERMEDIÁRIA DE 1º E 2º GRAU" },
     { downDate: '10/03/2022', description: "INTERMITÊNCIA NA PASTA DIGITAL DO PORTAL E-SAJ" },
@@ -187,7 +187,7 @@ function Easter(Y) {
 /* ==============================================================================================
    GERADOR DE FERIADOS (NACIONAIS, ESTADUAIS E MUNICIPAIS)
    ============================================================================================== */
-function holidaysFunc(currentYear, expectedFinalYear, Easter) {
+function holidaysFunc(currentYear, expectedFinalYear) {
     var estado = 'SP';
     const cityHolidays = [];
     const stateHolidays = [];

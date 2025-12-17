@@ -6,36 +6,54 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Calendário Interativo</title>
 
-    <!-- Tailwind CSS para um design moderno e responsivo -->
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
 
     <!-- Google Fonts: Inter -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
-    <!-- Font Awesome para ícones -->
+    <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <style>
-        /* Estilo customizado para o corpo da página e a fonte padrão */
         body {
             font-family: 'Inter', sans-serif;
             -webkit-font-smoothing: antialiased;
             -moz-osx-font-smoothing: grayscale;
         }
 
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #c1c1c1;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #a8a8a8;
+        }
+
+        /* Calendar Grid */
         div#calendar-days {
             display: grid;
             justify-items: center;
         }
 
-        /* Efeito de tooltip suave */
+        /* Tooltip */
         .tooltip {
-            transition: opacity 0.2s;
+            transition: opacity 0.2s, transform 0.2s;
         }
 
-        /* Nova classe para a textura de listras dos eventos internos */
+        /* Texture for internal events */
         .internal-event-texture::before {
             content: "";
             position: absolute;
@@ -49,82 +67,898 @@
                     rgba(0, 0, 0, 0.06) 4px,
                     rgba(0, 0, 0, 0.06) 8px);
             border-radius: 9999px;
-            /* Mantém o formato arredondado */
             z-index: 0;
-            /* Coloca as listras atrás do número do dia */
+        }
+
+        /* Sidebar Transition */
+        #sidebar {
+            transition: transform 0.3s ease-in-out;
+        }
+
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
         }
     </style>
 </head>
 
-<body class="bg-gray-100 flex items-center justify-center min-h-screen p-4">
+<body class="bg-slate-100 h-screen overflow-hidden flex">
 
-    <div class="w-full max-w-5xl mx-auto bg-white rounded-2xl shadow-lg p-6 md:p-8">
-        <!-- Seção do Calendário -->
-        <div>
-            <!-- Cabeçalho do Calendário com navegação -->
-            <div class="flex items-center justify-between mb-6">
-                <div class="flex items-center space-x-4">
-                    <h2 id="month-year-header" class="text-3xl font-bold text-gray-800"></h2>
-                    <!-- Switch de filtro -->
-                    <div id="filter-switch-container" class="flex items-center space-x-2 pt-1">
-                        <span class="text-sm font-medium text-gray-600">Incluir eventos internos</span>
+    <!-- Main Content Area -->
+    <main class="flex-1 flex flex-col h-full relative overflow-hidden">
+
+        <!-- Top Bar -->
+        <header
+            class="w-full bg-white/80 backdrop-blur-md border-b border-gray-200 px-8 py-4 flex justify-between items-center z-20">
+            <h1 class="text-2xl font-bold text-slate-800 tracking-tight">
+                <i class="far fa-calendar-alt mr-2 text-blue-600"></i> Calendário
+            </h1>
+            <button id="sidebar-toggle" class="text-gray-500 hover:text-blue-600 transition-colors focus:outline-none">
+                <i class="fas fa-bars text-xl"></i>
+            </button>
+        </header>
+
+        <!-- Calendar Container -->
+        <div class="flex-1 overflow-y-auto p-4 md:p-8 flex items-start justify-center">
+            <div class="w-full max-w-6xl bg-white rounded-3xl shadow-xl border border-gray-100 p-6 md:p-10">
+
+                <!-- Calendar Header Controls -->
+                <div class="flex flex-col md:flex-row items-center justify-between mb-8 gap-4">
+                    <div class="flex items-center gap-6">
+                        <!-- Navigation -->
+                        <div class="flex items-center bg-gray-100 rounded-full p-1">
+                            <button id="prev-month"
+                                class="p-2 w-10 h-10 rounded-full hover:bg-white hover:shadow-sm text-gray-600 transition-all">
+                                <i class="fas fa-chevron-left"></i>
+                            </button>
+                            <button id="next-month"
+                                class="p-2 w-10 h-10 rounded-full hover:bg-white hover:shadow-sm text-gray-600 transition-all">
+                                <i class="fas fa-chevron-right"></i>
+                            </button>
+                        </div>
+
+                        <h2 id="month-year-header" class="text-3xl md:text-4xl font-bold text-slate-800">
+                        </h2>
+                    </div>
+
+                    <!-- Filter Switch -->
+                    <div id="internal-events-container"
+                        class="hidden flex items-center gap-3 bg-slate-50 px-4 py-2 rounded-xl border border-slate-200">
+                        <span class="text-sm font-medium text-slate-600">Eventos Internos</span>
                         <button type="button" id="internal-events-toggle"
-                            class="relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent bg-gray-200 transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2"
+                            class="relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent bg-gray-300 transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
                             role="switch" aria-checked="false">
                             <span aria-hidden="true"
                                 class="pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out translate-x-0"></span>
                         </button>
                     </div>
                 </div>
-                <div class="flex items-center gap-2">
-                    <button id="prev-month" class="p-2 rounded-full hover:bg-gray-200 transition-colors">
-                        <i class="fas fa-chevron-left text-gray-600"></i>
+
+                <!-- Week Days Header -->
+                <div class="grid grid-cols-7 gap-2 mb-4">
+                    <div class="text-center text-xs font-bold text-slate-400 uppercase tracking-wider">Dom</div>
+                    <div class="text-center text-xs font-bold text-slate-400 uppercase tracking-wider">Seg</div>
+                    <div class="text-center text-xs font-bold text-slate-400 uppercase tracking-wider">Ter</div>
+                    <div class="text-center text-xs font-bold text-slate-400 uppercase tracking-wider">Qua</div>
+                    <div class="text-center text-xs font-bold text-slate-400 uppercase tracking-wider">Qui</div>
+                    <div class="text-center text-xs font-bold text-slate-400 uppercase tracking-wider">Sex</div>
+                    <div class="text-center text-xs font-bold text-slate-400 uppercase tracking-wider">Sáb</div>
+                </div>
+
+                <!-- Calendar Grid -->
+                <div id="calendar-days" class="grid grid-cols-7 gap-2 md:gap-4">
+                    <!-- Days generated by JS -->
+                </div>
+
+                <!-- Legend -->
+                <div id="calendar-legend"
+                    class="mt-10 pt-6 border-t border-gray-100 flex flex-wrap gap-4 justify-center">
+                    <!-- Legend generated by JS -->
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Right Sidebar -->
+    <aside id="sidebar"
+        class="fixed inset-y-0 right-0 w-96 bg-white shadow-2xl transform translate-x-full z-[60] flex flex-col border-l border-gray-200">
+        <!-- Sidebar Header -->
+        <div class="p-6 border-b border-gray-100 flex justify-between items-center bg-slate-50">
+            <h3 class="text-lg font-bold text-slate-800">Gerenciar Eventos</h3>
+            <button id="close-sidebar" class="text-gray-400 hover:text-red-500 transition-colors">
+                <i class="fas fa-times text-xl"></i>
+            </button>
+        </div>
+
+        <!-- Sidebar Content -->
+        <div class="flex-1 overflow-y-auto p-6 space-y-6">
+
+            <!-- Auth Section -->
+            <div id="auth-section" class="space-y-4">
+                <div id="login-forms">
+                    <h4 class="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-3">Acesso Restrito</h4>
+
+                    <!-- Google Login -->
+                    <button id="google-login-btn"
+                        class="w-full flex items-center justify-center gap-3 bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 font-medium py-2.5 px-4 rounded-xl transition-all shadow-sm mb-4">
+                        <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" class="w-5 h-5"
+                            alt="Google">
+                        Entrar com Google
                     </button>
-                    <button id="next-month" class="p-2 rounded-full hover:bg-gray-200 transition-colors">
-                        <i class="fas fa-chevron-right text-gray-600"></i>
+
+                    <div class="relative flex py-2 items-center">
+                        <div class="flex-grow border-t border-gray-200"></div>
+                        <span class="flex-shrink-0 mx-4 text-gray-400 text-xs">OU</span>
+                        <div class="flex-grow border-t border-gray-200"></div>
+                    </div>
+
+                    <!-- Request Access Form -->
+                    <form id="request-access-form" class="space-y-3 mt-4 pt-4 border-t border-gray-100">
+                        <h5 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Não tem acesso?
+                        </h5>
+                        <div>
+                            <label class="block text-xs font-medium text-gray-700 mb-1">Seu e-mail do Gmail</label>
+                            <input type="email" id="request-email" required
+                                class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all text-sm"
+                                placeholder="exemplo@gmail.com">
+                        </div>
+                        <button type="submit"
+                            class="w-full bg-slate-700 hover:bg-slate-800 text-white font-medium py-2 rounded-lg transition-colors shadow-md shadow-slate-500/30">
+                            Solicitar Acesso
+                        </button>
+                    </form>
+                </div>
+
+                <!-- User Info (Hidden by default) -->
+                <div id="user-info" class="hidden bg-blue-50 p-4 rounded-xl border border-blue-100">
+                    <div class="flex items-center gap-3 mb-3">
+                        <div
+                            class="w-10 h-10 rounded-full bg-blue-200 flex items-center justify-center text-blue-700 font-bold text-lg">
+                            <i class="fas fa-user"></i>
+                        </div>
+                        <div>
+                            <p id="user-name" class="text-sm font-bold text-blue-900">Usuário</p>
+                            <p id="user-email" class="text-xs text-blue-600 truncate max-w-[180px]"></p>
+                        </div>
+                    </div>
+                    <button id="logout-btn"
+                        class="w-full text-xs text-red-600 hover:text-red-800 font-medium py-1 border border-red-200 rounded hover:bg-red-50 transition-colors">
+                        Sair
                     </button>
                 </div>
             </div>
 
-            <!-- Dias da semana -->
-            <div class="grid grid-cols-7 gap-2 text-center text-sm font-semibold text-gray-500 mb-2">
-                <div>Dom</div>
-                <div>Seg</div>
-                <div>Ter</div>
-                <div>Qua</div>
-                <div>Qui</div>
-                <div>Sex</div>
-                <div>Sáb</div>
+            <!-- Add Event Section (Hidden if not logged in) -->
+            <div id="event-management-section" class="hidden pt-6 border-t border-gray-100">
+                <h4 class="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-4">Novo Evento</h4>
+
+                <form id="add-event-form" class="space-y-4">
+                    <div>
+                        <label class="block text-xs font-medium text-gray-700 mb-1">Data Início</label>
+                        <input type="date" id="event-start" required
+                            class="w-full px-3 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 outline-none text-sm">
+                    </div>
+
+                    <div id="end-date-container">
+                        <label class="block text-xs font-medium text-gray-700 mb-1">Data Fim (Opcional)</label>
+                        <input type="date" id="event-end"
+                            class="w-full px-3 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 outline-none text-sm">
+                    </div>
+
+                    <div id="recurrence-container" class="hidden">
+                        <label class="flex items-center gap-2 text-xs font-medium text-gray-700 cursor-pointer">
+                            <input type="checkbox" id="event-recurrence"
+                                class="rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                            Recorrência Anual
+                        </label>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-medium text-gray-700 mb-1">Descrição</label>
+                        <input type="text" id="event-desc" required
+                            class="w-full px-3 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 outline-none text-sm"
+                            placeholder="Ex: Feriado Local">
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-medium text-gray-700 mb-1">Tipo</label>
+                        <select id="event-type"
+                            class="w-full px-3 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 outline-none text-sm bg-white">
+                            <!-- Options populated by JS -->
+                        </select>
+                    </div>
+
+                    <button type="submit"
+                        class="w-full bg-green-600 hover:bg-green-700 text-white font-medium py-2.5 rounded-lg transition-colors shadow-md shadow-green-500/30 flex items-center justify-center gap-2">
+                        <i class="fas fa-plus"></i> Adicionar Evento
+                    </button>
+                </form>
+
+                <div class="mt-6 space-y-3">
+                    <button id="btn-list-events"
+                        class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2.5 rounded-lg transition-colors shadow-md shadow-blue-500/30 flex items-center justify-center gap-2">
+                        <i class="fas fa-list"></i> Listar Meus Eventos
+                    </button>
+                    <button id="btn-move-holiday"
+                        class="w-full bg-purple-600 hover:bg-purple-700 text-white font-medium py-2.5 rounded-lg transition-colors shadow-md shadow-purple-500/30 flex items-center justify-center gap-2">
+                        <i class="fas fa-calendar-day"></i> Mover Feriado
+                    </button>
+                    <button id="btn-requests"
+                        class="w-full bg-orange-500 hover:bg-orange-600 text-white font-medium py-2.5 rounded-lg transition-colors shadow-md shadow-orange-500/30 flex items-center justify-center gap-2 relative">
+                        <i class="fas fa-user-plus"></i> Solicitações
+                        <span id="requests-badge"
+                            class="hidden absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full text-[10px] flex items-center justify-center border border-white">!</span>
+                    </button>
+                    <button id="btn-manage-users"
+                        class="w-full bg-gray-700 hover:bg-gray-800 text-white font-medium py-2.5 rounded-lg transition-colors shadow-md shadow-gray-600/30 flex items-center justify-center gap-2 relative">
+                        <i class="fas fa-users-cog"></i> Gerenciar Usuários
+                    </button>
+                </div>
             </div>
 
-            <!-- Grid dos dias do mês -->
-            <div id="calendar-days" class="grid grid-cols-7 gap-2">
-                <!-- Os dias serão gerados via JavaScript aqui -->
-            </div>
+        </div>
+    </aside>
 
-            <!-- Legenda de Cores -->
-            <div id="calendar-legend"
-                class="mt-6 pt-4 border-t border-gray-200 flex flex-wrap gap-x-6 gap-y-3 justify-center">
-                <!-- A legenda será gerada via JavaScript aqui -->
+    <!-- Overlay for mobile sidebar -->
+    <div id="sidebar-overlay"
+        class="fixed inset-0 bg-black/20 backdrop-blur-sm z-[50] hidden opacity-0 transition-opacity"></div>
+
+    <!-- Modal List Events -->
+    <div id="modal-list-events" class="fixed inset-0 z-[70] hidden overflow-y-auto" aria-labelledby="modal-title"
+        role="dialog" aria-modal="true">
+        <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+            <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true"
+                id="modal-list-overlay"></div>
+            <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+            <div
+                class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-4xl sm:w-full">
+                <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                    <div class="sm:flex sm:items-start">
+                        <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left w-full">
+                            <h3 class="text-lg leading-6 font-medium text-gray-900" id="modal-title">Eventos Adicionados
+                            </h3>
+                            <div class="mt-4 overflow-x-auto">
+                                <table class="min-w-full divide-y divide-gray-200">
+                                    <thead class="bg-gray-50">
+                                        <tr>
+                                            <th scope="col"
+                                                class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                Data</th>
+                                            <th scope="col"
+                                                class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                Descrição</th>
+                                            <th scope="col"
+                                                class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                Autor</th>
+                                            <th scope="col"
+                                                class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                Criado em</th>
+                                            <th scope="col"
+                                                class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                Ações</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="events-table-body" class="bg-white divide-y divide-gray-200">
+                                        <!-- Rows generated by JS -->
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div class="mt-4 flex justify-between items-center">
+                                <button id="prev-page-events"
+                                    class="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50">Anterior</button>
+                                <span id="page-info-events" class="text-sm text-gray-700">Página 1</span>
+                                <button id="next-page-events"
+                                    class="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50">Próxima</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                    <button type="button" id="close-list-modal"
+                        class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
+                        Fechar
+                    </button>
+                </div>
             </div>
         </div>
     </div>
 
+    <!-- Modal Move Holiday -->
+    <div id="modal-move-holiday" class="fixed inset-0 z-[70] hidden overflow-y-auto" aria-labelledby="modal-title"
+        role="dialog" aria-modal="true">
+        <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+            <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true"
+                id="modal-move-overlay"></div>
+            <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+            <div
+                class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+                <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                    <h3 class="text-lg leading-6 font-medium text-gray-900 mb-4">Mover Feriado</h3>
+                    <form id="move-holiday-form" class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Selecione o Feriado</label>
+                            <select id="holiday-select"
+                                class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md border">
+                                <!-- Populated by JS -->
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Ano de Referência</label>
+                            <input type="number" id="holiday-year"
+                                class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                                placeholder="Ex: 2025">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Nova Data</label>
+                            <input type="date" id="holiday-new-date"
+                                class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Provimento / Comunicado</label>
+                            <input type="text" id="holiday-provimento"
+                                class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                                placeholder="Ex: Prov. CSM nº XX/2025">
+                        </div>
+                        <button type="submit"
+                            class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-purple-600 text-base font-medium text-white hover:bg-purple-700 focus:outline-none sm:text-sm">
+                            Salvar Alteração
+                        </button>
+                    </form>
+                </div>
+                <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                    <button type="button" id="close-move-modal"
+                        class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
+                        Cancelar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Requests -->
+    <div id="modal-requests" class="fixed inset-0 z-[70] hidden overflow-y-auto" aria-labelledby="modal-title"
+        role="dialog" aria-modal="true">
+        <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+            <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true"
+                id="modal-requests-overlay"></div>
+            <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+            <div
+                class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+                <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                    <h3 class="text-lg leading-6 font-medium text-gray-900 mb-4">Solicitações de Acesso</h3>
+                    <div class="mt-2 overflow-y-auto max-h-96">
+                        <ul id="requests-list" class="divide-y divide-gray-200">
+                            <!-- Requests generated by JS -->
+                        </ul>
+                        <p id="no-requests-msg" class="text-sm text-gray-500 text-center py-4 hidden">Nenhuma
+                            solicitação pendente.</p>
+                    </div>
+                </div>
+                <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                    <button type="button" id="close-requests-modal"
+                        class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
+                        Fechar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Manage Users -->
+    <div id="modal-manage-users" class="fixed inset-0 z-[70] hidden overflow-y-auto" aria-labelledby="modal-title"
+        role="dialog" aria-modal="true">
+        <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+            <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true"
+                id="modal-manage-users-overlay"></div>
+            <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+            <div
+                class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-3xl sm:w-full">
+                <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                    <h3 class="text-lg leading-6 font-medium text-gray-900 mb-4">Gerenciar Usuários</h3>
+                    <div class="mt-2 overflow-y-auto max-h-96">
+                        <ul id="users-list" class="divide-y divide-gray-200">
+                            <!-- Users generated by JS -->
+                        </ul>
+                        <p id="no-users-msg" class="text-sm text-gray-500 text-center py-4 hidden">Nenhum usuário
+                            cadastrado.</p>
+                    </div>
+                </div>
+                <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                    <button type="button" id="close-manage-users-modal"
+                        class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
+                        Fechar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase SDKs -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getAuth, GoogleAuthProvider, signInWithPopup, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, getDoc, setDoc, query, where, onSnapshot } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyDIYB0Mpk0cXXEeui8ylsit2SZRSvtkazk",
+            authDomain: "calendariojec.firebaseapp.com",
+            projectId: "calendariojec",
+            storageBucket: "calendariojec.firebasestorage.app",
+            messagingSenderId: "389901694336",
+            appId: "1:389901694336:web:4c784e106a6235b53dfd65"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        const googleProvider = new GoogleAuthProvider();
+
+        // --- AUTHENTICATION LOGIC ---
+        const loginForms = document.getElementById('login-forms');
+        const userInfo = document.getElementById('user-info');
+        const userName = document.getElementById('user-name');
+        const userEmail = document.getElementById('user-email');
+        const logoutBtn = document.getElementById('logout-btn');
+        const googleLoginBtn = document.getElementById('google-login-btn');
+        const requestAccessForm = document.getElementById('request-access-form');
+        const eventManagementSection = document.getElementById('event-management-section');
+        const addEventForm = document.getElementById('add-event-form');
+
+        let currentUser = null;
+        let isAdmin = false;
+        let isEditor = false;
+        let userRole = null; // 'admin' | 'editor' | 'user'
+        let firestoreEvents = []; // Store events from Firestore
+
+        // Auth State Observer
+        onAuthStateChanged(auth, async (user) => {
+            currentUser = user;
+            isAdmin = false; // Reset admin state
+            isEditor = false;
+            userRole = null;
+
+            if (user) {
+                // Check permissions (Admin via users UID; otherwise user_roles or whitelist)
+                let isApproved = false;
+                try {
+                    // 1. Admin check via users/{uid}
+                    const userDocRef = doc(db, "users", user.uid);
+                    const userDoc = await getDoc(userDocRef);
+                    if (userDoc.exists()) {
+                        const role = userDoc.data().role;
+                        if (role === 'admin') {
+                            isAdmin = true;
+                            userRole = 'admin';
+                            isApproved = true;
+                        }
+                    }
+
+                    // 2. Role by email in user_roles
+                    if (!isApproved) {
+                        const roleDocRef = doc(db, "user_roles", user.email.toLowerCase());
+                        const roleDoc = await getDoc(roleDocRef);
+                        if (roleDoc.exists()) {
+                            const role = roleDoc.data().role;
+                            userRole = role;
+                            if (role === 'admin') isAdmin = true;
+                            if (role === 'editor') isEditor = true;
+                            isApproved = true;
+                        }
+                    }
+
+                    // 3. Fallback whitelist (default role user)
+                    if (!isApproved) {
+                        const whitelistDocRef = doc(db, "whitelist", user.email.toLowerCase());
+                        const whitelistDoc = await getDoc(whitelistDocRef);
+                        if (whitelistDoc.exists()) {
+                            userRole = whitelistDoc.data().role || 'user';
+                            isApproved = true;
+                        }
+                    }
+                } catch (error) {
+                    console.error("Error checking permissions:", error);
+                }
+
+                if (userRole === 'editor') isEditor = true;
+
+                if (!isApproved) {
+                    alert("Seu acesso ainda não foi aprovado. Por favor, solicite acesso.");
+                    await signOut(auth);
+                    return;
+                }
+
+                // User is signed in and approved
+                loginForms.classList.add('hidden');
+                userInfo.classList.remove('hidden');
+                userName.textContent = user.displayName || 'Usuário';
+                userEmail.textContent = user.email;
+
+                if (isAdmin || isEditor) {
+                    eventManagementSection.classList.remove('hidden');
+                    if (isAdmin) checkPendingRequests(); // Check for badge
+                } else {
+                    eventManagementSection.classList.add('hidden');
+                }
+            } else {
+                // User is signed out
+                loginForms.classList.remove('hidden');
+                userInfo.classList.add('hidden');
+                eventManagementSection.classList.add('hidden');
+            }
+            window.dispatchEvent(new Event('auth-changed'));
+        });
+
+        // Google Login
+        googleLoginBtn.addEventListener('click', async () => {
+            try {
+                await signInWithPopup(auth, googleProvider);
+            } catch (error) {
+                console.error("Error logging in with Google", error);
+                alert("Erro ao fazer login com Google: " + error.message);
+            }
+        });
+
+        // Request Access Form
+        if (requestAccessForm) {
+            requestAccessForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const rawEmail = document.getElementById('request-email').value;
+                const email = rawEmail.trim().toLowerCase();
+                if (!email) return;
+
+                try {
+                    // Use email as document ID to prevent spam/duplicadas
+                    const requestRef = doc(db, "access_requests", email);
+                    const existing = await getDoc(requestRef);
+                    if (existing.exists()) {
+                        alert("Já existe uma solicitação pendente para este e-mail.");
+                        return;
+                    }
+
+                    await setDoc(requestRef, {
+                        email: email,
+                        createdAt: new Date(),
+                        status: 'pending'
+                    });
+                    alert("Solicitação enviada com sucesso! Aguarde a aprovação.");
+                    requestAccessForm.reset();
+                } catch (error) {
+                    console.error("Error requesting access: ", error);
+                    alert("Erro ao solicitar acesso: " + error.message);
+                }
+            });
+        }
+
+        // Logout
+        logoutBtn.addEventListener('click', async () => {
+            try {
+                await signOut(auth);
+            } catch (error) {
+                console.error("Error signing out", error);
+            }
+        });
+
+        // --- ADMIN REQUESTS LOGIC ---
+        const requestsCollection = collection(db, 'access_requests');
+        const userRolesCollection = collection(db, 'user_roles');
+
+        async function checkPendingRequests() {
+            if (!isAdmin) return;
+            const q = query(requestsCollection, where("status", "==", "pending"));
+            const snapshot = await getDocs(q);
+            const badge = document.getElementById('requests-badge');
+            if (badge) {
+                if (!snapshot.empty) {
+                    badge.classList.remove('hidden');
+                    badge.textContent = snapshot.size;
+                } else {
+                    badge.classList.add('hidden');
+                }
+            }
+        }
+
+        // Expose functions for Admin Panel
+        window.loadRequests = async () => {
+            if (!isAdmin) return;
+            const list = document.getElementById('requests-list');
+            const msg = document.getElementById('no-requests-msg');
+            list.innerHTML = '<li class="py-4 text-center text-gray-500">Carregando...</li>';
+
+            try {
+                const q = query(requestsCollection, where("status", "==", "pending"));
+                const snapshot = await getDocs(q);
+
+                list.innerHTML = '';
+                if (snapshot.empty) {
+                    msg.classList.remove('hidden');
+                } else {
+                    msg.classList.add('hidden');
+                    snapshot.forEach(doc => {
+                        const data = doc.data();
+                        const li = document.createElement('li');
+                        li.className = "py-4 flex items-center justify-between";
+                        li.innerHTML = `
+                            <div class="flex flex-col">
+                                <span class="text-sm font-medium text-gray-900">${data.email}</span>
+                                <span class="text-xs text-gray-500">${data.createdAt ? new Date(data.createdAt.seconds * 1000).toLocaleDateString('pt-BR') : '-'}</span>
+                            </div>
+                            <div class="flex gap-2">
+                                <button onclick="window.approveRequest('${doc.id}', '${data.email}')" class="text-green-600 hover:text-green-800 text-sm font-medium">Aprovar</button>
+                                <button onclick="window.rejectRequest('${doc.id}')" class="text-red-600 hover:text-red-800 text-sm font-medium">Recusar</button>
+                            </div>
+                        `;
+                        list.appendChild(li);
+                    });
+                }
+            } catch (error) {
+                console.error("Error loading requests:", error);
+                list.innerHTML = '<li class="py-4 text-center text-red-500">Erro ao carregar solicitações.</li>';
+            }
+        };
+
+        window.approveRequest = async (docId, email) => {
+            if (!confirm(`Aprovar acesso para ${email}?`)) return;
+            try {
+                // Add to whitelist
+                await setDoc(doc(db, "whitelist", email.toLowerCase()), {
+                    email: email.toLowerCase(),
+                    role: 'user',
+                    approvedAt: new Date()
+                });
+                // Ensure base role record exists
+                await setDoc(doc(db, "user_roles", email.toLowerCase()), {
+                    email: email.toLowerCase(),
+                    role: 'user',
+                    updatedAt: new Date()
+                });
+
+                // Delete request
+                await deleteDoc(doc(db, "access_requests", docId));
+
+                alert(`Solicitação de ${email} aprovada! O usuário agora pode acessar o sistema.`);
+                window.loadRequests();
+                checkPendingRequests();
+            } catch (error) {
+                console.error("Error approving:", error);
+                alert("Erro ao aprovar: " + error.message);
+            }
+        };
+
+        window.rejectRequest = async (docId) => {
+            if (!confirm("Recusar esta solicitação?")) return;
+            try {
+                await deleteDoc(doc(db, "access_requests", docId));
+                window.loadRequests();
+                checkPendingRequests();
+            } catch (error) {
+                console.error("Error rejecting:", error);
+                alert("Erro ao recusar: " + error.message);
+            }
+        };
+
+        // --- ADMIN USER ROLES LOGIC ---
+        window.loadUsers = async () => {
+            if (!isAdmin) return;
+            const list = document.getElementById('users-list');
+            const msg = document.getElementById('no-users-msg');
+            list.innerHTML = '<li class="py-4 text-center text-gray-500">Carregando...</li>';
+
+            try {
+                const snapshot = await getDocs(userRolesCollection);
+                list.innerHTML = '';
+                if (snapshot.empty) {
+                    msg.classList.remove('hidden');
+                } else {
+                    msg.classList.add('hidden');
+                    snapshot.forEach(docSnap => {
+                        const data = docSnap.data();
+                        const li = document.createElement('li');
+                        li.className = "py-4 px-2 flex items-center justify-between gap-4";
+                        const currentRole = data.role || 'user';
+                        li.innerHTML = `
+                            <div class="flex flex-col">
+                                <span class="text-sm font-medium text-gray-900">${data.email || docSnap.id}</span>
+                                <span class="text-xs text-gray-500">${docSnap.id}</span>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <select class="role-select border border-gray-300 rounded px-2 py-1 text-sm" data-email="${docSnap.id}">
+                                    <option value="user" ${currentRole === 'user' ? 'selected' : ''}>Usuário</option>
+                                    <option value="editor" ${currentRole === 'editor' ? 'selected' : ''}>Editor</option>
+                                    <option value="admin" ${currentRole === 'admin' ? 'selected' : ''}>Admin</option>
+                                </select>
+                                <button class="save-role text-blue-600 hover:text-blue-800 text-sm font-medium" data-email="${docSnap.id}">Salvar</button>
+                            </div>
+                        `;
+                        list.appendChild(li);
+                    });
+
+                    // Attach listeners after render
+                    list.querySelectorAll('.save-role').forEach(btn => {
+                        btn.addEventListener('click', async () => {
+                            const email = btn.getAttribute('data-email');
+                            const select = list.querySelector(`select[data-email="${email}"]`);
+                            const newRole = select.value;
+                            if (!email || !newRole) return;
+                            if (email.toLowerCase() === (currentUser?.email || '').toLowerCase() && newRole !== 'admin') {
+                                alert('Você não pode remover seu próprio acesso de admin.');
+                                return;
+                            }
+                            try {
+                                await setDoc(doc(db, 'user_roles', email.toLowerCase()), {
+                                    email: email.toLowerCase(),
+                                    role: newRole,
+                                    updatedAt: new Date()
+                                });
+                                alert('Role atualizado com sucesso.');
+                                if (email.toLowerCase() === (currentUser?.email || '').toLowerCase()) {
+                                    // If admin changed self, refresh permissions
+                                    window.location.reload();
+                                }
+                            } catch (err) {
+                                console.error('Error updating role:', err);
+                                alert('Erro ao atualizar role: ' + err.message);
+                            }
+                        });
+                    });
+                }
+            } catch (error) {
+                console.error('Error loading users:', error);
+                list.innerHTML = '<li class="py-4 text-center text-red-500">Erro ao carregar usuários.</li>';
+            }
+        };
+
+        // --- FIRESTORE LOGIC ---
+
+        // Real-time listener for events
+        const eventsCollection = collection(db, 'events');
+        onSnapshot(eventsCollection, (snapshot) => {
+            firestoreEvents = [];
+            snapshot.forEach((doc) => {
+                firestoreEvents.push({ id: doc.id, ...doc.data() });
+            });
+            // Trigger calendar re-render
+            window.dispatchEvent(new CustomEvent('events-updated'));
+        });
+
+        // Add Event
+        addEventForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            if (!currentUser || (!isAdmin && !isEditor)) {
+                alert("Apenas editor ou administrador pode adicionar eventos.");
+                return;
+            }
+
+            const startDateInput = document.getElementById('event-start').value;
+            const endDateInput = document.getElementById('event-end').value;
+            const descInput = document.getElementById('event-desc').value;
+            const typeInput = document.getElementById('event-type').value;
+            const isRecurrent = document.getElementById('event-recurrence').checked;
+
+            // Format dates to DD/MM/YYYY
+            const formatDate = (dateStr) => {
+                if (!dateStr) return null;
+                const [year, month, day] = dateStr.split('-');
+                return `${day}/${month}/${year}`;
+            };
+
+            const newEvent = {
+                startDate: formatDate(startDateInput),
+                endDate: endDateInput ? formatDate(endDateInput) : null,
+                description: descInput,
+                type: typeInput,
+                createdAt: new Date(),
+                author: currentUser.email,
+                recurrence: isRecurrent ? 'annual' : null
+            };
+
+            try {
+                await addDoc(eventsCollection, newEvent);
+                addEventForm.reset();
+                alert("Evento adicionado com sucesso!");
+            } catch (error) {
+                console.error("Error adding event: ", error);
+                alert("Erro ao adicionar evento: " + error.message);
+            }
+        });
+
+        // Expose add function
+        window.addFirestoreEvent = async (eventData) => {
+            if (!currentUser || (!isAdmin && !isEditor)) {
+                alert("Apenas editor ou administrador pode realizar esta ação.");
+                throw new Error("Unauthorized");
+            }
+            await addDoc(eventsCollection, eventData);
+        };
+
+        // Expose delete function globally so it can be called from HTML
+        window.deleteEvent = async (eventId) => {
+            if (!currentUser || !isAdmin) {
+                alert("Apenas o administrador pode excluir eventos.");
+                return;
+            }
+            if (confirm("Tem certeza que deseja excluir este evento?")) {
+                try {
+                    await deleteDoc(doc(db, "events", eventId));
+                    // Alert is optional since UI updates automatically
+                } catch (error) {
+                    console.error("Error deleting event: ", error);
+                    alert("Erro ao excluir evento: " + error.message);
+                }
+            }
+        };
+
+        // Expose firestore events getter
+        window.getFirestoreEvents = () => firestoreEvents;
+        window.getCurrentUser = () => currentUser;
+        window.isUserAdmin = () => isAdmin;
+
+    </script>
+
     <script>
         document.addEventListener('DOMContentLoaded', () => {
+            // --- UI CONTROLS ---
+            const sidebar = document.getElementById('sidebar');
+            const sidebarToggle = document.getElementById('sidebar-toggle');
+            const closeSidebar = document.getElementById('close-sidebar');
+            const sidebarOverlay = document.getElementById('sidebar-overlay');
+
+            function toggleSidebar() {
+                const isClosed = sidebar.classList.contains('translate-x-full');
+                if (isClosed) {
+                    sidebar.classList.remove('translate-x-full');
+                    sidebarOverlay.classList.remove('hidden');
+                    setTimeout(() => sidebarOverlay.classList.remove('opacity-0'), 10);
+                } else {
+                    sidebar.classList.add('translate-x-full');
+                    sidebarOverlay.classList.add('opacity-0');
+                    setTimeout(() => sidebarOverlay.classList.add('hidden'), 300);
+                }
+            }
+
+            sidebarToggle.addEventListener('click', toggleSidebar);
+            closeSidebar.addEventListener('click', toggleSidebar);
+            sidebarOverlay.addEventListener('click', toggleSidebar);
+
+
             // --- CONFIGURAÇÃO DE TIPOS DE EVENTOS ---
             const eventConfig = {
-                ferias: { label: 'Férias', colorClass: 'bg-green-200', textColor: 'text-green-800', colorValue: '#bbf7d0' },
-                licenca: { label: 'Licença-Prêmio', colorClass: 'bg-purple-200', textColor: 'text-purple-800', colorValue: '#e9d5ff' },
-                falta: { label: 'Falta Compensada', colorClass: 'bg-orange-200', textColor: 'text-orange-800', colorValue: '#fed7aa' },
-                substituicao: { label: 'Substituição Magistrado', colorClass: 'bg-red-200', textColor: 'text-red-800', colorValue: '#fecaca' },
-                outro: { label: 'Outro', colorClass: 'bg-gray-300', textColor: 'text-gray-800', colorValue: '#d1d5db' },
-                suspensao: { label: 'Suspensão de Expediente', colorClass: 'bg-blue-200', textColor: 'text-red-500', colorValue: '#bfdbfe', borderClass: 'border-2 border-red-600' },
-                indisponibilidade: { label: 'Indisponibilidade de Sistema', colorClass: 'bg-yellow-200', textColor: 'text-yellow-800', colorValue: '#fde68a', borderClass: 'border-2 border-yellow-600' },
-                severa: { label: 'Indisponibilidade Severa', colorClass: 'bg-red-600', textColor: 'text-white', colorValue: 'red', borderClass: 'border-2 border-black-500' },
-                feriado: { label: 'Feriado', colorClass: 'bg-teal-200', textColor: 'text-red-600', colorValue: '#99f6e4', borderClass: 'border-2 border-red-600' },
-                recesso: { label: 'Recesso / Suspensão RITJSP', colorClass: 'bg-gray-400', textColor: 'text-white', colorValue: '#9ca3af' },
+                ferias: { label: 'Férias', colorClass: 'bg-emerald-100', textColor: 'text-emerald-800', colorValue: '#d1fae5' },
+                licenca: { label: 'Licença-Prêmio', colorClass: 'bg-violet-100', textColor: 'text-violet-800', colorValue: '#ede9fe' },
+                falta: { label: 'Falta Compensada', colorClass: 'bg-orange-100', textColor: 'text-orange-800', colorValue: '#ffedd5' },
+                substituicao: { label: 'Substituição Magistrado', colorClass: 'bg-rose-100', textColor: 'text-rose-800', colorValue: '#ffe4e6' },
+                outro: { label: 'Outro', colorClass: 'bg-slate-200', textColor: 'text-slate-700', colorValue: '#e2e8f0' },
+                suspensao: { label: 'Suspensão de Expediente', colorClass: 'bg-sky-100', textColor: 'text-sky-800', colorValue: '#e0f2fe', borderClass: 'border border-sky-300' },
+                indisponibilidade: { label: 'Indisponibilidade de Sistema', colorClass: 'bg-amber-100', textColor: 'text-amber-800', colorValue: '#fef3c7', borderClass: 'border border-amber-300' },
+                severa: { label: 'Indisponibilidade Severa', colorClass: 'bg-red-500', textColor: 'text-white', colorValue: '#ef4444', borderClass: 'border border-red-700' },
+                feriado: { label: 'Feriado', colorClass: 'bg-red-100', textColor: 'text-red-800', colorValue: '#fee2e2', borderClass: 'border border-red-200' },
+                recesso: { label: 'Recesso / Suspensão RITJSP', colorClass: 'bg-gray-100', textColor: 'text-gray-600', colorValue: '#f3f4f6', borderClass: 'border border-gray-300' },
             };
+
+            // --- EVENT TYPE CHANGE HANDLER ---
+            const eventTypeSelect = document.getElementById('event-type');
+            const endDateContainer = document.getElementById('end-date-container');
+            const recurrenceContainer = document.getElementById('recurrence-container');
+
+            eventTypeSelect.addEventListener('change', (e) => {
+                if (e.target.value === 'feriado') {
+                    endDateContainer.classList.add('hidden');
+                    recurrenceContainer.classList.remove('hidden');
+                    document.getElementById('event-end').value = '';
+                } else {
+                    endDateContainer.classList.remove('hidden');
+                    recurrenceContainer.classList.add('hidden');
+                    document.getElementById('event-recurrence').checked = false;
+                }
+            });
+
+            // Populate Select Options
+            for (const [key, value] of Object.entries(eventConfig)) {
+                const option = document.createElement('option');
+                option.value = key;
+                option.textContent = value.label;
+                eventTypeSelect.appendChild(option);
+            }
 
             // --- FONTES DE DADOS DE EVENTOS ---
 
@@ -259,8 +1093,30 @@
             const amendmentEvents = amendment.map(e => ({ startDate: e.holidayDate, description: e.description, type: 'suspensao' }));
             const sistDownEvents = sistDown.map(e => ({ startDate: e.downDate, description: e.description, type: 'indisponibilidade' }));
 
-            const formatDate = (date) => { /* ... */ };
-            const Easter = (Y) => { /* ... */ };
+            const formatDate = (date) => {
+                const d = new Date(date);
+                let month = '' + (d.getMonth() + 1);
+                let day = '' + d.getDate();
+                const year = d.getFullYear();
+                if (month.length < 2) month = '0' + month;
+                if (day.length < 2) day = '0' + day;
+                return [day, month, year].join('/');
+            };
+
+            const Easter = (Y) => {
+                var C = Math.floor(Y / 100);
+                var N = Y - 19 * Math.floor(Y / 19);
+                var K = Math.floor((C - 17) / 25);
+                var I = C - Math.floor(C / 4) - Math.floor((C - K) / 3) + 19 * N + 15;
+                I = I - 30 * Math.floor((I / 30));
+                var I = I - Math.floor(I / 28) * (1 - Math.floor(I / 28) * Math.floor(29 / (I + 1)) * Math.floor((21 - N) / 11));
+                var J = Y + Math.floor(Y / 4) + I + 2 - C + Math.floor(C / 4);
+                J = J - 7 * Math.floor(J / 7);
+                var L = I - J;
+                var M = 3 + Math.floor((L + 40) / 44);
+                var D = L + 28 - 31 * Math.floor(M / 4);
+                return new Date(Y, M - 1, D);
+            };
 
             const holidaysFunc = (startYear, endYear) => {
                 const allHolidays = [];
@@ -290,7 +1146,303 @@
             };
 
             const generatedHolidays = holidaysFunc(2022, 2026);
-            const allEvents = [...initialEvents, ...amendmentEvents, ...sistDownEvents, ...severeDownEvents, ...generatedHolidays];
+            let allEvents = [...initialEvents, ...amendmentEvents, ...sistDownEvents, ...severeDownEvents, ...generatedHolidays];
+
+            // Listen for Firestore updates
+            window.addEventListener('events-updated', () => {
+                const firestoreEvents = window.getFirestoreEvents();
+
+                // Separate moved holidays from regular events
+                const movedHolidays = firestoreEvents.filter(e => e.type === 'moved_holiday');
+                const regularFirestoreEvents = firestoreEvents.filter(e => e.type !== 'moved_holiday');
+
+                // Handle Recurrent Events
+                const recurrentEvents = regularFirestoreEvents.filter(e => e.recurrence === 'annual');
+                const nonRecurrentEvents = regularFirestoreEvents.filter(e => e.recurrence !== 'annual');
+
+                const generatedRecurrentEvents = [];
+                if (recurrentEvents.length > 0) {
+                    const startYear = 2022;
+                    const endYear = 2030;
+                    recurrentEvents.forEach(event => {
+                        if (!event.startDate) return;
+                        const [day, month] = event.startDate.split('/');
+                        for (let y = startYear; y <= endYear; y++) {
+                            // Skip the year it was created if we want, but usually recurrence includes start year
+                            // Just generate for all years in range
+                            generatedRecurrentEvents.push({
+                                ...event,
+                                startDate: `${day}/${month}/${y}`,
+                                endDate: null, // Recurrent holidays usually single day
+                                id: event.id, // Keep ID to allow deletion (though deleting one instance deletes all)
+                                isRecurrentInstance: true
+                            });
+                        }
+                    });
+                }
+
+                // Combine generated holidays and custom recurrent holidays for "Move Holiday" logic
+                // We need to filter BOTH generatedHolidays AND generatedRecurrentEvents based on movedHolidays
+
+                const filterMoved = (h) => {
+                    if (!h.startDate) return true;
+                    const year = parseInt(h.startDate.split('/')[2]);
+                    // Check if this holiday (by description and year) is in movedHolidays
+                    const isMoved = movedHolidays.some(m =>
+                        m.holidayName === h.description &&
+                        parseInt(m.year) === year
+                    );
+                    return !isMoved;
+                };
+
+                const filteredGeneratedHolidays = generatedHolidays.filter(filterMoved);
+                const filteredRecurrentEvents = generatedRecurrentEvents.filter(filterMoved);
+
+                // Convert moved holidays to event format
+                const movedHolidayEvents = movedHolidays.map(m => ({
+                    startDate: m.newDate,
+                    description: `${m.holidayName} ${m.provimento ? '- ' + m.provimento : ''}`,
+                    type: 'feriado',
+                    id: m.id, // Allow deletion
+                    isMoved: true
+                }));
+
+                allEvents = [...initialEvents, ...amendmentEvents, ...sistDownEvents, ...severeDownEvents, ...filteredGeneratedHolidays, ...nonRecurrentEvents, ...filteredRecurrentEvents, ...movedHolidayEvents];
+                renderCalendar();
+                updateUIForAuth();
+
+                // Refresh list if modal is open
+                const listModal = document.getElementById('modal-list-events');
+                if (listModal && !listModal.classList.contains('hidden')) {
+                    if (typeof renderEventTable === 'function') {
+                        renderEventTable(currentPage);
+                    }
+                }
+            });
+
+            function updateUIForAuth() {
+                const user = window.getCurrentUser();
+                const isAdmin = window.isUserAdmin ? window.isUserAdmin() : false;
+                const isAuthenticated = !!user;
+
+                const listBtn = document.getElementById('btn-list-events');
+                const moveBtn = document.getElementById('btn-move-holiday');
+                const requestsBtn = document.getElementById('btn-requests');
+                const manageUsersBtn = document.getElementById('btn-manage-users');
+                const internalEventsContainer = document.getElementById('internal-events-container');
+
+                if (listBtn) listBtn.style.display = (isAdmin || isEditor) ? 'flex' : 'none';
+                if (moveBtn) moveBtn.style.display = (isAdmin || isEditor) ? 'flex' : 'none';
+                if (requestsBtn) requestsBtn.style.display = isAdmin ? 'flex' : 'none';
+                if (manageUsersBtn) manageUsersBtn.style.display = isAdmin ? 'flex' : 'none';
+
+                if (internalEventsContainer) {
+                    if (isAuthenticated) {
+                        internalEventsContainer.classList.remove('hidden');
+                        internalEventsContainer.classList.add('flex');
+                    } else {
+                        internalEventsContainer.classList.add('hidden');
+                        internalEventsContainer.classList.remove('flex');
+                        if (showInternalEvents) {
+                            showInternalEvents = false;
+                            // Reset toggle button visual state
+                            const toggleButton = document.getElementById('internal-events-toggle');
+                            const toggleCircle = toggleButton.querySelector('span');
+                            toggleButton.setAttribute('aria-checked', 'false');
+                            toggleButton.classList.replace('bg-blue-600', 'bg-gray-300');
+                            toggleCircle.classList.replace('translate-x-5', 'translate-x-0');
+                            renderCalendar();
+                        }
+                    }
+                }
+            }
+
+            window.addEventListener('auth-changed', updateUIForAuth);
+
+            // --- EVENT LIST & MOVE HOLIDAY LOGIC ---
+            let currentPage = 1;
+            const itemsPerPage = 5;
+
+            // List Events Modal
+            const listModal = document.getElementById('modal-list-events');
+            const btnListEvents = document.getElementById('btn-list-events');
+            const closeListModal = document.getElementById('close-list-modal');
+            const listOverlay = document.getElementById('modal-list-overlay');
+
+            const toggleListModal = () => {
+                listModal.classList.toggle('hidden');
+                if (!listModal.classList.contains('hidden')) {
+                    renderEventTable(1);
+                }
+            };
+
+            if (btnListEvents) btnListEvents.addEventListener('click', toggleListModal);
+            if (closeListModal) closeListModal.addEventListener('click', toggleListModal);
+            if (listOverlay) listOverlay.addEventListener('click', toggleListModal);
+
+            document.getElementById('prev-page-events').addEventListener('click', () => {
+                if (currentPage > 1) renderEventTable(currentPage - 1);
+            });
+            document.getElementById('next-page-events').addEventListener('click', () => {
+                renderEventTable(currentPage + 1);
+            });
+
+            function renderEventTable(page) {
+                currentPage = page;
+                const events = window.getFirestoreEvents().sort((a, b) => {
+                    // Sort by createdAt desc if available, else by startDate
+                    if (a.createdAt && b.createdAt) return b.createdAt.seconds - a.createdAt.seconds;
+                    return 0;
+                });
+
+                const start = (page - 1) * itemsPerPage;
+                const end = start + itemsPerPage;
+                const paginatedEvents = events.slice(start, end);
+                const tbody = document.getElementById('events-table-body');
+                tbody.innerHTML = '';
+
+                paginatedEvents.forEach(event => {
+                    const tr = document.createElement('tr');
+                    const dateStr = event.startDate + (event.endDate ? ` a ${event.endDate}` : '');
+                    const author = event.author || 'Admin'; // Assuming author field or default
+                    const createdAt = event.createdAt ? new Date(event.createdAt.seconds * 1000).toLocaleString('pt-BR') : '-';
+
+                    tr.innerHTML = `
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${dateStr}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${event.description}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${author}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${createdAt}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                            ${window.isUserAdmin && window.isUserAdmin() ? `<button onclick="window.deleteEvent('${event.id}')" class="text-red-600 hover:text-red-900">Excluir</button>` : ''}
+                        </td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+
+                document.getElementById('page-info-events').textContent = `Página ${page} de ${Math.ceil(events.length / itemsPerPage) || 1}`;
+                document.getElementById('prev-page-events').disabled = page === 1;
+                document.getElementById('next-page-events').disabled = end >= events.length;
+            }
+
+            // Move Holiday Modal
+            const moveModal = document.getElementById('modal-move-holiday');
+            const btnMoveHoliday = document.getElementById('btn-move-holiday');
+            const closeMoveModal = document.getElementById('close-move-modal');
+            const moveOverlay = document.getElementById('modal-move-overlay');
+            const holidaySelect = document.getElementById('holiday-select');
+
+            // Manage Users Modal
+            const manageUsersModal = document.getElementById('modal-manage-users');
+            const btnManageUsers = document.getElementById('btn-manage-users');
+            const closeManageUsersModal = document.getElementById('close-manage-users-modal');
+            const manageUsersOverlay = document.getElementById('modal-manage-users-overlay');
+
+            const toggleMoveModal = () => {
+                moveModal.classList.toggle('hidden');
+                if (!moveModal.classList.contains('hidden')) {
+                    populateHolidaySelect();
+                }
+            };
+
+            if (btnMoveHoliday) btnMoveHoliday.addEventListener('click', toggleMoveModal);
+            if (closeMoveModal) closeMoveModal.addEventListener('click', toggleMoveModal);
+            if (moveOverlay) moveOverlay.addEventListener('click', toggleMoveModal);
+
+            const toggleManageUsersModal = () => {
+                if (!manageUsersModal) return;
+                const willOpen = manageUsersModal.classList.contains('hidden');
+                manageUsersModal.classList.toggle('hidden');
+                if (willOpen && typeof window.loadUsers === 'function') {
+                    window.loadUsers();
+                }
+            };
+
+            if (btnManageUsers) btnManageUsers.addEventListener('click', toggleManageUsersModal);
+            if (closeManageUsersModal) closeManageUsersModal.addEventListener('click', toggleManageUsersModal);
+            if (manageUsersOverlay) manageUsersOverlay.addEventListener('click', toggleManageUsersModal);
+
+            // Requests Modal
+            const requestsModal = document.getElementById('modal-requests');
+            const btnRequests = document.getElementById('btn-requests');
+            const closeRequestsModal = document.getElementById('close-requests-modal');
+            const requestsOverlay = document.getElementById('modal-requests-overlay');
+
+            const toggleRequestsModal = () => {
+                if (!requestsModal) return;
+                const willOpen = requestsModal.classList.contains('hidden');
+                requestsModal.classList.toggle('hidden');
+                if (willOpen && typeof window.loadRequests === 'function') {
+                    window.loadRequests();
+                }
+            };
+
+            if (btnRequests) btnRequests.addEventListener('click', toggleRequestsModal);
+            if (closeRequestsModal) closeRequestsModal.addEventListener('click', toggleRequestsModal);
+            if (requestsOverlay) requestsOverlay.addEventListener('click', toggleRequestsModal);
+
+            function populateHolidaySelect() {
+                // Get unique holiday names from generated list (sample year) AND custom recurrent events
+                const sampleHolidays = holidaysFunc(2025, 2025).filter(h => h.type === 'feriado');
+
+                // Add custom recurrent holidays to the list
+                const firestoreEvents = window.getFirestoreEvents();
+                const customRecurrent = firestoreEvents.filter(e => e.recurrence === 'annual' && e.type === 'feriado');
+
+                const allHolidayOptions = [...sampleHolidays, ...customRecurrent];
+                const uniqueNames = [...new Set(allHolidayOptions.map(h => h.description))].sort();
+                holidaySelect.innerHTML = '';
+                uniqueNames.forEach(name => {
+                    const option = document.createElement('option');
+                    option.value = name;
+                    option.textContent = name;
+                    holidaySelect.appendChild(option);
+                });
+            }
+
+            document.getElementById('move-holiday-form').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const holidayName = document.getElementById('holiday-select').value;
+                const year = document.getElementById('holiday-year').value;
+                const newDateInput = document.getElementById('holiday-new-date').value;
+                const provimento = document.getElementById('holiday-provimento').value;
+
+                if (!holidayName || !year || !newDateInput) {
+                    alert("Preencha todos os campos obrigatórios.");
+                    return;
+                }
+
+                // Format new date
+                const [y, m, d] = newDateInput.split('-');
+                const newDate = `${d}/${m}/${y}`;
+
+                const newEvent = {
+                    type: 'moved_holiday',
+                    holidayName,
+                    year,
+                    newDate,
+                    provimento,
+                    createdAt: new Date(),
+                    author: window.getCurrentUser() ? window.getCurrentUser().email : 'Admin'
+                };
+
+                try {
+                    // We need to access 'addDoc' and 'eventsCollection' here. 
+                    // Since they are in the module script, we need to expose a global function to add events or move logic there.
+                    // However, we can't easily access module variables from here.
+                    // Solution: Dispatch a custom event that the module script listens to, OR expose a global function from the module.
+                    // I'll use the global function approach. I need to add 'window.addFirestoreEvent' in the module script.
+                    if (window.addFirestoreEvent) {
+                        await window.addFirestoreEvent(newEvent);
+                        toggleMoveModal();
+                        document.getElementById('move-holiday-form').reset();
+                    } else {
+                        alert("Erro: Função de banco de dados não disponível.");
+                    }
+                } catch (error) {
+                    console.error("Error moving holiday: ", error);
+                    alert("Erro ao mover feriado: " + error.message);
+                }
+            });
 
             // --- LÓGICA DO CALENDÁRIO E FILTRO ---
             const monthYearHeader = document.getElementById('month-year-header');
@@ -310,10 +1462,10 @@
                 showInternalEvents = !showInternalEvents;
                 toggleButton.setAttribute('aria-checked', showInternalEvents);
                 if (showInternalEvents) {
-                    toggleButton.classList.replace('bg-gray-200', 'bg-blue-600');
+                    toggleButton.classList.replace('bg-gray-300', 'bg-blue-600');
                     toggleCircle.classList.replace('translate-x-0', 'translate-x-5');
                 } else {
-                    toggleButton.classList.replace('bg-blue-600', 'bg-gray-200');
+                    toggleButton.classList.replace('bg-blue-600', 'bg-gray-300');
                     toggleCircle.classList.replace('translate-x-5', 'translate-x-0');
                 }
                 renderCalendar();
@@ -348,8 +1500,8 @@
                     if (eventConfig[type]) {
                         const config = eventConfig[type];
                         const legendItem = document.createElement('div');
-                        legendItem.className = 'flex items-center gap-2';
-                        legendItem.innerHTML = `<div class="w-4 h-4 rounded-full ${config.colorClass}"></div><span class="text-sm text-gray-700">${config.label}</span>`;
+                        legendItem.className = 'flex items-center gap-2 bg-gray-50 px-3 py-1.5 rounded-lg border border-gray-100';
+                        legendItem.innerHTML = `<div class="w-3 h-3 rounded-full ${config.colorClass}"></div><span class="text-xs font-medium text-gray-600">${config.label}</span>`;
                         legendContainer.appendChild(legendItem);
                     }
                 }
@@ -358,6 +1510,8 @@
             const renderCalendar = () => {
                 const year = currentDate.getFullYear();
                 const month = currentDate.getMonth();
+                // Removed capitalize logic from JS as well to be safe, though CSS was the main culprit.
+                // Using toLocaleString usually gives lowercase 'de'.
                 monthYearHeader.textContent = currentDate.toLocaleString('pt-BR', { month: 'long', year: 'numeric' }).replace(/^\w/, c => c.toUpperCase());
                 calendarDays.innerHTML = '';
                 const firstDayOfMonth = new Date(year, month, 1).getDay();
@@ -379,7 +1533,8 @@
                     const dayElement = document.createElement('div');
                     const currentDateObj = new Date(year, month, day);
                     dayElement.innerHTML = `<span class="relative z-10">${day}</span>`;
-                    dayElement.className = 'h-12 w-12 flex items-center justify-center rounded-full transition-colors cursor-default relative';
+                    // Removed hover:bg-gray-50 from base class, will add conditionally
+                    dayElement.className = 'h-10 w-10 md:h-14 md:w-14 flex items-center justify-center rounded-xl transition-all cursor-default relative text-sm md:text-base text-gray-600';
 
                     const dailyEvents = eventsToDisplay.filter(e => {
                         if (!e.startDate) return false;
@@ -389,10 +1544,25 @@
                     });
 
                     if (dailyEvents.length > 0) {
-                        dayElement.classList.add('font-semibold', 'group');
+                        dayElement.classList.add('font-semibold', 'group', 'shadow-sm', 'hover:brightness-95', 'hover:z-20'); // Use brightness for events
                         const tooltip = document.createElement('div');
-                        tooltip.className = 'tooltip pointer-events-none absolute z-20 w-max max-w-xs p-3 -top-2 transform -translate-y-full -translate-x-1/2 left-1/2 bg-gray-800 text-white text-xs rounded-lg shadow-lg opacity-0 group-hover:opacity-100';
-                        tooltip.innerHTML = dailyEvents.map(event => `&bull; ${event.description}${event.type === 'substituicao' && event.details ? ` (Juiz: ${event.details})` : ''}`).join('<br>');
+                        // Added pointer-events-none by default, and group-hover:pointer-events-auto
+                        // Added pb-2 to bridge the gap
+                        tooltip.className = 'tooltip absolute z-50 w-max max-w-xs p-3 pb-2 -top-2 transform -translate-y-full -translate-x-1/2 left-1/2 bg-slate-800 text-white text-xs rounded-xl shadow-xl opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none group-hover:pointer-events-auto';
+                        // Add invisible bridge
+                        const bridge = document.createElement('div');
+                        bridge.className = 'absolute top-full left-0 w-full h-4 bg-transparent';
+                        tooltip.appendChild(bridge);
+
+                        tooltip.innerHTML += dailyEvents.map(event => {
+                            let content = `&bull; ${event.description}${event.type === 'substituicao' && event.details ? ` (Juiz: ${event.details})` : ''}`;
+                            const isUserAdmin = window.isUserAdmin ? window.isUserAdmin() : false;
+
+                            if (event.id && isUserAdmin) {
+                                content += ` <button onclick="event.stopPropagation(); deleteEvent('${event.id}')" class="ml-2 text-red-400 hover:text-red-300 cursor-pointer" title="Excluir"><i class="fas fa-trash"></i></button>`;
+                            }
+                            return `<div class="mb-1 last:mb-0">${content}</div>`;
+                        }).join('');
                         dayElement.appendChild(tooltip);
 
                         if (dailyEvents.length === 1) {
@@ -406,7 +1576,8 @@
                             const colors = dailyEvents.slice(0, 4).map(event => {
                                 const config = eventConfig[event.type]; if (!config) return '#d1d5db';
                                 const count = typeCounts.get(event.type) || 0; typeCounts.set(event.type, count + 1);
-                                return count > 0 ? adjustColor(config.colorValue, count * 20) : config.colorValue;
+                                // Darken subsequent events of same type instead of lightening
+                                return count > 0 ? adjustColor(config.colorValue, count * -15) : config.colorValue;
                             });
                             const gradientStops = colors.map((color, i) => `${color} ${i * (100 / colors.length)}%, ${color} ${(i + 1) * (100 / colors.length)}%`).join(', ');
                             dayElement.style.backgroundImage = `linear-gradient(135deg, ${gradientStops})`;
@@ -421,13 +1592,16 @@
                         if (hasInternalEvent) {
                             dayElement.classList.add('internal-event-texture');
                         }
+                    } else {
+                        // Add hover effect only if no events
+                        dayElement.classList.add('hover:bg-gray-50');
                     }
 
                     const today = new Date();
                     if (day === today.getDate() && month === today.getMonth() && year === today.getFullYear()) {
                         const textColors = Array.from(dayElement.classList).filter(c => c.startsWith('text-'));
                         dayElement.classList.remove(...textColors);
-                        dayElement.classList.add('border-2', 'font-bold', 'border-blue-800', 'text-blue-800');
+                        dayElement.classList.add('border-2', 'font-bold', 'border-blue-600', 'text-blue-700', 'bg-blue-50');
                     }
 
                     calendarDays.appendChild(dayElement);
