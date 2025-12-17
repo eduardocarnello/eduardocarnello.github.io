@@ -144,25 +144,27 @@ function calculateResults() {
     let dispDate = undefined;
     let iPortal = 0;
 
-    if (inputs.countType === '1') { // DJE
-        dispDate = dateForCalc.clone();
-        // A publicação ocorre no próximo dia ÚTIL (considerando feriados/severas)
-        dateForCalc.add(1, 'days');
-        while (!isCountableDay(dateForCalc)) {
+    if (inputs.calcType !== 'months') {
+        if (inputs.countType === '1') { // DJE
+            dispDate = dateForCalc.clone();
+            // A publicação ocorre no próximo dia ÚTIL (considerando feriados/severas)
             dateForCalc.add(1, 'days');
+            while (!isCountableDay(dateForCalc)) {
+                dateForCalc.add(1, 'days');
+            }
         }
-    }
-    else if (inputs.countType === '3') { // Portal
-        dispDate = dateForCalc.clone();
-        // 5 dias úteis de carência
-        let gapDays = 5;
-        let tempDate = dispDate.clone();
-        while (gapDays > 0) {
-            tempDate.add(1, 'days');
-            if (isCountableDay(tempDate)) gapDays--;
+        else if (inputs.countType === '3') { // Portal
+            dispDate = dateForCalc.clone();
+            // 5 dias úteis de carência
+            let gapDays = 5;
+            let tempDate = dispDate.clone();
+            while (gapDays > 0) {
+                tempDate.add(1, 'days');
+                if (isCountableDay(tempDate)) gapDays--;
+            }
+            dateForCalc = tempDate.clone();
+            iPortal = dateForCalc.diff(dispDate, 'days');
         }
-        dateForCalc = tempDate.clone();
-        iPortal = dateForCalc.diff(dispDate, 'days');
     }
 
     // --- Data Final (Loop de Contagem) ---
@@ -179,7 +181,9 @@ function calculateResults() {
         }
     }
     else if (inputs.calcType === 'months') {
-        dueDate.add(inputs.days, 'months');
+        // Para parcelamento: Data Inicial + (N-1) meses
+        let monthsToAdd = inputs.days > 0 ? inputs.days - 1 : 0;
+        dueDate.add(monthsToAdd, 'months');
     }
     else { // Dias Corridos
         dueDate.add(inputs.days, 'days');
@@ -229,101 +233,149 @@ function calculateResults() {
     }
 
     // (B) Loop de Dias do Prazo
-    let currentDate = dateForCalc.clone();
-    let safety = 0;
+    if (inputs.calcType === 'months') {
+        let numberOfParcels = inputs.days;
+        let baseDate = inputs.initialDate.clone();
 
-    // Itera até a data final calculada
-    while (currentDate.isSameOrBefore(dueDate) && safety < 2000) {
-        safety++;
+        for (let i = 0; i < numberOfParcels; i++) {
+            let parcelDate = baseDate.clone().add(i, 'months');
 
-        const dateStr = currentDate.format('DD/MM/YYYY');
+            // Ajuste para dia útil (Feriado, FDS, Indisponibilidade)
+            // Regra específica para parcelas: Recesso, Suspensão e Indisponibilidade NÃO prorrogam.
+            const isValidParcelDate = (d) => {
+                // 1. Fim de semana sempre prorroga
+                if (isWeekend(d)) return false;
 
-        // Status do dia para classificação VISUAL
-        const isBiz = isCountableDay(currentDate);
-        const severeInfo = isSevereDowntime(currentDate) ? getSystemDownInfo(dateStr) : null;
-        const normalInfo = isNormalDowntime(currentDate) ? getSystemDownInfo(dateStr) : null;
-        const holDesc = getHolidayDescription(dateStr);
-        const isWknd = isWeekend(currentDate);
-        const isStart = (dateStr === dateForCalc.format('DD/MM/YYYY'));
-        const isEnd = (dateStr === dueDate.format('DD/MM/YYYY'));
+                // 2. Feriados
+                const dStr = d.format('DD/MM/YYYY');
+                const hDesc = getHolidayDescription(dStr);
+                if (hDesc) {
+                    const desc = hDesc.toUpperCase();
+                    // Se for Recesso, Suspensão ou Indisponibilidade -> NÃO prorroga (é válido)
+                    if (desc.includes('RECESSO') || desc.includes('SUSPENSÃO') || desc.includes('INDISPONIBILIDADE') || desc.includes('RITJSP')) {
+                        return true;
+                    }
+                    // Outros feriados (Nacionais, etc) -> Prorroga
+                    return false;
+                }
+                // 3. Indisponibilidade de Sistema (sistDown) -> Ignora, é válido
+                return true;
+            };
 
-        let row = {
-            index: '-',
-            date: dateStr,
-            _type: '',
-            class: '',
-            rawDate: currentDate.toDate()
-        };
+            while (!isValidParcelDate(parcelDate)) {
+                parcelDate.add(1, 'days');
+            }
 
-        // PRIORIDADE VISUAL: INÍCIO > SEVERA > FERIADO > FDS > NORMAL > FIM > DIA ÚTIL
-        if (isStart) {
-            // Configuração base do texto de início
-            if (inputs.countType === '1') row._type = 'Data da Publicação no DJE (não conta)';
-            else if (inputs.countType === '3') row._type = 'Início do Prazo (art. 231, IX, do CPC)';
-            else row._type = 'Dia do Início (não conta)';
+            // Se for a última parcela, atualiza o dueDate global para garantir consistência
+            if (i === numberOfParcels - 1) {
+                dueDate = parcelDate.clone();
+            }
 
-            // Adiciona motivo se for dia não útil (Feriado ou Fim de Semana), ignorando indisponibilidade
-            if (holDesc) {
-                row._type += ` - ${holDesc}`;
+            listaDiasComTipo.push({
+                index: (i + 1) + 'ª',
+                date: parcelDate.format('DD/MM/YYYY'),
+                rawDate: parcelDate.toDate(),
+                _type: (i === 0) ? '1ª Parcela' : 'Vencimento da ' + (i + 1) + 'ª Parcela',
+                class: (i === numberOfParcels - 1) ? 'end' : 'start'
+            });
+        }
+    } else {
+        let currentDate = dateForCalc.clone();
+        let safety = 0;
+
+        // Itera até a data final calculada
+        while (currentDate.isSameOrBefore(dueDate) && safety < 2000) {
+            safety++;
+
+            const dateStr = currentDate.format('DD/MM/YYYY');
+
+            // Status do dia para classificação VISUAL
+            const isBiz = isCountableDay(currentDate);
+            const severeInfo = isSevereDowntime(currentDate) ? getSystemDownInfo(dateStr) : null;
+            const normalInfo = isNormalDowntime(currentDate) ? getSystemDownInfo(dateStr) : null;
+            const holDesc = getHolidayDescription(dateStr);
+            const isWknd = isWeekend(currentDate);
+            const isStart = (dateStr === dateForCalc.format('DD/MM/YYYY'));
+            const isEnd = (dateStr === dueDate.format('DD/MM/YYYY'));
+
+            let row = {
+                index: '-',
+                date: dateStr,
+                _type: '',
+                class: '',
+                rawDate: currentDate.toDate()
+            };
+
+            // PRIORIDADE VISUAL: INÍCIO > SEVERA > FERIADO > FDS > NORMAL > FIM > DIA ÚTIL
+            if (isStart) {
+                // Configuração base do texto de início
+                if (inputs.countType === '1') row._type = 'Data da Publicação no DJE (não conta)';
+                else if (inputs.countType === '3') row._type = 'Início do Prazo (art. 231, IX, do CPC)';
+                else row._type = 'Dia do Início (não conta)';
+
+                // Adiciona motivo se for dia não útil (Feriado ou Fim de Semana), ignorando indisponibilidade
+                if (holDesc) {
+                    row._type += ` - ${holDesc}`;
+                } else if (isWknd) {
+                    row._type += ' - Fim de Semana';
+                }
+
+                row.class = 'start'; // Sempre azul (text-primary)
+                row.index = '-';
+            }
+            else if (severeInfo) {
+                row._type = `Indisponibilidade SEVERA: ${severeInfo.description}`;
+                row.class = 'red';
+            } else if (holDesc) {
+                const lowerDesc = holDesc.toLowerCase();
+                if (lowerDesc.includes('recesso') ||
+                    lowerDesc.includes('suspensão') ||
+                    lowerDesc.includes('indisponibilidade') ||
+                    lowerDesc.includes('ritjsp')) {
+                    row._type = holDesc;
+                } else {
+                    row._type = `Feriado: ${holDesc}`;
+                }
+                row.class = 'red';
             } else if (isWknd) {
-                row._type += ' - Fim de Semana';
-            }
-
-            row.class = 'start'; // Sempre azul (text-primary)
-            row.index = '-';
-        }
-        else if (severeInfo) {
-            row._type = `Indisponibilidade SEVERA: ${severeInfo.description}`;
-            row.class = 'red';
-        } else if (holDesc) {
-            const lowerDesc = holDesc.toLowerCase();
-            if (lowerDesc.includes('recesso') ||
-                lowerDesc.includes('suspensão') ||
-                lowerDesc.includes('indisponibilidade') ||
-                lowerDesc.includes('ritjsp')) {
-                row._type = holDesc;
+                row._type = 'Fim de Semana';
+                row.class = 'susp';
+            } else if (normalInfo) {
+                // Indisponibilidade Normal: Amarelo, mas CONTA como dia (se não for início)
+                row._type = `Indisponibilidade: ${normalInfo.description}`;
+                row.class = 'susp';
+            } else if (isEnd) {
+                row._type = `${currentDate.format('dddd')} (Fim do Prazo)`;
+                row.class = 'end';
             } else {
-                row._type = `Feriado: ${holDesc}`;
+                row._type = currentDate.format('dddd');
+                row.class = 'blue';
             }
-            row.class = 'red';
-        } else if (isWknd) {
-            row._type = 'Fim de Semana';
-            row.class = 'susp';
-        } else if (normalInfo) {
-            // Indisponibilidade Normal: Amarelo, mas CONTA como dia (se não for início)
-            row._type = `Indisponibilidade: ${normalInfo.description}`;
-            row.class = 'susp';
-        } else if (isEnd) {
-            row._type = `${currentDate.format('dddd')} (Fim do Prazo)`;
-            row.class = 'end';
-        } else {
-            row._type = currentDate.format('dddd');
-            row.class = 'blue';
-        }
 
-        // Lógica de Numeração VISUAL (Index)
-        let countThisDay = false;
-        if (inputs.calcType === 'workingDays') {
-            // Conta se é "Countable" (Útil ou Normal Down) E não é Início
-            if (isBiz && !isStart) {
-                countThisDay = true;
-            }
-        } else {
-            // Dias Corridos
-            if (!isStart) {
-                if (w < inputs.days) {
+            // Lógica de Numeração VISUAL (Index)
+            let countThisDay = false;
+            if (inputs.calcType === 'workingDays') {
+                // Conta se é "Countable" (Útil ou Normal Down) E não é Início
+                if (isBiz && !isStart) {
                     countThisDay = true;
                 }
+            } else {
+                // Dias Corridos
+                if (!isStart) {
+                    if (w < inputs.days) {
+                        countThisDay = true;
+                    }
+                }
             }
-        }
 
-        if (countThisDay) {
-            w++;
-            row.index = `<b>${w}</b>`;
-        }
+            if (countThisDay) {
+                w++;
+                row.index = `<b>${w}</b>`;
+            }
 
-        listaDiasComTipo.push(row);
-        currentDate.add(1, 'days');
+            listaDiasComTipo.push(row);
+            currentDate.add(1, 'days');
+        }
     }
 
     // 7. Renderização
@@ -366,6 +418,14 @@ function getFullHolidayList(inputs) {
 }
 
 function renderTables(rows, dueDate, inputs) {
+    let labelMarco = inputs.countTypeText;
+    let labelPrazo = inputs.days + " dias";
+
+    if (inputs.calcType === 'months') {
+        labelMarco = "Data da 1ª Parcela";
+        labelPrazo = inputs.days + " parcelas";
+    }
+
     const summaryHtml = `
         <h3 class="text"><b>Prazo Final:</b></h3>
         <h2 class="heading display-3 pb-5 text-center py-3" id="finalDate">${dueDate.format("DD/MM/YYYY")}</h2>
@@ -374,9 +434,9 @@ function renderTables(rows, dueDate, inputs) {
                 <tbody>
                     <tr><td><b>Comarca:</b></td><td>${inputs.chosenCity}</td></tr>
                     <tr><td><b>Contagem:</b></td><td>${inputs.calcTypeText}</td></tr>
-                    <tr><td><b>Marco Inicial (${inputs.countTypeText}):</b></td><td>${inputs.initialDate.format("DD/MM/YYYY")}</td></tr>
-                    ${(inputs.countType === '1') ? `<tr><td><b>Data da Publicação:</b></td><td>${rows.find(r => r.class === 'start') ? rows.find(r => r.class === 'start').date : ''}</td></tr>` : ''}
-                    <tr><td><b>Prazo:</b></td><td>${inputs.days} dias</td></tr>
+                    <tr><td><b>Marco Inicial (${labelMarco}):</b></td><td>${inputs.initialDate.format("DD/MM/YYYY")}</td></tr>
+                    ${(inputs.countType === '1' && inputs.calcType !== 'months') ? `<tr><td><b>Data da Publicação:</b></td><td>${rows.find(r => r.class === 'start') ? rows.find(r => r.class === 'start').date : ''}</td></tr>` : ''}
+                    <tr><td><b>Prazo:</b></td><td>${labelPrazo}</td></tr>
                     <tr class="table-active text-success"><td><b>Vencimento:</b></td><td><b>${dueDate.format("DD/MM/YYYY")}</b></td></tr>
                 </tbody>
             </table>

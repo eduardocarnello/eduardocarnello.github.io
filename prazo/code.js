@@ -198,6 +198,31 @@ function setupNavigationEvents() {
  */
 function setupCalcEvents() {
 
+  // Mudança no Formato da Contagem (Dias Úteis, Corridos, Meses)
+  $('#calcType').change(function () {
+    const val = $(this).val();
+    const countTypeSelect = $('#countType');
+    const daysLabel = $('label[for="days"]');
+
+    if (val === 'months') {
+      // Bloqueia seleção de "do ato/da juntada"
+      countTypeSelect.prop('disabled', true);
+      countTypeSelect.selectpicker('refresh');
+
+      // Altera labels
+      $("#countFormatLabel").html('Data da 1ª Parcela');
+      daysLabel.text('Número de parcelas');
+    } else {
+      // Desbloqueia
+      countTypeSelect.prop('disabled', false);
+      countTypeSelect.selectpicker('refresh');
+
+      // Restaura labels
+      updateCountTypeLabel(countTypeSelect);
+      daysLabel.text('Dias:');
+    }
+  });
+
   // Mudança no Tipo de Contagem (Ex: Citação no Portal muda dias p/ 15 auto)
   $('#countType').change(function () {
     const val = $(this).val();
