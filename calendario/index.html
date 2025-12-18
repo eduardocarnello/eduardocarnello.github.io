@@ -519,7 +519,7 @@
             userRole = null;
 
             if (user) {
-                // Check permissions (Admin via users UID; otherwise user_roles or whitelist)
+                // Check permissions (Admin via users UID; fallback whitelist; only then user_roles)
                 let isApproved = false;
                 try {
                     // 1. Admin check via users/{uid}
@@ -534,26 +534,32 @@
                         }
                     }
 
-                    // 2. Role by email in user_roles
-                    if (!isApproved) {
-                        const roleDocRef = doc(db, "user_roles", user.email.toLowerCase());
-                        const roleDoc = await getDoc(roleDocRef);
-                        if (roleDoc.exists()) {
-                            const role = roleDoc.data().role;
-                            userRole = role;
-                            if (role === 'admin') isAdmin = true;
-                            if (role === 'editor') isEditor = true;
-                            isApproved = true;
-                        }
-                    }
-
-                    // 3. Fallback whitelist (default role user)
+                    // 2. Whitelist (liberado para qualquer usuário autenticado pelas regras)
                     if (!isApproved) {
                         const whitelistDocRef = doc(db, "whitelist", user.email.toLowerCase());
                         const whitelistDoc = await getDoc(whitelistDocRef);
                         if (whitelistDoc.exists()) {
                             userRole = whitelistDoc.data().role || 'user';
+                            if (userRole === 'admin') isAdmin = true;
+                            if (userRole === 'editor') isEditor = true;
                             isApproved = true;
+                        }
+                    }
+
+                    // 3. Role by email in user_roles (pode falhar para não-admin; ignore permissão negada)
+                    if (!isApproved) {
+                        try {
+                            const roleDocRef = doc(db, "user_roles", user.email.toLowerCase());
+                            const roleDoc = await getDoc(roleDocRef);
+                            if (roleDoc.exists()) {
+                                const role = roleDoc.data().role;
+                                userRole = role;
+                                if (role === 'admin') isAdmin = true;
+                                if (role === 'editor') isEditor = true;
+                                isApproved = true;
+                            }
+                        } catch (err) {
+                            console.warn("Sem permissão para ler user_roles; usando whitelist", err);
                         }
                     }
                 } catch (error) {
