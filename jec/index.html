@@ -4,470 +4,848 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Página de Links</title>
-    <!-- Tailwind CSS para estilização -->
+    <title>Portal de Ferramentas</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Google Fonts para uma melhor tipografia -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <!-- Lucide Icons para iconografia -->
-    <script src="https://unpkg.com/lucide-react@latest/dist/lucide-react.js"></script>
-    <style>
-        body {
-            font-family: 'Inter', sans-serif;
-        }
-
-        /* Fallback para ícones caso o script falhe */
-        [data-lucide] {
-            display: inline-block;
-            width: 24px;
-            height: 24px;
-        }
-    </style>
 </head>
 
-<body class="bg-gradient-to-br from-gray-50 to-gray-200 min-h-screen flex items-center justify-center p-4">
-
-    <div class="w-full max-w-5xl mx-auto bg-white rounded-2xl shadow-xl p-8 md:p-12">
-
-        <header class="text-center mb-10">
-            <h1 class="text-3xl md:text-4xl font-bold text-gray-800">Bem-vindo!</h1>
-            <p class="text-gray-500 mt-2 text-lg">Escolha uma das opções abaixo para prosseguir.</p>
+<body class="min-h-screen bg-gradient-to-br from-slate-50 via-white to-cyan-50 text-slate-800">
+    <div class="max-w-6xl mx-auto px-6 py-10">
+        <header class="mb-10 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+            <div>
+                <p class="text-sm uppercase tracking-[0.2em] text-slate-500">JEC • MARÍLIA/SP</p>
+                <h1 class="text-3xl md:text-4xl font-semibold text-slate-900">Central de Ferramentas e Atalhos</h1>
+                <p class="text-slate-600 mt-2">Escolha um fluxo e use o botão de informação para conferir o que cada app
+                    faz.</p>
+            </div>
+            <div class="flex gap-3">
+                <a class="px-4 py-2 rounded-lg bg-white border border-slate-200 text-slate-800 shadow-sm hover:border-slate-300 hover:-translate-y-0.5 transition"
+                    href="/" target="_self">Portal principal</a>
+                <a class="px-4 py-2 rounded-lg bg-cyan-600 text-white shadow hover:bg-cyan-700 hover:-translate-y-0.5 transition"
+                    href="/base/admin.html" target="_self">Admin</a>
+            </div>
         </header>
 
-        <main class="space-y-12">
-            <!-- Seção de Ferramentas -->
-            <section>
-                <h2 class="text-2xl font-bold text-gray-700 mb-6 text-center md:text-left">Ferramentas</h2>
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <section class="space-y-4">
+            <div class="flex items-center justify-between">
+                <h2 class="text-xl font-semibold text-slate-900">Ferramentas do dia a dia</h2>
+                <p class="text-sm text-slate-500">Abrir ou saber mais antes de entrar.</p>
+            </div>
 
-                    <!-- Manifestação em Balcão -->
-                    <a href="/manifest" target="_self"
-                        class="group flex flex-col items-center justify-center p-6 bg-gray-50 rounded-xl shadow-md hover:bg-indigo-600 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-in-out">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none"
-                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-                            class="text-indigo-500 group-hover:text-white transition-colors lucide lucide-file-pen-line">
-                            <path d="m18 5-3-3H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2Z" />
-                            <path d="M8 18h1" />
-                            <path d="M18.4 9.6a2 2 0 1 1 3 3L17 17l-4 1 1-4Z" />
-                        </svg>
-                        <span
-                            class="mt-3 font-semibold text-gray-700 group-hover:text-white transition-colors text-center">Manifestação
-                            em Balcão</span>
-                    </a>
-
-                    <!-- Parcelamento do art. 916 -->
-                    <a href="/parcelamento/index.html?operacao=cpc-916" target="_self"
-                        class="group flex flex-col items-center justify-center p-6 bg-gray-50 rounded-xl shadow-md hover:bg-indigo-600 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-in-out">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none"
-                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-                            class="text-indigo-500 group-hover:text-white transition-colors lucide lucide-pie-chart">
-                            <path d="M21.21 15.89A10 10 0 1 1 8 2.83" />
-                            <path d="M22 12A10 10 0 0 0 12 2v10z" />
-                        </svg>
-                        <span
-                            class="mt-3 font-semibold text-gray-700 group-hover:text-white transition-colors text-center">Parcelamento
-                            do art. 916</span>
-                    </a>
-                    <!-- Proposta de Acordo -->
-                    <a href="/parcelamento/index.html" target="_self"
-                        class="group flex flex-col items-center justify-center p-6 bg-gray-50 rounded-xl shadow-md hover:bg-indigo-600 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-in-out">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none"
-                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-                            class="text-indigo-500 group-hover:text-white transition-colors lucide lucide-file-check-2">
-                            <path d="M4 22h14a2 2 0 0 0 2-2V7.5L14.5 2H6a2 2 0 0 0-2 2v4" />
-                            <polyline points="14 2 14 8 20 8" />
-                            <path d="m3 15 2 2 4-4" />
-                        </svg>
-                        <span
-                            class="mt-3 font-semibold text-gray-700 group-hover:text-white transition-colors text-center">Proposta
-                            de Acordo</span>
-                    </a>
-                    <!-- Formulário MLE -->
-                    <a href="/formMLE" target="_self"
-                        class="group flex flex-col items-center justify-center p-6 bg-gray-50 rounded-xl shadow-md hover:bg-indigo-600 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-in-out">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none"
-                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-                            class="text-indigo-500 group-hover:text-white transition-colors lucide lucide-banknote">
-                            <rect width="20" height="12" x="2" y="6" rx="2" />
-                            <circle cx="12" cy="12" r="2" />
-                            <path d="M6 12h.01M18 12h.01" />
-                        </svg>
-                        <span
-                            class="mt-3 font-semibold text-gray-700 group-hover:text-white transition-colors text-center">Formulário
-                            MLE</span>
-                    </a>
-                    <!-- Gerar Chave de Acesso -->
-                    <a href="/senha" target="_self"
-                        class="group flex flex-col items-center justify-center p-6 bg-gray-50 rounded-xl shadow-md hover:bg-indigo-600 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-in-out">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none"
-                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-                            class="text-indigo-500 group-hover:text-white transition-colors lucide lucide-key-round">
-                            <path d="M2 18v3c0 .6.4 1 1 1h4v-3h3v-3h2l1.4-1.4a6.5 6.5 0 1 0-4-4Z" />
-                            <circle cx="16.5" cy="7.5" r=".5" />
-                        </svg>
-                        <span
-                            class="mt-3 font-semibold text-gray-700 group-hover:text-white transition-colors text-center">Gerar
-                            Chave de Acesso</span>
-                    </a>
-
-
-
-
-
-                    <!-- Gerar Chave Documento -->
-                    <a href="/envio" target="_self"
-                        class="group flex flex-col items-center justify-center p-6 bg-gray-50 rounded-xl shadow-md hover:bg-indigo-600 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-in-out">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none"
-                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-                            class="text-indigo-500 group-hover:text-white transition-colors lucide lucide-file-key-2">
-                            <path d="M4 10V4a2 2 0 0 1 2-2h8.5L20 7.5V20a2 2 0 0 1-2 2H4" />
-                            <polyline points="14 2 14 8 20 8" />
-                            <circle cx="4" cy="16" r="2" />
-                            <path d="m10 13-4.5 4.5" />
-                            <path d="m9 12 1 1" />
-                        </svg>
-                        <span
-                            class="mt-3 font-semibold text-gray-700 group-hover:text-white transition-colors text-center">Gerar
-                            Chave Documento</span>
-                    </a>
-
-                    <!-- Calculadora Judicial -->
-                    <a href="/calculadora" target="_self"
-                        class="group flex flex-col items-center justify-center p-6 bg-gray-50 rounded-xl shadow-md hover:bg-indigo-600 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-in-out">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none"
-                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-                            class="text-indigo-500 group-hover:text-white transition-colors lucide lucide-calculator">
-                            <rect width="16" height="20" x="4" y="2" rx="2" />
-                            <line x1="8" x2="16" y1="6" y2="6" />
-                            <line x1="16" x2="16" y1="14" y2="18" />
-                            <path d="M16 10h.01" />
-                            <path d="M12 10h.01" />
-                            <path d="M8 10h.01" />
-                            <path d="M12 14h.01" />
-                            <path d="M8 14h.01" />
-                            <path d="M12 18h.01" />
-                            <path d="M8 18h.01" />
-                        </svg>
-                        <span
-                            class="mt-3 font-semibold text-gray-700 group-hover:text-white transition-colors text-center">Calculadora
-                            de Atualização
-                            e Cumprimento de Sentença</span>
-                    </a>
-
-                    <!-- Contagem de Prazo -->
-                    <a href="/prazo" target="_self"
-                        class="group flex flex-col items-center justify-center p-6 bg-gray-50 rounded-xl shadow-md hover:bg-indigo-600 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-in-out">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none"
-                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-                            class="text-indigo-500 group-hover:text-white transition-colors lucide lucide-hourglass">
-                            <path d="M5 22h14" />
-                            <path d="M5 2h14" />
-                            <path d="M17 22v-4.172a2 2 0 0 0-.586-1.414L12 12l-4.414 4.414A2 2 0 0 0 7 17.828V22" />
-                            <path d="M7 2v4.172a2 2 0 0 0 .586 1.414L12 12l4.414-4.414A2 2 0 0 0 17 6.172V2" />
-                        </svg>
-                        <span
-                            class="mt-3 font-semibold text-gray-700 group-hover:text-white transition-colors text-center">Contagem
-                            de Prazo</span>
-                    </a>
-
-                    <!-- Calendário -->
-                    <a href="/calendario" target="_self"
-                        class="group flex flex-col items-center justify-center p-6 bg-gray-50 rounded-xl shadow-md hover:bg-indigo-600 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-in-out">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none"
-                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-                            class="text-indigo-500 group-hover:text-white transition-colors lucide lucide-calendar-days">
-                            <rect width="18" height="18" x="3" y="4" rx="2" ry="2" />
-                            <line x1="16" x2="16" y1="2" y2="6" />
-                            <line x1="8" x2="8" y1="2" y2="6" />
-                            <line x1="3" x2="21" y1="10" y2="10" />
-                            <path d="M8 14h.01" />
-                            <path d="M12 14h.01" />
-                            <path d="M16 14h.01" />
-                            <path d="M8 18h.01" />
-                            <path d="M12 18h.01" />
-                            <path d="M16 18h.01" />
-                        </svg>
-                        <span
-                            class="mt-3 font-semibold text-gray-700 group-hover:text-white transition-colors text-center">Calendário</span>
-                    </a>
-
-                    <!-- Ajuizamento (Centralizado) -->
-                    <div class="md:col-span-2 lg:col-span-3 flex justify-center">
-                        <a href="/ajuizamento" target="_self"
-                            class="group flex flex-col items-center justify-center p-6 bg-gray-50 rounded-xl shadow-md hover:bg-indigo-600 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-in-out w-full lg:w-[calc(33.33%-1rem)]">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"
+            <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                <div class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm hover:shadow-md transition">
+                    <div class="flex items-start gap-3">
+                        <div
+                            class="h-10 w-10 flex items-center justify-center rounded-full bg-indigo-50 border border-indigo-100">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-indigo-600" viewBox="0 0 24 24"
                                 fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                stroke-linejoin="round"
-                                class="text-indigo-500 group-hover:text-white transition-colors lucide lucide-scale">
+                                stroke-linejoin="round">
+                                <path d="M4 20h16" />
+                                <path d="M4 4h16" />
+                                <path d="m4 8 4 4-4 4" />
+                                <path d="m20 16-4-4 4-4" />
+                            </svg>
+                        </div>
+                        <div class="flex-1">
+                            <p class="text-sm uppercase text-indigo-600 tracking-wide">Manifestação</p>
+                            <h3 class="text-lg font-semibold text-slate-900">Manifestação em balcão</h3>
+                            <p class="text-sm text-slate-600 mt-1">Gere manifestações rápidas com modelos de fácil
+                                preenchimento.</p>
+                            <div class="mt-3 flex gap-2">
+                                <a href="/manifest"
+                                    class="px-3 py-2 rounded-lg bg-indigo-600 text-white text-sm font-medium hover:bg-indigo-700 transition">Abrir</a>
+                                <button
+                                    class="px-3 py-2 rounded-lg border border-indigo-200 text-indigo-700 text-sm font-medium hover:bg-indigo-50 transition"
+                                    data-modal title="Manifestação em balcão"
+                                    data-desc="Um gerador de manifestações em balcão com diversos modelos já preparados para facilitar o atendimento."
+                                    data-link="/manifest">Mais info</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm hover:shadow-md transition">
+                    <div class="flex items-start gap-3">
+                        <div
+                            class="h-10 w-10 flex items-center justify-center rounded-full bg-amber-50 border border-amber-100">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-amber-600" viewBox="0 0 24 24"
+                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round">
+                                <path d="M21.21 15.89A10 10 0 1 1 8 2.83" />
+                                <path d="M22 12A10 10 0 0 0 12 2v10z" />
+                            </svg>
+                        </div>
+                        <div class="flex-1">
+                            <p class="text-sm uppercase text-amber-600 tracking-wide">Parcelamento</p>
+                            <h3 class="text-lg font-semibold text-slate-900">Art. 916 CPC</h3>
+                            <p class="text-sm text-slate-600 mt-1">Simula e gera o pedido de parcelamento do art. 916 do
+                                CPC.
+                            </p>
+                            <div class="mt-3 flex gap-2">
+                                <a href="/parcelamento/index.html?operacao=cpc-916"
+                                    class="px-3 py-2 rounded-lg bg-amber-500 text-white text-sm font-medium hover:bg-amber-600 transition">Abrir</a>
+                                <button
+                                    class="px-3 py-2 rounded-lg border border-amber-200 text-amber-700 text-sm font-medium hover:bg-amber-50 transition"
+                                    data-modal title="Parcelamento art. 916"
+                                    data-desc="Calcula a entrada mínima e as parcelas já com correção. Exporta petição completa com índices e tabale das parcelas."
+                                    data-link="/parcelamento/index.html?operacao=cpc-916">Mais info</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm hover:shadow-md transition">
+                    <div class="flex items-start gap-3">
+                        <div
+                            class="h-10 w-10 flex items-center justify-center rounded-full bg-emerald-50 border border-emerald-100">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-emerald-600" viewBox="0 0 24 24"
+                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round">
+                                <path d="m9 11 3 3L22 4" />
+                                <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" />
+                            </svg>
+                        </div>
+                        <div class="flex-1">
+                            <p class="text-sm uppercase text-emerald-600 tracking-wide">Parcelamento</p>
+                            <h3 class="text-lg font-semibold text-slate-900">Proposta de acordo</h3>
+                            <p class="text-sm text-slate-600 mt-1">Montagem de proposta com tabela, índices e resumo
+                                para protocolo.</p>
+                            <div class="mt-3 flex gap-2">
+                                <a href="/parcelamento/index.html"
+                                    class="px-3 py-2 rounded-lg bg-emerald-500 text-white text-sm font-medium hover:bg-emerald-600 transition">Abrir</a>
+                                <button
+                                    class="px-3 py-2 rounded-lg border border-emerald-200 text-emerald-700 text-sm font-medium hover:bg-emerald-50 transition"
+                                    data-modal title="Proposta de acordo"
+                                    data-desc="Cria propostas diversas fora do art. 916, do CPC, com simulação livre, histórico e PDF com índices inseridos."
+                                    data-link="/parcelamento/index.html">Mais info</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm hover:shadow-md transition">
+                    <div class="flex items-start gap-3">
+                        <div
+                            class="h-10 w-10 flex items-center justify-center rounded-full bg-rose-50 border border-rose-100">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-rose-200" viewBox="0 0 24 24"
+                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round">
+                                <path d="m15 9-6 6" />
+                                <path d="M9 9v6h6" />
+                                <path d="M5 19h14" />
+                                <path d="M5 5h14" />
+                            </svg>
+                        </div>
+                        <div class="flex-1">
+                            <p class="text-sm uppercase text-rose-600 tracking-wide">Cálculo</p>
+                            <h3 class="text-lg font-semibold text-slate-900">Memória de Cálculo</h3>
+                            <p class="text-sm text-slate-600 mt-1">Gera a memória de cálculo com correção e juros de
+                                mora.</p>
+                            <div class="mt-3 flex gap-2">
+                                <a href="/corrigir"
+                                    class="px-3 py-2 rounded-lg bg-rose-500 text-white text-sm font-medium hover:bg-rose-600 transition">Abrir</a>
+                                <button
+                                    class="px-3 py-2 rounded-lg border border-rose-200 text-rose-700 text-sm font-medium hover:bg-rose-50 transition"
+                                    data-modal title="Corrigir petição/PDF"
+                                    data-desc="Atualiza valores com base nos índices do TJ e com juros de mora automáticos. Gera memória de cálculo pronta para anexar ao processo."
+                                    data-link="/corrigir">Mais info</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm hover:shadow-md transition">
+                    <div class="flex items-start gap-3">
+                        <div
+                            class="h-10 w-10 flex items-center justify-center rounded-full bg-cyan-50 border border-cyan-100">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-cyan-600" viewBox="0 0 24 24"
+                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round">
+                                <rect x="3" y="6" width="18" height="12" rx="2" />
+                                <circle cx="12" cy="12" r="2" />
+                                <path d="M18 12h.01" />
+                                <path d="M6 12h.01" />
+                            </svg>
+                        </div>
+                        <div class="flex-1">
+                            <p class="text-sm uppercase text-cyan-600 tracking-wide">MLE</p>
+                            <h3 class="text-lg font-semibold text-slate-900">Formulário MLE</h3>
+                            <p class="text-sm text-slate-600 mt-1">Emissão do formulário MLE de forma prática.</p>
+                            <div class="mt-3 flex gap-2">
+                                <a href="/formMLE"
+                                    class="px-3 py-2 rounded-lg bg-cyan-500 text-white text-sm font-medium hover:bg-cyan-600 transition">Abrir</a>
+                                <button
+                                    class="px-3 py-2 rounded-lg border border-cyan-200 text-cyan-700 text-sm font-medium hover:bg-cyan-50 transition"
+                                    data-modal title="Formulário MLE"
+                                    data-desc="Checklist e geração de MLE com validação de campos, pronto para protocolo."
+                                    data-link="/formMLE">Mais info</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm hover:shadow-md transition">
+                    <div class="flex items-start gap-3">
+                        <div
+                            class="h-10 w-10 flex items-center justify-center rounded-full bg-fuchsia-50 border border-fuchsia-100">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-fuchsia-600" viewBox="0 0 24 24"
+                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round">
+                                <path d="M10 11h.01" />
+                                <path d="M14 11h.01" />
+                                <path d="M10 15h.01" />
+                                <path d="M14 15h.01" />
+                                <path d="M7 19h10" />
+                                <rect x="3" y="3" width="18" height="18" rx="2" />
+                            </svg>
+                        </div>
+                        <div class="flex-1">
+                            <p class="text-sm uppercase text-fuchsia-600 tracking-wide">Chaves</p>
+                            <h3 class="text-lg font-semibold text-slate-900">Gerar chave de acesso</h3>
+                            <p class="text-sm text-slate-600 mt-1">Gera um PDF com a chave de acesso e orientações para
+                                a parte.</p>
+                            <div class="mt-3 flex gap-2">
+                                <a href="/senha"
+                                    class="px-3 py-2 rounded-lg bg-fuchsia-500 text-white text-sm font-medium hover:bg-fuchsia-600 transition">Abrir</a>
+                                <button
+                                    class="px-3 py-2 rounded-lg border border-fuchsia-200 text-fuchsia-700 text-sm font-medium hover:bg-fuchsia-50 transition"
+                                    data-modal title="Gerar chave de acesso"
+                                    data-desc="Serve para gerar a chave (senha) do processo com orientações para a parte."
+                                    data-link="/senha">Mais info</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm hover:shadow-md transition">
+                    <div class="flex items-start gap-3">
+                        <div
+                            class="h-10 w-10 flex items-center justify-center rounded-full bg-sky-50 border border-sky-100">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-sky-600" viewBox="0 0 24 24"
+                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round">
+                                <path d="M4 10V4a2 2 0 0 1 2-2h8.5L20 7.5V20a2 2 0 0 1-2 2H4" />
+                                <polyline points="14 2 14 8 20 8" />
+                                <circle cx="4" cy="16" r="2" />
+                                <path d="m10 13-4.5 4.5" />
+                                <path d="m9 12 1 1" />
+                            </svg>
+                        </div>
+                        <div class="flex-1">
+                            <p class="text-sm uppercase text-sky-600 tracking-wide">Chaves</p>
+                            <h3 class="text-lg font-semibold text-slate-900">Gerar chave de documento</h3>
+                            <p class="text-sm text-slate-600 mt-1">Cria chaves para envio de documentos diretamente no
+                                eproc.</p>
+                            <div class="mt-3 flex gap-2">
+                                <a href="/envio"
+                                    class="px-3 py-2 rounded-lg bg-sky-500 text-white text-sm font-medium hover:bg-sky-600 transition">Abrir</a>
+                                <button
+                                    class="px-3 py-2 rounded-lg border border-sky-200 text-sky-700 text-sm font-medium hover:bg-sky-50 transition"
+                                    data-modal title="Gerar chave de documento"
+                                    data-desc="Gera a chave documento do eproc, para envio direto de  documentos ao processo."
+                                    data-link="/envio">Mais info</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm hover:shadow-md transition">
+                    <div class="flex items-start gap-3">
+                        <div
+                            class="h-10 w-10 flex items-center justify-center rounded-full bg-lime-50 border border-lime-100">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-lime-600" viewBox="0 0 24 24"
+                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round">
+                                <rect x="4" y="2" width="16" height="20" rx="2" />
+                                <path d="M8 6h8" />
+                                <path d="M16 14v4" />
+                                <path d="M12 14v.01" />
+                                <path d="M8 14v.01" />
+                                <path d="M12 18v.01" />
+                                <path d="M8 18v.01" />
+                            </svg>
+                        </div>
+                        <div class="flex-1">
+                            <p class="text-sm uppercase text-lime-600 tracking-wide">Cálculo</p>
+                            <h3 class="text-lg font-semibold text-slate-900">Calculadora judicial</h3>
+                            <p class="text-sm text-slate-600 mt-1">Faz a atualização da condenação e de descumprimento
+                                de acordos com pedidos.
+                            </p>
+                            <div class="mt-3 flex gap-2">
+                                <a href="/calculadora"
+                                    class="px-3 py-2 rounded-lg bg-lime-500 text-white text-sm font-medium hover:bg-lime-600 transition">Abrir</a>
+                                <button
+                                    class="px-3 py-2 rounded-lg border border-lime-200 text-lime-700 text-sm font-medium hover:bg-lime-50 transition"
+                                    data-modal title="Calculadora judicial"
+                                    data-desc="Atualiza valores com índices, juros e correção monetária. Gera o PDF do cálculo e também o pedido de cumprimento de sentença ou de descumprimento de acordos."
+                                    data-link="/calculadora">Mais info</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm hover:shadow-md transition">
+                    <div class="flex items-start gap-3">
+                        <div
+                            class="h-10 w-10 flex items-center justify-center rounded-full bg-orange-50 border border-orange-100">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-orange-600" viewBox="0 0 24 24"
+                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round">
+                                <path d="M5 22h14" />
+                                <path d="M5 2h14" />
+                                <path d="M17 22v-4.172a2 2 0 0 0-.586-1.414L12 12l-4.414 4.414A2 2 0 0 0 7 17.828V22" />
+                                <path d="M7 2v4.172a2 2 0 0 0 .586 1.414L12 12l4.414-4.414A2 2 0 0 0 17 6.172V2" />
+                            </svg>
+                        </div>
+                        <div class="flex-1">
+                            <p class="text-sm uppercase text-orange-600 tracking-wide">Prazos</p>
+                            <h3 class="text-lg font-semibold text-slate-900">Contagem de prazo</h3>
+                            <p class="text-sm text-slate-600 mt-1">Calcula prazos com feriados, suspensões e outras
+                                regras.</p>
+                            <div class="mt-3 flex gap-2">
+                                <a href="/prazo"
+                                    class="px-3 py-2 rounded-lg bg-orange-500 text-white text-sm font-medium hover:bg-orange-600 transition">Abrir</a>
+                                <button
+                                    class="px-3 py-2 rounded-lg border border-orange-200 text-orange-700 text-sm font-medium hover:bg-orange-50 transition"
+                                    data-modal title="Contagem de prazo"
+                                    data-desc="Conta prazos de diversas formas, inclusive considerando suspensões. Também conta prazos para acordos com parcelas mensais."
+                                    data-link="/prazo">Mais info</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm hover:shadow-md transition">
+                    <div class="flex items-start gap-3">
+                        <div
+                            class="h-10 w-10 flex items-center justify-center rounded-full bg-blue-50 border border-blue-100">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-600" viewBox="0 0 24 24"
+                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round">
+                                <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+                                <line x1="16" y1="2" x2="16" y2="6" />
+                                <line x1="8" y1="2" x2="8" y2="6" />
+                                <line x1="3" y1="10" x2="21" y2="10" />
+                            </svg>
+                        </div>
+                        <div class="flex-1">
+                            <p class="text-sm uppercase text-blue-600 tracking-wide">Prazos</p>
+                            <h3 class="text-lg font-semibold text-slate-900">Calendário</h3>
+                            <p class="text-sm text-slate-600 mt-1">Visualize feriados e eventos internos do Cartório.
+                            </p>
+                            <div class="mt-3 flex gap-2">
+                                <a href="/calendario"
+                                    class="px-3 py-2 rounded-lg bg-blue-500 text-white text-sm font-medium hover:bg-blue-600 transition">Abrir</a>
+                                <button
+                                    class="px-3 py-2 rounded-lg border border-blue-200 text-blue-700 text-sm font-medium hover:bg-blue-50 transition"
+                                    data-modal title="Calendário"
+                                    data-desc="Calendário com feriados sincronizados e datas internas, como férias e outras (exige autenticação para visualização dos eventos internos)."
+                                    data-link="/calendario">Mais info</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm hover:shadow-md transition">
+                    <div class="flex items-start gap-3">
+                        <div
+                            class="h-10 w-10 flex items-center justify-center rounded-full bg-slate-50 border border-slate-100">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-slate-700" viewBox="0 0 24 24"
+                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round">
                                 <path d="m16 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z" />
                                 <path d="m2 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z" />
                                 <path d="M7 21h10" />
                                 <path d="M12 3v18" />
                                 <path d="M3 7h2c2 0 5-1 7-2 2 1 5 2 7 2h2" />
                             </svg>
-                            <span
-                                class="mt-3 font-semibold text-gray-700 group-hover:text-white transition-colors text-center">Ajuizamento</span>
-                        </a>
+                        </div>
+                        <div class="flex-1">
+                            <p class="text-sm uppercase text-slate-600 tracking-wide">Ajuizamento</p>
+                            <h3 class="text-lg font-semibold text-slate-900">Gerador de Petição Inicial</h3>
+                            <p class="text-sm text-slate-600 mt-1">Um formulário para que a parte gere sua petição
+                                inicial.
+                            </p>
+                            <div class="mt-3 flex gap-2">
+                                <a href="/ajuizamento"
+                                    class="px-3 py-2 rounded-lg bg-slate-800 text-white text-sm font-medium hover:bg-slate-900 transition">Abrir</a>
+                                <button
+                                    class="px-3 py-2 rounded-lg border border-slate-200 text-slate-700 text-sm font-medium hover:bg-slate-50 transition"
+                                    data-modal title="Ajuizamento"
+                                    data-desc="Um formulário prático para gerar o PDF da petição inicial. A própria parte pode fazer uso, imprimir, assinar e depois apresentar para distribuição."
+                                    data-link="/ajuizamento">Mais info</button>
+                            </div>
+                        </div>
                     </div>
                 </div>
-            </section>
+            </div>
+        </section>
 
-            <!-- Seção de Links Úteis -->
-            <section>
-                <h2 class="text-2xl font-bold text-gray-700 mb-6 text-center md:text-left">Links Úteis</h2>
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <!--section class="mt-12 space-y-4">
+            <div class="flex items-center justify-between">
+                <h2 class="text-xl font-semibold text-slate-900">Recursos rápidos</h2>
+                <p class="text-sm text-slate-500">Documentos, pautas e bases legais.</p>
+            </div>
+            <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                <a class="rounded-xl border border-slate-200 bg-white p-5 hover:shadow-md transition shadow-sm"
+                    href="https://portaldecustas.tjsp.jus.br/portaltjsp/login.jsp" target="_self">
+                    <div class="flex items-center gap-3">
+                        <span
+                            class="flex h-10 w-10 items-center justify-center rounded-full bg-teal-50 text-teal-700 border border-teal-100">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none"
+                                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <line x1="12" y1="2" x2="12" y2="22" />
+                                <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
+                            </svg>
+                        </span>
+                        <div>
+                            <h3 class="text-slate-900 font-semibold">Portal de custas</h3>
+                            <p class="text-sm text-slate-600">Consulta e emissão de guias.</p>
+                        </div>
+                    </div>
+                </a>
 
-                    <!-- Pauta Cejusc Presencial -->
-                    <a href="https://tjsp-my.sharepoint.com/:w:/r/personal/ejatoba_tjsp_jus_br/_layouts/15/doc2.aspx?sourcedoc=%7BE524C766-1391-4CEE-A3CC-916E33A9CC05%7D&file=PAUTA%20AUDI%C3%8ANCIA%20PRESENCIAL%20CEJUSC.docx&action=default&mobileredirect=true"
-                        target="_self"
-                        class="group flex flex-col items-center justify-center p-6 bg-gray-50 rounded-xl shadow-md hover:bg-teal-600 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-in-out">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none"
-                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-                            class="text-teal-500 group-hover:text-white transition-colors lucide lucide-users">
+                <a class="rounded-xl border border-slate-200 bg-white p-5 hover:shadow-md transition shadow-sm"
+                    href="https://www.tjsp.jus.br/Indisponibilidade/Comunicados" target="_self">
+                    <div class="flex items-center gap-3">
+                        <span
+                            class="flex h-10 w-10 items-center justify-center rounded-full bg-amber-50 text-amber-700 border border-amber-100">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none"
+                                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="12" cy="12" r="10" />
+                                <path d="m4.9 4.9 14.2 14.2" />
+                            </svg>
+                        </span>
+                        <div>
+                            <h3 class="text-slate-900 font-semibold">Indisponibilidades</h3>
+                            <p class="text-sm text-slate-600">Comunicados e sistemas fora do ar.</p>
+                        </div>
+                    </div>
+                </a>
+
+                <a class="rounded-xl border border-slate-200 bg-white p-5 hover:shadow-md transition shadow-sm"
+                    href="https://www.planalto.gov.br/ccivil_03/_ato2015-2018/2015/lei/l13105.htm" target="_self">
+                    <div class="flex items-center gap-3">
+                        <span
+                            class="flex h-10 w-10 items-center justify-center rounded-full bg-indigo-50 text-indigo-700 border border-indigo-100">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none"
+                                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="m16 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z" />
+                                <path d="m2 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z" />
+                                <path d="M7 21h10" />
+                                <path d="M12 3v18" />
+                                <path d="M3 7h2c2 0 5-1 7-2 2 1 5 2 7 2h2" />
+                            </svg>
+                        </span>
+                        <div>
+                            <h3 class="text-slate-900 font-semibold">CPC</h3>
+                            <p class="text-sm text-slate-600">Texto atualizado.</p>
+                        </div>
+                    </div>
+                </a>
+
+                <a class="rounded-xl border border-slate-200 bg-white p-5 hover:shadow-md transition shadow-sm"
+                    href="https://www.planalto.gov.br/ccivil_03/leis/l9099.htm" target="_self">
+                    <div class="flex items-center gap-3">
+                        <span
+                            class="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-50 text-emerald-700 border border-emerald-100">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none"
+                                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z" />
+                                <polyline points="14 2 14 8 20 8" />
+                                <path d="M16 13H8" />
+                                <path d="M16 17H8" />
+                                <path d="M10 9H8" />
+                            </svg>
+                        </span>
+                        <div>
+                            <h3 class="text-slate-900 font-semibold">Lei 9.099/95</h3>
+                            <p class="text-sm text-slate-600">Texto atualizado.</p>
+                        </div>
+                    </div>
+                </a>
+
+                <a class="rounded-xl border border-slate-200 bg-white p-5 hover:shadow-md transition shadow-sm"
+                    href="https://www.tjsp.jus.br/Jurisprudencia" target="_self">
+                    <div class="flex items-center gap-3">
+                        <span
+                            class="flex h-10 w-10 items-center justify-center rounded-full bg-cyan-50 text-cyan-700 border border-cyan-100">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none"
+                                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M15.5 15.5 19 19" />
+                                <path d="M5 12a7 7 0 1 0 14 0 7 7 0 1 0-14 0Z" />
+                                <path d="m9.5 7.5-3 3 3 3" />
+                                <path d="m14.5 16.5 3-3-3-3" />
+                            </svg>
+                        </span>
+                        <div>
+                            <h3 class="text-slate-900 font-semibold">Jurisprudência TJSP</h3>
+                            <p class="text-sm text-slate-600">Pesquisa rápida.</p>
+                        </div>
+                    </div>
+                </a>
+
+                <a class="rounded-xl border border-slate-200 bg-white p-5 hover:shadow-md transition shadow-sm"
+                    href="https://buscacepinter.correios.com.br/app/endereco/index.php" target="_self">
+                    <div class="flex items-center gap-3">
+                        <span
+                            class="flex h-10 w-10 items-center justify-center rounded-full bg-orange-50 text-orange-700 border border-orange-100">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none"
+                                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="11" cy="11" r="8" />
+                                <path d="m21 21-4.3-4.3" />
+                            </svg>
+                        </span>
+                        <div>
+                            <h3 class="text-slate-900 font-semibold">Busca CEP</h3>
+                            <p class="text-sm text-slate-600">Consulta Correios.</p>
+                        </div>
+                    </div>
+                </a>
+            </div>
+        </section-->
+
+        <section class="mt-12 space-y-4">
+            <div class="flex items-center justify-between">
+                <h2 class="text-xl font-semibold text-slate-900">Links úteis</h2>
+                <p class="text-sm text-slate-500">Pautas, referências e sistemas de apoio.</p>
+            </div>
+            <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                <a class="rounded-xl border border-slate-200 bg-white p-5 hover:shadow-md transition shadow-sm flex items-start gap-3"
+                    href="https://tjsp-my.sharepoint.com/:w:/r/personal/ejatoba_tjsp_jus_br/_layouts/15/doc2.aspx?sourcedoc=%7BE524C766-1391-4CEE-A3CC-916E33A9CC05%7D&amp;file=PAUTA%20AUDI%C3%8ANCIA%20PRESENCIAL%20CEJUSC.docx&amp;action=default&amp;mobileredirect=true"
+                    target="_self">
+                    <span
+                        class="flex h-10 w-10 items-center justify-center rounded-full bg-teal-50 text-teal-700 border border-teal-100">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
                             <circle cx="9" cy="7" r="4" />
                             <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
                             <path d="M16 3.13a4 4 0 0 1 0 7.75" />
                         </svg>
-                        <span
-                            class="mt-3 font-semibold text-gray-700 group-hover:text-white transition-colors text-center">Pauta
-                            Cejusc Presencial</span>
-                    </a>
+                    </span>
+                    <div>
+                        <h3 class="text-slate-900 font-semibold">Pauta CEJUSC presencial</h3>
+                        <p class="text-sm text-slate-600">Arquivo da pauta presencial (tarde).</p>
+                    </div>
+                </a>
 
-                    <!-- Pauta Cejusc Virtual -->
-                    <a href="https://tjsp-my.sharepoint.com/:w:/r/personal/ejatoba_tjsp_jus_br/_layouts/15/Doc.aspx?sourcedoc=%7B53F135D6-5B8F-4798-93FB-F794F9E9C1AA%7D&file=PAUTA%20AUDI%C3%8ANCIA%20MANH%C3%83%20VIRTUAL%20CEJUSC.docx&action=default&mobileredirect=true"
-                        target="_self"
-                        class="group flex flex-col items-center justify-center p-6 bg-gray-50 rounded-xl shadow-md hover:bg-teal-600 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-in-out">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none"
-                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-                            class="text-teal-500 group-hover:text-white transition-colors lucide lucide-video">
+                <a class="rounded-xl border border-slate-200 bg-white p-5 hover:shadow-md transition shadow-sm flex items-start gap-3"
+                    href="https://tjsp-my.sharepoint.com/:w:/r/personal/ejatoba_tjsp_jus_br/_layouts/15/Doc.aspx?sourcedoc=%7B53F135D6-5B8F-4798-93FB-F794F9E9C1AA%7D&amp;file=PAUTA%20AUDI%C3%8ANCIA%20MANH%C3%83%20VIRTUAL%20CEJUSC.docx&amp;action=default&amp;mobileredirect=true"
+                    target="_self">
+                    <span
+                        class="flex h-10 w-10 items-center justify-center rounded-full bg-indigo-50 text-indigo-700 border border-indigo-100">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <path d="m22 8-6 4 6 4V8Z" />
                             <rect width="14" height="12" x="2" y="6" rx="2" ry="2" />
                         </svg>
-                        <span
-                            class="mt-3 font-semibold text-gray-700 group-hover:text-white transition-colors text-center">Pauta
-                            Cejusc Virtual</span>
-                    </a>
+                    </span>
+                    <div>
+                        <h3 class="text-slate-900 font-semibold">Pauta CEJUSC virtual</h3>
+                        <p class="text-sm text-slate-600">Arquivo da pauta virtual (manhã).</p>
+                    </div>
+                </a>
 
-                    <!-- Pauta Instrução e Julgamento -->
-                    <a href="https://tjsp-my.sharepoint.com/:w:/r/personal/ejatoba_tjsp_jus_br/_layouts/15/Doc.aspx?sourcedoc=%7BB1D38FAF-0192-4D9C-98FA-94419511133A%7D&file=PAUTA%20-%20INSTRU%C3%87%C3%83O%20E%20JULGAMENTO.docx&action=default&mobileredirect=true"
-                        target="_self"
-                        class="group flex flex-col items-center justify-center p-6 bg-gray-50 rounded-xl shadow-md hover:bg-teal-600 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-in-out">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none"
-                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-                            class="text-teal-500 group-hover:text-white transition-colors lucide lucide-gavel">
+                <a class="rounded-xl border border-slate-200 bg-white p-5 hover:shadow-md transition shadow-sm flex items-start gap-3"
+                    href="https://tjsp-my.sharepoint.com/:w:/r/personal/ejatoba_tjsp_jus_br/_layouts/15/Doc.aspx?sourcedoc=%7BB1D38FAF-0192-4D9C-98FA-94419511133A%7D&amp;file=PAUTA%20-%20INSTRU%C3%87%C3%83O%20E%20JULGAMENTO.docx&amp;action=default&amp;mobileredirect=true"
+                    target="_self">
+                    <span
+                        class="flex h-10 w-10 items-center justify-center rounded-full bg-amber-50 text-amber-700 border border-amber-100">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <path d="m14 13-8.5 8.5a2.1 2.1 0 1 1-3-3L11 10" />
                             <path d="m16 16 6-6" />
                             <path d="m8 8 6-6" />
                             <path d="m9 7 8 8" />
                             <path d="m21 11-8-8" />
                         </svg>
-                        <span
-                            class="mt-3 font-semibold text-gray-700 group-hover:text-white transition-colors text-center">Pauta
-                            Instrução e Julgamento</span>
-                    </a>
+                    </span>
+                    <div>
+                        <h3 class="text-slate-900 font-semibold">Pauta instrução e julgamento</h3>
+                        <p class="text-sm text-slate-600">Pauta em Word.</p>
+                    </div>
+                </a>
 
-                    <!-- Portal de Custas -->
-                    <a href="https://portaldecustas.tjsp.jus.br/portaltjsp/login.jsp" target="_self"
-                        class="group flex flex-col items-center justify-center p-6 bg-gray-50 rounded-xl shadow-md hover:bg-teal-600 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-in-out">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none"
-                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-                            class="text-teal-500 group-hover:text-white transition-colors lucide lucide-dollar-sign">
-                            <line x1="12" x2="12" y1="2" y2="22" />
+                <a class="rounded-xl border border-slate-200 bg-white p-5 hover:shadow-md transition shadow-sm flex items-start gap-3"
+                    href="https://portaldecustas.tjsp.jus.br/portaltjsp/login.jsp" target="_self">
+                    <span
+                        class="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-50 text-emerald-700 border border-emerald-100">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="12" y1="2" x2="12" y2="22" />
                             <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
                         </svg>
-                        <span
-                            class="mt-3 font-semibold text-gray-700 group-hover:text-white transition-colors text-center">Portal
-                            de Custas</span>
-                    </a>
+                    </span>
+                    <div>
+                        <h3 class="text-slate-900 font-semibold">Portal de custas</h3>
+                        <p class="text-sm text-slate-600">Consulta e emissão de guias.</p>
+                    </div>
+                </a>
 
-                    <!-- Indisponibilidades -->
-                    <a href="https://www.tjsp.jus.br/Indisponibilidade/Comunicados" target="_self"
-                        class="group flex flex-col items-center justify-center p-6 bg-gray-50 rounded-xl shadow-md hover:bg-teal-600 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-in-out">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none"
-                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-                            class="text-teal-500 group-hover:text-white transition-colors lucide lucide-ban">
+                <a class="rounded-xl border border-slate-200 bg-white p-5 hover:shadow-md transition shadow-sm flex items-start gap-3"
+                    href="https://www.tjsp.jus.br/Indisponibilidade/Comunicados" target="_self">
+                    <span
+                        class="flex h-10 w-10 items-center justify-center rounded-full bg-rose-50 text-rose-700 border border-rose-100">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <circle cx="12" cy="12" r="10" />
                             <path d="m4.9 4.9 14.2 14.2" />
                         </svg>
-                        <span
-                            class="mt-3 font-semibold text-gray-700 group-hover:text-white transition-colors text-center">Indisponibilidades</span>
-                    </a>
+                    </span>
+                    <div>
+                        <h3 class="text-slate-900 font-semibold">Indisponibilidades</h3>
+                        <p class="text-sm text-slate-600">Comunicados de sistemas fora do ar.</p>
+                    </div>
+                </a>
 
-                    <!-- CPC -->
-                    <a href="https://www.planalto.gov.br/ccivil_03/_ato2015-2018/2015/lei/l13105.htm" target="_self"
-                        class="group flex flex-col items-center justify-center p-6 bg-gray-50 rounded-xl shadow-md hover:bg-teal-600 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-in-out">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none"
-                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-                            class="text-teal-500 group-hover:text-white transition-colors lucide lucide-scale">
+                <a class="rounded-xl border border-slate-200 bg-white p-5 hover:shadow-md transition shadow-sm flex items-start gap-3"
+                    href="https://www.planalto.gov.br/ccivil_03/_ato2015-2018/2015/lei/l13105.htm" target="_self">
+                    <span
+                        class="flex h-10 w-10 items-center justify-center rounded-full bg-slate-50 text-slate-700 border border-slate-100">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <path d="m16 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z" />
                             <path d="m2 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z" />
                             <path d="M7 21h10" />
                             <path d="M12 3v18" />
                             <path d="M3 7h2c2 0 5-1 7-2 2 1 5 2 7 2h2" />
                         </svg>
-                        <span
-                            class="mt-3 font-semibold text-gray-700 group-hover:text-white transition-colors text-center">CPC</span>
-                    </a>
+                    </span>
+                    <div>
+                        <h3 class="text-slate-900 font-semibold">CPC</h3>
+                        <p class="text-sm text-slate-600">Texto integral do CPC.</p>
+                    </div>
+                </a>
 
-                    <!-- Lei 9.099/95 -->
-                    <a href="https://www.planalto.gov.br/ccivil_03/leis/l9099.htm" target="_self"
-                        class="group flex flex-col items-center justify-center p-6 bg-gray-50 rounded-xl shadow-md hover:bg-teal-600 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-in-out">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none"
-                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-                            class="text-teal-500 group-hover:text-white transition-colors lucide lucide-file-text">
+                <a class="rounded-xl border border-slate-200 bg-white p-5 hover:shadow-md transition shadow-sm flex items-start gap-3"
+                    href="https://www.planalto.gov.br/ccivil_03/leis/l9099.htm" target="_self">
+                    <span
+                        class="flex h-10 w-10 items-center justify-center rounded-full bg-green-50 text-green-700 border border-green-100">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z" />
                             <polyline points="14 2 14 8 20 8" />
-                            <line x1="16" x2="8" y1="13" y2="13" />
-                            <line x1="16" x2="8" y1="17" y2="17" />
-                            <line x1="10" x2="8" y1="9" y2="9" />
+                            <path d="M16 13H8" />
+                            <path d="M16 17H8" />
+                            <path d="M10 9H8" />
                         </svg>
-                        <span
-                            class="mt-3 font-semibold text-gray-700 group-hover:text-white transition-colors text-center">Lei
-                            9.099/95</span>
-                    </a>
+                    </span>
+                    <div>
+                        <h3 class="text-slate-900 font-semibold">Lei 9.099/95</h3>
+                        <p class="text-sm text-slate-600">Lei dos Juizados Especiais.</p>
+                    </div>
+                </a>
 
-                    <!-- Código Civil -->
-                    <a href="https://www.planalto.gov.br/ccivil_03/leis/2002/l10406compilada.htm" target="_self"
-                        class="group flex flex-col items-center justify-center p-6 bg-gray-50 rounded-xl shadow-md hover:bg-teal-600 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-in-out">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none"
-                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-                            class="text-teal-500 group-hover:text-white transition-colors lucide lucide-book-marked">
+                <a class="rounded-xl border border-slate-200 bg-white p-5 hover:shadow-md transition shadow-sm flex items-start gap-3"
+                    href="https://www.planalto.gov.br/ccivil_03/leis/2002/l10406compilada.htm" target="_self">
+                    <span
+                        class="flex h-10 w-10 items-center justify-center rounded-full bg-blue-50 text-blue-700 border border-blue-100">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20" />
                             <path d="m14 2-4.5 4.5" />
                         </svg>
-                        <span
-                            class="mt-3 font-semibold text-gray-700 group-hover:text-white transition-colors text-center">Código
-                            Civil</span>
-                    </a>
+                    </span>
+                    <div>
+                        <h3 class="text-slate-900 font-semibold">Código Civil</h3>
+                        <p class="text-sm text-slate-600">Texto compilado do CC.</p>
+                    </div>
+                </a>
 
-                    <!-- Normas da Corregedoria -->
-                    <a href="https://www.tjsp.jus.br/Corregedoria/Comunicados/NormasJudiciais" target="_self"
-                        class="group flex flex-col items-center justify-center p-6 bg-gray-50 rounded-xl shadow-md hover:bg-teal-600 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-in-out">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none"
-                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-                            class="text-teal-500 group-hover:text-white transition-colors lucide lucide-archive">
+                <a class="rounded-xl border border-slate-200 bg-white p-5 hover:shadow-md transition shadow-sm flex items-start gap-3"
+                    href="https://www.tjsp.jus.br/Corregedoria/Comunicados/NormasJudiciais" target="_self">
+                    <span
+                        class="flex h-10 w-10 items-center justify-center rounded-full bg-orange-50 text-orange-700 border border-orange-100">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <rect width="20" height="5" x="2" y="3" rx="1" />
                             <path d="M4 8v11a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8" />
                             <path d="M10 12h4" />
                         </svg>
-                        <span
-                            class="mt-3 font-semibold text-gray-700 group-hover:text-white transition-colors text-center">Normas
-                            da Corregedoria</span>
-                    </a>
+                    </span>
+                    <div>
+                        <h3 class="text-slate-900 font-semibold">Normas da Corregedoria</h3>
+                        <p class="text-sm text-slate-600">Normas judiciais TJSP.</p>
+                    </div>
+                </a>
 
-                    <!-- Enunciados Fonaje -->
-                    <a href="https://www.cnj.jus.br/enunciados-civeis/" target="_self"
-                        class="group flex flex-col items-center justify-center p-6 bg-gray-50 rounded-xl shadow-md hover:bg-teal-600 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-in-out">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none"
-                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-                            class="text-teal-500 group-hover:text-white transition-colors lucide lucide-quote">
+                <a class="rounded-xl border border-slate-200 bg-white p-5 hover:shadow-md transition shadow-sm flex items-start gap-3"
+                    href="https://www.cnj.jus.br/enunciados-civeis/" target="_self">
+                    <span
+                        class="flex h-10 w-10 items-center justify-center rounded-full bg-purple-50 text-purple-700 border border-purple-100">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M3 21c3 0 7-1 7-8V5c0-1.25-.756-2.017-2-2H4c-1.25 0-2 .75-2 2v6c0 7 5 8 8 8Z" />
                             <path d="M14 21c3 0 7-1 7-8V5c0-1.25-.756-2.017-2-2h-4c-1.25 0-2 .75-2 2v6c0 7 5 8 8 8Z" />
                         </svg>
-                        <span
-                            class="mt-3 font-semibold text-gray-700 group-hover:text-white transition-colors text-center">Enunciados
-                            Fonaje</span>
-                    </a>
+                    </span>
+                    <div>
+                        <h3 class="text-slate-900 font-semibold">Enunciados Fonaje</h3>
+                        <p class="text-sm text-slate-600">Enunciados cíveis do Fonaje.</p>
+                    </div>
+                </a>
 
-                    <!-- Enunciados Fojesp -->
-                    <a href="https://apamagis.org.br/fojesp/" target="_self"
-                        class="group flex flex-col items-center justify-center p-6 bg-gray-50 rounded-xl shadow-md hover:bg-teal-600 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-in-out">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none"
-                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-                            class="text-teal-500 group-hover:text-white transition-colors lucide lucide-message-square-quote">
+                <a class="rounded-xl border border-slate-200 bg-white p-5 hover:shadow-md transition shadow-sm flex items-start gap-3"
+                    href="https://apamagis.org.br/fojesp/" target="_self">
+                    <span
+                        class="flex h-10 w-10 items-center justify-center rounded-full bg-sky-50 text-sky-700 border border-sky-100">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
                             <path
                                 d="M8 12a.5.5 0 0 0-.5.5v0a.5.5 0 0 0 .5.5h.5a.5.5 0 0 1 .5.5v0a.5.5 0 0 1-.5.5h-.5a.5.5 0 0 0-.5.5v0a.5.5 0 0 0 .5.5" />
                             <path
                                 d="M16 12a.5.5 0 0 0-.5.5v0a.5.5 0 0 0 .5.5h.5a.5.5 0 0 1 .5.5v0a.5.5 0 0 1-.5.5h-.5a.5.5 0 0 0-.5.5v0a.5.5 0 0 0 .5.5" />
                         </svg>
-                        <span
-                            class="mt-3 font-semibold text-gray-700 group-hover:text-white transition-colors text-center">Enunciados
-                            Fojesp</span>
-                    </a>
+                    </span>
+                    <div>
+                        <h3 class="text-slate-900 font-semibold">Enunciados Fojesp</h3>
+                        <p class="text-sm text-slate-600">Enunciados do Fojesp.</p>
+                    </div>
+                </a>
 
-                    <!-- Portal do Servidor -->
-                    <a href="https://www.tjsp.jus.br/rhf/acesso/Login/SignIn?ReturnUrl=%2Frhf%2Facesso%2Fwsfederation%3Fwtrealm%3Dhttps%253a%252f%252fwww.tjsp.jus.br%252fRHF%252fPortalServidor%252f%26wctx%3DWsFedOwinState%253dAcPVYCMH4pzOt7H31xiqN6Cz49TMcbf80HkZqx9hnOrFsRdhMqpPMk4rcvWRGQEvgE_EPaGbNBuxYiNLHnoQmMz13PPH7cysnWGGdABIEzafHZQApeUeCYdtBsANXX2Kt8eiCiLpyyw5kCKuONOxQw%26wa%3Dwsignin1.0"
-                        target="_self"
-                        class="group flex flex-col items-center justify-center p-6 bg-gray-50 rounded-xl shadow-md hover:bg-teal-600 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-in-out">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none"
-                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-                            class="text-teal-500 group-hover:text-white transition-colors lucide lucide-briefcase">
+                <a class="rounded-xl border border-slate-200 bg-white p-5 hover:shadow-md transition shadow-sm flex items-start gap-3"
+                    href="https://www.tjsp.jus.br/rhf/acesso/Login/SignIn?ReturnUrl=%2Frhf%2Facesso%2Fwsfederation%3Fwtrealm%3Dhttps%253a%252f%252fwww.tjsp.jus.br%252fRHF%252fPortalServidor%252f%26wctx%3DWsFedOwinState%253dAcPVYCMH4pzOt7H31xiqN6Cz49TMcbf80HkZqx9hnOrFsRdhMqpPMk4rcvWRGQEvgE_EPaGbNBuxYiNLHnoQmMz13PPH7cysnWGGdABIEzafHZQApeUeCYdtBsANXX2Kt8eiCiLpyyw5kCKuONOxQw%26wa%3Dwsignin1.0"
+                    target="_self">
+                    <span
+                        class="flex h-10 w-10 items-center justify-center rounded-full bg-cyan-50 text-cyan-700 border border-cyan-100">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <rect width="20" height="14" x="2" y="7" rx="2" ry="2" />
                             <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16" />
                         </svg>
-                        <span
-                            class="mt-3 font-semibold text-gray-700 group-hover:text-white transition-colors text-center">Portal
-                            do Servidor</span>
-                    </a>
+                    </span>
+                    <div>
+                        <h3 class="text-slate-900 font-semibold">Portal do servidor</h3>
+                        <p class="text-sm text-slate-600">Acesso ao RHF/Portal do Servidor.</p>
+                    </div>
+                </a>
 
-                    <!-- Lista de E-mails (empresas) -->
-                    <a href="https://apps.powerapps.com/play/e/default-3590422d-8e59-4036-9245-d6edd8cc0f7a/a/7932e893-0b26-499e-8e48-8239f9181721?tenantId=3590422d-8e59-4036-9245-d6edd8cc0f7a&hint=1417467a-65d3-4fe5-a4bd-262658e564ac&sourcetime=1730999267210&source=portal"
-                        target="_self"
-                        class="group flex flex-col items-center justify-center p-6 bg-gray-50 rounded-xl shadow-md hover:bg-teal-600 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-in-out">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none"
-                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-                            class="text-teal-500 group-hover:text-white transition-colors lucide lucide-mail">
+                <a class="rounded-xl border border-slate-200 bg-white p-5 hover:shadow-md transition shadow-sm flex items-start gap-3"
+                    href="https://apps.powerapps.com/play/e/default-3590422d-8e59-4036-9245-d6edd8cc0f7a/a/7932e893-0b26-499e-8e48-8239f9181721?tenantId=3590422d-8e59-4036-9245-d6edd8cc0f7a&amp;hint=1417467a-65d3-4fe5-a4bd-262658e564ac&amp;sourcetime=1730999267210&amp;source=portal"
+                    target="_self">
+                    <span
+                        class="flex h-10 w-10 items-center justify-center rounded-full bg-fuchsia-50 text-fuchsia-700 border border-fuchsia-100">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <rect width="20" height="16" x="2" y="4" rx="2" />
                             <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
                         </svg>
-                        <span
-                            class="mt-3 font-semibold text-gray-700 group-hover:text-white transition-colors text-center">Lista
-                            de E-mails (empresas)</span>
-                    </a>
+                    </span>
+                    <div>
+                        <h3 class="text-slate-900 font-semibold">Lista de e-mails (empresas)</h3>
+                        <p class="text-sm text-slate-600">Contatos de empresas para ofícios.</p>
+                    </div>
+                </a>
 
-                    <!-- Busca CEP -->
-                    <a href="https://buscacepinter.correios.com.br/app/endereco/index.php" target="_self"
-                        class="group flex flex-col items-center justify-center p-6 bg-gray-50 rounded-xl shadow-md hover:bg-teal-600 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-in-out">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none"
-                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-                            class="text-teal-500 group-hover:text-white transition-colors lucide lucide-search">
+                <a class="rounded-xl border border-slate-200 bg-white p-5 hover:shadow-md transition shadow-sm flex items-start gap-3"
+                    href="https://buscacepinter.correios.com.br/app/endereco/index.php" target="_self">
+                    <span
+                        class="flex h-10 w-10 items-center justify-center rounded-full bg-lime-50 text-lime-700 border border-lime-100">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <circle cx="11" cy="11" r="8" />
                             <path d="m21 21-4.3-4.3" />
                         </svg>
-                        <span
-                            class="mt-3 font-semibold text-gray-700 group-hover:text-white transition-colors text-center">Busca
-                            CEP</span>
-                    </a>
+                    </span>
+                    <div>
+                        <h3 class="text-slate-900 font-semibold">Busca CEP</h3>
+                        <p class="text-sm text-slate-600">Pesquisa de endereços (Correios).</p>
+                    </div>
+                </a>
 
-                    <!-- Busca Jurisprudência TJSP -->
-                    <a href="https://www.tjsp.jus.br/Jurisprudencia" target="_self"
-                        class="group flex flex-col items-center justify-center p-6 bg-gray-50 rounded-xl shadow-md hover:bg-teal-600 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-in-out">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none"
-                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-                            class="text-teal-500 group-hover:text-white transition-colors lucide lucide-search-code">
+                <a class="rounded-xl border border-slate-200 bg-white p-5 hover:shadow-md transition shadow-sm flex items-start gap-3"
+                    href="https://www.tjsp.jus.br/Jurisprudencia" target="_self">
+                    <span
+                        class="flex h-10 w-10 items-center justify-center rounded-full bg-indigo-50 text-indigo-700 border border-indigo-100">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M15.5 15.5 19 19" />
                             <path d="M5 12a7 7 0 1 0 14 0 7 7 0 1 0-14 0Z" />
                             <path d="m9.5 7.5-3 3 3 3" />
                             <path d="m14.5 16.5 3-3-3-3" />
                         </svg>
-                        <span
-                            class="mt-3 font-semibold text-gray-700 group-hover:text-white transition-colors text-center">Busca
-                            Jurisprudência TJSP</span>
-                    </a>
-                    <!-- Login EPROC -->
-                    <a href="https://eproc1g.tjsp.jus.br/eproc/" target="_self"
-                        class="group flex flex-col items-center justify-center p-6 bg-gray-50 rounded-xl shadow-md hover:bg-teal-600 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-in-out">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none"
-                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-                            class="text-teal-500 group-hover:text-white transition-colors lucide lucide-log-in">
+                    </span>
+                    <div>
+                        <h3 class="text-slate-900 font-semibold">Jurisprudência TJSP</h3>
+                        <p class="text-sm text-slate-600">Pesquisa de julgados do TJSP.</p>
+                    </div>
+                </a>
+
+                <a class="rounded-xl border border-slate-200 bg-white p-5 hover:shadow-md transition shadow-sm flex items-start gap-3"
+                    href="https://eproc1g.tjsp.jus.br/eproc/" target="_self">
+                    <span
+                        class="flex h-10 w-10 items-center justify-center rounded-full bg-slate-50 text-slate-700 border border-slate-100">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4" />
                             <polyline points="10 17 15 12 10 7" />
                             <line x1="15" x2="3" y1="12" y2="12" />
                         </svg>
-                        <span
-                            class="mt-3 font-semibold text-gray-700 group-hover:text-white transition-colors text-center">Login
-                            EPROC</span>
-                    </a>
-
-
-                </div>
-            </section>
-        </main>
+                    </span>
+                    <div>
+                        <h3 class="text-slate-900 font-semibold">Login EPROC</h3>
+                        <p class="text-sm text-slate-600">Acesso ao EPROC 1G.</p>
+                    </div>
+                </a>
+            </div>
+        </section>
     </div>
+
+    <div id="infoModal" class="fixed inset-0 z-50 hidden">
+        <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"></div>
+        <div class="relative mx-auto mt-24 max-w-lg rounded-2xl border border-slate-200 bg-white p-6 shadow-xl">
+            <div class="flex items-start justify-between gap-4">
+                <div>
+                    <p class="text-xs uppercase tracking-[0.2em] text-slate-500">Detalhes</p>
+                    <h3 id="modalTitle" class="text-2xl font-semibold text-slate-900">Título</h3>
+                    <p id="modalDesc" class="text-slate-700 mt-2">Descrição</p>
+                </div>
+                <button id="modalClose"
+                    class="h-10 w-10 rounded-full bg-slate-100 text-slate-700 border border-slate-200 hover:bg-slate-200 transition"
+                    aria-label="Fechar modal">×</button>
+            </div>
+            <div class="mt-6 flex justify-end gap-2">
+                <button id="modalDismiss"
+                    class="px-4 py-2 rounded-lg border border-slate-200 text-slate-700 hover:bg-slate-50 transition">Fechar</button>
+                <a id="modalLink" class="px-4 py-2 rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 transition"
+                    href="#" target="_self">Abrir ferramenta</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const modal = document.getElementById('infoModal');
+        const modalTitle = document.getElementById('modalTitle');
+        const modalDesc = document.getElementById('modalDesc');
+        const modalLink = document.getElementById('modalLink');
+        const closeButtons = [document.getElementById('modalClose'), document.getElementById('modalDismiss')];
+
+        document.querySelectorAll('[data-modal]').forEach(btn => {
+            btn.addEventListener('click', () => {
+                modalTitle.textContent = btn.getAttribute('title') || 'Ferramenta';
+                modalDesc.textContent = btn.getAttribute('data-desc') || '';
+                modalLink.href = btn.getAttribute('data-link') || '#';
+                modal.classList.remove('hidden');
+                document.body.classList.add('overflow-hidden');
+            });
+        });
+
+        const hideModal = () => {
+            modal.classList.add('hidden');
+            document.body.classList.remove('overflow-hidden');
+        };
+
+        closeButtons.forEach(btn => btn.addEventListener('click', hideModal));
+        modal.addEventListener('click', event => {
+            if (event.target === modal.firstElementChild) {
+                hideModal();
+            }
+        });
+        document.addEventListener('keydown', event => {
+            if (event.key === 'Escape' && !modal.classList.contains('hidden')) hideModal();
+        });
+    </script>
 </body>
 
 </html>
