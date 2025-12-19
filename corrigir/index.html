@@ -612,22 +612,8 @@
                                 const y = current.getFullYear();
                                 const key = `${y}-${m}`;
 
-                                let fatorMes = tabelaTJSP[key];
-                                let mA = parseInt(m) - 1; let aA = parseInt(y);
-                                if (mA === 0) { mA = 12; aA--; }
-                                let keyAnt = `${aA}-${String(mA).padStart(2, '0')}`;
-                                let fatorAnt = tabelaTJSP[keyAnt];
-
-                                let ipcaMensal = 0;
-                                if (fatorMes && fatorAnt) {
-                                    ipcaMensal = ((fatorMes / fatorAnt) - 1) * 100;
-                                }
-
-                                let selic = selicMensal[key] || 0.85;
-                                let spread = selic - ipcaMensal;
-                                if (spread < 0) spread = 0;
-
-                                taxaJurosTotal += spread;
+                                const taxaLegal = TJSPIndices.getTaxaLegalMensal(key, selicMensal) || 0;
+                                taxaJurosTotal += taxaLegal;
                                 current.setMonth(current.getMonth() + 1);
                             }
                         }
