@@ -21,6 +21,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="../tjsp-indices.js"></script>
     <style>
         body {
             font-family: 'Inter', sans-serif;
@@ -527,6 +528,7 @@
             let ipcaData = {};
             let ipca15Data = {};
             let monthlySelicData = {};
+            let tabelaTJSP = { ...TJSPIndices.baseTabela };
             let lastCalculationData = null;
             let executadoCount = 0;
             const maxExecutados = 4;
@@ -540,39 +542,22 @@
                 const startDate = formatDateForApi(fiveYearsAgo);
                 const endDate = formatDateForApi(today);
 
-                const IPCA_CODE = 433, IPCA15_CODE = 7478, SELIC_DAILY_CODE = 11;
-                const ipcaUrl = `https://api.bcb.gov.br/dados/serie/bcdata.sgs.${IPCA_CODE}/dados?formato=json&dataInicial=${startDate}&dataFinal=${endDate}`;
-                const ipca15Url = `https://api.bcb.gov.br/dados/serie/bcdata.sgs.${IPCA15_CODE}/dados?formato=json&dataInicial=${startDate}&dataFinal=${endDate}`;
-                const selicUrl = `https://api.bcb.gov.br/dados/serie/bcdata.sgs.${SELIC_DAILY_CODE}/dados?formato=json&dataInicial=${startDate}&dataFinal=${endDate}`;
+                const IPCA15_CODE = 7478, SELIC_DAILY_CODE = 11;
+                const proxyBase = 'https://falling-morning-2baa.eduardocarnello.workers.dev';
+                const ipca15Url = `${proxyBase}/?serie=${IPCA15_CODE}&de=${startDate}&ate=${endDate}`;
+                const selicUrl = `${proxyBase}/?serie=${SELIC_DAILY_CODE}&de=${startDate}&ate=${endDate}`;
 
                 try {
-                    const [ipcaResponse, ipca15Response, selicResponse] = await Promise.all([fetch(ipcaUrl), fetch(ipca15Url), fetch(selicUrl)]);
-                    if (!ipcaResponse.ok || !ipca15Response.ok || !selicResponse.ok) throw new Error('Falha ao buscar dados do Banco Central.');
+                    const [ipca15Response, selicResponse] = await Promise.all([fetch(ipca15Url), fetch(selicUrl)]);
+                    if (!ipca15Response.ok || !selicResponse.ok) throw new Error('Falha ao buscar dados do Banco Central.');
 
-                    const [ipcaJson, ipca15Json, selicJson] = await Promise.all([ipcaResponse.json(), ipca15Response.json(), selicResponse.json()]);
+                    const [ipca15Json, selicJson] = await Promise.all([ipca15Response.json(), selicResponse.json()]);
 
-                    const processMonthlyData = (jsonData) => jsonData.reduce((acc, item) => {
-                        const [day, month, year] = item.data.split('/');
-                        acc[`${year}-${month.padStart(2, '0')}`] = parseFloat(item.valor);
-                        return acc;
-                    }, {});
-
-                    const processDailySelic = (dailyData) => {
-                        const monthlyFactors = dailyData.reduce((acc, item) => {
-                            const [day, month, year] = item.data.split('/');
-                            const key = `${year}-${month.padStart(2, '0')}`;
-                            acc[key] = (acc[key] || 1) * (1 + parseFloat(item.valor) / 100);
-                            return acc;
-                        }, {});
-                        return Object.entries(monthlyFactors).reduce((acc, [key, factor]) => {
-                            acc[key] = (factor - 1) * 100;
-                            return acc;
-                        }, {});
-                    };
-
-                    ipcaData = processMonthlyData(ipcaJson);
-                    ipca15Data = processMonthlyData(ipca15Json);
-                    monthlySelicData = processDailySelic(selicJson);
+                    tabelaTJSP = TJSPIndices.buildTabela(ipca15Json, TJSPIndices.baseTabela);
+                    const ipcaMensalTJSP = TJSPIndices.deriveMonthlyRatesFromTabela(tabelaTJSP);
+                    monthlySelicData = TJSPIndices.computeSelicMensal(selicJson);
+                    ipcaData = ipcaMensalTJSP;
+                    ipca15Data = ipcaMensalTJSP;
 
                 } catch (error) {
                     console.error('Erro ao buscar dados econômicos:', error);
@@ -640,6 +625,20 @@
                 return new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
             };
 
+            const monthKey = (date) => `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+            const getIndiceOrLast = (key) => {
+                const keys = Object.keys(tabelaTJSP).sort();
+                const lastKey = keys[keys.length - 1];
+                const useKey = tabelaTJSP[key] ? key : lastKey;
+                return { key: useKey, value: tabelaTJSP[useKey] };
+            };
+            const getFatorEntre = (keyIni, keyFim) => {
+                const ini = getIndiceOrLast(keyIni);
+                const fim = getIndiceOrLast(keyFim);
+                const fator = ini.value && fim.value ? (fim.value / ini.value) : 1;
+                return { fator, iniValor: ini.value || 1, fimValor: fim.value || 1, chaveIniUsada: ini.key, chaveFimUsada: fim.key };
+            };
+
             const getNextWorkingDay = (date) => {
                 const newDate = new Date(date.getTime());
                 let dayOfWeek = newDate.getDay(); // 0 = Sunday, 6 = Saturday
@@ -678,28 +677,37 @@
                 let correcaoMonetaria = 0;
                 let jurosMora = 0;
                 let valorCorrigido = valorBase;
+                let detalhesIndice = null;
 
                 if (valorBase > 0 && dataInicial && !isNaN(dataInicial) && dataInicial < dataFinal) {
+                    const chaveIni = monthKey(dataInicial);
+                    const chaveFim = monthKey(dataFinal);
+                    const fator = getFatorEntre(chaveIni, chaveFim);
+
+                    valorCorrigido = valorBase * fator.fator;
+                    correcaoMonetaria = valorCorrigido - valorBase;
+
                     let currentDate = new Date(dataInicial.getFullYear(), dataInicial.getMonth(), 1);
                     while (currentDate <= dataFinal) {
-                        const key = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}`;
-
-                        const ipcaRate = (ipcaData[key] || 0) / 100;
-                        valorCorrigido *= (1 + ipcaRate);
-
+                        const key = monthKey(currentDate);
                         const selicRate = (monthlySelicData[key] || 0) / 100;
                         const ipca15Rate = (ipca15Data[key] || 0) / 100;
                         const jurosRate = Math.max(0, selicRate - ipca15Rate);
                         jurosMora += valorBase * jurosRate;
-
                         currentDate.setMonth(currentDate.getMonth() + 1);
                     }
-                    correcaoMonetaria = valorCorrigido - valorBase;
+
+                    detalhesIndice = {
+                        indiceInicial: fator.iniValor,
+                        indiceFinal: fator.fimValor,
+                        chaveIni: fator.chaveIniUsada,
+                        chaveFim: fator.chaveFimUsada
+                    };
                 }
 
                 const valorTotalAtualizado = valorBase + correcaoMonetaria + jurosMora;
 
-                lastUpdateDetails = { valorOriginal: valorBase, correcaoMonetaria, jurosMora, valorTotalAtualizado };
+                lastUpdateDetails = valorBase > 0 ? { valorOriginal: valorBase, correcaoMonetaria, jurosMora, valorTotalAtualizado, ...detalhesIndice } : null;
                 valorAtualizadoOutput.value = formatCurrency(valorTotalAtualizado).replace('R$', '').trim();
 
                 if (isProposal) {
@@ -851,6 +859,9 @@
                     summaryHTML += `<div class="flex justify-between p-2"><span>Valor Original:</span><span class="font-semibold">${formatCurrency(data.updateDetails.valorOriginal)}</span></div>`;
                     summaryHTML += `<div class="flex justify-between p-2"><span>(+) Atualização Monetária (IPCA):</span><span class="font-semibold">${formatCurrency(data.updateDetails.correcaoMonetaria)}</span></div>`;
                     summaryHTML += `<div class="flex justify-between p-2"><span>(+) Juros de Mora (Taxa Legal):</span><span class="font-semibold">${formatCurrency(data.updateDetails.jurosMora)}</span></div>`;
+                    if (data.updateDetails.indiceInicial && data.updateDetails.indiceFinal) {
+                        summaryHTML += `<div class="text-xs text-gray-500 text-right italic">Índices TJSP: ${data.updateDetails.indiceInicial.toFixed(6)} → ${data.updateDetails.indiceFinal.toFixed(6)}</div>`;
+                    }
                 }
 
                 const hasUpdate = data.updateDetails && data.updateDetails.valorOriginal > 0;
@@ -1136,7 +1147,13 @@
                 const petitionHTML = getPetitionHTML();
                 const calculationHTML = dom.resultsContainer.innerHTML;
                 if (!petitionHTML) return;
-                const finalHTML = `<h2 class="text-xl font-bold text-center mb-4">Página 1: Petição</h2><div class="p-8 border shadow-lg bg-white mx-auto" style="width: 210mm; min-height: 297mm;">${petitionHTML}</div><h2 class="text-xl font-bold text-center mt-8 mb-4">Página 2: Demonstrativo de Cálculo</h2><div class="p-8 border shadow-lg bg-white mx-auto" style="width: 210mm;">${calculationHTML}</div>`;
+                const idxIni = lastCalculationData.updateDetails?.indiceInicial;
+                const idxFim = lastCalculationData.updateDetails?.indiceFinal;
+                const indicesText = (idxIni && idxFim)
+                    ? `Índices TJSP: ${idxIni.toFixed(6)} → ${idxFim.toFixed(6)} | Correção pela Tabela Prática (IPCA-15) | Juros = max[SELIC mensal − IPCA-15], sem negativos.`
+                    : 'Índices TJSP: Correção pela Tabela Prática (IPCA-15) | Juros = max[SELIC mensal − IPCA-15], sem negativos.';
+                const indicesLine = `<p class="mt-4 text-xs text-gray-500 text-right border-t pt-2">${indicesText}</p>`;
+                const finalHTML = `<h2 class="text-xl font-bold text-center mb-4">Página 1: Petição</h2><div class="p-8 border shadow-lg bg-white mx-auto" style="width: 210mm; min-height: 297mm;">${petitionHTML}</div><h2 class="text-xl font-bold text-center mt-8 mb-4">Página 2: Demonstrativo de Cálculo</h2><div class="p-8 border shadow-lg bg-white mx-auto" style="width: 210mm;">${calculationHTML}${indicesLine}</div>`;
                 dom.previewContent.innerHTML = finalHTML;
                 dom.previewModal.classList.remove('hidden');
             }
