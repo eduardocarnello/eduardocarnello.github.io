@@ -1,7 +1,12 @@
+export const config = {
+    runtime: 'nodejs18.x',
+    regions: ['gru1'] // prioriza saída pelo data center de SP
+};
+
 export default async function handler(req, res) {
     const { method } = req;
     // Libere os domínios que você quer permitir
-    const allowOrigin = '*'; // ou liste explicitamente
+    const allowOrigin = req.headers.origin || '*';
     res.setHeader('Access-Control-Allow-Origin', allowOrigin);
     res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS');
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
