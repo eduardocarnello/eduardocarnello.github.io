@@ -13,6 +13,11 @@ SERIES: Dict[str, Dict[str, object]] = {
 
 PRIMARY = "https://api.bcb.gov.br/dados/serie/bcdata.sgs.{code}/dados?formato=json&dataInicial=01/01/2020&dataFinal=31/12/2030"
 FALLBACK = "https://olinda.bcb.gov.br/olinda/servico/SGS/versao/v2/odata/ValoresSerie(SERIE={code})?$top=5000&$format=json"
+OLINDA_PARAM = (
+    "https://olinda.bcb.gov.br/olinda/servico/SGS/versao/v2/odata/"
+    "ValoresSerie(SERIE=@codigoSerie,DATAINICIAL=@dataInicial,DATAFINAL=@dataFinal)?"
+    "@codigoSerie={code}&@dataInicial='01/01/2020'&@dataFinal='31/12/2030'&$top=6000&$format=json"
+)
 HEADERS = {
     "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119 Safari/537.36",
     "Accept": "application/json, */*;q=0.8",
@@ -71,11 +76,8 @@ def build_jina(url: str) -> str:
 def fetch_and_save(name: str, code: int, path: pathlib.Path) -> bool:
     path.parent.mkdir(parents=True, exist_ok=True)
     primary = PRIMARY.format(code=code)
-    olinda = f"https://olinda.bcb.gov.br/olinda/servico/SGS/versao/v2/odata/ValoresSerie(SERIE={code})?$top=5000&$format=json"
-    olinda_alt = (
-        "https://olinda.bcb.gov.br/olinda/servico/SGS/versao/v2/odata/"
-        f"ValoresSerie(SERIE=@codigoSerie)?@codigoSerie={code}&$top=5000&$format=json"
-    )
+    olinda = OLINDA_PARAM.format(code=code)
+    olinda_alt = f"https://olinda.bcb.gov.br/olinda/servico/SGS/versao/v2/odata/ValoresSerie(SERIE={code})?$top=6000&$format=json"
     attempts = [
         ("primary", primary),
         ("olinda", olinda),

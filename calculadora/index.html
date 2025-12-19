@@ -477,52 +477,41 @@
             };
 
             const fetchEconomicData = async () => {
-<<<<<<< HEAD
-                const ipca15Url = './data/ipca15.json';
-                const selicUrl = './data/selic.json';
-
-                try {
-                    const [ipca15Response, selicResponse] = await Promise.all([fetch(ipca15Url), fetch(selicUrl)]);
-                    if (!ipca15Response.ok || !selicResponse.ok) throw new Error('Falha ao baixar arquivos de índices.');
-=======
                 const today = new Date();
                 const fiveYearsAgo = new Date(today.getFullYear() - 5, today.getMonth(), today.getDate());
                 const formatDateForApi = (date) => `${String(date.getDate()).padStart(2, '0')}/${String(date.getMonth() + 1).padStart(2, '0')}/${date.getFullYear()}`;
                 const startDate = formatDateForApi(fiveYearsAgo);
                 const endDate = formatDateForApi(today);
 
-                const IPCA_CODE = 433, IPCA15_CODE = 7478, SELIC_DAILY_CODE = 11;
-                const ipcaUrl = `https://api.bcb.gov.br/dados/serie/bcdata.sgs.${IPCA_CODE}/dados?formato=json&dataInicial=${startDate}&dataFinal=${endDate}`;
+                // Séries oficiais BCB (SGS)
+                const IPCA15_CODE = 7478; // IPCA-15
+                const SELIC_DAILY_CODE = 11; // SELIC diária
+
                 const ipca15Url = `https://api.bcb.gov.br/dados/serie/bcdata.sgs.${IPCA15_CODE}/dados?formato=json&dataInicial=${startDate}&dataFinal=${endDate}`;
                 const selicUrl = `https://api.bcb.gov.br/dados/serie/bcdata.sgs.${SELIC_DAILY_CODE}/dados?formato=json&dataInicial=${startDate}&dataFinal=${endDate}`;
 
                 try {
-                    const [ipcaResponse, ipca15Response, selicResponse] = await Promise.all([fetch(ipcaUrl), fetch(ipca15Url), fetch(selicUrl)]);
-                    if (!ipcaResponse.ok || !ipca15Response.ok || !selicResponse.ok) throw new Error('Falha ao buscar dados do Banco Central.');
->>>>>>> parent of abedab6 (Add auto-preview and templates for pedidos, update TJSP index in calculadora)
+                    const [ipca15Response, selicResponse] = await Promise.all([fetch(ipca15Url), fetch(selicUrl)]);
+                    if (!ipca15Response.ok || !selicResponse.ok) throw new Error('Falha ao buscar dados do Banco Central.');
 
-                    const [ipcaJson, ipca15Json, selicJson] = await Promise.all([ipcaResponse.json(), ipca15Response.json(), selicResponse.json()]);
+                    const [ipca15Json, selicJson] = await Promise.all([ipca15Response.json(), selicResponse.json()]);
 
-<<<<<<< HEAD
+                    const processMonthlyData = (jsonData) => jsonData.reduce((acc, item) => {
+                        const [day, month, year] = item.data.split('/');
+                        acc[`${year}-${month.padStart(2, '0')}`] = parseFloat(item.valor);
+                        return acc;
+                    }, {});
+
                     if (!Array.isArray(ipca15Json) || ipca15Json.length === 0) throw new Error('IPCA-15 vazio ou inválido.');
                     if (!Array.isArray(selicJson) || selicJson.length === 0) throw new Error('SELIC vazia ou inválida.');
 
                     processarIPCA15(ipca15Json);
                     recomputarIpcaDeTabela();
-                    monthlySelicData = selicJson.reduce((acc, item) => {
-                        if (!item.data || !item.valor) return acc;
-=======
-                    const processMonthlyData = (jsonData) => jsonData.reduce((acc, item) => {
->>>>>>> parent of abedab6 (Add auto-preview and templates for pedidos, update TJSP index in calculadora)
-                        const [day, month, year] = item.data.split('/');
-                        acc[`${year}-${month}`] = parseFloat(item.valor);
-                        return acc;
-                    }, {});
 
                     const processDailySelic = (dailyData) => {
                         const monthlyFactors = dailyData.reduce((acc, item) => {
                             const [day, month, year] = item.data.split('/');
-                            const key = `${year}-${month}`;
+                            const key = `${year}-${month.padStart(2, '0')}`;
                             acc[key] = (acc[key] || 1) * (1 + parseFloat(item.valor) / 100);
                             return acc;
                         }, {});
@@ -532,7 +521,7 @@
                         }, {});
                     };
 
-                    ipcaData = processMonthlyData(ipcaJson);
+                    ipcaData = processMonthlyData(ipca15Json);
                     ipca15Data = processMonthlyData(ipca15Json);
                     monthlySelicData = processDailySelic(selicJson);
 
