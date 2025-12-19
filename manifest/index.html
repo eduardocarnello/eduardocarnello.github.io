@@ -983,6 +983,7 @@
             let monthlySelicData = {};
             let tabelaTJSP = { ...TJSPIndices.baseTabela };
             let lastCalculationData = null;
+            const jurosNote = 'Juros de mora calculados pela Taxa Legal (Lei 14.905/2024), aplicável a partir de 28/08/2024.';
 
             // --- FUNÇÃO GERAL DE RENDERIZAÇÃO DE PDF ---
             const renderParagraph = (pdf, html, options) => {
@@ -1363,8 +1364,7 @@
 
                         for (let d = new Date(interestDate); d < finalCalcDate; d.setMonth(d.getMonth() + 1)) {
                             const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
-                            let monthlyRate = (monthlySelicData[key] || 0) - (ipca15Data[key] || 0);
-                            monthlyRate = Math.max(0, monthlyRate) / 100;
+                            let monthlyRate = TJSPIndices.getTaxaLegalMensal(key, monthlySelicData) / 100;
                             if (d.getFullYear() === finalCalcDate.getFullYear() && d.getMonth() === finalCalcDate.getMonth()) {
                                 monthlyRate *= finalCalcDate.getDate() / new Date(d.getFullYear(), d.getMonth() + 1, 0).getDate();
                             }
@@ -1563,6 +1563,7 @@
                         ${deductionRowHtml}
                         ${fineRowHtml}
                         <div class="flex justify-between items-center pt-4 border-t mt-2"><p class="text-lg font-bold text-gray-800">Valor Total do Débito:</p><p class="text-3xl font-bold text-indigo-700">${formatCurrency(data.summary.grandTotal)}</p></div>
+                        <p class="text-right text-xs text-gray-500 italic">${jurosNote}</p>
                     </div>`;
                 return html;
             }
@@ -1905,8 +1906,10 @@
                 pdf.text('Valor Total do Débito:', 15, summaryY);
                 pdf.text(formatCurrency(data.summary.grandTotal), 195, summaryY, { align: 'right' });
 
+                // Nota sobre juros de mora (Taxa Legal)
                 pdf.setFontSize(8);
                 pdf.setFont('helvetica', 'italic');
+                pdf.text(jurosNote, 15, summaryY + 7, { maxWidth: 180 });
             };
 
             const generateAgreementCalcPage = (pdf, data) => {
@@ -2003,6 +2006,11 @@
                 pdf.setFont('helvetica', 'bold');
                 pdf.text('Valor Total do Débito:', 15, finalY);
                 pdf.text(formatCurrency(s.grandTotal), 195, finalY, { align: 'right' });
+
+                // Nota sobre juros de mora (Taxa Legal)
+                pdf.setFontSize(8);
+                pdf.setFont('helvetica', 'italic');
+                pdf.text(jurosNote, 15, finalY + 7, { maxWidth: 180 });
 
             };
 

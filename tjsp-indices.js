@@ -128,6 +128,23 @@
         return `${anoAnt}-${String(mesAnt).padStart(2, '0')}`;
     };
 
+    const keyToDate = (chave) => {
+        const [ano, mes] = chave.split('-').map(Number);
+        return new Date(`${ano}-${String(mes).padStart(2, '0')}-01T00:00:00Z`);
+    };
+
+    function getTaxaLegalMensal(chave, selicMensalMap) {
+        const dataMes = keyToDate(chave);
+        const corte = new Date(DATA_CORTE_LEI.getTime());
+        corte.setUTCDate(1); // compara por mês
+        const chaveCorte = `${corte.getUTCFullYear()}-${String(corte.getUTCMonth() + 1).padStart(2, '0')}`;
+
+        if (chave < chaveCorte) {
+            return 1.0; // 1% a.m. antes do corte
+        }
+        return selicMensalMap[chave] || 0; // Taxa Legal = SELIC mensal pós-corte
+    }
+
     function buildTabela(ipcaArray, seed = baseTabela) {
         const tabela = { ...seed };
         ipcaArray.forEach((item) => {
@@ -176,6 +193,7 @@
         buildTabela,
         deriveMonthlyRatesFromTabela,
         computeSelicMensal,
+        getTaxaLegalMensal,
         trunc6,
         DATA_CORTE_LEI
     };

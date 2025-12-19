@@ -690,9 +690,7 @@
                     let currentDate = new Date(dataInicial.getFullYear(), dataInicial.getMonth(), 1);
                     while (currentDate <= dataFinal) {
                         const key = monthKey(currentDate);
-                        const selicRate = (monthlySelicData[key] || 0) / 100;
-                        const ipca15Rate = (ipca15Data[key] || 0) / 100;
-                        const jurosRate = Math.max(0, selicRate - ipca15Rate);
+                        const jurosRate = (TJSPIndices.getTaxaLegalMensal(key, monthlySelicData) || 0) / 100;
                         jurosMora += valorBase * jurosRate;
                         currentDate.setMonth(currentDate.getMonth() + 1);
                     }
