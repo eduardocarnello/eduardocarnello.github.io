@@ -15,6 +15,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="../tjsp-indices.js"></script>
     <style>
         body {
             font-family: 'Inter', sans-serif;
@@ -980,6 +981,7 @@
             let ipcaData = {};
             let ipca15Data = {};
             let monthlySelicData = {};
+            let tabelaTJSP = { ...TJSPIndices.baseTabela };
             let lastCalculationData = null;
 
             // --- FUNÇÃO GERAL DE RENDERIZAÇÃO DE PDF ---
@@ -1115,39 +1117,25 @@
                 const startDate = formatDateForApi(fiveYearsAgo);
                 const endDate = formatDateForApi(today);
 
-                const IPCA_CODE = 433, IPCA15_CODE = 7478, SELIC_DAILY_CODE = 11;
-                const ipcaUrl = `https://api.bcb.gov.br/dados/serie/bcdata.sgs.${IPCA_CODE}/dados?formato=json&dataInicial=${startDate}&dataFinal=${endDate}`;
-                const ipca15Url = `https://api.bcb.gov.br/dados/serie/bcdata.sgs.${IPCA15_CODE}/dados?formato=json&dataInicial=${startDate}&dataFinal=${endDate}`;
-                const selicUrl = `https://api.bcb.gov.br/dados/serie/bcdata.sgs.${SELIC_DAILY_CODE}/dados?formato=json&dataInicial=${startDate}&dataFinal=${endDate}`;
+                const IPCA15_CODE = 7478, SELIC_DAILY_CODE = 11;
+                const proxyBase = 'https://falling-morning-2baa.eduardocarnello.workers.dev';
+                const ipca15Url = `${proxyBase}/?serie=${IPCA15_CODE}&de=${startDate}&ate=${endDate}`;
+                const selicUrl = `${proxyBase}/?serie=${SELIC_DAILY_CODE}&de=${startDate}&ate=${endDate}`;
 
                 try {
-                    const [ipcaResponse, ipca15Response, selicResponse] = await Promise.all([fetch(ipcaUrl), fetch(ipca15Url), fetch(selicUrl)]);
-                    if (!ipcaResponse.ok || !ipca15Response.ok || !selicResponse.ok) throw new Error('Falha ao buscar dados do Banco Central.');
+                    const [ipca15Response, selicResponse] = await Promise.all([fetch(ipca15Url), fetch(selicUrl)]);
+                    if (!ipca15Response.ok || !selicResponse.ok) throw new Error('Falha ao buscar dados do Banco Central.');
 
-                    const [ipcaJson, ipca15Json, selicJson] = await Promise.all([ipcaResponse.json(), ipca15Response.json(), selicResponse.json()]);
+                    const [ipca15Json, selicJson] = await Promise.all([ipca15Response.json(), selicResponse.json()]);
 
-                    const processMonthlyData = (jsonData) => jsonData.reduce((acc, item) => {
-                        const [day, month, year] = item.data.split('/');
-                        acc[`${year}-${month}`] = parseFloat(item.valor);
-                        return acc;
-                    }, {});
+                    if (!Array.isArray(ipca15Json) || ipca15Json.length === 0) throw new Error('IPCA-15 vazio ou inválido.');
+                    if (!Array.isArray(selicJson) || selicJson.length === 0) throw new Error('SELIC vazia ou inválida.');
 
-                    const processDailySelic = (dailyData) => {
-                        const monthlyFactors = dailyData.reduce((acc, item) => {
-                            const [day, month, year] = item.data.split('/');
-                            const key = `${year}-${month}`;
-                            acc[key] = (acc[key] || 1) * (1 + parseFloat(item.valor) / 100);
-                            return acc;
-                        }, {});
-                        return Object.entries(monthlyFactors).reduce((acc, [key, factor]) => {
-                            acc[key] = (factor - 1) * 100;
-                            return acc;
-                        }, {});
-                    };
-
-                    ipcaData = processMonthlyData(ipcaJson);
-                    ipca15Data = processMonthlyData(ipca15Json);
-                    monthlySelicData = processDailySelic(selicJson);
+                    tabelaTJSP = TJSPIndices.buildTabela(ipca15Json, TJSPIndices.baseTabela);
+                    const ipcaMensalTJSP = TJSPIndices.deriveMonthlyRatesFromTabela(tabelaTJSP);
+                    monthlySelicData = TJSPIndices.computeSelicMensal(selicJson);
+                    ipcaData = ipcaMensalTJSP;
+                    ipca15Data = ipcaMensalTJSP;
 
                     calculateBtn.disabled = false;
                     calculateBtn.innerHTML = 'Calcular Valor Atualizado';
@@ -1181,6 +1169,19 @@
             };
 
             const formatCurrency = (value) => value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+            const monthKey = (date) => `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+            const getIndiceOrLast = (key) => {
+                const keys = Object.keys(tabelaTJSP).sort();
+                const lastKey = keys[keys.length - 1];
+                const useKey = tabelaTJSP[key] ? key : lastKey;
+                return { key: useKey, value: tabelaTJSP[useKey] };
+            };
+            const getFatorEntre = (keyIni, keyFim) => {
+                const ini = getIndiceOrLast(keyIni);
+                const fim = getIndiceOrLast(keyFim);
+                const fator = ini.value && fim.value ? (fim.value / ini.value) : 1;
+                return { fator, iniValor: ini.value || 1, fimValor: fim.value || 1, chaveFimUsada: fim.key, chaveIniUsada: ini.key };
+            };
 
             const addRow = () => {
                 const newRow = rowsContainer.querySelector('.calculation-row').cloneNode(true);
@@ -1347,20 +1348,18 @@
 
                     if (originalValue === 0 || !correctionDate) return;
 
-                    let correctedValue = originalValue;
-                    for (let d = new Date(correctionDate); d < finalCalcDate; d.setMonth(d.getMonth() + 1)) {
-                        const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
-                        correctedValue *= (1 + (ipcaData[key] || 0) / 100);
-                    }
+                    const chaveIni = monthKey(correctionDate);
+                    const chaveFim = monthKey(finalCalcDate);
+                    const fatorPeriodo = getFatorEntre(chaveIni, chaveFim);
+                    const correctionFactor = fatorPeriodo.fator;
+                    const correctedValue = originalValue * correctionFactor;
                     const totalCorrection = correctedValue - originalValue;
 
                     let totalInterest = 0;
                     if (descriptionSelect.value !== 'Dedução/Pagamento Parcial' && interestDate) {
-                        let baseForInterest = originalValue;
-                        for (let d = new Date(correctionDate); d < interestDate && d < finalCalcDate; d.setMonth(d.getMonth() + 1)) {
-                            const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
-                            baseForInterest *= (1 + (ipcaData[key] || 0) / 100);
-                        }
+                        const chaveJuros = monthKey(interestDate);
+                        const fatorAteJuros = getFatorEntre(chaveIni, chaveJuros);
+                        const baseForInterest = originalValue * fatorAteJuros.fator;
 
                         for (let d = new Date(interestDate); d < finalCalcDate; d.setMonth(d.getMonth() + 1)) {
                             const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
@@ -1374,7 +1373,7 @@
                     }
 
                     const finalValueForRow = originalValue + totalCorrection + totalInterest;
-                    const rowData = { description, originalValue, totalCorrection, totalInterest, finalValueForRow };
+                    const rowData = { description, originalValue, totalCorrection, totalInterest, finalValueForRow, indexInitial: fatorPeriodo.iniValor, indexFinal: fatorPeriodo.fimValor };
 
                     if (descriptionSelect.value === 'Dedução/Pagamento Parcial') {
                         deductionRows.push(rowData);
@@ -1417,12 +1416,10 @@
                 const installmentsDetails = [];
 
                 const updateValue = (value, dateFrom, dateTo) => {
-                    let updated = value;
-                    for (let d = new Date(dateFrom); d < dateTo; d.setMonth(d.getMonth() + 1)) {
-                        const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
-                        updated *= (1 + (ipcaData[key] || 0) / 100); // Apenas correção IPCA
-                    }
-                    return updated;
+                    const chaveIni = monthKey(dateFrom);
+                    const chaveFim = monthKey(dateTo);
+                    const fatorPeriodo = getFatorEntre(chaveIni, chaveFim);
+                    return value * fatorPeriodo.fator;
                 };
 
                 for (let i = 0; i < totalInstallments; i++) {
@@ -1553,7 +1550,8 @@
                 let html = '<h3 class="text-xl font-bold text-gray-800 mb-4">Resumo do Cálculo de Condenação</h3><div class="space-y-6">';
                 data.rows.forEach((row, index) => {
                     const isDeduction = data.summary.totalDeductions > 0 && row.description.includes('Dedução');
-                    html += `<div class="p-4 border rounded-lg bg-white"><p class="font-semibold text-lg ${isDeduction ? 'text-red-600' : 'text-indigo-700'}">${index + 1}. ${row.description}</p><div class="grid grid-cols-2 md:grid-cols-4 gap-x-4 gap-y-2 mt-2 text-sm"><div><span class="font-medium text-gray-600">Valor Original:</span><br>${formatCurrency(row.originalValue)}</div><div><span class="font-medium text-gray-600">Correção (IPCA):</span><br>${formatCurrency(row.totalCorrection)}</div><div><span class="font-medium text-gray-600">Juros de Mora:</span><br>${formatCurrency(row.totalInterest)}</div><div class="font-bold"><span class="font-medium text-gray-600">Subtotal:</span><br>${formatCurrency(row.finalValueForRow)}</div></div></div>`;
+                    const indexLine = `<p class="mt-2 text-xs text-gray-500 italic">Índice inicial: ${(row.indexInitial ?? 1).toFixed(6)} | Índice final: ${(row.indexFinal ?? 1).toFixed(6)}</p>`;
+                    html += `<div class="p-4 border rounded-lg bg-white"><p class="font-semibold text-lg ${isDeduction ? 'text-red-600' : 'text-indigo-700'}">${index + 1}. ${row.description}</p><div class="grid grid-cols-2 md:grid-cols-4 gap-x-4 gap-y-2 mt-2 text-sm"><div><span class="font-medium text-gray-600">Valor Original:</span><br>${formatCurrency(row.originalValue)}</div><div><span class="font-medium text-gray-600">Correção (IPCA):</span><br>${formatCurrency(row.totalCorrection)}</div><div><span class="font-medium text-gray-600">Juros de Mora:</span><br>${formatCurrency(row.totalInterest)}</div><div class="font-bold"><span class="font-medium text-gray-600">Subtotal:</span><br>${formatCurrency(row.finalValueForRow)}</div></div>${indexLine}</div>`;
                 });
                 html += `</div>`;
 
@@ -1751,7 +1749,8 @@
                 }
 
                 const calculationHTML = resultsContainer.innerHTML;
-                finalHTML += `<h2 class="text-xl font-bold text-center mt-8 mb-4">Página 2: Demonstrativo de Cálculo</h2><div class="p-8 border shadow-lg bg-white mx-auto" style="width: 210mm;"><h2 class="text-2xl font-bold text-gray-800 text-center">Demonstrativo de Cálculo de Débito Judicial</h2><p class="text-center text-gray-600 mt-1">Cálculo realizado em: ${lastCalculationData.finalCalcDate.toLocaleDateString('pt-BR')}</p><p class="my-4"><strong>Processo nº:</strong> ${lastCalculationData.processNumber}</p><hr class="my-4"/>${calculationHTML}</div>`;
+                const indicesLine = '';
+                finalHTML += `<h2 class="text-xl font-bold text-center mt-8 mb-4">Página 2: Demonstrativo de Cálculo</h2><div class="p-8 border shadow-lg bg-white mx-auto" style="width: 210mm;"><h2 class="text-2xl font-bold text-gray-800 text-center">Demonstrativo de Cálculo de Débito Judicial</h2><p class="text-center text-gray-600 mt-1">Cálculo realizado em: ${lastCalculationData.finalCalcDate.toLocaleDateString('pt-BR')}</p><p class="my-4"><strong>Processo nº:</strong> ${lastCalculationData.processNumber}</p><hr class="my-4"/>${calculationHTML}${indicesLine}</div>`;
 
                 previewContent.innerHTML = finalHTML;
                 previewModal.classList.remove('hidden');
@@ -1849,13 +1848,28 @@
                 pdf.text(`Processo nº: ${data.processNumber}`, 15, 40);
 
                 const head = [['Descrição', 'Valor Original', 'Correção (IPCA)', 'Juros de Mora', 'Subtotal']];
-                const body = data.rows.map(row => [
-                    row.description,
-                    { content: formatCurrency(row.originalValue), styles: { halign: 'right' } },
-                    { content: formatCurrency(row.totalCorrection), styles: { halign: 'right' } },
-                    { content: formatCurrency(row.totalInterest), styles: { halign: 'right' } },
-                    { content: formatCurrency(row.finalValueForRow), styles: { halign: 'right' } }
-                ]);
+                const detailStyles = {
+                    halign: 'left',
+                    fontStyle: 'italic',
+                    fontSize: 8,
+                    textColor: [107, 114, 128],
+                    fillColor: [248, 250, 252],
+                    cellPadding: { top: 2, bottom: 3, left: 4, right: 4 }
+                };
+                const body = data.rows.flatMap(row => {
+                    const mainRow = [
+                        row.description,
+                        { content: formatCurrency(row.originalValue), styles: { halign: 'right' } },
+                        { content: formatCurrency(row.totalCorrection), styles: { halign: 'right' } },
+                        { content: formatCurrency(row.totalInterest), styles: { halign: 'right' } },
+                        { content: formatCurrency(row.finalValueForRow), styles: { halign: 'right' } }
+                    ];
+                    const detailText = `Índice inicial: ${(row.indexInitial ?? 1).toFixed(6)} | Índice final: ${(row.indexFinal ?? 1).toFixed(6)}`;
+                    const detailRow = [
+                        { content: detailText, colSpan: 5, styles: detailStyles }
+                    ];
+                    return [mainRow, detailRow];
+                });
 
                 pdf.autoTable({
                     startY: 50, head: head, body: body,
@@ -1890,6 +1904,9 @@
                 pdf.setFont('helvetica', 'bold');
                 pdf.text('Valor Total do Débito:', 15, summaryY);
                 pdf.text(formatCurrency(data.summary.grandTotal), 195, summaryY, { align: 'right' });
+
+                pdf.setFontSize(8);
+                pdf.setFont('helvetica', 'italic');
             };
 
             const generateAgreementCalcPage = (pdf, data) => {
@@ -1986,6 +2003,7 @@
                 pdf.setFont('helvetica', 'bold');
                 pdf.text('Valor Total do Débito:', 15, finalY);
                 pdf.text(formatCurrency(s.grandTotal), 195, finalY, { align: 'right' });
+
             };
 
             const toRoman = (num) => {
