@@ -652,8 +652,9 @@
                 const endDate = formatDateForApi(today);
 
                 const IPCA15_CODE = 7478, SELIC_MENSAL_CODE = 4390;
-                const ipca15Url = `https://api.bcb.gov.br/dados/serie/bcdata.sgs.${IPCA15_CODE}/dados?formato=json&dataInicial=${startIpca15}&dataFinal=${endDate}`;
-                const selicUrl = `https://api.bcb.gov.br/dados/serie/bcdata.sgs.${SELIC_MENSAL_CODE}/dados?formato=json&dataInicial=${startSelic}&dataFinal=${endDate}`;
+                const proxyBase = 'https://eduardocarnello.vercel.app/api/sgs';
+                const ipca15Url = `${proxyBase}?serie=${IPCA15_CODE}&de=${encodeURIComponent(startIpca15)}&ate=${encodeURIComponent(endDate)}`;
+                const selicUrl = `${proxyBase}?serie=${SELIC_MENSAL_CODE}&de=${encodeURIComponent(startSelic)}&ate=${encodeURIComponent(endDate)}`;
 
                 try {
                     const [ipca15Response, selicResponse] = await Promise.all([fetch(ipca15Url), fetch(selicUrl)]);
