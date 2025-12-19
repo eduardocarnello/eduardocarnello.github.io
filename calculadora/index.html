@@ -645,26 +645,22 @@
             };
 
             const fetchEconomicData = async () => {
-                const today = new Date();
-                const formatDateForApi = (date) => `${String(date.getDate()).padStart(2, '0')}/${String(date.getMonth() + 1).padStart(2, '0')}/${date.getFullYear()}`;
-                const startIpca15 = `01/01/${today.getFullYear()}`;
-                const startSelic = '01/01/2024';
-                const endDate = formatDateForApi(today);
-
-                const IPCA15_CODE = 7478, SELIC_MENSAL_CODE = 4390;
-                const proxyBase = 'https://eduardocarnello.vercel.app/api/sgs';
-                const ipca15Url = `${proxyBase}?serie=${IPCA15_CODE}&de=${encodeURIComponent(startIpca15)}&ate=${encodeURIComponent(endDate)}`;
-                const selicUrl = `${proxyBase}?serie=${SELIC_MENSAL_CODE}&de=${encodeURIComponent(startSelic)}&ate=${encodeURIComponent(endDate)}`;
+                const ipca15Url = './data/ipca15.json';
+                const selicUrl = './data/selic.json';
 
                 try {
                     const [ipca15Response, selicResponse] = await Promise.all([fetch(ipca15Url), fetch(selicUrl)]);
-                    if (!ipca15Response.ok || !selicResponse.ok) throw new Error('Falha ao buscar dados do Banco Central.');
+                    if (!ipca15Response.ok || !selicResponse.ok) throw new Error('Falha ao baixar arquivos de índices.');
 
                     const [ipca15Json, selicJson] = await Promise.all([ipca15Response.json(), selicResponse.json()]);
+
+                    if (!Array.isArray(ipca15Json) || ipca15Json.length === 0) throw new Error('IPCA-15 vazio ou inválido.');
+                    if (!Array.isArray(selicJson) || selicJson.length === 0) throw new Error('SELIC vazia ou inválida.');
 
                     processarIPCA15(ipca15Json);
                     recomputarIpcaDeTabela();
                     monthlySelicData = selicJson.reduce((acc, item) => {
+                        if (!item.data || !item.valor) return acc;
                         const [day, month, year] = item.data.split('/');
                         acc[`${year}-${month}`] = parseFloat(item.valor);
                         return acc;
