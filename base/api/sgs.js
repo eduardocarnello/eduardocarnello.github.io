@@ -1,5 +1,5 @@
 export const config = {
-    runtime: 'nodejs18.x',
+    runtime: 'nodejs',
     regions: ['gru1'] // prioriza saída pelo data center de SP
 };
 
