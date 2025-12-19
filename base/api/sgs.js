@@ -14,9 +14,26 @@ export default async function handler(req, res) {
     if (!serie || !de || !ate) return res.status(400).json({ error: 'faltam params' });
 
     const url = `https://api.bcb.gov.br/dados/serie/bcdata.sgs.${serie}/dados?formato=json&dataInicial=${de}&dataFinal=${ate}`;
-    const upstream = await fetch(url);
-    if (!upstream.ok) return res.status(upstream.status).json({ error: 'BCB upstream' });
-    const data = await upstream.json();
 
-    return res.status(200).json(data);
+    try {
+        const upstream = await fetch(url, {
+            method: 'GET',
+            headers: {
+                'User-Agent': 'Mozilla/5.0 (compatible; fetch; eduardocarnello.vercel.app)',
+                'Accept': 'application/json'
+            },
+            cache: 'no-cache',
+            redirect: 'follow'
+        });
+
+        if (!upstream.ok) {
+            const text = await upstream.text();
+            return res.status(upstream.status).json({ error: 'BCB upstream', detail: text || upstream.statusText });
+        }
+
+        const data = await upstream.json();
+        return res.status(200).json(data);
+    } catch (err) {
+        return res.status(500).json({ error: 'fetch failed', detail: err?.message || String(err) });
+    }
 }
