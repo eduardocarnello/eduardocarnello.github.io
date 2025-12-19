@@ -136,6 +136,12 @@
                 margin-top: 0;
             }
 
+            /* Esconde botões menos importantes para uma UI mais limpa */
+            #test-fill-btn,
+            #clear-form-btn {
+                display: none;
+            }
+
             #preview-btn,
             #generate-pdf-btn {
                 flex-grow: 1;
@@ -146,11 +152,6 @@
             .main-columns {
                 grid-template-columns: 1fr;
             }
-        }
-
-        #auto-pedidos-list {
-            max-height: 220px;
-            overflow-y: auto;
         }
     </style>
 </head>
@@ -331,8 +332,6 @@
                                 <textarea
                                     class="no-address-justification w-full mt-1 p-2 border border-gray-300 rounded-lg shadow-sm"
                                     rows="3"></textarea>
-                                <p class="text-xs text-gray-500 mt-1">Será usado no pedido: "A localização do endereço
-                                    do(a) réu(ré) [NOME], uma vez que [sua justificativa]".</p>
                             </div>
 
                             <div class="party-digital-exclusion-field hidden pt-2 mt-2 border-t">
@@ -458,8 +457,6 @@
                                         pedido:</label>
                                     <textarea id="tutela-justificativa" rows="3"
                                         class="w-full p-2 border border-gray-300 rounded-lg shadow-sm"></textarea>
-                                    <p class="text-xs text-gray-500 mt-1">Entrará no texto: "A concessão da tutela de
-                                        urgência para [sua justificativa]".</p>
                                 </div>
                             </div>
                             <div>
@@ -481,8 +478,6 @@
                                         sigilo:</label>
                                     <textarea id="sigilo-justificativa" rows="3"
                                         class="w-full p-2 border border-gray-300 rounded-lg shadow-sm"></textarea>
-                                    <p class="text-xs text-gray-500 mt-1">Entrará no texto: "A tramitação do feito em
-                                        segredo de justiça, pois [sua justificativa]".</p>
                                 </div>
                             </div>
                         </div>
@@ -516,8 +511,6 @@
                                     outro estado, tornando a conciliação inviável):</label>
                                 <textarea id="audiencia-justificativa" rows="2"
                                     class="w-full p-2 border border-gray-300 rounded-lg shadow-sm"></textarea>
-                                <p class="text-xs text-gray-500 mt-1">Entrará no texto: "desinteresse na audiência de
-                                    conciliação, pela seguinte razão: [sua justificativa]".</p>
                             </div>
                         </div>
                     </div>
@@ -547,64 +540,6 @@
                         </label>
                         <textarea id="pedido-content" rows="8"
                             class="w-full p-3 border border-gray-300 rounded-lg shadow-sm"></textarea>
-                        <p class="text-xs text-gray-500 mt-1">Dica: você pode listar em alíneas (a, b, c...). Abaixo
-                            mostramos, em tempo real, o que o app vai acrescentar antes/depois do que você escrever.</p>
-                        <div class="mt-3 space-y-2">
-                            <p class="text-sm text-gray-700 font-medium">Modelos rápidos (clique para inserir e depois
-                                ajuste valores/prazos):</p>
-                            <div id="pedido-templates" class="flex flex-wrap gap-2">
-                                <button type="button"
-                                    data-template="A rescisão do contrato com a devolução integral dos valores pagos."
-                                    class="px-3 py-2 text-sm rounded-lg border border-gray-200 bg-white hover:bg-gray-100">Rescisão
-                                    + devolução</button>
-                                <button type="button"
-                                    data-template="A devolução do valor de R$ ___ a título de danos materiais."
-                                    class="px-3 py-2 text-sm rounded-lg border border-gray-200 bg-white hover:bg-gray-100">Danos
-                                    materiais</button>
-                                <button type="button"
-                                    data-template="A condenação do requerido ao pagamento de R$ ___ a título de danos morais."
-                                    class="px-3 py-2 text-sm rounded-lg border border-gray-200 bg-white hover:bg-gray-100">Danos
-                                    morais</button>
-                                <button type="button"
-                                    data-template="A imediata retirada/baixa do nome do autor dos cadastros de inadimplentes (SPC/Serasa), com comprovação nos autos."
-                                    class="px-3 py-2 text-sm rounded-lg border border-gray-200 bg-white hover:bg-gray-100">Retirada
-                                    de negativação</button>
-                                <button type="button"
-                                    data-template="A obrigação de fazer consistente em [descreva claramente o que deve ser feito], no prazo de ___ dias."
-                                    class="px-3 py-2 text-sm rounded-lg border border-gray-200 bg-white hover:bg-gray-100">Obrigação
-                                    de fazer</button>
-                                <button type="button"
-                                    data-template="A obrigação de não fazer consistente em [descreva a conduta a ser impedida], sob pena de multa."
-                                    class="px-3 py-2 text-sm rounded-lg border border-gray-200 bg-white hover:bg-gray-100">Obrigação
-                                    de não fazer</button>
-                                <button type="button"
-                                    data-template="A substituição do produto/serviço defeituoso por outro novo ou equivalente, em perfeitas condições, no prazo de ___ dias."
-                                    class="px-3 py-2 text-sm rounded-lg border border-gray-200 bg-white hover:bg-gray-100">Substituição
-                                    do produto</button>
-                                <button type="button"
-                                    data-template="A restituição em dobro (art. 42, parágrafo único, CDC) do valor de R$ ___ cobrado indevidamente."
-                                    class="px-3 py-2 text-sm rounded-lg border border-gray-200 bg-white hover:bg-gray-100">Restituição
-                                    em dobro</button>
-                                <button type="button"
-                                    data-template="A entrega do produto/serviço contratado, em perfeitas condições, no prazo de ___ dias."
-                                    class="px-3 py-2 text-sm rounded-lg border border-gray-200 bg-white hover:bg-gray-100">Entrega
-                                    do produto/serviço</button>
-                                <button type="button"
-                                    data-template="A multa diária de R$ ___ em caso de descumprimento da obrigação acima."
-                                    class="px-3 py-2 text-sm rounded-lg border border-gray-200 bg-white hover:bg-gray-100">Multa
-                                    diária</button>
-                            </div>
-                            <p class="text-xs text-gray-500">Cada clique insere uma nova linha no campo PEDIDOS. Depois
-                                edite para ficar fiel ao seu caso.</p>
-                        </div>
-                        <div id="auto-pedidos-hint"
-                            class="mt-3 rounded-lg border border-gray-200 bg-gray-50 p-3 text-sm text-gray-700 space-y-2">
-                            <p class="font-semibold text-gray-800">Como ficará no PDF:</p>
-                            <ul class="list-disc list-outside pl-4 space-y-1 text-gray-700 text-sm"
-                                id="auto-pedidos-list"></ul>
-                            <p class="text-xs text-gray-500">Ordem: citação inicial → seus pedidos digitados → itens
-                                automáticos abaixo.</p>
-                        </div>
                     </div>
 
                     <!-- Seção de Documentos -->
@@ -627,9 +562,9 @@
                     </div>
 
                     <div id="action-buttons-container" class="flex gap-4 justify-end mt-8 flex-wrap">
-                        <button id="test-fill-btn" type="button"
+                        <!--button id="test-fill-btn" type="button"
                             class="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-lg shadow-lg">Preencher
-                            para Teste</button>
+                            para Teste</button-->
                         <button id="clear-form-btn" type="button"
                             class="bg-gray-500 hover:bg-red-600 text-white font-bold py-3 px-6 rounded-lg shadow-lg">Limpar
                             Tudo</button>
@@ -653,27 +588,6 @@
             <div id="preview-content" class="bg-white p-8"
                 style="font-family: 'Times New Roman', Times, serif; color: #111827;">
                 <!-- Conteúdo da prévia será injetado aqui -->
-            </div>
-        </div>
-    </div>
-
-    <!-- Modal de Aviso antes do PDF -->
-    <div id="pdf-warning-modal"
-        class="hidden fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center p-4 z-50">
-        <div class="bg-white rounded-lg shadow-2xl max-w-lg w-full p-6 space-y-4">
-            <h3 class="text-xl font-bold text-gray-800">Atenção</h3>
-            <p class="text-gray-700 leading-relaxed">Você está apenas gerando um arquivo em PDF para imprimir e
-                assinar. Isso <strong>não distribui a ação</strong> nem protocola o processo. Para que o pedido chegue
-                ao
-                Juizado, é necessário apresentar o documento impresso ou enviá-lo conforme as orientações do Tribunal.
-            </p>
-            <div class="flex justify-end gap-3 pt-2">
-                <button id="pdf-warning-cancel-btn" type="button"
-                    class="px-4 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-100">Voltar</button>
-                <button id="pdf-warning-confirm-btn" type="button"
-                    class="px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white font-semibold">Entendi,
-                    gerar
-                    PDF</button>
             </div>
         </div>
     </div>
@@ -714,15 +628,9 @@
             const generatePdfBtn = document.getElementById('generate-pdf-btn');
             const previewBtn = document.getElementById('preview-btn');
             const previewModal = document.getElementById('preview-modal');
-            const pdfWarningModal = document.getElementById('pdf-warning-modal');
-            const pdfWarningConfirmBtn = document.getElementById('pdf-warning-confirm-btn');
-            const pdfWarningCancelBtn = document.getElementById('pdf-warning-cancel-btn');
             const closePreviewBtn = document.getElementById('close-preview-btn');
             const previewContent = document.getElementById('preview-content');
-            const autoPedidosList = document.getElementById('auto-pedidos-list');
-            const pedidoContent = document.getElementById('pedido-content');
-            const pedidoTemplates = document.getElementById('pedido-templates');
-            const testFillBtn = document.getElementById('test-fill-btn');
+            //   const testFillBtn = document.getElementById('test-fill-btn');
 
 
             // --- LÓGICA DO DISCLAIMER ---
@@ -758,74 +666,6 @@
                 e.target.value = !isNaN(parseFloat(value)) ? parseFloat(value).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '';
             };
 
-            const letterForIndex = (idx) => {
-                let n = idx;
-                let res = '';
-                while (n >= 0) {
-                    res = String.fromCharCode(97 + (n % 26)) + res;
-                    n = Math.floor(n / 26) - 1;
-                }
-                return res;
-            };
-
-            const hasPlaceholders = (text) => /___|\[descreva/i.test(text || '');
-
-            const computePedidoItems = (data) => {
-                const items = [];
-
-                if (data.audiencia === 'sim') {
-                    items.push('A citação e intimação da parte ré para comparecer à audiência de conciliação a ser designada, sob pena de revelia;');
-                } else {
-                    items.push('A citação da parte ré para, querendo, apresentar defesa, sob pena de revelia;');
-                }
-
-                const userLines = (data.pedido || '').split('\n').map(l => l.trim()).filter(Boolean);
-                items.push(...userLines);
-
-                if (data.tutela) {
-                    const justificativa = data.tutelaJustificativa || '[justifique a urgência]';
-                    items.push(`A concessão da tutela de urgência para ${justificativa}`);
-                }
-
-                if (data.autores.some(a => a.isExcluded)) {
-                    items.push('A designação de eventuais audiências na modalidade presencial, em razão da declarada exclusão digital da parte autora.');
-                }
-
-                if (data.sigilo) {
-                    const justificativa = data.sigiloJustificativa || '[justifique o sigilo]';
-                    items.push(`A tramitação do feito em segredo de justiça, pois ${justificativa}`);
-                }
-
-                data.reus.forEach(reu => {
-                    if (reu.noAddressJustification) {
-                        const nome = reu.name || 'o réu';
-                        items.push(`A localização do endereço do(a) réu(ré) ${nome}, uma vez que ${reu.noAddressJustification}`);
-                    }
-                });
-
-                items.push('Havendo relação de consumo, a parte autora, desde logo, postula pela inversão do ônus da prova.');
-
-                if (data.audiencia === 'nao') {
-                    items.push('A parte autora manifesta o desinteresse na designação de audiência de conciliação.');
-                }
-
-                return items;
-            };
-
-            const buildAutoPedidosPreview = () => {
-                if (!autoPedidosList) return;
-                autoPedidosList.innerHTML = '';
-
-                const data = getFormData();
-                const items = computePedidoItems(data);
-
-                items.forEach((text, idx) => {
-                    const li = document.createElement('li');
-                    li.textContent = `${letterForIndex(idx)}) ${text}`;
-                    autoPedidosList.appendChild(li);
-                });
-            };
-
             const createPartyElement = (isAuthor) => {
                 const newParty = partyTemplate.firstElementChild.cloneNode(true);
                 if (isAuthor) {
@@ -855,7 +695,6 @@
                 listElement.appendChild(newParty);
                 addInputBehaviors(newParty);
                 updateRemoveButtons();
-                buildAutoPedidosPreview();
             };
 
             const addInputBehaviors = (container) => {
@@ -881,14 +720,7 @@
                     container.querySelector('.address-container').style.display = isChecked ? 'none' : 'block';
                     container.querySelector('.no-cep-option').style.display = isChecked ? 'none' : 'flex';
                     container.querySelector('.no-address-justification-field').classList.toggle('hidden', !isChecked);
-                    buildAutoPedidosPreview();
                 });
-
-                const noAddressJust = container.querySelector('.no-address-justification');
-                if (noAddressJust) noAddressJust.addEventListener('input', buildAutoPedidosPreview);
-
-                const excludedCheck = container.querySelector('.party-excluded');
-                if (excludedCheck) excludedCheck.addEventListener('change', buildAutoPedidosPreview);
 
                 container.querySelectorAll('.party-cep').forEach(input => {
                     input.addEventListener('input', function () {
@@ -920,11 +752,8 @@
                 { value: "Obrigação de Fazer/Não Fazer", text: "Obrigação de Fazer/Não Fazer" },
                 { value: "Rescisão de Contrato c/c Devolução do Dinheiro", text: "Rescisão de Contrato c/c Devolução do Dinheiro" },
                 { value: "Rescisão de Contrato", text: "Rescisão de Contrato" },
-                { value: "Cancelamento/Retirada de Negativação", text: "Cancelamento/Retirada de Negativação" },
-                { value: "Substituição de Produto/Serviço", text: "Substituição de Produto/Serviço" },
                 { value: "Inexigibilidade de Débito", text: "Inexigibilidade de Débito" },
                 { value: "Ação de Cobrança", text: "Ação de Cobrança" },
-                { value: "Revisão de Faturas/Conta", text: "Revisão de Faturas/Conta" },
                 { value: "Defesa do Consumidor (Inscrição Indevida)", text: "Defesa do Consumidor (Inscrição Indevida)" },
                 { value: "Defesa do Consumidor (Produto/Serviço Defeituoso)", text: "Defesa do Consumidor (Produto/Serviço)" },
                 { value: "Outros", text: "Outros (especificar)" },
@@ -967,25 +796,6 @@
             });
 
             actionTypeOptions.addEventListener('change', updateActionTypeDisplay);
-
-            // Atualiza preview conforme campos relevantes mudam
-            [tutelaCheck, sigiloCheck].forEach(el => el.addEventListener('change', buildAutoPedidosPreview));
-            document.getElementById('tutela-justificativa').addEventListener('input', buildAutoPedidosPreview);
-            document.getElementById('sigilo-justificativa').addEventListener('input', buildAutoPedidosPreview);
-            document.getElementById('audiencia-justificativa').addEventListener('input', buildAutoPedidosPreview);
-            pedidoContent.addEventListener('input', buildAutoPedidosPreview);
-            audienciaRadios.forEach(r => r.addEventListener('change', buildAutoPedidosPreview));
-
-            if (pedidoTemplates) {
-                pedidoTemplates.addEventListener('click', (e) => {
-                    const btn = e.target.closest('button[data-template]');
-                    if (!btn) return;
-                    const template = btn.getAttribute('data-template') || '';
-                    const current = pedidoContent.value.trim();
-                    pedidoContent.value = current ? `${current}\n${template}` : template;
-                    buildAutoPedidosPreview();
-                });
-            }
 
             // --- FUNÇÕES DE GERAÇÃO DE CONTEÚDO E PDF ---
 
@@ -1166,17 +976,9 @@
                 }
 
                 if (data.reus.length === 0) { alert("Adicione pelo menos um réu com Nome."); return false; }
-                const reuElements = reusList.querySelectorAll('.party-item');
-                for (const reuEl of reuElements) {
-                    if (reuEl.querySelector('.no-address-check').checked && !reuEl.querySelector('.no-address-justification').value.trim()) {
-                        alert("Quando marcar que não possui o endereço do réu, preencha a justificativa.");
-                        return false;
-                    }
-                }
                 if (!data.actionType) { alert("Selecione ou especifique o tipo de ação."); return false; }
                 if (!data.fatos) { alert("O campo 'DOS FATOS' é obrigatório."); return false; }
                 if (!data.pedido) { alert("O campo 'PEDIDOS' é obrigatório."); return false; }
-                if (hasPlaceholders(data.pedido)) { alert("Complete os espaços marcados com \"___\" ou \"[descreva]\" nos pedidos antes de gerar o PDF."); return false; }
                 if (!data.actionValue) { alert("O campo 'Valor da Causa' é obrigatório."); return false; }
                 if (data.tutela && !data.tutelaJustificativa) { alert("Justifique o pedido de tutela de urgência."); return false; }
                 if (data.sigilo && !data.sigiloJustificativa) { alert("Justifique o pedido de segredo de justiça."); return false; }
@@ -1230,12 +1032,34 @@
 
                 const fatosHTML = data.fatos.split('\n').map(p => `<p style="text-indent: 4em;">${p}</p>`).join('');
 
-                const pedidoItems = computePedidoItems(data);
-                const pedidoHTML = pedidoItems.map((text, idx) => `<p style="text-indent: 4em;">${letterForIndex(idx)}) ${text}</p>`).join('');
+                let citacaoText = `a) A citação da parte ré para, querendo, apresentar defesa, sob pena de revelia;`;
+                if (data.audiencia === 'sim') {
+                    citacaoText = `a) A citação e intimação da parte ré para comparecer à audiência de conciliação a ser designada, sob pena de revelia;`
+                }
 
-                const justificativaAudienciaHTML = (data.audiencia === 'nao' && data.audienciaJustificativa)
-                    ? `<p style="text-indent: 4em;"><em>Justificativa: ${data.audienciaJustificativa}</em></p>`
-                    : '';
+                let pedidoFinal = `${citacaoText}\n\n${data.pedido}`;
+
+                if (data.tutela) pedidoFinal += `\n\n- A concessão da tutela de urgência para ${data.tutelaJustificativa}`;
+                if (data.autores.some(a => a.isExcluded)) pedidoFinal += "\n\n- A designação de eventuais audiências na modalidade presencial, em razão da declarada exclusão digital da parte autora.";
+                if (data.sigilo) pedidoFinal += `\n\n- A tramitação do feito em segredo de justiça, pois ${data.sigiloJustificativa}`;
+                data.reus.forEach(reu => {
+                    if (reu.noAddressJustification) {
+                        pedidoFinal += `\n\n- A localização do endereço do(a) réu(ré) ${reu.name}, uma vez que ${reu.noAddressJustification}`;
+                    }
+                });
+
+                pedidoFinal += "\n\n- Havendo relação de consumo, a parte autora, desde logo, postula pela inversão do ônus da prova.";
+
+                if (data.audiencia === 'sim') {
+                    // Já tratado na citação
+                } else if (data.audiencia === 'nao' && data.audienciaJustificativa) {
+                    pedidoFinal += `\n\n- A parte autora manifesta o desinteresse na designação de audiência de conciliação, pela seguinte razão: ${data.audienciaJustificativa}`;
+                } else if (data.audiencia === 'nao') {
+                    pedidoFinal += "\n\n- A parte autora manifesta o desinteresse na designação de audiência de conciliação.";
+                }
+
+
+                const pedidoHTML = pedidoFinal.split('\n').filter(p => p.trim() !== '').map(p => `<p style="text-indent: 4em;">${p}</p>`).join('');
 
                 const documentsHTML = data.documents.length > 0 ? `<p style="text-indent: 4em;">Acompanham a presente petição os seguintes documentos: ${data.documents.join(', ')}.</p>` : '';
                 const signaturesHTML = data.autores.map(autor => `<div style="text-align: center; margin-top: 60px; page-break-inside: avoid;"><p style="border-top: 1px solid black; width: 75%; margin: 0 auto; padding-top: 5px;">${autor.name.toUpperCase()}</p><p style="margin:0; font-size: 10pt;">${autor.cpf}</p></div>`).join('');
@@ -1279,7 +1103,6 @@
                         <p style="text-align: left; font-weight: bold; margin-top: 1cm; margin-bottom: 0.5cm;">PEDIDOS</p>
                         <p style="text-indent: 4em;">Diante do exposto, requer a Vossa Excelência:</p>
                         ${pedidoHTML}
-                        ${justificativaAudienciaHTML}
                         <p style="margin-top: 1cm;">${documentsHTML}</p>
                         <p>&nbsp;</p>
                         <p>Dá-se à causa o valor de <span style="font-weight: bold;">R$ ${data.actionValue}</span>.</p>
@@ -1334,12 +1157,10 @@
             addAutorBtn.addEventListener('click', () => addParty(autoresList, true));
             addReuBtn.addEventListener('click', () => addParty(reusList, false));
             document.getElementById('action-value').addEventListener('blur', formatValueOnBlur);
-            if (testFillBtn) testFillBtn.addEventListener('click', fillWithTestData);
             document.getElementById('atermacao-app-container').addEventListener('click', (e) => {
                 if (e.target.classList.contains('remove-party-btn')) {
                     e.target.closest('.party-item').remove();
                     updateRemoveButtons();
-                    buildAutoPedidosPreview();
                 }
             });
 
@@ -1397,32 +1218,12 @@
                     // Reset custom dropdown
                     actionTypeOptions.querySelectorAll('.action-type-checkbox').forEach(cb => cb.checked = false);
                     updateActionTypeDisplay();
-                    buildAutoPedidosPreview();
                 }
             });
 
             previewBtn.addEventListener('click', showPreview);
-            generatePdfBtn.addEventListener('click', () => {
-                const data = getFormData();
-                if (!validateForm(data)) return;
-                pdfWarningModal.classList.remove('hidden');
-
-                const confirmHandler = () => {
-                    pdfWarningModal.classList.add('hidden');
-                    pdfWarningConfirmBtn.removeEventListener('click', confirmHandler);
-                    pdfWarningCancelBtn.removeEventListener('click', cancelHandler);
-                    generatePDF();
-                };
-
-                const cancelHandler = () => {
-                    pdfWarningModal.classList.add('hidden');
-                    pdfWarningConfirmBtn.removeEventListener('click', confirmHandler);
-                    pdfWarningCancelBtn.removeEventListener('click', cancelHandler);
-                };
-
-                pdfWarningConfirmBtn.addEventListener('click', confirmHandler);
-                pdfWarningCancelBtn.addEventListener('click', cancelHandler);
-            });
+            generatePdfBtn.addEventListener('click', generatePDF);
+            //   testFillBtn.addEventListener('click', fillWithTestData);
             closePreviewBtn.addEventListener('click', () => previewModal.classList.add('hidden'));
             previewModal.addEventListener('click', (e) => { if (e.target === previewModal) previewModal.classList.add('hidden'); });
 
@@ -1430,7 +1231,6 @@
             addParty(autoresList, true);
             addParty(reusList, false);
             updateRemoveButtons();
-            buildAutoPedidosPreview();
         });
     </script>
 </body>

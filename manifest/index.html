@@ -96,25 +96,16 @@
             opacity: 1;
         }
     </style>
-    <style>
-        .card-surface {
-            background: linear-gradient(145deg, rgba(255, 255, 255, 0.96), rgba(244, 247, 254, 0.96));
-            border: 1px solid rgba(226, 232, 240, 0.8);
-            box-shadow: 0 25px 70px rgba(0, 12, 84, 0.08), 0 8px 24px rgba(0, 0, 0, 0.04);
-        }
-    </style>
 </head>
 
-<body class="bg-gradient-to-br from-slate-50 via-indigo-50 to-white min-h-screen p-6 text-slate-800">
+<body class="bg-gray-100 min-h-screen flex items-center justify-center p-4">
 
-    <div class="w-full max-w-6xl mx-auto card-surface rounded-3xl p-6 md:p-10">
+    <div class="w-full max-w-4xl mx-auto bg-white rounded-2xl shadow-lg p-6 md:p-8">
 
         <header class="text-center mb-8">
-            <p class="uppercase tracking-[0.25em] text-xs font-semibold text-indigo-500 mb-2">JEC • Marília/SP</p>
-            <h1 id="main-title" class="text-3xl md:text-4xl font-bold text-slate-900">Gerador de Documentos Jurídicos
+            <h1 id="main-title" class="text-2xl md:text-3xl font-bold text-gray-800">Gerador de Documentos Jurídicos
             </h1>
-            <p id="main-subtitle" class="text-slate-600 mt-2">Escolha a ferramenta, preencha os campos e gere PDFs
-                prontos para protocolo.</p>
+            <p id="main-subtitle" class="text-gray-500 mt-2">Selecione o tipo de documento que deseja gerar.</p>
         </header>
 
         <main>
@@ -486,24 +477,11 @@
                             <option value="prazo">Pedido de Prazo/Sobrestamento</option>
                             <option value="nomeacaoDefensoria">Pedido de Nomeação de Advogado pela Defensoria</option>
                             <option value="indicacaoBens">Indicação de Bens para Penhora</option>
-                            <option value="desbloqueioPenhora">Levantamento/Desbloqueio de Penhora (Simples)</option>
-                            <option value="desbloqueioDetalhado">Levantamento/Desbloqueio de Penhora (Detalhado)
-                            </option>
+                            <option value="desbloqueioPenhora">Levantamento/Desbloqueio de Penhora</option>
                             <option value="opcao8">Manifestação sobre a Contestação (Genérica - SEM Provas)</option>
                             <option value="opcao9">Manifestação sobre a Contestação (Genérica - COM Provas)</option>
                             <option value="opcao5">Manifestação sobre a Contestação (Reduzida a Termo)</option>
                             <option value="opcao6">Indicação de Provas</option>
-                            <option value="remarcacaoAudiencia">Redesignação de Audiência</option>
-                            <option value="conciliacao">Proposta de Acordo Simples</option>
-                            <option value="expedicaoOficios">Pedido de Expedição de Ofícios</option>
-                            <option value="atualizacaoCadastral">Atualização de Dados Cadastrais</option>
-                            <option value="cumprimentoVoluntario">Cumprimento Voluntário / Pagamento Espontâneo</option>
-                            <option value="certidao">Pedido de Certidão</option>
-                            <option value="retiradaSerasa">Retirada de Anotação em Serasa/Boa Vista</option>
-                            <option value="manifestacaoAcordo">Manifestação sobre Acordo</option>
-                            <option value="retiradaRestricoesRenajud">Retirar Restrições (Renajud/Averbações)</option>
-                            <option value="pesquisaEndereco">Pedido de Pesquisa de Endereço</option>
-                            <option value="repeticaoDiligencia">Repetição de Diligência</option>
                         </select>
                     </div>
                 </div>
@@ -640,9 +618,6 @@
                     <textarea id="prazo-motivo-outro"
                         class="hidden w-full p-3 border border-gray-300 rounded-lg shadow-sm" rows="3"
                         placeholder="Especifique o motivo do pedido de prazo/sobrestamento..."></textarea>
-                    <p class="hidden text-xs text-slate-500" id="prazo-motivo-outro-hint">Este texto aparecerá em: "A
-                        parte solicitante requer a concessão do prazo de [dias] dias para <strong>seu texto
-                            aqui</strong>."</p>
                 </div>
 
                 <!-- Seção de Indicação de Bens -->
@@ -730,486 +705,6 @@
                     <textarea id="desbloqueio-motivo-outro"
                         class="hidden w-full p-3 border border-gray-300 rounded-lg shadow-sm" rows="3"
                         placeholder="Especifique o motivo do pedido de desbloqueio..."></textarea>
-                    <p class="hidden text-xs text-slate-500" id="desbloqueio-motivo-outro-hint">Este texto será usado
-                        em: "O pedido se fundamenta no fato de que os valores bloqueados são provenientes de <strong>seu
-                            texto aqui</strong>."</p>
-                </div>
-
-                <!-- Seção de Levantamento/Desbloqueio detalhado -->
-                <div id="desbloqueio-detalhado-section"
-                    class="hidden space-y-4 mb-6 p-4 border rounded-lg bg-indigo-50/60">
-                    <h3 class="text-lg font-semibold text-gray-800">Detalhes do valor bloqueado</h3>
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700">Natureza do valor</label>
-                            <select id="detalhe-natureza"
-                                class="w-full mt-1 p-2 border border-gray-300 rounded-lg bg-white">
-                                <option value="salario">Salário/Conta salário</option>
-                                <option value="beneficio">Benefício previdenciário (INSS)</option>
-                                <option value="pensao">Pensão alimentícia/depósito de terceiro</option>
-                                <option value="poupanca">Poupança até 40 salários-mínimos</option>
-                                <option value="auxilio">Auxílio/bolsa social</option>
-                                <option value="duplicidade">Bloqueio indevido/duplicado</option>
-                                <option value="subsistencia">Valor essencial à subsistência</option>
-                                <option value="outro">Outro (especificar)</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700">Valor bloqueado (R$)</label>
-                            <input type="text" id="detalhe-valor"
-                                class="value-input w-full mt-1 p-2 border border-gray-300 rounded-lg shadow-sm"
-                                placeholder="Ex: 2.500,00">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700">Data do bloqueio</label>
-                            <input type="text" id="detalhe-data"
-                                class="date-input w-full mt-1 p-2 border border-gray-300 rounded-lg shadow-sm"
-                                placeholder="DD/MM/AAAA">
-                        </div>
-                    </div>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700">Banco/Agência/Conta</label>
-                            <input type="text" id="detalhe-conta"
-                                class="w-full mt-1 p-2 border border-gray-300 rounded-lg shadow-sm"
-                                placeholder="Banco, agência, conta, chave PIX...">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700">Origem do depósito</label>
-                            <input type="text" id="detalhe-origem"
-                                class="w-full mt-1 p-2 border border-gray-300 rounded-lg shadow-sm"
-                                placeholder="Ex: salário de empresa X, benefício Y">
-                        </div>
-                    </div>
-                    <textarea id="detalhe-justificativa" rows="3"
-                        class="w-full p-3 border border-gray-300 rounded-lg shadow-sm"
-                        placeholder="Explique por que o valor é impenhorável ou deve ser liberado..."></textarea>
-                    <p class="text-xs text-slate-500">Este texto será acrescentado após a frase que descreve o bloqueio
-                        e a natureza do valor.</p>
-                </div>
-
-                <!-- Seção de Redesignação de Audiência -->
-                <div id="remarcacao-section" class="hidden space-y-4 mb-6 p-4 border rounded-lg bg-white">
-                    <h3 class="text-lg font-semibold text-gray-800">Redesignação de audiência</h3>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700">Data/Hora da audiência
-                                marcada</label>
-                            <input type="text" id="remarcacao-data"
-                                class="date-input w-full mt-1 p-2 border border-gray-300 rounded-lg shadow-sm"
-                                placeholder="DD/MM/AAAA ou data aproximada">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700">Formato preferido</label>
-                            <select id="remarcacao-formato"
-                                class="w-full mt-1 p-2 border border-gray-300 rounded-lg bg-white">
-                                <option value="remoto">Audiência remota (videoconferência)</option>
-                                <option value="presencial">Audiência presencial</option>
-                                <option value="indiferente">Indiferente</option>
-                            </select>
-                        </div>
-                    </div>
-                    <textarea id="remarcacao-justificativa" rows="3"
-                        class="w-full p-3 border border-gray-300 rounded-lg shadow-sm"
-                        placeholder="Explique o motivo do pedido (atestado, viagem, trabalho, dificuldade de conexão etc.)"></textarea>
-                    <p class="text-xs text-slate-500">O texto será inserido logo após o pedido de remarcação.</p>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700">Datas/turnos indisponíveis</label>
-                            <input type="text" id="remarcacao-indisponiveis"
-                                class="w-full mt-1 p-2 border border-gray-300 rounded-lg shadow-sm"
-                                placeholder="Ex: manhãs de terça, período de férias, etc.">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700">Datas sugeridas</label>
-                            <input type="text" id="remarcacao-sugestao"
-                                class="w-full mt-1 p-2 border border-gray-300 rounded-lg shadow-sm"
-                                placeholder="Ex: a partir de 20/02, qualquer sexta à tarde">
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Seção de Conciliação -->
-                <div id="conciliacao-section" class="hidden space-y-4 mb-6 p-4 border rounded-lg bg-white">
-                    <h3 class="text-lg font-semibold text-gray-800">Conciliação / Proposta</h3>
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700">Valor ofertado (R$)</label>
-                            <input type="text" id="conciliacao-valor"
-                                class="value-input w-full mt-1 p-2 border border-gray-300 rounded-lg shadow-sm"
-                                placeholder="Ex: 1.500,00">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700">Forma</label>
-                            <select id="conciliacao-forma"
-                                class="w-full mt-1 p-2 border border-gray-300 rounded-lg bg-white">
-                                <option value="avista">Pagamento à vista</option>
-                                <option value="parcelado">Pagamento parcelado</option>
-                                <option value="compensacao">Compensação/troca</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700">Parcelas (se houver)</label>
-                            <input type="text" id="conciliacao-parcelas"
-                                class="w-full mt-1 p-2 border border-gray-300 rounded-lg shadow-sm"
-                                placeholder="Ex: 3x de 500,00">
-                        </div>
-                    </div>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700">Primeiro vencimento</label>
-                            <input type="text" id="conciliacao-vencimento"
-                                class="date-input w-full mt-1 p-2 border border-gray-300 rounded-lg shadow-sm"
-                                placeholder="DD/MM/AAAA">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700">Contato para tratativas</label>
-                            <input type="text" id="conciliacao-contato"
-                                class="w-full mt-1 p-2 border border-gray-300 rounded-lg shadow-sm"
-                                placeholder="Telefone/WhatsApp ou e-mail">
-                        </div>
-                    </div>
-                    <textarea id="conciliacao-detalhes" rows="3"
-                        class="w-full p-3 border border-gray-300 rounded-lg shadow-sm"
-                        placeholder="Detalhe condições, descontos, prazos ou documentos que pretende apresentar..."></textarea>
-                    <p class="text-xs text-slate-500">O texto será incluído após a frase que apresenta a proposta.</p>
-                </div>
-
-                <!-- Seção de Expedição de Ofícios -->
-                <div id="oficios-section" class="hidden space-y-4 mb-6 p-4 border rounded-lg bg-white">
-                    <div class="flex items-center justify-between">
-                        <h3 class="text-lg font-semibold text-gray-800">Ofícios a expedir</h3>
-                        <button id="add-oficio-btn" type="button"
-                            class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold py-2 px-4 rounded-lg shadow-md">+
-                            Adicionar Ofício</button>
-                    </div>
-                    <div id="oficios-list" class="space-y-3"></div>
-                    <p class="text-sm text-gray-600">Exemplos: ofício ao empregador, ao banco para extratos, a empresas
-                        de telefonia, escolas, cartórios, hospitais.</p>
-                </div>
-
-                <!-- Seção de Atualização Cadastral -->
-                <div id="cadastro-section" class="hidden space-y-4 mb-6 p-4 border rounded-lg bg-white">
-                    <h3 class="text-lg font-semibold text-gray-800">Atualização de dados de contato</h3>
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700">Novo telefone</label>
-                            <input type="text" id="cadastro-telefone"
-                                class="w-full mt-1 p-2 border border-gray-300 rounded-lg shadow-sm"
-                                placeholder="(XX) XXXXX-XXXX">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700">Novo e-mail</label>
-                            <input type="email" id="cadastro-email"
-                                class="w-full mt-1 p-2 border border-gray-300 rounded-lg shadow-sm"
-                                placeholder="email@exemplo.com">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700">Preferência de intimação</label>
-                            <select id="cadastro-intimacao"
-                                class="w-full mt-1 p-2 border border-gray-300 rounded-lg bg-white">
-                                <option value="email">E-mail</option>
-                                <option value="telefone">Telefone/WhatsApp</option>
-                                <option value="postal">Correio/Oficial de justiça</option>
-                            </select>
-                        </div>
-                    </div>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700">Novo endereço (se aplicável)</label>
-                            <input type="text" id="cadastro-endereco"
-                                class="w-full mt-1 p-2 border border-gray-300 rounded-lg shadow-sm"
-                                placeholder="Rua, nº, bairro, cidade/UF">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700">Referência/Observação</label>
-                            <input type="text" id="cadastro-observacao"
-                                class="w-full mt-1 p-2 border border-gray-300 rounded-lg shadow-sm"
-                                placeholder="Portaria, bloco, melhor horário, etc.">
-                            <p class="text-xs text-slate-500">O texto será incluído após os dados de contato.</p>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Seção de Cumprimento Voluntário -->
-                <div id="cumprimento-section" class="hidden space-y-4 mb-6 p-4 border rounded-lg bg-white">
-                    <h3 class="text-lg font-semibold text-gray-800">Cumprimento voluntário / pagamento</h3>
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700">Valor pago (R$)</label>
-                            <input type="text" id="cumprimento-valor"
-                                class="value-input w-full mt-1 p-2 border border-gray-300 rounded-lg shadow-sm"
-                                placeholder="Ex: 800,00">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700">Data do pagamento</label>
-                            <input type="text" id="cumprimento-data"
-                                class="date-input w-full mt-1 p-2 border border-gray-300 rounded-lg shadow-sm"
-                                placeholder="DD/MM/AAAA">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700">Forma</label>
-                            <select id="cumprimento-forma"
-                                class="w-full mt-1 p-2 border border-gray-300 rounded-lg bg-white">
-                                <option value="pix">PIX</option>
-                                <option value="transferencia">Transferência/Depósito</option>
-                                <option value="boleto">Boleto</option>
-                                <option value="dinheiro">Dinheiro</option>
-                                <option value="cartao">Cartão</option>
-                            </select>
-                        </div>
-                    </div>
-                    <textarea id="cumprimento-comprovante" rows="3"
-                        class="w-full p-3 border border-gray-300 rounded-lg shadow-sm"
-                        placeholder="Identifique o comprovante anexado (ex: print do PIX, comprovante de depósito) e informe se deseja baixa do débito/arquivamento."></textarea>
-                    <p class="text-xs text-slate-500">O texto será incluído logo após a frase sobre pagamento.</p>
-                </div>
-
-                <!-- Seção de Certidão -->
-                <div id="certidao-section" class="hidden space-y-4 mb-6 p-4 border rounded-lg bg-white">
-                    <h3 class="text-lg font-semibold text-gray-800">Pedido de certidão</h3>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700">Tipo</label>
-                            <select id="certidao-tipo"
-                                class="w-full mt-1 p-2 border border-gray-300 rounded-lg bg-white">
-                                <option value="objeto">Certidão de objeto e pé</option>
-                                <option value="transito">Certidão de trânsito em julgado</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700">Finalidade</label>
-                            <input type="text" id="certidao-finalidade"
-                                class="w-full mt-1 p-2 border border-gray-300 rounded-lg shadow-sm"
-                                placeholder="Ex: apresentar a banco/empregador/órgão público">
-                        </div>
-                    </div>
-                    <textarea id="certidao-detalhe" rows="3"
-                        class="w-full p-3 border border-gray-300 rounded-lg shadow-sm"
-                        placeholder="Inclua qualquer informação específica que deseje constar na certidão."></textarea>
-                    <p class="text-xs text-slate-500">O texto será incluído após a frase do tipo e finalidade da
-                        certidão.</p>
-                </div>
-
-                <!-- Seção de Retirada Serasa/Boa Vista -->
-                <div id="serasa-section" class="hidden space-y-4 mb-6 p-4 border rounded-lg bg-white">
-                    <h3 class="text-lg font-semibold text-gray-800">Retirada de anotação (Serasa/Boa Vista)</h3>
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700">Entidade</label>
-                            <input type="text" id="serasa-entidade"
-                                class="w-full mt-1 p-2 border border-gray-300 rounded-lg shadow-sm"
-                                placeholder="Serasa, Boa Vista, SPC...">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700">Data da anotação</label>
-                            <input type="text" id="serasa-data"
-                                class="date-input w-full mt-1 p-2 border border-gray-300 rounded-lg shadow-sm"
-                                placeholder="DD/MM/AAAA">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700">Valor/Lançamento</label>
-                            <input type="text" id="serasa-valor"
-                                class="value-input w-full mt-1 p-2 border border-gray-300 rounded-lg shadow-sm"
-                                placeholder="Ex: 350,00">
-                        </div>
-                    </div>
-                    <textarea id="serasa-justificativa" rows="3"
-                        class="w-full p-3 border border-gray-300 rounded-lg shadow-sm"
-                        placeholder="Informe se o débito foi pago, se há decisão judicial, erro de lançamento, fraude ou acordo anexado."></textarea>
-                    <p class="text-xs text-slate-500">O texto será incluído após a frase que pede a retirada da
-                        anotação.</p>
-                </div>
-
-                <!-- Seção de Manifestação sobre Acordo -->
-                <div id="acordo-section" class="hidden space-y-4 mb-6 p-4 border rounded-lg bg-white">
-                    <h3 class="text-lg font-semibold text-gray-800">Manifestação sobre acordo</h3>
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700">Situação</label>
-                            <select id="acordo-situacao"
-                                class="w-full mt-1 p-2 border border-gray-300 rounded-lg bg-white">
-                                <option value="cumpriu">Cumpriu integralmente</option>
-                                <option value="parcial">Cumpriu parcialmente</option>
-                                <option value="descumpriu">Não cumpriu</option>
-                                <option value="contraproposta">Apresenta Contraproposta</option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <div id="acordo-pagamento-fields" class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700">Parcelas pagas</label>
-                            <input type="text" id="acordo-pagas"
-                                class="w-full mt-1 p-2 border border-gray-300 rounded-lg shadow-sm"
-                                placeholder="Ex: 2 de 5">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700">Valor pago (R$)</label>
-                            <input type="text" id="acordo-valor"
-                                class="value-input w-full mt-1 p-2 border border-gray-300 rounded-lg shadow-sm"
-                                placeholder="Ex: 400,00">
-                        </div>
-                    </div>
-
-                    <div id="acordo-diligencias" class="hidden space-y-2">
-                        <label class="block text-sm font-medium text-gray-700">Diligências para prosseguimento</label>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm">
-                            <label class="flex items-center"><input type="checkbox" id="acordo-sisbajud"
-                                    class="h-4 w-4 text-indigo-600 border-gray-300 rounded mr-2"> SISBAJUD</label>
-                            <label class="flex items-center"><input type="checkbox" id="acordo-renajud"
-                                    class="h-4 w-4 text-indigo-600 border-gray-300 rounded mr-2"> RENAJUD</label>
-                            <label class="flex items-center"><input type="checkbox" id="acordo-mandado"
-                                    class="h-4 w-4 text-indigo-600 border-gray-300 rounded mr-2"> Mandado de
-                                penhora/avaliação</label>
-                            <label class="flex items-center"><input type="checkbox" id="acordo-outros-check"
-                                    class="h-4 w-4 text-indigo-600 border-gray-300 rounded mr-2"> Outros</label>
-                        </div>
-                        <input type="text" id="acordo-outros-text"
-                            class="hidden w-full p-2 border border-gray-300 rounded-lg"
-                            placeholder="Descreva outras diligências desejadas">
-                    </div>
-
-                    <div id="acordo-contraproposta" class="hidden space-y-3">
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700">Valor a pagar (R$)</label>
-                                <input type="text" id="acordo-contra-valor"
-                                    class="value-input w-full mt-1 p-2 border border-gray-300 rounded-lg shadow-sm"
-                                    placeholder="Ex: 1.200,00">
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700">Nº de parcelas</label>
-                                <input type="text" id="acordo-contra-parcelas"
-                                    class="w-full mt-1 p-2 border border-gray-300 rounded-lg shadow-sm"
-                                    placeholder="Ex: 3x">
-                            </div>
-                        </div>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700">Primeira parcela</label>
-                                <input type="text" id="acordo-contra-primeira"
-                                    class="date-input w-full mt-1 p-2 border border-gray-300 rounded-lg shadow-sm"
-                                    placeholder="DD/MM/AAAA">
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700">Forma de pagamento</label>
-                                <select id="acordo-contra-forma"
-                                    class="w-full mt-1 p-2 border border-gray-300 rounded-lg bg-white">
-                                    <option value="pix">PIX</option>
-                                    <option value="transferencia">Transferência/Depósito</option>
-                                    <option value="boleto">Boleto</option>
-                                    <option value="dinheiro">Dinheiro</option>
-                                </select>
-                            </div>
-                        </div>
-                    </div>
-
-                    <textarea id="acordo-detalhes" rows="3"
-                        class="w-full p-3 border border-gray-300 rounded-lg shadow-sm"
-                        placeholder="Explique o cumprimento, pendências ou condições da contraproposta."></textarea>
-                    <p class="text-xs text-slate-500">O texto será incluído após a frase sobre a situação do acordo.</p>
-                </div>
-
-                <!-- Seção de Retirar Restrições (Renajud/Averbações) -->
-                <div id="renajud-section" class="hidden space-y-4 mb-6 p-4 border rounded-lg bg-white">
-                    <h3 class="text-lg font-semibold text-gray-800">Retirada de restrições</h3>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700">Veículo/Placa ou bem averbado</label>
-                            <input type="text" id="renajud-bem"
-                                class="w-full mt-1 p-2 border border-gray-300 rounded-lg shadow-sm"
-                                placeholder="Placa ABC1D23, matrícula do imóvel, etc.">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700">Motivo da retirada</label>
-                            <select id="renajud-motivo"
-                                class="w-full mt-1 p-2 border border-gray-300 rounded-lg bg-white">
-                                <option value="debito quitado">Débito quitado</option>
-                                <option value="acordo">Acordo homologado</option>
-                                <option value="excesso">Bloqueio excessivo/disproporcional</option>
-                                <option value="bem indispensavel">Bem indispensável ao trabalho/locomoção</option>
-                                <option value="outro">Outro (especificar abaixo)</option>
-                            </select>
-                        </div>
-                    </div>
-                    <textarea id="renajud-detalhes" rows="3"
-                        class="w-full p-3 border border-gray-300 rounded-lg shadow-sm"
-                        placeholder="Inclua comprovantes de pagamento, decisão ou justificativa específica."></textarea>
-                    <p class="text-xs text-slate-500">O texto será incluído após a frase que descreve o bem e o motivo.
-                    </p>
-                </div>
-
-                <!-- Seção de Pesquisa de Endereço -->
-                <div id="pesquisa-endereco-section" class="hidden space-y-4 mb-6 p-4 border rounded-lg bg-white">
-                    <h3 class="text-lg font-semibold text-gray-800">Pedido de pesquisa de endereço</h3>
-                    <textarea id="pesquisa-justificativa" rows="3"
-                        class="w-full p-3 border border-gray-300 rounded-lg shadow-sm"
-                        placeholder="Explique por que o endereço atual é desconhecido ou mudou."></textarea>
-                    <p class="text-xs text-slate-500">O texto será inserido após a frase que pede a pesquisa de
-                        endereço.</p>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700">Último endereço conhecido</label>
-                            <input type="text" id="pesquisa-ultimo"
-                                class="w-full mt-1 p-2 border border-gray-300 rounded-lg shadow-sm"
-                                placeholder="Rua, nº, bairro, cidade/UF">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700">Sistemas a pesquisar</label>
-                            <div class="grid grid-cols-2 gap-2 mt-1 text-sm">
-                                <label class="flex items-center"><input type="checkbox" id="pesquisa-sisbajud"
-                                        class="h-4 w-4 text-indigo-600 border-gray-300 rounded mr-2" checked>
-                                    SISBAJUD</label>
-                                <label class="flex items-center"><input type="checkbox" id="pesquisa-renajud"
-                                        class="h-4 w-4 text-indigo-600 border-gray-300 rounded mr-2" checked>
-                                    RENAJUD</label>
-                                <label class="flex items-center"><input type="checkbox" id="pesquisa-infojud"
-                                        class="h-4 w-4 text-indigo-600 border-gray-300 rounded mr-2">
-                                    INFOJUD/RFB</label>
-                                <label class="flex items-center"><input type="checkbox" id="pesquisa-outros-check"
-                                        class="h-4 w-4 text-indigo-600 border-gray-300 rounded mr-2">
-                                    Outros (especificar)</label>
-                            </div>
-                            <input type="text" id="pesquisa-outros-text"
-                                class="hidden w-full mt-2 p-2 border border-gray-300 rounded-lg shadow-sm"
-                                placeholder="Ex: INFOSEG, bases municipais, concessionárias">
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Seção de Repetição de Diligência -->
-                <div id="repetir-diligencia-section" class="hidden space-y-4 mb-6 p-4 border rounded-lg bg-white">
-                    <h3 class="text-lg font-semibold text-gray-800">Repetição de diligência</h3>
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700">Tipo de diligência</label>
-                            <select id="diligencia-tipo"
-                                class="w-full mt-1 p-2 border border-gray-300 rounded-lg bg-white">
-                                <option value="citacao">Citação</option>
-                                <option value="intimacao">Intimação</option>
-                                <option value="penhora">Penhora/Busca</option>
-                                <option value="oficial">Oficial de Justiça</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700">Data da tentativa anterior</label>
-                            <input type="text" id="diligencia-data"
-                                class="date-input w-full mt-1 p-2 border border-gray-300 rounded-lg shadow-sm"
-                                placeholder="DD/MM/AAAA">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700">Melhor horário/local</label>
-                            <input type="text" id="diligencia-horario"
-                                class="w-full mt-1 p-2 border border-gray-300 rounded-lg shadow-sm"
-                                placeholder="Ex: após 18h, fins de semana">
-                        </div>
-                    </div>
-                    <textarea id="diligencia-justificativa" rows="3"
-                        class="w-full p-3 border border-gray-300 rounded-lg shadow-sm"
-                        placeholder="Descreva por que a diligência falhou e o que mudou (novo endereço, pessoas no local, portaria, etc.)."></textarea>
-                    <p class="text-xs text-slate-500">O texto será incluído após a frase que solicita a repetição da
-                        diligência.</p>
                 </div>
 
 
@@ -1481,243 +976,7 @@
             const desbloqueioMotivoSelect = document.getElementById('desbloqueio-motivo');
             const desbloqueioMotivoOutro = document.getElementById('desbloqueio-motivo-outro');
 
-            // Novas seções detalhadas
-            const desbloqueioDetalhadoSection = document.getElementById('desbloqueio-detalhado-section');
-            const naturezaSelect = document.getElementById('detalhe-natureza');
-            const detalheValorInput = document.getElementById('detalhe-valor');
-            const detalheDataInput = document.getElementById('detalhe-data');
-            const detalheContaInput = document.getElementById('detalhe-conta');
-            const detalheOrigemInput = document.getElementById('detalhe-origem');
-            const detalheJustificativa = document.getElementById('detalhe-justificativa');
-
-            const remarcacaoSection = document.getElementById('remarcacao-section');
-            const remarcacaoData = document.getElementById('remarcacao-data');
-            const remarcacaoFormato = document.getElementById('remarcacao-formato');
-            const remarcacaoJustificativa = document.getElementById('remarcacao-justificativa');
-            const remarcacaoIndisponiveis = document.getElementById('remarcacao-indisponiveis');
-            const remarcacaoSugestao = document.getElementById('remarcacao-sugestao');
-
-            const conciliacaoSection = document.getElementById('conciliacao-section');
-            const conciliacaoValor = document.getElementById('conciliacao-valor');
-            const conciliacaoForma = document.getElementById('conciliacao-forma');
-            const conciliacaoParcelas = document.getElementById('conciliacao-parcelas');
-            const conciliacaoVencimento = document.getElementById('conciliacao-vencimento');
-            const conciliacaoContato = document.getElementById('conciliacao-contato');
-            const conciliacaoDetalhes = document.getElementById('conciliacao-detalhes');
-
-            const oficiosSection = document.getElementById('oficios-section');
-            const addOficioBtn = document.getElementById('add-oficio-btn');
-            const oficiosList = document.getElementById('oficios-list');
-
-            const cadastroSection = document.getElementById('cadastro-section');
-            const cadastroTelefone = document.getElementById('cadastro-telefone');
-            const cadastroEmail = document.getElementById('cadastro-email');
-            const cadastroIntimacao = document.getElementById('cadastro-intimacao');
-            const cadastroEndereco = document.getElementById('cadastro-endereco');
-            const cadastroObservacao = document.getElementById('cadastro-observacao');
-
-            const cumprimentoSection = document.getElementById('cumprimento-section');
-            const cumprimentoValor = document.getElementById('cumprimento-valor');
-            const cumprimentoData = document.getElementById('cumprimento-data');
-            const cumprimentoForma = document.getElementById('cumprimento-forma');
-            const cumprimentoComprovante = document.getElementById('cumprimento-comprovante');
-
-            const certidaoSection = document.getElementById('certidao-section');
-            const certidaoTipo = document.getElementById('certidao-tipo');
-            const certidaoFinalidade = document.getElementById('certidao-finalidade');
-            const certidaoDetalhe = document.getElementById('certidao-detalhe');
-
-            const serasaSection = document.getElementById('serasa-section');
-            const serasaEntidade = document.getElementById('serasa-entidade');
-            const serasaData = document.getElementById('serasa-data');
-            const serasaValor = document.getElementById('serasa-valor');
-            const serasaJustificativa = document.getElementById('serasa-justificativa');
-
-            const acordoSection = document.getElementById('acordo-section');
-            const acordoSituacao = document.getElementById('acordo-situacao');
-            const acordoPagas = document.getElementById('acordo-pagas');
-            const acordoValor = document.getElementById('acordo-valor');
-            const acordoPagamentoFields = document.getElementById('acordo-pagamento-fields');
-            const acordoDiligencias = document.getElementById('acordo-diligencias');
-            const acordoSisbajud = document.getElementById('acordo-sisbajud');
-            const acordoRenajud = document.getElementById('acordo-renajud');
-            const acordoMandado = document.getElementById('acordo-mandado');
-            const acordoOutrosCheck = document.getElementById('acordo-outros-check');
-            const acordoOutrosText = document.getElementById('acordo-outros-text');
-            const acordoContraproposta = document.getElementById('acordo-contraproposta');
-            const acordoContraValor = document.getElementById('acordo-contra-valor');
-            const acordoContraParcelas = document.getElementById('acordo-contra-parcelas');
-            const acordoContraPrimeira = document.getElementById('acordo-contra-primeira');
-            const acordoContraForma = document.getElementById('acordo-contra-forma');
-            const acordoDetalhes = document.getElementById('acordo-detalhes');
-
-            const renajudSection = document.getElementById('renajud-section');
-            const renajudBem = document.getElementById('renajud-bem');
-            const renajudMotivo = document.getElementById('renajud-motivo');
-            const renajudDetalhes = document.getElementById('renajud-detalhes');
-
-            const pesquisaEnderecoSection = document.getElementById('pesquisa-endereco-section');
-            const pesquisaJustificativa = document.getElementById('pesquisa-justificativa');
-            const pesquisaUltimo = document.getElementById('pesquisa-ultimo');
-            const pesquisaSisbajud = document.getElementById('pesquisa-sisbajud');
-            const pesquisaRenajud = document.getElementById('pesquisa-renajud');
-            const pesquisaInfojud = document.getElementById('pesquisa-infojud');
-            const pesquisaOutrosCheck = document.getElementById('pesquisa-outros-check');
-            const pesquisaOutrosText = document.getElementById('pesquisa-outros-text');
-
-            const repetirDiligenciaSection = document.getElementById('repetir-diligencia-section');
-            const diligenciaTipo = document.getElementById('diligencia-tipo');
-            const diligenciaData = document.getElementById('diligencia-data');
-            const diligenciaHorario = document.getElementById('diligencia-horario');
-            const diligenciaJustificativa = document.getElementById('diligencia-justificativa');
-
             // --- DADOS ECONÔMICOS ---
-            // Fatores TJSP (INPC/IPCA-15), conforme tabela prática, com projeção via IPCA-15 e truncamento em 6 casas
-            let tabelaTJSP = {
-
-                // 2003
-                '2003-01': 28.131595, '2003-02': 28.826445, '2003-03': 29.247311, '2003-04': 29.647999,
-                '2003-05': 30.057141, '2003-06': 30.354706, '2003-07': 30.336493, '2003-08': 30.348627,
-                '2003-09': 30.403254, '2003-10': 30.652560, '2003-11': 30.772104, '2003-12': 30.885960,
-
-                // 2004
-                '2004-01': 31.052744, '2004-02': 31.310481, '2004-03': 31.432591, '2004-04': 31.611756,
-                '2004-05': 31.741364, '2004-06': 31.868329, '2004-07': 32.027670, '2004-08': 32.261471,
-                '2004-09': 32.422778, '2004-10': 32.477896, '2004-11': 32.533108, '2004-12': 32.676253,
-
-                // 2005
-                '2005-01': 32.957268, '2005-02': 33.145124, '2005-03': 33.290962, '2005-04': 33.533986,
-                '2005-05': 33.839145, '2005-06': 34.076019, '2005-07': 34.038535, '2005-08': 34.048746,
-                '2005-09': 34.048746, '2005-10': 34.099819, '2005-11': 34.297597, '2005-12': 34.482804,
-
-                // 2006
-                '2006-01': 34.620735, '2006-02': 34.752293, '2006-03': 34.832223, '2006-04': 34.926270,
-                '2006-05': 34.968181, '2006-06': 35.013639, '2006-07': 34.989129, '2006-08': 35.027617,
-                '2006-09': 35.020611, '2006-10': 35.076643, '2006-11': 35.227472, '2006-12': 35.375427,
-
-                // 2007
-                '2007-01': 35.594754, '2007-02': 35.769168, '2007-03': 35.919398, '2007-04': 36.077443,
-                '2007-05': 36.171244, '2007-06': 36.265289, '2007-07': 36.377711, '2007-08': 36.494119,
-                '2007-09': 36.709434, '2007-10': 36.801207, '2007-11': 36.911610, '2007-12': 37.070329,
-
-                // 2008
-                '2008-01': 37.429911, '2008-02': 37.688177, '2008-03': 37.869080, '2008-04': 38.062212,
-                '2008-05': 38.305810, '2008-06': 38.673545, '2008-07': 39.025474, '2008-08': 39.251821,
-                '2008-09': 39.334249, '2008-10': 39.393250, '2008-11': 39.590216, '2008-12': 39.740658,
-
-                // 2009
-                '2009-01': 39.855905, '2009-02': 40.110982, '2009-03': 40.235326, '2009-04': 40.315796,
-                '2009-05': 40.537532, '2009-06': 40.780757, '2009-07': 40.952036, '2009-08': 41.046225,
-                '2009-09': 41.079061, '2009-10': 41.144787, '2009-11': 41.243534, '2009-12': 41.396135,
-
-                // 2010
-                '2010-01': 41.495485, '2010-02': 41.860645, '2010-03': 42.153669, '2010-04': 42.452960,
-                '2010-05': 42.762866, '2010-06': 42.946746, '2010-07': 42.899504, '2010-08': 42.869474,
-                '2010-09': 42.839465, '2010-10': 43.070798, '2010-11': 43.467049, '2010-12': 43.914759,
-
-                // 2011
-                '2011-01': 44.178247, '2011-02': 44.593522, '2011-03': 44.834327, '2011-04': 45.130233,
-                '2011-05': 45.455170, '2011-06': 45.714264, '2011-07': 45.814835, '2011-08': 45.814835,
-                '2011-09': 46.007257, '2011-10': 46.214289, '2011-11': 46.362174, '2011-12': 46.626438,
-
-                // 2012
-                '2012-01': 46.864232, '2012-02': 47.103239, '2012-03': 47.286941, '2012-04': 47.372057,
-                '2012-05': 47.675238, '2012-06': 47.937451, '2012-07': 48.062088, '2012-08': 48.268754,
-                '2012-09': 48.485963, '2012-10': 48.791424, '2012-11': 49.137843, '2012-12': 49.403187,
-
-                // 2013
-                '2013-01': 49.768770, '2013-02': 50.226642, '2013-03': 50.487820, '2013-04': 50.790746,
-                '2013-05': 51.090411, '2013-06': 51.269227, '2013-07': 51.412780, '2013-08': 51.345943,
-                '2013-09': 51.428096, '2013-10': 51.566951, '2013-11': 51.881509, '2013-12': 52.161669,
-
-                // 2014
-                '2014-01': 52.537233, '2014-02': 52.868217, '2014-03': 53.206573, '2014-04': 53.642866,
-                '2014-05': 54.061280, '2014-06': 54.385647, '2014-07': 54.527049, '2014-08': 54.597934,
-                '2014-09': 54.696210, '2014-10': 54.964221, '2014-11': 55.173085, '2014-12': 55.465502,
-
-                // 2015
-                '2015-01': 55.809388, '2015-02': 56.635366, '2015-03': 57.292336, '2015-04': 58.157450,
-                '2015-05': 58.570367, '2015-06': 59.150213, '2015-07': 59.605669, '2015-08': 59.951381,
-                '2015-09': 60.101259, '2015-10': 60.407775, '2015-11': 60.872914, '2015-12': 61.548603,
-
-                // 2016
-                '2016-01': 62.102540, '2016-02': 63.040288, '2016-03': 63.639170, '2016-04': 63.919182,
-                '2016-05': 64.328264, '2016-06': 64.958680, '2016-07': 65.263985, '2016-08': 65.681674,
-                '2016-09': 65.885287, '2016-10': 65.937995, '2016-11': 66.050089, '2016-12': 66.096324,
-
-                // 2017
-                '2017-01': 66.188858, '2017-02': 66.466851, '2017-03': 66.626371, '2017-04': 66.839575,
-                '2017-05': 66.893046, '2017-06': 67.133860, '2017-07': 66.932458, '2017-08': 67.046243,
-                '2017-09': 67.026129, '2017-10': 67.012723, '2017-11': 67.260670, '2017-12': 67.381739,
-
-                // 2018
-                '2018-01': 67.556931, '2018-02': 67.712311, '2018-03': 67.834193, '2018-04': 67.881676,
-                '2018-05': 68.024227, '2018-06': 68.316731, '2018-07': 69.293660, '2018-08': 69.466894,
-                '2018-09': 69.466894, '2018-10': 69.675294, '2018-11': 69.953995, '2018-12': 69.779110,
-
-                // 2019
-                '2019-01': 69.876800, '2019-02': 70.128356, '2019-03': 70.507049, '2019-04': 71.049953,
-                '2019-05': 71.476252, '2019-06': 71.583466, '2019-07': 71.590624, '2019-08': 71.662214,
-                '2019-09': 71.748208, '2019-10': 71.712333, '2019-11': 71.741017, '2019-12': 72.128418,
-
-                // 2020
-                '2020-01': 73.008384, '2020-02': 73.147099, '2020-03': 73.271449, '2020-04': 73.403337,
-                '2020-05': 73.234509, '2020-06': 73.051422, '2020-07': 73.270576, '2020-08': 73.592966,
-                '2020-09': 73.857900, '2020-10': 74.500463, '2020-11': 75.163517, '2020-12': 75.877570,
-
-                // 2021
-                '2021-01': 76.985382, '2021-02': 77.193242, '2021-03': 77.826226, '2021-04': 78.495531,
-                '2021-05': 78.793814, '2021-06': 79.550234, '2021-07': 80.027535, '2021-08': 80.843815,
-                '2021-09': 81.555240, '2021-10': 82.533902, '2021-11': 83.491295, '2021-12': 84.192621,
-
-                // 2022
-                '2022-01': 84.807227, '2022-02': 85.375435, '2022-03': 86.229189, '2022-04': 87.703708,
-                '2022-05': 88.615826, '2022-06': 89.014597, '2022-07': 89.566487, '2022-08': 89.029088,
-                '2022-09': 88.753097, '2022-10': 88.469087, '2022-11': 88.884891, '2022-12': 89.222653,
-
-                // 2023
-                '2023-01': 89.838289, '2023-02': 90.251545, '2023-03': 90.946481, '2023-04': 91.528538,
-                '2023-05': 92.013639, '2023-06': 92.344888, '2023-07': 92.252543, '2023-08': 92.169515,
-                '2023-09': 92.353854, '2023-10': 92.455443, '2023-11': 92.566389, '2023-12': 92.658955,
-
-                // 2024
-                '2024-01': 93.168579, '2024-02': 93.699639, '2024-03': 94.458606, '2024-04': 94.638077,
-                '2024-05': 94.988237, '2024-06': 95.425182, '2024-07': 95.663744, '2024-08': 95.912469,
-                '2024-09': 96.094702, '2024-10': 96.219625, '2024-11': 96.739210, '2024-12': 97.338993,
-
-                // 2025
-                '2025-01': 97.669945, '2025-02': 97.777381, '2025-03': 98.980042, '2025-04': 99.613514,
-                '2025-05': 100.041852, '2025-06': 100.402002, '2025-07': 100.663047, '2025-08': 100.995235,
-                '2025-09': 100.853841, '2025-10': 101.337939, '2025-11': 101.520347
-            };
-
-            const truncarSeisCasas = (valor) => Math.floor(valor * 1_000_000) / 1_000_000;
-
-            const processarIPCA15 = (dados) => {
-                dados.forEach(item => {
-                    const [d, m, y] = item.data.split('/');
-                    let mesTabela = parseInt(m, 10) + 1;
-                    let anoTabela = parseInt(y, 10);
-                    if (mesTabela > 12) { mesTabela = 1; anoTabela++; }
-                    const chave = `${anoTabela}-${String(mesTabela).padStart(2, '0')}`;
-                    if (!tabelaTJSP[chave]) {
-                        let mA = mesTabela - 1; let aA = anoTabela;
-                        if (mA === 0) { mA = 12; aA--; }
-                        const chaveAnt = `${aA}-${String(mA).padStart(2, '0')}`;
-                        if (tabelaTJSP[chaveAnt]) {
-                            const fatorCalculado = tabelaTJSP[chaveAnt] * (1 + (parseFloat(item.valor) / 100));
-                            tabelaTJSP[chave] = truncarSeisCasas(fatorCalculado);
-                        }
-                    }
-                });
-            };
-
-            const getUltimaChave = () => Object.keys(tabelaTJSP).sort().slice(-1)[0];
-            const getFator = (chave) => tabelaTJSP[chave] || tabelaTJSP[getUltimaChave()];
-
-            const chavePorData = (date) => `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
-            const fatorPorData = (date) => getFator(chavePorData(date));
-
             let ipcaData = {};
             let ipca15Data = {};
             let monthlySelicData = {};
@@ -1849,39 +1108,46 @@
                 }
             };
 
-            const recomputarIpcaDeTabela = () => {
-                const chaves = Object.keys(tabelaTJSP).sort();
-                const calculado = {};
-                for (let i = 1; i < chaves.length; i++) {
-                    const atual = tabelaTJSP[chaves[i]];
-                    const anterior = tabelaTJSP[chaves[i - 1]];
-                    calculado[chaves[i]] = ((atual / anterior) - 1) * 100;
-                }
-                ipcaData = { ...calculado };
-                ipca15Data = { ...calculado }; // usamos a mesma série derivada da tabela TJSP
-            };
-
             const fetchEconomicData = async () => {
                 const today = new Date();
-                const anoAtual = today.getFullYear();
+                const fiveYearsAgo = new Date(today.getFullYear() - 5, today.getMonth(), today.getDate());
+                const formatDateForApi = (date) => `${String(date.getDate()).padStart(2, '0')}/${String(date.getMonth() + 1).padStart(2, '0')}/${date.getFullYear()}`;
+                const startDate = formatDateForApi(fiveYearsAgo);
+                const endDate = formatDateForApi(today);
 
-                const ipca15Url = `https://api.bcb.gov.br/dados/serie/bcdata.sgs.7478/dados?formato=json&dataInicial=01/01/${anoAtual}`;
-                const selicUrl = `https://api.bcb.gov.br/dados/serie/bcdata.sgs.4390/dados?formato=json&dataInicial=01/01/2024`;
+                const IPCA_CODE = 433, IPCA15_CODE = 7478, SELIC_DAILY_CODE = 11;
+                const ipcaUrl = `https://api.bcb.gov.br/dados/serie/bcdata.sgs.${IPCA_CODE}/dados?formato=json&dataInicial=${startDate}&dataFinal=${endDate}`;
+                const ipca15Url = `https://api.bcb.gov.br/dados/serie/bcdata.sgs.${IPCA15_CODE}/dados?formato=json&dataInicial=${startDate}&dataFinal=${endDate}`;
+                const selicUrl = `https://api.bcb.gov.br/dados/serie/bcdata.sgs.${SELIC_DAILY_CODE}/dados?formato=json&dataInicial=${startDate}&dataFinal=${endDate}`;
 
                 try {
-                    const [ipca15Response, selicResponse] = await Promise.all([fetch(ipca15Url), fetch(selicUrl)]);
-                    if (!ipca15Response.ok || !selicResponse.ok) throw new Error('Falha ao buscar dados do Banco Central.');
+                    const [ipcaResponse, ipca15Response, selicResponse] = await Promise.all([fetch(ipcaUrl), fetch(ipca15Url), fetch(selicUrl)]);
+                    if (!ipcaResponse.ok || !ipca15Response.ok || !selicResponse.ok) throw new Error('Falha ao buscar dados do Banco Central.');
 
-                    const [ipca15Json, selicJson] = await Promise.all([ipca15Response.json(), selicResponse.json()]);
+                    const [ipcaJson, ipca15Json, selicJson] = await Promise.all([ipcaResponse.json(), ipca15Response.json(), selicResponse.json()]);
 
-                    processarIPCA15(ipca15Json);
-                    recomputarIpcaDeTabela();
-
-                    monthlySelicData = selicJson.reduce((acc, d) => {
-                        const [dia, mes, ano] = d.data.split('/');
-                        acc[`${ano}-${mes}`] = parseFloat(d.valor);
+                    const processMonthlyData = (jsonData) => jsonData.reduce((acc, item) => {
+                        const [day, month, year] = item.data.split('/');
+                        acc[`${year}-${month}`] = parseFloat(item.valor);
                         return acc;
                     }, {});
+
+                    const processDailySelic = (dailyData) => {
+                        const monthlyFactors = dailyData.reduce((acc, item) => {
+                            const [day, month, year] = item.data.split('/');
+                            const key = `${year}-${month}`;
+                            acc[key] = (acc[key] || 1) * (1 + parseFloat(item.valor) / 100);
+                            return acc;
+                        }, {});
+                        return Object.entries(monthlyFactors).reduce((acc, [key, factor]) => {
+                            acc[key] = (factor - 1) * 100;
+                            return acc;
+                        }, {});
+                    };
+
+                    ipcaData = processMonthlyData(ipcaJson);
+                    ipca15Data = processMonthlyData(ipca15Json);
+                    monthlySelicData = processDailySelic(selicJson);
 
                     calculateBtn.disabled = false;
                     calculateBtn.innerHTML = 'Calcular Valor Atualizado';
@@ -2081,14 +1347,20 @@
 
                     if (originalValue === 0 || !correctionDate) return;
 
-                    const fatorInicio = fatorPorData(correctionDate);
-                    const fatorFim = fatorPorData(finalCalcDate);
-                    const correctedValue = originalValue * (fatorFim / fatorInicio);
+                    let correctedValue = originalValue;
+                    for (let d = new Date(correctionDate); d < finalCalcDate; d.setMonth(d.getMonth() + 1)) {
+                        const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+                        correctedValue *= (1 + (ipcaData[key] || 0) / 100);
+                    }
                     const totalCorrection = correctedValue - originalValue;
 
                     let totalInterest = 0;
                     if (descriptionSelect.value !== 'Dedução/Pagamento Parcial' && interestDate) {
-                        let baseForInterest = originalValue * (fatorPorData(interestDate) / fatorInicio);
+                        let baseForInterest = originalValue;
+                        for (let d = new Date(correctionDate); d < interestDate && d < finalCalcDate; d.setMonth(d.getMonth() + 1)) {
+                            const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+                            baseForInterest *= (1 + (ipcaData[key] || 0) / 100);
+                        }
 
                         for (let d = new Date(interestDate); d < finalCalcDate; d.setMonth(d.getMonth() + 1)) {
                             const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
@@ -2102,15 +1374,7 @@
                     }
 
                     const finalValueForRow = originalValue + totalCorrection + totalInterest;
-                    const rowData = {
-                        description,
-                        originalValue,
-                        totalCorrection,
-                        totalInterest,
-                        finalValueForRow,
-                        indiceInicial: fatorInicio,
-                        indiceFinal: fatorFim
-                    };
+                    const rowData = { description, originalValue, totalCorrection, totalInterest, finalValueForRow };
 
                     if (descriptionSelect.value === 'Dedução/Pagamento Parcial') {
                         deductionRows.push(rowData);
@@ -2153,23 +1417,24 @@
                 const installmentsDetails = [];
 
                 const updateValue = (value, dateFrom, dateTo) => {
-                    const fatorInicio = fatorPorData(dateFrom);
-                    const fatorFim = fatorPorData(dateTo);
-                    return { valor: value * (fatorFim / fatorInicio), fatorInicio, fatorFim };
+                    let updated = value;
+                    for (let d = new Date(dateFrom); d < dateTo; d.setMonth(d.getMonth() + 1)) {
+                        const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+                        updated *= (1 + (ipcaData[key] || 0) / 100); // Apenas correção IPCA
+                    }
+                    return updated;
                 };
 
                 for (let i = 0; i < totalInstallments; i++) {
                     const installmentDate = new Date(startDate);
                     installmentDate.setMonth(startDate.getMonth() + i);
-                    const atualizado = updateValue(installmentValue, installmentDate, finalCalcDate);
+                    const updatedInstallment = updateValue(installmentValue, installmentDate, finalCalcDate);
 
                     installmentsDetails.push({
                         number: i + 1,
                         originalDate: installmentDate,
                         originalValue: installmentValue,
-                        updatedValue: atualizado.valor,
-                        indiceInicial: atualizado.fatorInicio,
-                        indiceFinal: atualizado.fatorFim,
+                        updatedValue: updatedInstallment,
                         status: i < paidInstallments ? 'Paga' : 'Não Paga'
                     });
                 }
@@ -2192,8 +1457,7 @@
                 const deductionDate = parseDate(document.getElementById('agreement-deduction-date').value);
                 let updatedDeductionValue = 0;
                 if (deductionValue > 0 && deductionDate) {
-                    const dedAtualizado = updateValue(deductionValue, deductionDate, finalCalcDate);
-                    updatedDeductionValue = dedAtualizado.valor;
+                    updatedDeductionValue = updateValue(deductionValue, deductionDate, finalCalcDate);
                 }
 
                 const grandTotal = updatedDebt + penaltyValue - updatedDeductionValue;
@@ -2289,10 +1553,7 @@
                 let html = '<h3 class="text-xl font-bold text-gray-800 mb-4">Resumo do Cálculo de Condenação</h3><div class="space-y-6">';
                 data.rows.forEach((row, index) => {
                     const isDeduction = data.summary.totalDeductions > 0 && row.description.includes('Dedução');
-                    const indicesHtml = (row.indiceInicial && row.indiceFinal)
-                        ? `<div class="text-xs text-gray-500 mt-2">Índice inicial: ${row.indiceInicial.toFixed(6)} | Índice final: ${row.indiceFinal.toFixed(6)}</div>`
-                        : '';
-                    html += `<div class="p-4 border rounded-lg bg-white"><p class="font-semibold text-lg ${isDeduction ? 'text-red-600' : 'text-indigo-700'}">${index + 1}. ${row.description}</p><div class="grid grid-cols-2 md:grid-cols-4 gap-x-4 gap-y-2 mt-2 text-sm"><div><span class="font-medium text-gray-600">Valor Original:</span><br>${formatCurrency(row.originalValue)}</div><div><span class="font-medium text-gray-600">Correção (Tabela TJSP):</span><br>${formatCurrency(row.totalCorrection)}</div><div><span class="font-medium text-gray-600">Juros de Mora:</span><br>${formatCurrency(row.totalInterest)}</div><div class="font-bold"><span class="font-medium text-gray-600">Subtotal:</span><br>${formatCurrency(row.finalValueForRow)}</div></div>${indicesHtml}</div>`;
+                    html += `<div class="p-4 border rounded-lg bg-white"><p class="font-semibold text-lg ${isDeduction ? 'text-red-600' : 'text-indigo-700'}">${index + 1}. ${row.description}</p><div class="grid grid-cols-2 md:grid-cols-4 gap-x-4 gap-y-2 mt-2 text-sm"><div><span class="font-medium text-gray-600">Valor Original:</span><br>${formatCurrency(row.originalValue)}</div><div><span class="font-medium text-gray-600">Correção (IPCA):</span><br>${formatCurrency(row.totalCorrection)}</div><div><span class="font-medium text-gray-600">Juros de Mora:</span><br>${formatCurrency(row.totalInterest)}</div><div class="font-bold"><span class="font-medium text-gray-600">Subtotal:</span><br>${formatCurrency(row.finalValueForRow)}</div></div></div>`;
                 });
                 html += `</div>`;
 
@@ -2337,9 +1598,7 @@
                             <td class="py-2 px-4 border-b">${item.number}</td>
                             <td class="py-2 px-4 border-b">${item.originalDate.toLocaleDateString('pt-BR')}</td>
                             <td class="py-2 px-4 border-b text-right">${formatCurrency(item.originalValue)}</td>
-                            <td class="py-2 px-4 border-b text-right ${colorClass}">${formatCurrency(item.updatedValue)}
-                                <div class="text-xs text-gray-500 mt-1">Índice inicial: ${item.indiceInicial ? item.indiceInicial.toFixed(6) : '-'} | Índice final: ${item.indiceFinal ? item.indiceFinal.toFixed(6) : '-'}</div>
-                            </td>
+                            <td class="py-2 px-4 border-b text-right ${colorClass}">${formatCurrency(item.updatedValue)}</td>
                         </tr>`;
                     });
                     tableHTML += `</tbody></table></div>`;
@@ -2504,14 +1763,6 @@
                         alert("Por favor, preencha todos os campos obrigatórios: Nº do Processo, Nome da Parte e CPF.");
                         return false;
                     }
-
-                    const selectedOption = manifestationType.value;
-                    if (selectedOption === 'desbloqueioDetalhado') {
-                        if (!detalheValorInput.value.trim() || !detalheDataInput.value.trim()) {
-                            alert('Informe o valor bloqueado e a data do bloqueio para prosseguir.');
-                            return false;
-                        }
-                    }
                     // Validação das testemunhas
                     const witnesses = document.querySelectorAll('.witness-item');
                     for (const witness of witnesses) {
@@ -2597,27 +1848,19 @@
                 pdf.text(`Cálculo realizado em: ${data.finalCalcDate.toLocaleDateString('pt-BR')}`, pdf.internal.pageSize.getWidth() / 2, 27, { align: 'center' });
                 pdf.text(`Processo nº: ${data.processNumber}`, 15, 40);
 
-                const head = [['Descrição', 'Valor Original', 'Correção (Tabela TJSP)', 'Juros de Mora', 'Subtotal']];
-                const body = data.rows.map(row => {
-                    const idxLine = (row.indiceInicial && row.indiceFinal)
-                        ? `\nÍndices: ${row.indiceInicial.toFixed(6)} -> ${row.indiceFinal.toFixed(6)}`
-                        : '';
-                    return [
-                        row.description,
-                        { content: formatCurrency(row.originalValue), styles: { halign: 'right' } },
-                        { content: `${formatCurrency(row.totalCorrection)}${idxLine}`, styles: { halign: 'right', fontSize: 9, textColor: [75, 85, 99] } },
-                        { content: formatCurrency(row.totalInterest), styles: { halign: 'right' } },
-                        { content: formatCurrency(row.finalValueForRow), styles: { halign: 'right' } }
-                    ];
-                });
+                const head = [['Descrição', 'Valor Original', 'Correção (IPCA)', 'Juros de Mora', 'Subtotal']];
+                const body = data.rows.map(row => [
+                    row.description,
+                    { content: formatCurrency(row.originalValue), styles: { halign: 'right' } },
+                    { content: formatCurrency(row.totalCorrection), styles: { halign: 'right' } },
+                    { content: formatCurrency(row.totalInterest), styles: { halign: 'right' } },
+                    { content: formatCurrency(row.finalValueForRow), styles: { halign: 'right' } }
+                ]);
 
                 pdf.autoTable({
-                    startY: 50,
-                    head: head,
-                    body: body,
+                    startY: 50, head: head, body: body,
                     headStyles: { fillColor: [75, 85, 99] },
                     columnStyles: { 0: { cellWidth: 50 } },
-                    bodyStyles: { minCellHeight: 14 },
                 });
 
                 const finalY = pdf.lastAutoTable.finalY;
@@ -2671,20 +1914,13 @@
                     pdf.autoTable({
                         startY: startY,
                         head: [['Parcela', 'Vencimento', 'Valor Original', 'Valor Atualizado']],
-                        body: paidInstallments.map(i => {
-                            const idxText = (i.indiceInicial && i.indiceFinal)
-                                ? `Índices: ${i.indiceInicial.toFixed(6)} -> ${i.indiceFinal.toFixed(6)}`
-                                : '';
-                            return [
-                                i.number,
-                                i.originalDate.toLocaleDateString('pt-BR'),
-                                { content: formatCurrency(i.originalValue), styles: { halign: 'right' } },
-                                { content: `${formatCurrency(i.updatedValue)}${idxText ? `\n${idxText}` : ''}`, styles: { halign: 'right', fontSize: 9, textColor: [75, 85, 99] } }
-                            ];
-                        }),
-                        theme: 'grid',
-                        headStyles: { fillColor: [22, 163, 74], textColor: [255, 255, 255] },
-                        bodyStyles: { minCellHeight: 14 },
+                        body: paidInstallments.map(i => [
+                            i.number,
+                            i.originalDate.toLocaleDateString('pt-BR'),
+                            { content: formatCurrency(i.originalValue), styles: { halign: 'right' } },
+                            { content: formatCurrency(i.updatedValue), styles: { halign: 'right' } }
+                        ]),
+                        theme: 'grid', headStyles: { fillColor: [22, 163, 74], textColor: [255, 255, 255] }
                     });
                     startY = pdf.lastAutoTable.finalY + 10;
                 }
@@ -2698,20 +1934,13 @@
                     pdf.autoTable({
                         startY: startY,
                         head: [['Parcela', 'Vencimento', 'Valor Original', 'Valor Atualizado']],
-                        body: unpaidInstallments.map(i => {
-                            const idxText = (i.indiceInicial && i.indiceFinal)
-                                ? `Índices: ${i.indiceInicial.toFixed(6)} -> ${i.indiceFinal.toFixed(6)}`
-                                : '';
-                            return [
-                                i.number,
-                                i.originalDate.toLocaleDateString('pt-BR'),
-                                { content: formatCurrency(i.originalValue), styles: { halign: 'right' } },
-                                { content: `${formatCurrency(i.updatedValue)}${idxText ? `\n${idxText}` : ''}`, styles: { halign: 'right', fontSize: 9, textColor: [75, 85, 99] } }
-                            ];
-                        }),
-                        theme: 'grid',
-                        headStyles: { fillColor: [220, 38, 38], textColor: [255, 255, 255] },
-                        bodyStyles: { minCellHeight: 14 },
+                        body: unpaidInstallments.map(i => [
+                            i.number,
+                            i.originalDate.toLocaleDateString('pt-BR'),
+                            { content: formatCurrency(i.originalValue), styles: { halign: 'right' } },
+                            { content: formatCurrency(i.updatedValue), styles: { halign: 'right' } }
+                        ]),
+                        theme: 'grid', headStyles: { fillColor: [220, 38, 38], textColor: [255, 255, 255] }
                     });
                     startY = pdf.lastAutoTable.finalY + 10;
                 }
@@ -2780,18 +2009,6 @@
                 let exequentesText = allExequentes.length === 1 ? `<strong>${allExequentes[0]}</strong>, já qualificado(a) nos autos`
                     : allExequentes.join(', ').replace(/,([^,]*)$/, ' e$1') + ', já qualificados nos autos';
 
-                const renderIndiceResumo = (titulo, linhas) => {
-                    if (!linhas.length) return;
-                    const prevSize = pdf.getFontSize();
-                    pdf.setFontSize(10);
-                    currentY = renderParagraph(pdf, `<strong>${titulo}</strong>`, { currentY, margin, maxWidth, lineSpacing, paraSpacing, indent: false });
-                    pdf.setFontSize(9);
-                    linhas.forEach(texto => {
-                        currentY = renderParagraph(pdf, texto, { currentY, margin, maxWidth, lineSpacing, paraSpacing, indent: false });
-                    });
-                    pdf.setFontSize(prevSize);
-                };
-
                 // --- Início da Renderização ---
 
                 pdf.setFont('times', 'bold');
@@ -2811,11 +2028,6 @@
 
                     const para2HTML = `Diante do exposto, requer a intimação do(a)(s) executado(a)(s) para que, no prazo legal, efetue o pagamento devido, no importe de <strong>${formatCurrency(data.summary.subtotal)}</strong>, conforme cálculo anexo. Não ocorrendo o pagamento, requer que o débito seja acrescido da multa de 10%, prevista no art. 523, §1º do CPC, totalizando a quantia de <strong>${formatCurrency(data.summary.subtotal * 1.10)}</strong>.`;
                     currentY = renderParagraph(pdf, para2HTML, { currentY, margin, maxWidth, lineSpacing: 8, paraSpacing: 5, indent: true });
-
-                    const linhasIndice = data.rows
-                        .filter(r => r.indiceInicial && r.indiceFinal)
-                        .map((r, idx) => `${idx + 1}. ${r.description}: ${r.indiceInicial.toFixed(6)} → ${r.indiceFinal.toFixed(6)} (Tabela TJSP)`);
-                    renderIndiceResumo('Índices aplicados (Tabela TJSP):', linhasIndice);
                 } else { // agreement
                     const agreementType = document.getElementById('agreement-type-calc').value;
                     const actionText = agreementType === 'conhecimento' ? 'requerer o <strong>CUMPRIMENTO DE SENTENÇA</strong>' : 'informar o descumprimento do acordo e requerer o <strong>PROSSEGUIMENTO DA EXECUÇÃO</strong>';
@@ -2828,11 +2040,6 @@
 
                     currentY = renderParagraph(pdf, `${exequentesText}, vem, respeitosamente, à presença de Vossa Excelência, informar o descumprimento do acordo homologado nos autos e, ato contínuo, ${actionText}.`, { currentY, margin, maxWidth, lineSpacing: 8, paraSpacing: 5, indent: true });
                     currentY = renderParagraph(pdf, `Conforme se demonstra pelo cálculo anexo, o débito atualizado remanescente, ${multaText}, perfaz o montante de <strong>${formatCurrency(data.summary.grandTotal)}</strong>. ${intimationText}`, { currentY, margin, maxWidth, lineSpacing: 8, paraSpacing: 5, indent: true });
-
-                    const linhasIndice = data.installments
-                        .filter(i => i.indiceInicial && i.indiceFinal)
-                        .map(i => `Parcela ${i.number}: ${i.indiceInicial.toFixed(6)} → ${i.indiceFinal.toFixed(6)} (Tabela TJSP)`);
-                    renderIndiceResumo('Índices aplicados por parcela (Tabela TJSP):', linhasIndice);
                 }
 
                 // --- Pedidos de Penhora (Comum a todas as petições) ---
@@ -2879,40 +2086,11 @@
 
             // --- LISTENERS E LÓGICAS DA MANIFESTAÇÃO ---
 
-            const updateAcordoFieldsVisibility = () => {
-                const situacao = acordoSituacao.value;
-                const isParcialOuDescumpriu = ['parcial', 'descumpriu'].includes(situacao);
-                const isContraproposta = situacao === 'contraproposta';
-                const showPagamento = isParcialOuDescumpriu;
-
-                acordoPagamentoFields.classList.toggle('hidden', !showPagamento);
-                acordoDiligencias.classList.toggle('hidden', !isParcialOuDescumpriu);
-                acordoContraproposta.classList.toggle('hidden', !isContraproposta);
-
-                if (!isParcialOuDescumpriu) {
-                    acordoPagas.value = '';
-                    acordoValor.value = '';
-                    acordoSisbajud.checked = false;
-                    acordoRenajud.checked = false;
-                    acordoMandado.checked = false;
-                    acordoOutrosCheck.checked = false;
-                    acordoOutrosText.value = '';
-                    acordoOutrosText.classList.add('hidden');
-                }
-
-                if (!isContraproposta) {
-                    acordoContraValor.value = '';
-                    acordoContraParcelas.value = '';
-                    acordoContraPrimeira.value = '';
-                    acordoContraForma.value = 'pix';
-                }
-            };
-
             const updateManifestationView = () => {
                 const selectedOption = manifestationType.value;
 
                 // Resets
-                const allSections = [addressSection, extraContentContainer, witnessSection, emendaSection, prazoSection, indicacaoBensSection, desbloqueioPenhoraSection, desbloqueioDetalhadoSection, remarcacaoSection, conciliacaoSection, oficiosSection, cadastroSection, cumprimentoSection, certidaoSection, serasaSection, acordoSection, renajudSection, pesquisaEnderecoSection, repetirDiligenciaSection];
+                const allSections = [addressSection, extraContentContainer, witnessSection, emendaSection, prazoSection, indicacaoBensSection, desbloqueioPenhoraSection];
                 allSections.forEach(sec => sec.classList.add('hidden'));
 
                 manifestContent.value = '';
@@ -2963,7 +2141,7 @@
                         prazoSection.classList.remove('hidden');
                         break;
                     case 'nomeacaoDefensoria':
-                        manifestContent.value = 'A parte solicitante, declaradamente hipossuficiente, requer a Vossa Excelência que se digne a oficiar à Defensoria Pública do Estado para que seja nomeado um(a) advogado(a) pelo convênio OAB/Defensoria para patrocinar seus interesses no presente feito, tendo em vista não possuir condições financeiras de arcar com os custos de um advogado particular sem prejuízo do seu próprio sustento e de sua família.';
+                        manifestContent.value = 'A parte solicitante, declaradamente hipossuficiente, requer a Vossa Excelência que se digne a oficiar à Defensoria Pública do Estado para que seja nomeado um(a) defensor(a) público(a) para patrocinar seus interesses no presente feito, tendo em vista não possuir condições financeiras de arcar com os custos de um advogado particular sem prejuízo do seu próprio sustento e de sua família.';
                         break;
                     case 'indicacaoBens':
                         indicacaoBensSection.classList.remove('hidden');
@@ -2971,55 +2149,6 @@
                     case 'desbloqueioPenhora':
                         desbloqueioPenhoraSection.classList.remove('hidden');
                         manifestContent.value = 'A parte vem, respeitosamente, à presença de Vossa Excelência, requerer o imediato desbloqueio dos valores penhorados em sua conta, uma vez que se tratam de verba de natureza impenhorável, nos termos do art. 833, IV, do Código de Processo Civil.';
-                        break;
-                    case 'desbloqueioDetalhado':
-                        desbloqueioDetalhadoSection.classList.remove('hidden');
-                        break;
-                    case 'remarcacaoAudiencia':
-                        remarcacaoSection.classList.remove('hidden');
-                        manifestContent.value = 'Solicito a redesignação da audiência já designada, pelas razões abaixo.';
-                        break;
-                    case 'conciliacao':
-                        conciliacaoSection.classList.remove('hidden');
-                        manifestContent.value = 'A parte apresenta uma proposta de acordo simples, conforme detalhes abaixo.';
-                        break;
-                    case 'expedicaoOficios':
-                        oficiosSection.classList.remove('hidden');
-                        manifestContent.closest('.mb-6').classList.add('hidden');
-                        if (oficiosList.children.length === 0) addOficio();
-                        break;
-                    case 'atualizacaoCadastral':
-                        cadastroSection.classList.remove('hidden');
-                        manifestContent.value = 'Atualização de dados para futuras intimações e contatos.';
-                        break;
-                    case 'cumprimentoVoluntario':
-                        cumprimentoSection.classList.remove('hidden');
-                        manifestContent.value = 'Comunico o pagamento espontâneo realizado e peço a baixa adequada.';
-                        break;
-                    case 'certidao':
-                        certidaoSection.classList.remove('hidden');
-                        manifestContent.value = 'Peço a expedição de certidão conforme abaixo.';
-                        break;
-                    case 'retiradaSerasa':
-                        serasaSection.classList.remove('hidden');
-                        manifestContent.value = 'Peço a retirada da anotação em cadastro de inadimplentes, conforme detalhes e comprovantes anexos.';
-                        break;
-                    case 'manifestacaoAcordo':
-                        acordoSection.classList.remove('hidden');
-                        manifestContent.value = 'A parte se manifesta sobre o cumprimento do acordo.';
-                        updateAcordoFieldsVisibility();
-                        break;
-                    case 'retiradaRestricoesRenajud':
-                        renajudSection.classList.remove('hidden');
-                        manifestContent.value = 'Requer a retirada das restrições apontadas, conforme justificativa e comprovantes.';
-                        break;
-                    case 'pesquisaEndereco':
-                        pesquisaEnderecoSection.classList.remove('hidden');
-                        manifestContent.value = 'Requer pesquisa de endereço nos sistemas indicados para viabilizar citação/intimação.';
-                        break;
-                    case 'repeticaoDiligencia':
-                        repetirDiligenciaSection.classList.remove('hidden');
-                        manifestContent.value = 'Solicito a repetição da diligência, agora com as informações atualizadas.';
                         break;
                 }
             };
@@ -3119,67 +2248,6 @@
                     witnessList.innerHTML = '';
                     documentList.innerHTML = '';
                     emendaParteList.innerHTML = '';
-                    oficiosList.innerHTML = '';
-                    naturezaSelect.value = 'salario';
-                    detalheValorInput.value = '';
-                    detalheDataInput.value = '';
-                    detalheContaInput.value = '';
-                    detalheOrigemInput.value = '';
-                    detalheJustificativa.value = '';
-                    remarcacaoData.value = '';
-                    remarcacaoFormato.value = 'remoto';
-                    remarcacaoJustificativa.value = '';
-                    remarcacaoIndisponiveis.value = '';
-                    remarcacaoSugestao.value = '';
-                    conciliacaoValor.value = '';
-                    conciliacaoForma.value = 'avista';
-                    conciliacaoParcelas.value = '';
-                    conciliacaoVencimento.value = '';
-                    conciliacaoContato.value = '';
-                    conciliacaoDetalhes.value = '';
-                    cadastroTelefone.value = '';
-                    cadastroEmail.value = '';
-                    cadastroIntimacao.value = 'email';
-                    cadastroEndereco.value = '';
-                    cadastroObservacao.value = '';
-                    cumprimentoValor.value = '';
-                    cumprimentoData.value = '';
-                    cumprimentoForma.value = 'pix';
-                    cumprimentoComprovante.value = '';
-                    certidaoTipo.value = 'objeto';
-                    certidaoFinalidade.value = '';
-                    certidaoDetalhe.value = '';
-                    serasaEntidade.value = '';
-                    serasaData.value = '';
-                    serasaValor.value = '';
-                    serasaJustificativa.value = '';
-                    acordoSituacao.value = 'cumpriu';
-                    acordoPagas.value = '';
-                    acordoValor.value = '';
-                    acordoDetalhes.value = '';
-                    acordoSisbajud.checked = false;
-                    acordoRenajud.checked = false;
-                    acordoMandado.checked = false;
-                    acordoOutrosCheck.checked = false;
-                    acordoOutrosText.value = '';
-                    acordoContraValor.value = '';
-                    acordoContraParcelas.value = '';
-                    acordoContraPrimeira.value = '';
-                    acordoContraForma.value = 'pix';
-                    renajudBem.value = '';
-                    renajudMotivo.value = 'debito quitado';
-                    renajudDetalhes.value = '';
-                    pesquisaJustificativa.value = '';
-                    pesquisaUltimo.value = '';
-                    pesquisaSisbajud.checked = true;
-                    pesquisaRenajud.checked = true;
-                    pesquisaInfojud.checked = false;
-                    pesquisaOutrosCheck.checked = false;
-                    pesquisaOutrosText.value = '';
-                    diligenciaTipo.value = 'citacao';
-                    diligenciaData.value = '';
-                    diligenciaHorario.value = '';
-                    diligenciaJustificativa.value = '';
                     updateManifestationView();
                 }
             };
@@ -3224,56 +2292,21 @@
                 });
             };
 
-            const addOficio = () => {
-                const newItem = document.createElement('div');
-                newItem.className = 'oficio-item p-3 border rounded-lg relative bg-indigo-50/40';
-                newItem.innerHTML = `
-                    <button type="button" class="remove-oficio-btn absolute top-2 right-2 bg-red-500 hover:bg-red-600 text-white font-bold px-2 py-0 rounded-full text-xs" title="Remover Ofício">&times;</button>
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <div>
-                            <label class="block text-xs font-medium text-gray-600">Órgão/Empresa</label>
-                            <input type="text" class="oficio-orgao w-full p-2 border border-gray-300 rounded-lg mt-1" placeholder="Ex: Banco X, Empregador, Cartório">
-                        </div>
-                        <div>
-                            <label class="block text-xs font-medium text-gray-600">Finalidade do ofício</label>
-                            <input type="text" class="oficio-finalidade w-full p-2 border border-gray-300 rounded-lg mt-1" placeholder="Ex: extratos, endereço, vínculo">
-                        </div>
-                        <div>
-                            <label class="block text-xs font-medium text-gray-600">Dados a incluir</label>
-                            <input type="text" class="oficio-dados w-full p-2 border border-gray-300 rounded-lg mt-1" placeholder="Ex: CPF do requerido, período, protocolo">
-                        </div>
-                    </div>
-                `;
-                oficiosList.appendChild(newItem);
-            };
-
 
             // Objeto para personalizar as frases de cada tipo de manifestação
             const manifestationPhrases = {
                 'opcao6': 'INDICAR AS PROVAS que pretende produzir',
                 'opcao9': 'INDICAR AS PROVAS que pretende produzir',
                 'indicacaoBens': 'INDICAR BENS PASSÍVEIS DE PENHORA',
-                'desbloqueioDetalhado': 'PEDIR O LEVANTAMENTO DO VALOR BLOQUEADO DE FORMA DETALHADA',
-                'remarcacaoAudiencia': 'PEDIR A REMARCAÇÃO DA AUDIÊNCIA',
-                'conciliacao': 'REGISTRAR PROPOSTA DE CONCILIAÇÃO',
-                'expedicaoOficios': 'REQUERER A EXPEDIÇÃO DE OFÍCIOS',
-                'atualizacaoCadastral': 'ATUALIZAR OS DADOS DE CONTATO',
-                'cumprimentoVoluntario': 'COMUNICAR PAGAMENTO ESPONTÂNEO',
-                'certidao': 'REQUERER CERTIDÃO',
-                'retiradaSerasa': 'PEDIR A RETIRADA DE ANOTAÇÃO EM CADASTRO DE INADIMPLENTES',
-                'manifestacaoAcordo': 'SE MANIFESTAR SOBRE O ACORDO',
-                'retiradaRestricoesRenajud': 'PEDIR A RETIRADA DE RESTRIÇÕES EM RENAJUD/AVERBAÇÕES',
-                'pesquisaEndereco': 'SOLICITAR PESQUISA DE ENDEREÇO',
-                'repeticaoDiligencia': 'PEDIR A REPETIÇÃO DE DILIGÊNCIA'
                 // Para personalizar outras opções, adicione uma nova linha como o exemplo abaixo:
                 // 'sua_opcao_aqui': 'seu texto personalizado aqui'
             };
 
-            const generateManifestationPDF = async () => {
+            const generateManifestationPDF = () => {
                 if (!prePrintValidation(true)) return;
                 const { jsPDF } = window.jspdf;
                 const pdf = new jsPDF('p', 'mm', 'a4');
-                await addManifestationToPdf(pdf);
+                addManifestationToPdf(pdf);
                 pdf.save(`Manifestacao_${processNumberManifest.value.replace(/\D/g, '')}.pdf`);
             };
 
@@ -3289,8 +2322,6 @@
                 const selectedOptionText = manifestationType.options[manifestationType.selectedIndex].text.replace(/\s*\(.*?\)\s*/g, '').toUpperCase();
 
                 const partyNames = Array.from(document.querySelectorAll('#manifest-parties-list .manifest-name')).map(input => input.value.trim().toUpperCase()).filter(Boolean);
-
-                const paragraphify = (text, indent = true) => text.split('\n').filter(p => p.trim() !== '').map(p => `<p style="${indent ? 'text-indent: 4em;' : ''} margin-top: 1em;">${p}</p>`).join('');
 
                 let introHTML = '';
                 const customPhrase = manifestationPhrases[selectedOptionValue];
@@ -3414,150 +2445,10 @@
                         specificContentHTML = manifestContent.value.split('\n').filter(p => p.trim() !== '').map(p => `<p style="text-indent: 4em;">${p}</p>`).join('');
                         specificContentHTML += `<p style="text-indent: 4em; margin-top: 1em;">O pedido se fundamenta no fato de que os valores bloqueados são provenientes de <strong>${motivoDesbloqueio}</strong>, sendo, portanto, impenhoráveis.</p>`;
                         break;
-                    case 'desbloqueioDetalhado': {
-                        const naturezaText = naturezaSelect.options[naturezaSelect.selectedIndex].text;
-                        const valorText = detalheValorInput.value ? `${detalheValorInput.value}` : 'não informado';
-                        const dataText = detalheDataInput.value || 'data não informada';
-                        specificContentHTML = `<p style="text-indent: 4em;">Requer o levantamento imediato do bloqueio realizado em <strong>${dataText}</strong>, no valor de <strong>${valorText}</strong>, por possuir natureza <strong>${naturezaText}</strong>, caracterizando-se como verba impenhorável.</p>`;
-                        if (detalheOrigemInput.value || detalheContaInput.value) {
-                            specificContentHTML += `<p style="text-indent: 4em;">Origem declarada: ${detalheOrigemInput.value || 'não especificada'}. Dados bancários: ${detalheContaInput.value || 'não informado'}.</p>`;
-                        }
-                        if (detalheJustificativa.value.trim()) {
-                            specificContentHTML += paragraphify(detalheJustificativa.value);
-                        }
-                        break;
-                    }
-                    case 'remarcacaoAudiencia': {
-                        const data = remarcacaoData.value || 'data a ser oportunamente designada';
-                        const formato = remarcacaoFormato.options[remarcacaoFormato.selectedIndex].text;
-                        specificContentHTML = `<p style="text-indent: 4em;">Requer a remarcação da audiência designada para <strong>${data}</strong>, indicando preferência por formato <strong>${formato}</strong>.</p>`;
-                        if (remarcacaoJustificativa.value.trim()) specificContentHTML += paragraphify(remarcacaoJustificativa.value);
-                        if (remarcacaoIndisponiveis.value.trim()) specificContentHTML += `<p style="text-indent: 4em;">Indisponibilidades: ${remarcacaoIndisponiveis.value}.</p>`;
-                        if (remarcacaoSugestao.value.trim()) specificContentHTML += `<p style="text-indent: 4em;">Sugestão de datas/turnos: ${remarcacaoSugestao.value}.</p>`;
-                        break;
-                    }
-                    case 'conciliacao': {
-                        const valor = conciliacaoValor.value || 'valor a combinar';
-                        const forma = conciliacaoForma.options[conciliacaoForma.selectedIndex].text;
-                        const parcelas = conciliacaoParcelas.value ? ` (${conciliacaoParcelas.value})` : '';
-                        specificContentHTML = `<p style="text-indent: 4em;">Manifesta interesse em conciliar e apresenta proposta de <strong>${valor}</strong>, na forma <strong>${forma}${parcelas}</strong>.</p>`;
-                        if (conciliacaoVencimento.value.trim()) specificContentHTML += `<p style="text-indent: 4em;">Primeiro pagamento em: ${conciliacaoVencimento.value}.</p>`;
-                        if (conciliacaoContato.value.trim()) specificContentHTML += `<p style="text-indent: 4em;">Contato para tratativas: ${conciliacaoContato.value}.</p>`;
-                        if (conciliacaoDetalhes.value.trim()) specificContentHTML += paragraphify(conciliacaoDetalhes.value);
-                        break;
-                    }
-                    case 'expedicaoOficios': {
-                        const oficios = Array.from(oficiosList.querySelectorAll('.oficio-item')).map(item => ({
-                            orgao: item.querySelector('.oficio-orgao').value.trim(),
-                            finalidade: item.querySelector('.oficio-finalidade').value.trim(),
-                            dados: item.querySelector('.oficio-dados').value.trim(),
-                        })).filter(o => o.orgao || o.finalidade || o.dados);
-                        if (oficios.length > 0) {
-                            specificContentHTML += '<p style="text-indent: 4em;">Requer a expedição dos seguintes ofícios:</p><ul style="margin-left: 4em; list-style: disc;">';
-                            oficios.forEach(o => {
-                                specificContentHTML += `<li><strong>${o.orgao || 'Órgão/Empresa'}</strong> - finalidade: ${o.finalidade || 'informar/detalhar'}, dados a constar: ${o.dados || 'dados do processo e CPF/CNPJ'}.</li>`;
-                            });
-                            specificContentHTML += '</ul>';
-                        } else {
-                            specificContentHTML += '<p style="text-indent: 4em;">Requer a expedição de ofício(s), conforme indicado nos campos acima.</p>';
-                        }
-                        break;
-                    }
-                    case 'atualizacaoCadastral':
-                        specificContentHTML = `<p style="text-indent: 4em;">Atualiza os dados de contato para futuras intimações.</p>`;
-                        if (cadastroTelefone.value.trim()) specificContentHTML += `<p style="text-indent: 4em;">Telefone/WhatsApp: ${cadastroTelefone.value}.</p>`;
-                        if (cadastroEmail.value.trim()) specificContentHTML += `<p style="text-indent: 4em;">E-mail: ${cadastroEmail.value}.</p>`;
-                        if (cadastroEndereco.value.trim()) specificContentHTML += `<p style="text-indent: 4em;">Endereço: ${cadastroEndereco.value}.</p>`;
-                        if (cadastroObservacao.value.trim()) specificContentHTML += paragraphify(cadastroObservacao.value);
-                        specificContentHTML += `<p style="text-indent: 4em;">Preferência de intimação: ${cadastroIntimacao.options[cadastroIntimacao.selectedIndex].text}.</p>`;
-                        break;
-                    case 'cumprimentoVoluntario': {
-                        const valor = cumprimentoValor.value || 'valor informado em comprovante';
-                        const data = cumprimentoData.value || 'data informada no comprovante';
-                        specificContentHTML = `<p style="text-indent: 4em;">Informa pagamento espontâneo de <strong>${valor}</strong>, realizado em <strong>${data}</strong>, por meio de ${cumprimentoForma.options[cumprimentoForma.selectedIndex].text.toLowerCase()}.</p>`;
-                        if (cumprimentoComprovante.value.trim()) specificContentHTML += paragraphify(cumprimentoComprovante.value);
-                        break;
-                    }
-                    case 'certidao': {
-                        const tipo = certidaoTipo.options[certidaoTipo.selectedIndex].text;
-                        specificContentHTML = `<p style="text-indent: 4em;">Requer a expedição de <strong>${tipo}</strong>.</p>`;
-                        if (certidaoFinalidade.value.trim()) specificContentHTML += `<p style="text-indent: 4em;">Finalidade: ${certidaoFinalidade.value}.</p>`;
-                        if (certidaoDetalhe.value.trim()) specificContentHTML += paragraphify(certidaoDetalhe.value);
-                        break;
-                    }
-                    case 'retiradaSerasa': {
-                        specificContentHTML = `<p style="text-indent: 4em;">Requer a imediata retirada/baixa da anotação em cadastro de inadimplentes.</p>`;
-                        if (serasaEntidade.value.trim()) specificContentHTML += `<p style="text-indent: 4em;">Entidade: ${serasaEntidade.value}.</p>`;
-                        if (serasaData.value.trim()) specificContentHTML += `<p style="text-indent: 4em;">Data da inclusão: ${serasaData.value}.</p>`;
-                        if (serasaValor.value.trim()) specificContentHTML += `<p style="text-indent: 4em;">Valor/Lançamento: ${serasaValor.value}.</p>`;
-                        if (serasaJustificativa.value.trim()) specificContentHTML += paragraphify(serasaJustificativa.value);
-                        break;
-                    }
-                    case 'manifestacaoAcordo': {
-                        const situacaoValue = acordoSituacao.value;
-                        const situacaoText = acordoSituacao.options[acordoSituacao.selectedIndex].text;
-                        specificContentHTML = `<p style="text-indent: 4em;">Manifesta-se sobre o acordo: <strong>${situacaoText}</strong>.</p>`;
-
-                        if (['parcial', 'descumpriu'].includes(situacaoValue)) {
-                            if (acordoPagas.value.trim()) specificContentHTML += `<p style="text-indent: 4em;">Parcelas pagas: ${acordoPagas.value}.</p>`;
-                            if (acordoValor.value.trim()) specificContentHTML += `<p style="text-indent: 4em;">Valor pago: ${acordoValor.value}.</p>`;
-
-                            const diligencias = [];
-                            if (acordoSisbajud.checked) diligencias.push('Nova pesquisa/bloqueio via SISBAJUD');
-                            if (acordoRenajud.checked) diligencias.push('Pesquisa/penhora via RENAJUD');
-                            if (acordoMandado.checked) diligencias.push('Mandado de penhora/avaliação');
-                            if (acordoOutrosCheck.checked && acordoOutrosText.value.trim()) diligencias.push(acordoOutrosText.value.trim());
-
-                            if (diligencias.length) {
-                                specificContentHTML += '<p style="text-indent: 4em;">Para prosseguimento, requer:</p><ul style="margin-left: 4em; list-style: disc;">';
-                                diligencias.forEach(item => { specificContentHTML += `<li>${item}</li>`; });
-                                specificContentHTML += '</ul>';
-                            }
-                        } else if (situacaoValue === 'contraproposta') {
-                            const contraValor = acordoContraValor.value || 'valor a combinar';
-                            const contraParcelas = acordoContraParcelas.value ? ` em ${acordoContraParcelas.value}` : '';
-                            const contraPrimeira = acordoContraPrimeira.value ? `, primeira parcela em ${acordoContraPrimeira.value}` : '';
-                            const contraForma = acordoContraForma.options[acordoContraForma.selectedIndex].text;
-                            specificContentHTML += `<p style="text-indent: 4em;">Apresenta contraproposta de pagamento de <strong>${contraValor}${contraParcelas}</strong>${contraPrimeira}, com pagamento via <strong>${contraForma}</strong>.</p>`;
-                        }
-
-                        if (acordoDetalhes.value.trim()) specificContentHTML += paragraphify(acordoDetalhes.value);
-                        break;
-                    }
-                    case 'retiradaRestricoesRenajud': {
-                        const motivo = renajudMotivo.options[renajudMotivo.selectedIndex].text;
-                        specificContentHTML = `<p style="text-indent: 4em;">Requer a retirada das restrições/averbações sobre <strong>${renajudBem.value || 'o bem indicado nos autos'}</strong>, pois <strong>${motivo}</strong>.</p>`;
-                        if (renajudDetalhes.value.trim()) specificContentHTML += paragraphify(renajudDetalhes.value);
-                        break;
-                    }
-                    case 'pesquisaEndereco': {
-                        specificContentHTML = `<p style="text-indent: 4em;">Requer pesquisa de endereço para viabilizar citação/intimação.</p>`;
-                        if (pesquisaJustificativa.value.trim()) specificContentHTML += paragraphify(pesquisaJustificativa.value);
-                        if (pesquisaUltimo.value.trim()) specificContentHTML += `<p style="text-indent: 4em;">Último endereço conhecido: ${pesquisaUltimo.value}.</p>`;
-                        const sistemas = [];
-                        if (pesquisaSisbajud.checked) sistemas.push('SISBAJUD');
-                        if (pesquisaRenajud.checked) sistemas.push('RENAJUD');
-                        if (pesquisaInfojud.checked) sistemas.push('INFOJUD/RFB');
-                        if (pesquisaOutrosCheck.checked && pesquisaOutrosText.value.trim()) sistemas.push(pesquisaOutrosText.value.trim());
-                        if (sistemas.length) specificContentHTML += `<p style="text-indent: 4em;">Sistemas solicitados: ${sistemas.join(', ')}.</p>`;
-                        break;
-                    }
-                    case 'repeticaoDiligencia': {
-                        specificContentHTML = `<p style="text-indent: 4em;">Solicita a repetição da diligência de <strong>${diligenciaTipo.options[diligenciaTipo.selectedIndex].text}</strong>.</p>`;
-                        if (diligenciaData.value.trim()) specificContentHTML += `<p style="text-indent: 4em;">Tentativa anterior em: ${diligenciaData.value}.</p>`;
-                        if (diligenciaHorario.value.trim()) specificContentHTML += `<p style="text-indent: 4em;">Melhor horário/local: ${diligenciaHorario.value}.</p>`;
-                        if (diligenciaJustificativa.value.trim()) specificContentHTML += paragraphify(diligenciaJustificativa.value);
-                        break;
-                    }
 
                     default:
                         specificContentHTML = manifestContent.value.split('\n').filter(p => p.trim() !== '').map(p => `<p style="text-indent: 4em;">${p}</p>`).join('');
                         break;
-                }
-
-                const manualAppendTypes = ['desbloqueioDetalhado', 'remarcacaoAudiencia', 'conciliacao', 'expedicaoOficios', 'atualizacaoCadastral', 'cumprimentoVoluntario', 'certidao', 'retiradaSerasa', 'manifestacaoAcordo', 'retiradaRestricoesRenajud', 'pesquisaEndereco', 'repeticaoDiligencia'];
-                if (manualAppendTypes.includes(selectedOptionValue) && manifestContent.value.trim()) {
-                    specificContentHTML += paragraphify(manifestContent.value);
                 }
 
                 let addressHTML = '';
@@ -3659,24 +2550,107 @@
                     `;
             };
 
-            const addManifestationToPdf = (pdf) => new Promise((resolve) => {
-                const container = document.createElement('div');
-                container.style.width = '210mm';
-                container.style.padding = '20px';
-                container.style.background = '#ffffff';
-                container.innerHTML = generateManifestationPreviewHTML();
-                document.body.appendChild(container);
+            const addManifestationToPdf = (pdf) => {
+                const margin = 20;
+                const maxWidth = pdf.internal.pageSize.getWidth() - margin * 2;
+                let currentY = margin;
+                const lineSpacing = 8;
+                const paraSpacing = 5;
+                const tightParaSpacing = 2;
+                const baseFontSize = 12;
 
-                pdf.html(container, {
-                    html2canvas: { scale: 0.75, useCORS: true, logging: false },
-                    callback: () => {
-                        document.body.removeChild(container);
-                        resolve();
-                    },
-                    margin: [10, 10, 10, 10],
-                    autoPaging: 'text'
+                pdf.setFont('times', 'normal');
+                pdf.setFontSize(baseFontSize);
+
+                // Get data... 
+                const selectedOptionValue = manifestationType.value;
+                const selectedOptionText = manifestationType.options[manifestationType.selectedIndex].text.replace(/\s*\(.*?\)\s*/g, '').toUpperCase();
+                const partyNames = Array.from(document.querySelectorAll('#manifest-parties-list .manifest-name')).map(input => input.value.trim().toUpperCase()).filter(Boolean);
+
+                // Render Header
+                pdf.setFont('times', 'bold');
+                pdf.text("AO JUÍZO DO JUIZADO ESPECIAL CÍVEL DA COMARCA DE MARÍLIA/SP", pdf.internal.pageSize.getWidth() / 2, currentY, { align: 'center' });
+                currentY += 25;
+                pdf.setFont('times', 'normal');
+                currentY = renderParagraph(pdf, `<strong>Processo nº: ${processNumberManifest.value}</strong>`, { currentY, margin, maxWidth, lineSpacing, paraSpacing: tightParaSpacing, indent: false });
+                currentY = renderParagraph(pdf, `<strong>Solicitante(s): ${partyNames.join(', ')}</strong>`, { currentY, margin, maxWidth, lineSpacing, paraSpacing: 10, indent: false });
+
+                pdf.setFont('times', 'bold');
+                pdf.text(`TERMO - ${selectedOptionText}`, pdf.internal.pageSize.getWidth() / 2, currentY, { align: 'center' });
+                currentY += 18;
+                pdf.setFont('times', 'normal');
+
+                let introHTML;
+                const customPhrase = manifestationPhrases[selectedOptionValue];
+                if (customPhrase) {
+                    introHTML = `A(s) parte(s) acima qualificada(s), vem <strong>${customPhrase}</strong>, nos seguintes termos:`;
+                } else {
+                    let concordancia = 'apresenta sua';
+                    if (['opcao3', 'opcao4', 'opcao8', 'desistencia', 'prazo', 'nomeacaoDefensoria', 'indicacaoBens', 'desbloqueioPenhora'].includes(selectedOptionValue)) { concordancia = 'vem'; }
+                    if (selectedOptionValue === 'opcao5') { concordancia = 'vem apresentar'; }
+                    introHTML = `A(s) parte(s) acima qualificada(s), ${concordancia} <strong>${selectedOptionText}</strong>, nos seguintes termos:`;
+                }
+                currentY = renderParagraph(pdf, introHTML, { currentY, margin, maxWidth, lineSpacing, paraSpacing, indent: true });
+
+                const tempDiv = document.createElement('div');
+                tempDiv.innerHTML = generateManifestationPreviewHTML();
+
+                const specificContentHTML = tempDiv.querySelector('#specific-content-placeholder')?.innerHTML || '';
+
+                if (manifestContent.value.trim()) {
+                    manifestContent.value.split('\n').filter(p => p.trim() !== '').forEach(p => {
+                        currentY = renderParagraph(pdf, p, { currentY, margin, maxWidth, lineSpacing, paraSpacing, indent: true });
+                    });
+                }
+
+                if (extraContent.value.trim() && !extraContentContainer.classList.contains('hidden')) {
+                    extraContent.value.split('\n').filter(p => p.trim() !== '').forEach(p => {
+                        currentY = renderParagraph(pdf, p, { currentY, margin, maxWidth, lineSpacing, paraSpacing, indent: true });
+                    });
+                }
+
+                // Render Witness List...
+                const witnessItems = document.querySelectorAll('#witness-list .witness-item');
+                // ... (lógica para witnesses)
+
+                // Render Document List...
+                const documentItems = document.querySelectorAll('#document-list .document-item');
+                // ... (lógica para documents)
+
+
+                // Render Closing and Signatures
+                currentY = Math.max(currentY, 100); // Ensure space for closing
+                if (currentY > pdf.internal.pageSize.getHeight() - 80) { // Check space for signatures
+                    pdf.addPage();
+                    currentY = margin;
+                }
+
+                currentY += 10;
+                currentY = renderParagraph(pdf, "Nestes termos, pede deferimento.", { currentY, margin, maxWidth, lineSpacing, paraSpacing: 10, indent: false });
+                const today = new Date();
+                const dateStr = today.toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' });
+                pdf.text(`${dateStr}.`, pdf.internal.pageSize.getWidth() - margin, currentY, { align: 'right' });
+                currentY += 20;
+
+                let allSignatories = [...partyNames];
+                if (selectedOptionValue === 'opcao2' && document.querySelector('input[name="emenda-type"]:checked').value === 'incluir-parte') {
+                    const polo = document.querySelector('input[name="polo-type"]:checked').value;
+                    if (polo === 'Ativo') {
+                        const newParties = Array.from(emendaParteList.querySelectorAll('.party-item .party-name')).map(input => input.value.trim().toUpperCase()).filter(Boolean);
+                        allSignatories = [...new Set([...allSignatories, ...newParties])];
+                    }
+                }
+                [...new Set(allSignatories)].forEach(name => {
+                    if (currentY > pdf.internal.pageSize.getHeight() - 30) {
+                        pdf.addPage(); currentY = margin;
+                    }
+                    const signatureX = pdf.internal.pageSize.getWidth() / 2;
+                    pdf.line(signatureX - 50, currentY, signatureX + 50, currentY);
+                    currentY += 5;
+                    pdf.text(name, signatureX, currentY, { align: 'center' });
+                    currentY += 15;
                 });
-            });
+            };
 
 
             // --- EVENT LISTENERS ---
@@ -3759,13 +2733,6 @@
                 }
             });
 
-            addOficioBtn.addEventListener('click', addOficio);
-            oficiosList.addEventListener('click', (e) => {
-                if (e.target.classList.contains('remove-oficio-btn')) {
-                    e.target.closest('.oficio-item').remove();
-                }
-            });
-
 
             processNumberManifest.addEventListener('input', formatCNJOnInput);
 
@@ -3773,19 +2740,6 @@
                 if (e.target.classList.contains('manifest-cpf')) {
                     formatCpfCnpjOnInput(e);
                 }
-            });
-
-            acordoSituacao.addEventListener('change', updateAcordoFieldsVisibility);
-            acordoOutrosCheck.addEventListener('change', () => {
-                const show = acordoOutrosCheck.checked;
-                acordoOutrosText.classList.toggle('hidden', !show);
-                if (!show) acordoOutrosText.value = '';
-            });
-
-            pesquisaOutrosCheck.addEventListener('change', () => {
-                const show = pesquisaOutrosCheck.checked;
-                pesquisaOutrosText.classList.toggle('hidden', !show);
-                if (!show) pesquisaOutrosText.value = '';
             });
 
             manifestationType.addEventListener('change', updateManifestationView);
@@ -3896,13 +2850,8 @@
             });
 
             prazoMotivoSelect.addEventListener('change', () => prazoMotivoOutro.classList.toggle('hidden', prazoMotivoSelect.value !== 'outro'));
-            prazoMotivoSelect.addEventListener('change', () => document.getElementById('prazo-motivo-outro-hint').classList.toggle('hidden', prazoMotivoSelect.value !== 'outro'));
             bensOutrosCheck.addEventListener('change', () => bensOutrosText.classList.toggle('hidden', !bensOutrosCheck.checked));
-            desbloqueioMotivoSelect.addEventListener('change', () => {
-                const isOutro = desbloqueioMotivoSelect.value !== 'outro';
-                desbloqueioMotivoOutro.classList.toggle('hidden', isOutro);
-                document.getElementById('desbloqueio-motivo-outro-hint').classList.toggle('hidden', isOutro);
-            });
+            desbloqueioMotivoSelect.addEventListener('change', () => desbloqueioMotivoOutro.classList.toggle('hidden', desbloqueioMotivoSelect.value !== 'outro'));
 
             indicacaoBensSection.addEventListener('change', e => {
                 if (e.target.classList.contains('individualizar-check')) {

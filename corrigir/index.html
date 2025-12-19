@@ -611,10 +611,6 @@
             }
         }
 
-        function truncarSeisCasas(valor) {
-            return Math.floor(valor * 1_000_000) / 1_000_000;
-        }
-
         function processarIPCA15(dados) {
             dados.forEach(item => {
                 const [d, m, y] = item.data.split('/');
@@ -627,8 +623,7 @@
                     if (mA === 0) { mA = 12; aA--; }
                     const chaveAnt = `${aA}-${String(mA).padStart(2, '0')}`;
                     if (tabelaTJSP[chaveAnt]) {
-                        const fatorCalculado = tabelaTJSP[chaveAnt] * (1 + (parseFloat(item.valor) / 100));
-                        tabelaTJSP[chave] = truncarSeisCasas(fatorCalculado);
+                        tabelaTJSP[chave] = tabelaTJSP[chaveAnt] * (1 + (parseFloat(item.valor) / 100));
                     }
                 }
             });
