@@ -108,9 +108,9 @@
                                             style='display: none !important; visibility: hidden;'></option>
                                         <option value="0" title="do ato">do ato</option>
                                         <option value="0" title="da juntada">da juntada</option>
-                                        <option title="da disp. DJE" value="1" selected>da disponibilização no DJE
+                                        <option title="da disp. DJE" value="1" selected>da disponibilização no DJEN
                                         </option>
-                                        <option value="2" title="da pub. DJE">da publicação no DJE</option>
+                                        <option value="2" title="da pub. DJE">da publicação no DJEN</option>
                                         <option value="3" title="da Citação no Portal">da Confirmação da Citação no
                                             Portal</option>
                                     </select>
@@ -244,6 +244,38 @@
     </div>
 
     <!-- Bibliotecas JS (Ordem Otimizada) -->
+    <div class="modal fade" id="updateModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-sm">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <div class="modal-title d-flex align-items-center gap-3">
+                        <span class="update-icon">
+                            <i class="fa-solid fa-bolt"></i>
+                        </span>
+                        <div class="d-flex flex-column lh-sm">
+                            <span class="fw-semibold">Novidades</span>
+                            <small>07 jan 2026</small>
+                        </div>
+                    </div>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="update-highlight mb-3">
+                        <p class="fw-semibold mb-2">O que mudou</p>
+                        <ul class="list-unstyled mb-0 small">
+                            <li class="d-flex align-items-start gap-2">
+                                <i class="fa-solid fa-circle-check text-success mt-1"></i>
+                                <span>Tipo de contagem padrão atualizado para "da disponibilização no DJEN".</span>
+                            </li>
+                        </ul>
+                    </div>
+                    <button id="dismissUpdate" class="btn btn-sm w-100 btn-update-dismiss">Não mostrar mais</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bibliotecas JS (Ordem Otimizada) -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
     <script src="https://unpkg.com/@popperjs/core@2/dist/umd/popper.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.1.3/js/bootstrap.min.js"></script>
@@ -366,6 +398,29 @@
     <script src="initialDateFunc.js"></script>
     <script src="code.js"></script>
     <script src="calcDate.js"></script>
+
+    <script>
+        (function () {
+            const UPDATE_VERSION = "prazo-update-2026-01-07-2";
+            const storageKey = "prazo_update_ack";
+            const updateSeen = localStorage.getItem(storageKey);
+
+            if (updateSeen !== UPDATE_VERSION) {
+                const modalElement = document.getElementById("updateModal");
+                if (!modalElement) {
+                    return;
+                }
+
+                const modalInstance = new bootstrap.Modal(modalElement);
+                modalInstance.show();
+
+                document.getElementById("dismissUpdate").addEventListener("click", function () {
+                    localStorage.setItem(storageKey, UPDATE_VERSION);
+                    modalInstance.hide();
+                });
+            }
+        })();
+    </script>
 
 </body>
 
