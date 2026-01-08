@@ -426,15 +426,17 @@
                 </div>
                 <div class="md:col-span-2">
                     <label class="block text-xs font-bold text-slate-500 mb-1">Valor (R$)</label>
-                    <input type="number" step="0.01" class="input-field valor-input" placeholder="0,00">
+                    <input type="text" inputmode="decimal" class="input-field valor-input" placeholder="0,00">
                 </div>
                 <div class="md:col-span-2">
                     <label class="block text-xs font-bold text-slate-500 mb-1">Início Correção</label>
-                    <input type="month" class="input-field data-ini-input text-xs tracking-tighter">
+                    <input type="text" class="input-field data-ini-input text-xs tracking-tighter"
+                        placeholder="MM/AAAA">
                 </div>
                 <div class="md:col-span-2">
                     <label class="block text-xs font-bold text-slate-500 mb-1">Termo Final</label>
-                    <input type="month" class="input-field data-fim-input text-xs tracking-tighter">
+                    <input type="text" class="input-field data-fim-input text-xs tracking-tighter"
+                        placeholder="MM/AAAA">
                 </div>
                 <div class="md:col-span-3 border-l pl-4 border-slate-100">
                     <label class="flex items-center gap-2 cursor-pointer mb-2 select-none">
@@ -470,13 +472,33 @@
             await carregarIndicesBCB();
         }
 
+        function obterExtremosAnosDigitados() {
+            const hoje = new Date();
+            const anoAtual = hoje.getFullYear();
+            const mesAnterior = new Date(hoje.getFullYear(), hoje.getMonth() - 1, 1);
+            const anoMesAnterior = mesAnterior.getFullYear();
+            const datas = [
+                ...document.querySelectorAll('.data-ini-input'),
+                ...document.querySelectorAll('.data-fim-input')
+            ]
+                .map(i => obterMesAnoNormalizado(i))
+                .filter(Boolean)
+                .map(v => parseInt(v.split('-')[0], 10))
+                .filter(Number.isFinite);
+
+            const minDigitado = datas.length ? Math.min(...datas) : anoMesAnterior;
+            const minAno = Math.min(minDigitado, anoMesAnterior);
+            const maxAno = datas.length ? Math.max(...datas, anoAtual) : anoAtual;
+            return { minAno, maxAno };
+        }
+
         async function carregarIndicesBCB() {
             const statusDot = document.getElementById('statusDot');
             const statusText = document.getElementById('statusText');
             try {
-                const anoAtual = new Date().getFullYear();
+                const { minAno, maxAno } = obterExtremosAnosDigitados();
                 const proxyBase = 'https://falling-morning-2baa.eduardocarnello.workers.dev';
-                const respIPCA = await fetch(`${proxyBase}/?serie=7478&de=01/01/${anoAtual}&ate=31/12/${anoAtual}`);
+                const respIPCA = await fetch(`${proxyBase}/?serie=7478&de=01/01/${minAno}&ate=31/12/${maxAno}`);
                 if (respIPCA.ok) {
                     const dadosIPCA = await respIPCA.json();
                     processarIPCA15(dadosIPCA);
@@ -496,6 +518,108 @@
                 statusDot.classList.replace('bg-yellow-400', 'bg-red-500');
                 statusText.innerText = "Offline";
             }
+        }
+
+        const mapaMes = {
+            'jan': '01', 'janeiro': '01',
+            'fev': '02', 'fevereiro': '02',
+            'mar': '03', 'marco': '03', 'março': '03',
+            'abr': '04', 'abril': '04',
+            'mai': '05', 'maio': '05',
+            'jun': '06', 'junho': '06',
+            'jul': '07', 'julho': '07',
+            'ago': '08', 'agosto': '08',
+            'set': '09', 'setembro': '09',
+            'out': '10', 'outubro': '10',
+            'nov': '11', 'novembro': '11',
+            'dez': '12', 'dezembro': '12'
+        };
+
+        function mascararValor(el) {
+            const digits = (el.value || '').replace(/\D/g, '');
+            const numero = parseInt(digits || '0', 10);
+            el.dataset.raw = (numero / 100).toFixed(2);
+            el.value = (numero / 100).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        }
+
+        const debounceMap = new WeakMap();
+        function mascararMesAno(el) {
+            let raw = (el.value || '').toLowerCase();
+            const temTexto = /[a-z]/.test(raw);
+            if (temTexto) {
+                const chave = Object.keys(mapaMes).find(k => raw.startsWith(k));
+                if (chave) {
+                    raw = raw.replace(chave, mapaMes[chave]);
+                }
+            }
+            const digits = raw.replace(/\D/g, '').slice(0, 6);
+            let out = digits;
+            if (digits.length > 2) {
+                out = `${digits.slice(0, 2)}/${digits.slice(2)}`;
+            }
+            el.value = out;
+        }
+
+        function pularParaAno(el) {
+            const posBarra = el.value.indexOf('/');
+            if (posBarra > -1) {
+                const alvo = posBarra + 1;
+                el.setSelectionRange(alvo, alvo);
+            }
+        }
+
+        function agendarPuloAno(el) {
+            clearTimeout(debounceMap.get(el));
+            const t = setTimeout(() => pularParaAno(el), 2000);
+            debounceMap.set(el, t);
+        }
+
+        function obterMesAnoNormalizado(el) {
+            const raw = (el.value || '').toLowerCase();
+            let mes = null;
+            let ano = null;
+
+            const chaveTexto = Object.keys(mapaMes).find(k => raw.startsWith(k));
+            if (chaveTexto) mes = mapaMes[chaveTexto];
+
+            const nums = raw.replace(/\D/g, '');
+            if (!mes && nums.length >= 2) mes = nums.slice(0, 2);
+            if (nums.length > 2) ano = nums.slice(2);
+
+            if (ano && ano.length === 2) {
+                const anoNum = parseInt(ano, 10);
+                ano = anoNum >= 50 ? `19${ano}` : `20${ano}`;
+            }
+
+            if (mes && ano && mes.length === 2 && ano.length === 4) {
+                return `${ano}-${mes}`;
+            }
+            if (/^\d{4}-\d{2}$/.test(raw)) return raw;
+            return null;
+        }
+
+        function aplicarMascaras(row) {
+            const valor = row.querySelector('.valor-input');
+            const ini = row.querySelector('.data-ini-input');
+            const fim = row.querySelector('.data-fim-input');
+
+            if (valor) {
+                valor.addEventListener('input', () => mascararValor(valor));
+                valor.addEventListener('blur', () => {
+                    if (valor.value.trim() !== '') {
+                        mascararValor(valor);
+                    } else {
+                        valor.dataset.raw = '';
+                    }
+                });
+            }
+
+            [ini, fim].forEach(el => {
+                if (!el) return;
+                el.addEventListener('input', () => mascararMesAno(el));
+                el.addEventListener('keyup', () => agendarPuloAno(el));
+                mascararMesAno(el);
+            });
         }
 
         function processarIPCA15(dados) {
@@ -523,8 +647,9 @@
             const template = document.getElementById('itemTemplate');
             const clone = template.content.cloneNode(true);
             const hoje = new Date();
-            clone.querySelector('.data-fim-input').value = hoje.toISOString().slice(0, 7);
+            clone.querySelector('.data-fim-input').value = hoje.toISOString().slice(5, 7) + '/' + hoje.getFullYear();
             clone.querySelector('.juros-fim-input').value = hoje.toISOString().split('T')[0];
+            aplicarMascaras(clone);
             container.appendChild(clone);
         }
 
@@ -546,7 +671,7 @@
 
             if (checkbox.checked) {
                 const row = checkbox.closest('.item-row');
-                const ini = row.querySelector('.data-ini-input').value;
+                const ini = obterMesAnoNormalizado(row.querySelector('.data-ini-input'));
                 if (ini && !row.querySelector('.juros-ini-input').value) {
                     row.querySelector('.juros-ini-input').value = `${ini}-01`;
                 }
@@ -554,7 +679,8 @@
         }
 
         // --- 4. CÁLCULO ---
-        function calcularTudo() {
+        async function calcularTudo() {
+            await carregarIndicesBCB();
             const rows = document.querySelectorAll('.item-row');
             const tbody = document.getElementById('resultsTableBody');
             tbody.innerHTML = '';
@@ -564,9 +690,9 @@
 
             rows.forEach((row) => {
                 const desc = row.querySelector('.desc-input').value || `Item`;
-                const valorOrig = parseFloat(row.querySelector('.valor-input').value);
-                const dataIni = row.querySelector('.data-ini-input').value;
-                const dataFim = row.querySelector('.data-fim-input').value;
+                const valorOrig = parseFloat(row.querySelector('.valor-input').dataset.raw || '0');
+                const dataIni = obterMesAnoNormalizado(row.querySelector('.data-ini-input'));
+                const dataFim = obterMesAnoNormalizado(row.querySelector('.data-fim-input'));
                 const aplicaJuros = row.querySelector('.juros-check').checked;
 
                 if (!valorOrig || !dataIni || !dataFim) return;
