@@ -2588,12 +2588,184 @@
                 pdf.setFont('times', 'normal');
                 pdf.setFontSize(baseFontSize);
 
-                // Get data... 
                 const selectedOptionValue = manifestationType.value;
                 const selectedOptionText = manifestationType.options[manifestationType.selectedIndex].text.replace(/\s*\(.*?\)\s*/g, '').toUpperCase();
                 const partyNames = Array.from(document.querySelectorAll('#manifest-parties-list .manifest-name')).map(input => input.value.trim().toUpperCase()).filter(Boolean);
 
-                // Render Header
+                const collectParagraphs = () => {
+                    const paragraphs = [];
+
+                    // Intro
+                    const customPhrase = manifestationPhrases[selectedOptionValue];
+                    if (customPhrase) {
+                        paragraphs.push(`A(s) parte(s) acima qualificada(s), vem ${customPhrase}, nos seguintes termos:`);
+                    } else {
+                        let concordancia = 'apresenta sua';
+                        if (['opcao3', 'opcao4', 'opcao8', 'desistencia', 'prazo', 'nomeacaoDefensoria', 'indicacaoBens', 'desbloqueioPenhora'].includes(selectedOptionValue)) { concordancia = 'vem'; }
+                        if (selectedOptionValue === 'opcao5') { concordancia = 'vem apresentar'; }
+                        paragraphs.push(`A(s) parte(s) acima qualificada(s), ${concordancia} ${selectedOptionText}, nos seguintes termos:`);
+                    }
+
+                    // Endereço (quando visível)
+                    if (!addressSection.classList.contains('hidden')) {
+                        const nomeEndereco = (document.getElementById('name-address').value || partyNames[0] || '').toUpperCase();
+                        const linhaEndereco = `${document.getElementById('rua').value}, nº ${document.getElementById('numero').value}, ${document.getElementById('complemento').value}`;
+                        const linhaCidade = `${document.getElementById('bairro').value}, ${cepInput.value}, ${document.getElementById('cidade').value}/${document.getElementById('estado').value}`;
+                        paragraphs.push(`${nomeEndereco}`);
+                        paragraphs.push(linhaEndereco.trim());
+                        paragraphs.push(linhaCidade.trim());
+                    }
+
+                    const appendFromTextarea = (txt) => {
+                        txt.split('\n').filter(p => p.trim() !== '').forEach(p => paragraphs.push(p.trim()));
+                    };
+
+                    // Conteúdo específico por opção
+                    switch (selectedOptionValue) {
+                        case 'opcao2': { // Emenda
+                            const emendaTipo = document.querySelector('input[name="emenda-type"]:checked').value;
+                            if (emendaTipo === 'incluir-parte') {
+                                const polo = document.querySelector('input[name="polo-type"]:checked').value;
+                                const emendaParties = Array.from(emendaParteList.querySelectorAll('.party-item')).map(item => {
+                                    const noAddress = item.querySelector('.no-address-check') && item.querySelector('.no-address-check').checked;
+                                    const cep = item.querySelector('.party-cep').value.trim();
+                                    const addressStr = noAddress ? 'em lugar incerto e não sabido' : `${item.querySelector('.party-street').value}, nº ${item.querySelector('.party-number').value}, ${item.querySelector('.party-complement').value || ''} - ${item.querySelector('.party-district').value}${cep ? `, CEP: ${cep}` : ''}, ${item.querySelector('.party-city').value}/${item.querySelector('.party-state').value}`;
+                                    return {
+                                        name: item.querySelector('.party-name').value.trim(),
+                                        maritalStatus: item.querySelector('.party-marital-status').value,
+                                        profession: item.querySelector('.party-profession').value.trim(),
+                                        cpf: item.querySelector('.party-cpf').value.trim(),
+                                        dob: item.querySelector('.party-dob') ? item.querySelector('.party-dob').value.trim() : '',
+                                        rg: item.querySelector('.party-rg').value.trim(),
+                                        emitter: item.querySelector('.party-emitter').value.trim(),
+                                        address: addressStr
+                                    };
+                                }).filter(p => p.name);
+
+                                if (emendaParties.length > 0) {
+                                    paragraphs.push(`Requer-se a inclusão da(s) parte(s) abaixo no polo ${polo.toLowerCase()} da ação:`);
+                                    emendaParties.forEach(p => {
+                                        let det = '';
+                                        if (p.maritalStatus) det += `, ${p.maritalStatus}`;
+                                        if (p.profession) det += `, ${p.profession}`;
+                                        if (p.rg) det += `, RG ${p.rg}${p.emitter ? ` - ${p.emitter}` : ''}`;
+                                        if (p.cpf) det += `, CPF/CNPJ ${p.cpf}`;
+                                        if (p.address) det += `, ${p.address}`;
+                                        paragraphs.push(`${p.name.toUpperCase()}${det}.`);
+                                    });
+                                }
+                                const textoOpcional = document.getElementById('emenda-texto-opcional').value.trim();
+                                if (textoOpcional) appendFromTextarea(textoOpcional);
+                            } else {
+                                appendFromTextarea(manifestContent.value);
+                            }
+                            break;
+                        }
+                        case 'prazo': {
+                            const dias = document.getElementById('prazo-dias').value;
+                            let motivo = prazoMotivoSelect.value;
+                            if (motivo === 'outro') motivo = prazoMotivoOutro.value.trim();
+                            paragraphs.push(`A parte solicitante requer a concessão do prazo de ${dias} dias para ${motivo}.`);
+                            appendFromTextarea(manifestContent.value);
+                            break;
+                        }
+                        case 'indicacaoBens': {
+                            const bensList = [];
+                            if (document.getElementById('bens-sisbajud').checked) {
+                                const tipoSisbajud = document.querySelector('input[name="sisbajud-type"]:checked').value === 'teimosinha' ? 'na modalidade "teimosinha" (30 dias)' : 'na modalidade simples';
+                                bensList.push(`reiteração da pesquisa e bloqueio de valores via SISBAJUD ${tipoSisbajud}`);
+                            }
+                            if (document.getElementById('bens-renajud').checked) {
+                                const check = document.getElementById('bens-renajud').closest('.space-y-2').querySelector('.individualizar-check');
+                                const input = document.getElementById('bens-renajud').closest('.space-y-2').querySelector('.individualizar-input');
+                                if (check.checked && input.value.trim()) {
+                                    bensList.push(`pesquisa e bloqueio do veículo via RENAJUD sobre: ${input.value.trim()}`);
+                                } else {
+                                    bensList.push('pesquisa e bloqueio de veículos em nome da parte executada via RENAJUD');
+                                }
+                            }
+                            if (document.getElementById('bens-mandado').checked) {
+                                const check = document.getElementById('bens-mandado').closest('.space-y-2').querySelector('.individualizar-check');
+                                const input = document.getElementById('bens-mandado').closest('.space-y-2').querySelector('.individualizar-input');
+                                if (check.checked && input.value.trim()) {
+                                    bensList.push(`expedição de Mandado de Penhora e Avaliação sobre: ${input.value.trim()}`);
+                                } else {
+                                    bensList.push('expedição de Mandado de Penhora e Avaliação de bens na residência/sede da parte executada');
+                                }
+                            }
+                            if (bensOutrosCheck.checked && bensOutrosText.value.trim()) {
+                                bensList.push(bensOutrosText.value.trim());
+                            }
+                            if (bensList.length > 0) {
+                                paragraphs.push('Diante da inércia da parte executada, requer-se o prosseguimento da execução com as seguintes medidas:');
+                                bensList.forEach(item => paragraphs.push(`- ${item}`));
+                            }
+                            appendFromTextarea(manifestContent.value);
+                            break;
+                        }
+                        case 'desbloqueioPenhora': {
+                            let motivo = desbloqueioMotivoSelect.value;
+                            if (motivo === 'outro') motivo = desbloqueioMotivoOutro.value.trim();
+                            appendFromTextarea(manifestContent.value);
+                            paragraphs.push(`O pedido se fundamenta no fato de que os valores bloqueados são provenientes de ${motivo}, sendo impenhoráveis.`);
+                            break;
+                        }
+                        default: {
+                            appendFromTextarea(manifestContent.value);
+                            break;
+                        }
+                    }
+
+                    if (extraContent.value.trim() && !extraContentContainer.classList.contains('hidden')) {
+                        appendFromTextarea(extraContent.value);
+                    }
+
+                    // Testemunhas
+                    const witnessItems = document.querySelectorAll('#witness-list .witness-item');
+                    const witnessesData = Array.from(witnessItems).map(item => ({
+                        name: item.querySelector('.witness-name').value.trim(),
+                        doc: item.querySelector('.witness-doc').value.trim(),
+                        address: item.querySelector('.witness-address').value.trim(),
+                        needsIntimation: item.querySelector('.witness-intimation').checked,
+                    })).filter(w => w.name);
+
+                    if (witnessesData.length > 0) {
+                        paragraphs.push('ROL DE TESTEMUNHAS:');
+                        witnessesData.forEach((w, idx) => {
+                            let line = `${idx + 1}. ${w.name.toUpperCase()}`;
+                            if (w.doc) line += `, doc. ${w.doc}`;
+                            if (w.address) line += `, endereço: ${w.address}`;
+                            paragraphs.push(line);
+                        });
+                        const toIntimate = witnessesData.filter(w => w.needsIntimation).map(w => w.name.toUpperCase());
+                        if (toIntimate.length > 0) {
+                            paragraphs.push(`REQUER-SE A INTIMAÇÃO PESSOAL DE: ${toIntimate.join(', ')}.`);
+                        }
+                    }
+
+                    // Documentos
+                    const documentsData = Array.from(document.querySelectorAll('#document-list .document-item')).map(item => {
+                        const typeSelect = item.querySelector('.document-type');
+                        let type = typeSelect.value;
+                        if (type === 'Outro') type = item.querySelector('.document-other-type').value.trim();
+                        return {
+                            name: type,
+                            explanation: item.querySelector('.document-explanation').value.trim(),
+                        };
+                    }).filter(doc => doc.name);
+
+                    if (documentsData.length > 0) {
+                        paragraphs.push('DOCUMENTOS QUE ACOMPANHAM A MANIFESTAÇÃO:');
+                        documentsData.forEach(doc => {
+                            const line = doc.explanation ? `${doc.name.toUpperCase()}: ${doc.explanation}` : doc.name.toUpperCase();
+                            paragraphs.push(`- ${line}`);
+                        });
+                    }
+
+                    return paragraphs;
+                };
+
+                // Header
                 pdf.setFont('times', 'bold');
                 pdf.text("AO JUÍZO DO JUIZADO ESPECIAL CÍVEL DA COMARCA DE MARÍLIA/SP", pdf.internal.pageSize.getWidth() / 2, currentY, { align: 'center' });
                 currentY += 25;
@@ -2606,47 +2778,18 @@
                 currentY += 18;
                 pdf.setFont('times', 'normal');
 
-                let introHTML;
-                const customPhrase = manifestationPhrases[selectedOptionValue];
-                if (customPhrase) {
-                    introHTML = `A(s) parte(s) acima qualificada(s), vem <strong>${customPhrase}</strong>, nos seguintes termos:`;
-                } else {
-                    let concordancia = 'apresenta sua';
-                    if (['opcao3', 'opcao4', 'opcao8', 'desistencia', 'prazo', 'nomeacaoDefensoria', 'indicacaoBens', 'desbloqueioPenhora'].includes(selectedOptionValue)) { concordancia = 'vem'; }
-                    if (selectedOptionValue === 'opcao5') { concordancia = 'vem apresentar'; }
-                    introHTML = `A(s) parte(s) acima qualificada(s), ${concordancia} <strong>${selectedOptionText}</strong>, nos seguintes termos:`;
-                }
-                currentY = renderParagraph(pdf, introHTML, { currentY, margin, maxWidth, lineSpacing, paraSpacing, indent: true });
+                const paragraphs = collectParagraphs();
+                paragraphs.forEach(text => {
+                    if (!text) return;
+                    currentY = renderParagraph(pdf, text, { currentY, margin, maxWidth, lineSpacing, paraSpacing, indent: true });
+                    if (currentY > pdf.internal.pageSize.getHeight() - 50) {
+                        pdf.addPage();
+                        currentY = margin;
+                    }
+                });
 
-                const tempDiv = document.createElement('div');
-                tempDiv.innerHTML = generateManifestationPreviewHTML();
-
-                const specificContentHTML = tempDiv.querySelector('#specific-content-placeholder')?.innerHTML || '';
-
-                if (manifestContent.value.trim()) {
-                    manifestContent.value.split('\n').filter(p => p.trim() !== '').forEach(p => {
-                        currentY = renderParagraph(pdf, p, { currentY, margin, maxWidth, lineSpacing, paraSpacing, indent: true });
-                    });
-                }
-
-                if (extraContent.value.trim() && !extraContentContainer.classList.contains('hidden')) {
-                    extraContent.value.split('\n').filter(p => p.trim() !== '').forEach(p => {
-                        currentY = renderParagraph(pdf, p, { currentY, margin, maxWidth, lineSpacing, paraSpacing, indent: true });
-                    });
-                }
-
-                // Render Witness List...
-                const witnessItems = document.querySelectorAll('#witness-list .witness-item');
-                // ... (lógica para witnesses)
-
-                // Render Document List...
-                const documentItems = document.querySelectorAll('#document-list .document-item');
-                // ... (lógica para documents)
-
-
-                // Render Closing and Signatures
-                currentY = Math.max(currentY, 100); // Ensure space for closing
-                if (currentY > pdf.internal.pageSize.getHeight() - 80) { // Check space for signatures
+                currentY = Math.max(currentY, 100);
+                if (currentY > pdf.internal.pageSize.getHeight() - 80) {
                     pdf.addPage();
                     currentY = margin;
                 }
