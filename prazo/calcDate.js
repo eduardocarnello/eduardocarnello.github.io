@@ -428,7 +428,7 @@ function renderTables(rows, dueDate, inputs) {
 
     const summaryHtml = `
         <h3 class="text"><b>Prazo Final:</b></h3>
-        <h2 class="heading display-3 pb-5 text-center py-3" id="finalDate">${dueDate.format("DD/MM/YYYY")}</h2>
+        <h2 class="heading display-3 pb-5 text-center py-3 copyable-date" id="finalDate" role="button" tabindex="0" aria-label="Copiar prazo final" title="Clique para copiar">${dueDate.format("DD/MM/YYYY")}</h2>
         <div class="table-responsive">
             <table class="table table-bordered table-hover table-condensed">
                 <tbody>
@@ -442,6 +442,7 @@ function renderTables(rows, dueDate, inputs) {
             </table>
         </div>`;
     $('#printResults').html(summaryHtml);
+    bindFinalDateCopy();
 
     let listHtml = `<table class='table table-hover table-sm border'>
         <thead class='table-light'><tr>
@@ -503,4 +504,51 @@ function renderCalendar(rows, holidays, dueDate) {
             now: 'Agora'
         }
     });
+}
+
+function bindFinalDateCopy() {
+    const finalDateEl = document.getElementById('finalDate');
+    if (!finalDateEl) return;
+
+    const copyText = async () => {
+        const dateText = finalDateEl.textContent.trim();
+        if (!dateText) return;
+
+        try {
+            await navigator.clipboard.writeText(dateText);
+            finalDateEl.classList.add('copied');
+            updateToastMessage('Prazo final copiado para a área de transferência.');
+            if (typeof showToast === 'function') showToast();
+            setTimeout(() => finalDateEl.classList.remove('copied'), 1200);
+        } catch (err) {
+            const tempInput = document.createElement('textarea');
+            tempInput.value = dateText;
+            tempInput.setAttribute('readonly', '');
+            tempInput.style.position = 'absolute';
+            tempInput.style.left = '-9999px';
+            document.body.appendChild(tempInput);
+            tempInput.select();
+            document.execCommand('copy');
+            document.body.removeChild(tempInput);
+            finalDateEl.classList.add('copied');
+            updateToastMessage('Prazo final copiado para a área de transferência.');
+            if (typeof showToast === 'function') showToast();
+            setTimeout(() => finalDateEl.classList.remove('copied'), 1200);
+        }
+    };
+
+    finalDateEl.addEventListener('click', copyText);
+    finalDateEl.addEventListener('keydown', (event) => {
+        if (event.key === 'Enter' || event.key === ' ') {
+            event.preventDefault();
+            copyText();
+        }
+    });
+}
+
+function updateToastMessage(message) {
+    const toastEl = document.getElementById('liveToast');
+    if (!toastEl) return;
+    const toastBody = toastEl.querySelector('.toast-body');
+    if (toastBody) toastBody.textContent = message;
 }
