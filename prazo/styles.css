@@ -181,13 +181,13 @@ body {
   overflow: hidden;
 }
 
-.topnav + .col-md-10 .card,
-.topnav + .col-md-10 .card .card-body {
+.topnav+.col-md-10 .card,
+.topnav+.col-md-10 .card .card-body {
   border-top-left-radius: 0;
   border-top-right-radius: 0;
 }
 
-.topnav + .col-md-10 .card {
+.topnav+.col-md-10 .card {
   border-top: 0;
 }
 
