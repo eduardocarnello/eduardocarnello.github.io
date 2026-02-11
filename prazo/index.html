@@ -184,10 +184,14 @@
                                         data-bs-toggle="collapse" data-bs-target="#collapseReport">
                                         Exibir Relatório
                                     </button>
-                                    <button class="btn btn-outline-primary" type="button" data-bs-toggle="collapse"
+                                    <button class="btn btn-outline-primary me-2" type="button" data-bs-toggle="collapse"
                                         id="inlineCalendarBtn" data-bs-parent="#collapseOptions"
                                         data-bs-target="#collapseCalendar">
                                         Ver no Calendário
+                                    </button>
+                                    <button class="btn btn-outline-success" type="button" data-bs-toggle="collapse"
+                                        id="eprocBtn" data-bs-parent="#collapseOptions" data-bs-target="#collapseEproc">
+                                        <i class="fa-solid fa-file-lines me-1"></i> Copiar para o Eproc
                                     </button>
                                 </div>
                             </div>
@@ -233,6 +237,109 @@
                                         <i class="fa-solid fa-square fa-lg text-warning me-1"></i> Indisp./Prorrogação
                                     </div>
                                 </div>
+                            </div>
+                        </div>
+
+                        <!-- Aba Eproc (Certidão) -->
+                        <div class="collapse mt-3" id="collapseEproc" data-bs-parent="#collapseOptions">
+                            <div class="card card-body eproc-card">
+                                <h5 class="mb-3 text-center"><i class="fa-solid fa-file-lines me-2"></i>Certidão para o
+                                    Eproc</h5>
+
+                                <div class="row g-2 mb-3">
+                                    <!-- Parte -->
+                                    <div class="col-sm-6 col-md-4">
+                                        <label for="eprocParte"
+                                            class="form-label small fw-semibold text-muted">Parte:</label>
+                                        <select id="eprocParte" class="form-select form-select-sm">
+                                            <option value="autora">autora</option>
+                                            <option value="ré">ré</option>
+                                            <option value="exequente">exequente</option>
+                                            <option value="executada">executada</option>
+                                        </select>
+                                    </div>
+                                    <!-- Ato -->
+                                    <div class="col-sm-6 col-md-4">
+                                        <label for="eprocAto"
+                                            class="form-label small fw-semibold text-muted">Ato:</label>
+                                        <select id="eprocAto" class="form-select form-select-sm">
+                                            <option value="contestação">contestação</option>
+                                            <option value="réplica">réplica</option>
+                                            <option value="manifestação">manifestação</option>
+                                            <option value="recurso inominado">recurso inominado</option>
+                                            <option value="agravo/recurso">agravo/recurso</option>
+                                            <option value="embargos à penhora/execução">embargos à penhora/execução
+                                            </option>
+                                            <option value="petição comprovando o pagamento">petição comprovando o
+                                                pagamento</option>
+                                            <option value="petição informando o descumprimento do acordo">petição
+                                                informando o descumprimento do acordo</option>
+                                            <option value="impugnação à contestação">impugnação à contestação</option>
+                                            <option value="embargos de declaração">embargos de declaração</option>
+                                            <option value="contrarrazões">contrarrazões</option>
+                                            <option value="cumprimento de obrigação de fazer">cumprimento de obrigação
+                                                de fazer</option>
+                                            <option value="cumprimento de sentença">cumprimento de sentença</option>
+                                            <option value="impugnação ao cumprimento de sentença">impugnação ao
+                                                cumprimento de sentença</option>
+                                            <option value="comprovação do cumprimento da decisão">comprovação do
+                                                cumprimento da decisão</option>
+                                            <option value="juntada de documentos">juntada de documentos</option>
+                                            <option value="indicação de bens à penhora">indicação de bens à penhora
+                                            </option>
+                                            <option value="petição inicial">petição inicial (emenda)</option>
+                                        </select>
+                                    </div>
+                                    <!-- Nome -->
+                                    <div class="col-sm-12 col-md-4">
+                                        <label for="eprocNome"
+                                            class="form-label small fw-semibold text-muted">Assinatura:</label>
+                                        <select id="eprocNome" class="form-select form-select-sm">
+                                            <option value="Eduardo Carnello Jatobá, Oficial Maior, matrícula 364.718"
+                                                data-label="Eduardo">Eduardo</option>
+                                            <option value="Helton Freire do Carmo, Coordenador, matrícula 353.145"
+                                                data-label="Helton Freire">Helton Freire</option>
+                                            <option
+                                                value="Camila Pereira da Silva, Chefe de Seção Judiciário, matrícula 365.741"
+                                                data-label="Camila">Camila</option>
+                                            <option
+                                                value="Antonio Previato Neto, escrevente técnico judiciário, matrícula 364.698"
+                                                data-label="Antonio">Antonio</option>
+                                            <option
+                                                value="Carlos Alberto Ayres, escrevente técnico judiciário, matrícula 318.888"
+                                                data-label="Beto">Beto</option>
+                                            <option
+                                                value="Helton Marcelo Ferreira, escrevente técnico judiciário, matrícula 369.246"
+                                                data-label="Helton Marcelo">Helton Marcelo</option>
+                                            <option
+                                                value="Luciana Barbosa dos Santos, agente administrativo, matrícula 810.175"
+                                                data-label="Luciana">Luciana</option>
+                                            <option
+                                                value="Mario Inoue, escrevente técnico judiciário, matrícula 365.630"
+                                                data-label="Mario">Mario</option>
+                                            <option
+                                                value="Regiane Gago Paulino, escrevente técnico judiciário, matrícula 814.161"
+                                                data-label="Regiane">Regiane</option>
+                                            <option
+                                                value="Sandra Maria Sanches da Silveira, escrevente técnico judiciário, matrícula 816.880"
+                                                data-label="Sandra">Sandra</option>
+                                            <option
+                                                value="Sidney Reiko Takaki, escrevente técnico judiciário, matrícula 314.855"
+                                                data-label="Sidney">Sidney</option>
+                                            <option
+                                                value="Tifany Yukari Goto Pereira, escrevente técnico judiciário, matrícula 376.436"
+                                                data-label="Tifany">Tifany</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <!-- Preview da Certidão -->
+                                <div id="eprocPreview" class="eproc-preview p-3 mb-3 rounded"></div>
+
+                                <!-- Botão Copiar -->
+                                <button id="eprocCopyBtn" class="btn btn-success w-100" type="button">
+                                    <i class="fa-solid fa-copy me-2"></i>Copiar Certidão
+                                </button>
                             </div>
                         </div>
 

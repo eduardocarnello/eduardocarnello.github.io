@@ -41,7 +41,10 @@ $(document).ready(function () {
   // 3. Inicializa Tutorial (Evento de Clique)
   $("#tutorial-icon").click(() => startIntroTutorial());
 
-  // 4. Tratamento Responsivo Inicial
+  // 4. Inicializa Eproc (Certidão)
+  initEproc();
+
+  // 5. Tratamento Responsivo Inicial
   handleResponsiveLayout();
 });
 
@@ -293,6 +296,7 @@ function setupActionButtons() {
     $('#results').hide();
     $('#collapseReport').collapse('hide');
     $('#collapseCalendar').collapse('hide');
+    $('#collapseEproc').collapse('hide');
 
     // Limpa campos
     $('#initialDate').val('');
@@ -451,4 +455,143 @@ function handleResponsiveLayout() {
   if ($(window).width() < 768) {
     // Ajustes específicos para mobile se necessário
   }
+}
+
+/* ==============================================================================================
+   EPROC - CERTIDÃO PARA COPIAR
+   ============================================================================================== */
+
+/**
+ * Inicializa a funcionalidade de Copiar para o Eproc
+ */
+function initEproc() {
+  // Restaura nome salvo no localStorage
+  const savedNome = localStorage.getItem('eprocNomeSelecionado');
+  if (savedNome) {
+    const nomeSelect = document.getElementById('eprocNome');
+    if (nomeSelect) {
+      // Tenta encontrar a opção pelo data-label salvo
+      const options = nomeSelect.querySelectorAll('option');
+      let found = false;
+      options.forEach(opt => {
+        if (opt.getAttribute('data-label') === savedNome) {
+          opt.selected = true;
+          found = true;
+        }
+      });
+      if (!found) {
+        // Fallback: tenta pelo value
+        nomeSelect.value = savedNome;
+      }
+    }
+  }
+
+  // Atualiza preview quando qualquer seleção muda
+  $('#eprocParte, #eprocAto, #eprocNome').on('change', function () {
+    // Salva nome no localStorage
+    if (this.id === 'eprocNome') {
+      const selectedOption = this.options[this.selectedIndex];
+      const label = selectedOption.getAttribute('data-label') || selectedOption.text;
+      localStorage.setItem('eprocNomeSelecionado', label);
+    }
+    updateEprocPreview();
+  });
+
+  // Botão de copiar
+  $('#eprocCopyBtn').on('click', function () {
+    copyEprocText();
+  });
+
+  // Atualiza preview ao abrir o painel
+  $('#collapseEproc').on('shown.bs.collapse', function () {
+    updateEprocPreview();
+    this.scrollIntoView({ behavior: 'smooth' });
+  });
+}
+
+/**
+ * Gera o texto da certidão do Eproc
+ */
+function generateEprocText() {
+  const parte = $('#eprocParte').val();
+  const ato = $('#eprocAto').val();
+  const nomeSelect = document.getElementById('eprocNome');
+  const nomeCompleto = nomeSelect ? nomeSelect.value : '';
+
+  // Pega o prazo final do elemento renderizado
+  const finalDateEl = document.getElementById('finalDate');
+  const prazoFinal = finalDateEl ? finalDateEl.textContent.trim() : '[prazo não calculado]';
+
+  // Data de hoje por extenso
+  const hoje = moment();
+  const meses = [
+    'janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho',
+    'julho', 'agosto', 'setembro', 'outubro', 'novembro', 'dezembro'
+  ];
+  const dia = hoje.date();
+  const mes = meses[hoje.month()];
+  const ano = hoje.year();
+  const hojeExtenso = `${dia} de ${mes} de ${ano}`;
+
+  const texto = `Certifico e dou fé que o prazo para a parte ${parte} apresentar ${ato} decorreu em ${prazoFinal}. Nada mais. Marília/SP, ${hojeExtenso}. Eu, ${nomeCompleto}.`;
+
+  return texto;
+}
+
+/**
+ * Atualiza o preview visual da certidão
+ */
+function updateEprocPreview() {
+  const previewEl = document.getElementById('eprocPreview');
+  if (!previewEl) return;
+
+  const texto = generateEprocText();
+  previewEl.textContent = texto;
+}
+
+/**
+ * Copia o texto da certidão para a área de transferência
+ */
+async function copyEprocText() {
+  const texto = generateEprocText();
+  const btn = document.getElementById('eprocCopyBtn');
+
+  try {
+    await navigator.clipboard.writeText(texto);
+    eprocCopyFeedback(btn, true);
+    updateToastMessage('Certidão copiada para a área de transferência.');
+    if (typeof showToast === 'function') showToast();
+  } catch (err) {
+    // Fallback para navegadores sem suporte
+    const tempInput = document.createElement('textarea');
+    tempInput.value = texto;
+    tempInput.setAttribute('readonly', '');
+    tempInput.style.position = 'absolute';
+    tempInput.style.left = '-9999px';
+    document.body.appendChild(tempInput);
+    tempInput.select();
+    document.execCommand('copy');
+    document.body.removeChild(tempInput);
+    eprocCopyFeedback(btn, true);
+    updateToastMessage('Certidão copiada para a área de transferência.');
+    if (typeof showToast === 'function') showToast();
+  }
+}
+
+/**
+ * Feedback visual no botão de copiar
+ */
+function eprocCopyFeedback(btn, success) {
+  if (!btn) return;
+  const originalHtml = btn.innerHTML;
+  if (success) {
+    btn.innerHTML = '<i class="fa-solid fa-check me-2"></i>Copiado!';
+    btn.classList.remove('btn-success');
+    btn.classList.add('btn-outline-success');
+  }
+  setTimeout(() => {
+    btn.innerHTML = originalHtml;
+    btn.classList.remove('btn-outline-success');
+    btn.classList.add('btn-success');
+  }, 1500);
 }
