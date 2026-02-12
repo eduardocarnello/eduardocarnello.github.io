@@ -72,6 +72,11 @@
             <h1 class="text-2xl md:text-3xl font-bold text-gray-800">Calculadora de Atualização de Débito Judicial</h1>
             <p class="text-gray-500 mt-2">Selecione o tipo de cálculo e insira os dados para a atualização monetária.
             </p>
+            <div id="indices-status" class="mt-3 flex items-center justify-center gap-2 text-xs text-gray-600">
+                <span id="indices-status-dot"
+                    class="inline-block h-2 w-2 rounded-full bg-yellow-400 animate-pulse"></span>
+                <span id="indices-status-text">Sincronizando índices...</span>
+            </div>
         </header>
 
         <main>
@@ -437,6 +442,8 @@
             const previewBtn = document.getElementById('preview-btn');
             const rowsContainer = document.getElementById('calculation-rows');
             const resultsContainer = document.getElementById('results-container');
+            const indicesStatusDot = document.getElementById('indices-status-dot');
+            const indicesStatusText = document.getElementById('indices-status-text');
             const processNumberInput = document.getElementById('process-number');
             const addFineCheckbox = document.getElementById('add-fine-checkbox');
             const complianceRequestCheckbox = document.getElementById('compliance-request-checkbox');
@@ -481,7 +488,48 @@
                 agreementPenaltySelect.value = "20"; // Valor padrão mantido
             };
 
+            const setIndicesStatus = (state) => {
+                if (!indicesStatusDot || !indicesStatusText) return;
+                indicesStatusDot.classList.remove('bg-green-500', 'bg-yellow-400', 'bg-red-500', 'animate-pulse');
+                if (state === 'online') {
+                    indicesStatusDot.classList.add('bg-green-500');
+                    indicesStatusText.textContent = 'API BCB disponível';
+                } else if (state === 'cache') {
+                    indicesStatusDot.classList.add('bg-yellow-400');
+                    indicesStatusText.textContent = 'Cache local em uso';
+                } else if (state === 'offline') {
+                    indicesStatusDot.classList.add('bg-red-500');
+                    indicesStatusText.textContent = 'Offline';
+                } else {
+                    indicesStatusDot.classList.add('bg-yellow-400', 'animate-pulse');
+                    indicesStatusText.textContent = 'Sincronizando índices...';
+                }
+            };
+
+            const applyEconomicData = (ipca15Json, selicJson) => {
+                tabelaTJSP = TJSPIndices.buildTabela(ipca15Json, TJSPIndices.baseTabela);
+                const ipcaMensalTJSP = TJSPIndices.deriveMonthlyRatesFromTabela(tabelaTJSP);
+                monthlySelicData = TJSPIndices.computeSelicMensal(selicJson);
+                ipcaData = ipcaMensalTJSP;
+                ipca15Data = ipcaMensalTJSP;
+            };
+
+            const loadLocalIndices = async () => {
+                const [ipca15Response, selicResponse] = await Promise.all([
+                    fetch('./data/ipca15.json', { cache: 'no-store' }),
+                    fetch('./data/selic.json', { cache: 'no-store' })
+                ]);
+                if (!ipca15Response.ok || !selicResponse.ok) {
+                    throw new Error('Falha ao carregar índices locais.');
+                }
+                const [ipca15Json, selicJson] = await Promise.all([ipca15Response.json(), selicResponse.json()]);
+                if (!Array.isArray(ipca15Json) || ipca15Json.length === 0) throw new Error('IPCA-15 local vazio ou inválido.');
+                if (!Array.isArray(selicJson) || selicJson.length === 0) throw new Error('SELIC local vazia ou inválida.');
+                applyEconomicData(ipca15Json, selicJson);
+            };
+
             const fetchEconomicData = async () => {
+                setIndicesStatus('loading');
                 const today = new Date();
                 const fiveYearsAgo = new Date(today.getFullYear() - 5, today.getMonth(), today.getDate());
                 const formatDateForApi = (date) => `${String(date.getDate()).padStart(2, '0')}/${String(date.getMonth() + 1).padStart(2, '0')}/${date.getFullYear()}`;
@@ -505,21 +553,26 @@
                     if (!Array.isArray(ipca15Json) || ipca15Json.length === 0) throw new Error('IPCA-15 vazio ou inválido.');
                     if (!Array.isArray(selicJson) || selicJson.length === 0) throw new Error('SELIC vazia ou inválida.');
 
-                    tabelaTJSP = TJSPIndices.buildTabela(ipca15Json, TJSPIndices.baseTabela);
-                    const ipcaMensalTJSP = TJSPIndices.deriveMonthlyRatesFromTabela(tabelaTJSP);
-                    monthlySelicData = TJSPIndices.computeSelicMensal(selicJson);
-                    ipcaData = ipcaMensalTJSP;
-                    ipca15Data = ipcaMensalTJSP;
-
-                    calculateBtn.disabled = false;
-                    calculateBtn.innerHTML = 'Calcular Valor Atualizado';
-                    calculateBtn.className = calculateBtn.className.replace('bg-indigo-400 cursor-not-allowed', 'bg-indigo-600 hover:bg-indigo-700');
+                    applyEconomicData(ipca15Json, selicJson);
+                    setIndicesStatus('online');
                 } catch (error) {
-                    console.error('Erro ao buscar dados econômicos:', error);
-                    calculateBtn.innerHTML = 'Erro ao carregar dados';
-                    calculateBtn.className = calculateBtn.className.replace('bg-indigo-400', 'bg-red-600');
-                    alert('Não foi possível carregar os índices econômicos. Por favor, tente recarregar a página.');
+                    console.warn('Falha na API BCB. Tentando cache local...', error);
+                    try {
+                        await loadLocalIndices();
+                        setIndicesStatus('cache');
+                    } catch (localError) {
+                        console.error('Erro ao carregar índices locais:', localError);
+                        setIndicesStatus('offline');
+                        calculateBtn.innerHTML = 'Erro ao carregar dados';
+                        calculateBtn.className = calculateBtn.className.replace('bg-indigo-400', 'bg-red-600');
+                        alert('Não foi possível carregar os índices econômicos. Por favor, tente recarregar a página.');
+                        return;
+                    }
                 }
+
+                calculateBtn.disabled = false;
+                calculateBtn.innerHTML = 'Calcular Valor Atualizado';
+                calculateBtn.className = calculateBtn.className.replace('bg-indigo-400 cursor-not-allowed', 'bg-indigo-600 hover:bg-indigo-700');
             };
 
             const toggleCalculationView = () => {
