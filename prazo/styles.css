@@ -181,13 +181,13 @@ body {
   overflow: hidden;
 }
 
-.topnav + .col-md-10 .card,
-.topnav + .col-md-10 .card .card-body {
+.topnav+.col-md-10 .card,
+.topnav+.col-md-10 .card .card-body {
   border-top-left-radius: 0;
   border-top-right-radius: 0;
 }
 
-.topnav + .col-md-10 .card {
+.topnav+.col-md-10 .card {
   border-top: 0;
 }
 
@@ -614,4 +614,63 @@ input#reset1 {
   border: 0;
   border-radius: .25rem;
   opacity: .5;
+}
+
+/* ==========================================================================
+   7. EPROC - CERTIDÃO
+   ========================================================================== */
+.eproc-card {
+  border: 1px solid rgba(16, 185, 129, 0.2);
+  background: linear-gradient(145deg, #ffffff 0%, #f0fdf4 100%);
+}
+
+.eproc-card h5 {
+  color: var(--primary-dark);
+  font-weight: 700;
+}
+
+.eproc-card .form-label {
+  margin-bottom: 0.25rem;
+}
+
+.eproc-card .form-select {
+  height: auto !important;
+  border-radius: var(--radius-md) !important;
+  font-size: 0.875rem;
+  border-color: #e2e8f0;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.eproc-card .form-select:focus {
+  border-color: var(--success-color);
+  box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.1) !important;
+}
+
+.eproc-preview {
+  background-color: #f8fafc;
+  border: 1px dashed #cbd5e1;
+  color: var(--text-main);
+  font-size: 0.9rem;
+  line-height: 1.65;
+  min-height: 80px;
+  font-style: italic;
+  transition: background-color 0.2s ease;
+}
+
+.eproc-preview:empty::before {
+  content: "Selecione as opções acima para visualizar a certidão...";
+  color: var(--text-light);
+  font-style: italic;
+}
+
+#eprocCopyBtn {
+  font-weight: 600;
+  border-radius: var(--radius-md);
+  padding: 0.6rem 1rem;
+  transition: all 0.2s ease;
+}
+
+#eprocCopyBtn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px -6px rgba(16, 185, 129, 0.4);
 }
