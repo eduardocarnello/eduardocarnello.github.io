@@ -495,28 +495,53 @@
         async function carregarIndicesBCB() {
             const statusDot = document.getElementById('statusDot');
             const statusText = document.getElementById('statusText');
+            const applyLocalSelic = (dadosSELIC) => {
+                dadosSELIC.forEach(d => {
+                    const [dia, mes, ano] = d.data.split('/');
+                    selicMensal[`${ano}-${mes}`] = parseFloat(d.valor);
+                });
+            };
+            const loadLocalIndices = async () => {
+                const [ipcaResp, selicResp] = await Promise.all([
+                    fetch('../calculadora/data/ipca15.json', { cache: 'no-store' }),
+                    fetch('../calculadora/data/selic.json', { cache: 'no-store' })
+                ]);
+                if (!ipcaResp.ok || !selicResp.ok) {
+                    throw new Error('Falha ao carregar índices locais.');
+                }
+                const [dadosIPCA, dadosSELIC] = await Promise.all([ipcaResp.json(), selicResp.json()]);
+                if (!Array.isArray(dadosIPCA) || dadosIPCA.length === 0) throw new Error('IPCA-15 local vazio ou inválido.');
+                if (!Array.isArray(dadosSELIC) || dadosSELIC.length === 0) throw new Error('SELIC local vazia ou inválida.');
+                processarIPCA15(dadosIPCA);
+                applyLocalSelic(dadosSELIC);
+            };
             try {
                 const { minAno, maxAno } = obterExtremosAnosDigitados();
                 const proxyBase = 'https://falling-morning-2baa.eduardocarnello.workers.dev';
                 const respIPCA = await fetch(`${proxyBase}/?serie=7478&de=01/01/${minAno}&ate=31/12/${maxAno}`);
-                if (respIPCA.ok) {
-                    const dadosIPCA = await respIPCA.json();
-                    processarIPCA15(dadosIPCA);
-                }
                 const respSELIC = await fetch(`${proxyBase}/?serie=4390&de=01/01/2024&ate=31/12/2030`);
-                if (respSELIC.ok) {
-                    const dadosSELIC = await respSELIC.json();
-                    dadosSELIC.forEach(d => {
-                        const [dia, mes, ano] = d.data.split('/');
-                        selicMensal[`${ano}-${mes}`] = parseFloat(d.valor);
-                    });
+                if (!respIPCA.ok || !respSELIC.ok) {
+                    throw new Error('Falha ao buscar dados do Banco Central.');
                 }
+                const dadosIPCA = await respIPCA.json();
+                processarIPCA15(dadosIPCA);
+                const dadosSELIC = await respSELIC.json();
+                applyLocalSelic(dadosSELIC);
                 statusDot.classList.remove('bg-yellow-400', 'animate-pulse');
                 statusDot.classList.add('bg-green-500');
                 statusText.innerText = "Sincronizado";
             } catch (e) {
-                statusDot.classList.replace('bg-yellow-400', 'bg-red-500');
-                statusText.innerText = "Offline";
+                console.warn('Falha na API BCB. Tentando cache local...', e);
+                try {
+                    await loadLocalIndices();
+                    statusDot.classList.remove('bg-yellow-400', 'animate-pulse');
+                    statusDot.classList.add('bg-yellow-400');
+                    statusText.innerText = "Cache local";
+                } catch (localError) {
+                    console.error('Erro ao carregar índices locais:', localError);
+                    statusDot.classList.replace('bg-yellow-400', 'bg-red-500');
+                    statusText.innerText = "Offline";
+                }
             }
         }
 
