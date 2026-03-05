@@ -369,7 +369,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Formatar data DD/MM/AAAA para formato extenso em português
     function formatDatePtBr(dateStr) {
         if (!dateStr) return '';
-        const months = ['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
+        const months = ['janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho', 'julho', 'agosto', 'setembro', 'outubro', 'novembro', 'dezembro'];
         const digits = dateStr.replace(/\D/g, '');
         if (digits.length < 8) return dateStr;
         const day = parseInt(digits.substring(0, 2), 10);
