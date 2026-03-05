@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="pt-BR">
 
 <head>
@@ -11,9 +11,10 @@
     <title>Gerador de Atermação - Juizado Especial Cível</title>
     <!-- Tailwind CSS para estilização -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Bibliotecas para geração de PDF -->
+    <!-- Bibliotecas para geração de PDF e DOCX -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://unpkg.com/docx@9.6.0/dist/index.iife.js"></script>
     <!-- Google Fonts para uma melhor tipografia -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -85,6 +86,11 @@
             background-color: #f3f4f6;
         }
 
+        /* Validação CPF/CNPJ */
+        .cpf-valid { border-color: #22c55e !important; background-color: #f0fdf4 !important; }
+        .cpf-invalid { border-color: #ef4444 !important; background-color: #fef2f2 !important; }
+        .field-error-msg { display: block; color: #ef4444; font-size: 0.75rem; margin-top: 2px; }
+
         /* Estilos para a experiência de app móvel */
         @media (max-width: 768px) {
             body {
@@ -138,7 +144,9 @@
 
             /* Esconde botões menos importantes para uma UI mais limpa */
             #test-fill-btn,
-            #clear-form-btn {
+            #clear-form-btn,
+            #copy-text-btn,
+            #generate-docx-btn {
                 display: none;
             }
 
@@ -152,7 +160,50 @@
             .main-columns {
                 grid-template-columns: 1fr;
             }
+
+            /* Wizard nav fixo no mobile */
+            #wizard-nav {
+                position: fixed;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                z-index: 21;
+                background-color: rgba(255, 255, 255, 0.85);
+                backdrop-filter: blur(8px);
+                -webkit-backdrop-filter: blur(8px);
+                padding: 1rem;
+                padding-bottom: calc(1rem + env(safe-area-inset-bottom));
+                border-top: 1px solid #e5e7eb;
+                margin: 0 !important;
+            }
+
+            #mode-selector { padding: 0 1rem; }
+            #wizard-progress { padding: 0 0.5rem; }
         }
+
+        /* ===== Wizard / Passo a Passo ===== */
+        [data-wizard-step].wizard-hidden { display: none !important; }
+
+        .wizard-step-enter { animation: wizardFadeIn 0.3s ease-out; }
+        @keyframes wizardFadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        #wizard-progress .wizard-step-indicator { cursor: pointer; }
+        #wizard-progress .wizard-step-indicator .step-circle { transition: all 0.3s ease; }
+        #wizard-progress .wizard-step-indicator.completed .step-circle {
+            background-color: #22c55e; border-color: #22c55e; color: white;
+        }
+        #wizard-progress .wizard-step-indicator.active .step-circle {
+            background-color: #4f46e5; border-color: #4f46e5; color: white; transform: scale(1.15);
+        }
+        #wizard-progress .wizard-step-indicator.active .step-label { color: #4f46e5; font-weight: 600; }
+        #wizard-progress .wizard-step-indicator.completed .step-label { color: #22c55e; }
+
+        .mode-btn-active { background-color: #4f46e5; color: white; }
+        .mode-btn-inactive { background-color: transparent; color: #6b7280; }
+        .mode-btn-inactive:hover { background-color: #e5e7eb; }
     </style>
 </head>
 
@@ -175,9 +226,7 @@
                 <label class="flex items-start">
                     <input type="checkbox"
                         class="disclaimer-check mt-1 h-5 w-5 text-indigo-600 border-gray-300 rounded">
-                    <span class="ml-3">Após gerar o PDF, você <strong>PRECISA</strong> imprimir o documento, assinar em
-                        todos os locais indicados e entregá-lo fisicamente no balcão do Juizado Especial Cível ou
-                        enviá-lo por e-mail, conforme as orientações do Tribunal.</span>
+                    <span class="ml-3">Após gerar o PDF, você <strong>PRECISA</strong> assiná-lo e entregá-lo ao Juizado Especial Cível (fisicamente no balcão ou por e-mail). A assinatura pode ser <strong>física</strong> (imprimir, assinar à mão e digitalizar) ou <strong>eletrônica</strong> via gov.br (gratuita e com validade jurídica). Para saber como assinar eletronicamente, clique no botão <em>"✏️ Como assinar eletronicamente?"</em> abaixo.</span>
                 </label>
                 <label class="flex items-start">
                     <input type="checkbox"
@@ -187,7 +236,11 @@
                             orientação profissional</strong>.</span>
                 </label>
             </div>
-            <div class="flex justify-end">
+            <div class="flex justify-end gap-3">
+                <button id="open-signing-guide-btn" type="button"
+                    class="text-indigo-600 hover:text-indigo-800 font-medium py-3 px-4 rounded-lg border border-indigo-200 hover:bg-indigo-50 text-sm transition-all">
+                    ✏️ Como assinar eletronicamente?
+                </button>
                 <button id="disclaimer-agree-btn"
                     class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-6 rounded-lg shadow-lg disabled:bg-gray-400 disabled:cursor-not-allowed"
                     disabled>
@@ -197,7 +250,142 @@
         </div>
     </div>
 
+    <!-- Modal de Assinatura Eletrônica -->
+    <div id="signing-guide-modal" class="hidden fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center p-4 z-[60]">
+        <div class="bg-white rounded-xl shadow-2xl max-w-3xl w-full max-h-[90vh] overflow-y-auto p-6 md:p-8 relative">
+            <button id="close-signing-guide-btn" class="absolute top-3 right-3 text-3xl font-bold text-gray-400 hover:text-gray-700 leading-none">&times;</button>
+            <h2 class="text-xl md:text-2xl font-bold text-gray-800 mb-1">✏️ Como Assinar Eletronicamente seu Documento</h2>
+            <p class="text-gray-500 text-sm mb-6">Siga este passo a passo para assinar a atermação usando o <strong>gov.br</strong> (gratuito e válido juridicamente).</p>
+
+            <div class="space-y-5">
+                <!-- Requisito -->
+                <div class="bg-amber-50 border border-amber-200 rounded-lg p-4">
+                    <h3 class="font-semibold text-amber-800 mb-1">⚠️ Requisito: Conta gov.br nível Prata ou Ouro</h3>
+                    <p class="text-sm text-amber-700">Para assinar eletronicamente, você precisa de uma conta <strong>gov.br</strong> com nível <strong>Prata</strong> ou <strong>Ouro</strong>.</p>
+                    <ul class="text-sm text-amber-700 mt-2 ml-4 list-disc space-y-1">
+                        <li>Se ainda não tem conta: acesse <a href="https://acesso.gov.br" target="_blank" class="text-indigo-600 underline font-medium">acesso.gov.br</a> e crie a sua.</li>
+                        <li>Para verificar ou elevar o nível da sua conta: acesse <a href="https://confiabilidades.acesso.gov.br" target="_blank" class="text-indigo-600 underline font-medium">confiabilidades.acesso.gov.br</a>.</li>
+                        <li>Dica: validar com biometria facial ou bancos credenciados eleva para Prata/Ouro rapidamente.</li>
+                    </ul>
+                </div>
+
+                <!-- Passo 1 -->
+                <div class="flex gap-3">
+                    <div class="flex-shrink-0 w-8 h-8 rounded-full bg-indigo-600 text-white flex items-center justify-center font-bold text-sm">1</div>
+                    <div>
+                        <h3 class="font-semibold text-gray-800">Gere o PDF da sua atermação</h3>
+                        <p class="text-sm text-gray-600 mt-1">Após preencher todos os campos deste formulário, clique no botão <strong>“Gerar PDF”</strong>. Salve o arquivo no seu computador ou celular.</p>
+                    </div>
+                </div>
+
+                <!-- Passo 2 -->
+                <div class="flex gap-3">
+                    <div class="flex-shrink-0 w-8 h-8 rounded-full bg-indigo-600 text-white flex items-center justify-center font-bold text-sm">2</div>
+                    <div>
+                        <h3 class="font-semibold text-gray-800">Acesse o Assinador do gov.br</h3>
+                        <p class="text-sm text-gray-600 mt-1">Abra o site <a href="https://assinador.iti.br" target="_blank" class="text-indigo-600 underline font-medium">assinador.iti.br</a> no navegador do computador ou celular.</p>
+                        <p class="text-sm text-gray-500 mt-1"><strong>Alternativa:</strong> Você também pode usar o aplicativo <strong>gov.br</strong>, disponível para <a href="https://play.google.com/store/apps/details?id=br.gov.meugovbr" target="_blank" class="text-indigo-600 underline">Android</a> e <a href="https://apps.apple.com/br/app/gov-br/id1506827551" target="_blank" class="text-indigo-600 underline">iOS</a>.</p>
+                    </div>
+                </div>
+
+                <!-- Passo 3 -->
+                <div class="flex gap-3">
+                    <div class="flex-shrink-0 w-8 h-8 rounded-full bg-indigo-600 text-white flex items-center justify-center font-bold text-sm">3</div>
+                    <div>
+                        <h3 class="font-semibold text-gray-800">Faça login com sua conta gov.br</h3>
+                        <p class="text-sm text-gray-600 mt-1">Insira seu <strong>CPF</strong> e <strong>senha</strong>. Se tiver verificação em duas etapas ativada, digite o código recebido. Após o login, você será direcionado para a tela de assinatura.</p>
+                    </div>
+                </div>
+
+                <!-- Passo 4 -->
+                <div class="flex gap-3">
+                    <div class="flex-shrink-0 w-8 h-8 rounded-full bg-indigo-600 text-white flex items-center justify-center font-bold text-sm">4</div>
+                    <div>
+                        <h3 class="font-semibold text-gray-800">Envie o arquivo PDF</h3>
+                        <p class="text-sm text-gray-600 mt-1">Clique em <strong>“Escolher arquivo”</strong> e selecione o PDF da atermação que você gerou no Passo 1. São aceitos arquivos PDF, DOC, DOCX, ODT, JPG e PNG (até 100 MB).</p>
+                    </div>
+                </div>
+
+                <!-- Passo 5 -->
+                <div class="flex gap-3">
+                    <div class="flex-shrink-0 w-8 h-8 rounded-full bg-indigo-600 text-white flex items-center justify-center font-bold text-sm">5</div>
+                    <div>
+                        <h3 class="font-semibold text-gray-800">Posicione sua assinatura</h3>
+                        <p class="text-sm text-gray-600 mt-1">Clique no documento para definir <strong>onde</strong> a assinatura será posicionada. Coloque-a no espaço reservado para assinatura (geralmente abaixo do seu nome, no final do documento).</p>
+                    </div>
+                </div>
+
+                <!-- Passo 6 -->
+                <div class="flex gap-3">
+                    <div class="flex-shrink-0 w-8 h-8 rounded-full bg-indigo-600 text-white flex items-center justify-center font-bold text-sm">6</div>
+                    <div>
+                        <h3 class="font-semibold text-gray-800">Confirme e assine</h3>
+                        <p class="text-sm text-gray-600 mt-1">Clique em <strong>“Assinar digitalmente”</strong>. Você receberá uma notificação no aplicativo gov.br do seu celular. <strong>Abra a notificação e autorize a assinatura.</strong></p>
+                        <p class="text-sm text-gray-500 mt-1"><em>Certifique-se de que as notificações do app gov.br estão ativadas no seu celular.</em></p>
+                    </div>
+                </div>
+
+                <!-- Passo 7 -->
+                <div class="flex gap-3">
+                    <div class="flex-shrink-0 w-8 h-8 rounded-full bg-indigo-600 text-white flex items-center justify-center font-bold text-sm">7</div>
+                    <div>
+                        <h3 class="font-semibold text-gray-800">Baixe o documento assinado</h3>
+                        <p class="text-sm text-gray-600 mt-1">Após a confirmação, clique no ícone de <strong>download</strong> para baixar o PDF já assinado. <strong>Salve este arquivo</strong> — ele é o seu documento com validade jurídica.</p>
+                        <div class="bg-red-50 border border-red-200 rounded p-2 mt-2">
+                            <p class="text-xs text-red-700"><strong>⚠️ Atenção:</strong> NÃO use a função “Imprimir” para salvar. O arquivo salvo por impressão <strong>não</strong> mantém a assinatura digital e não tem validade.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Passo 8 -->
+                <div class="flex gap-3">
+                    <div class="flex-shrink-0 w-8 h-8 rounded-full bg-green-600 text-white flex items-center justify-center font-bold text-sm">8</div>
+                    <div>
+                        <h3 class="font-semibold text-gray-800">📩 Obtenha o comprovante de assinatura</h3>
+                        <p class="text-sm text-gray-600 mt-1">O comprovante serve para provar que a assinatura é autêntica. Para obtê-lo:</p>
+                        <ol class="text-sm text-gray-600 mt-2 ml-4 list-decimal space-y-2">
+                            <li>Acesse <a href="https://validar.iti.gov.br" target="_blank" class="text-indigo-600 underline font-medium">validar.iti.gov.br</a></li>
+                            <li>Clique em <strong>“Escolher arquivo”</strong> e envie o PDF assinado (o que você baixou no passo anterior)</li>
+                            <li>O sistema mostrará os dados da assinatura: nome do assinante, data/hora, nível de confiança, etc.</li>
+                            <li>Clique em <strong>“Baixar relatório”</strong> ou tire um <strong>print/captura de tela</strong> desta página — este é o seu comprovante</li>
+                        </ol>
+                        <p class="text-sm text-gray-500 mt-2"><strong>Alternativa:</strong> Baixe o app <strong>VALIDAR</strong> (<a href="https://play.google.com/store/apps/details?id=br.gov.iti.verificadoricpbrasil" target="_blank" class="text-indigo-600 underline">Android</a> / <a href="https://apps.apple.com/br/app/validar-qrcode/id1489368263" target="_blank" class="text-indigo-600 underline">iOS</a>) para verificar pelo celular.</p>
+                    </div>
+                </div>
+
+                <!-- Passo 9 -->
+                <div class="flex gap-3">
+                    <div class="flex-shrink-0 w-8 h-8 rounded-full bg-green-600 text-white flex items-center justify-center font-bold text-sm">9</div>
+                    <div>
+                        <h3 class="font-semibold text-gray-800">📧 Envie por e-mail ao Juizado</h3>
+                        <p class="text-sm text-gray-600 mt-1">No e-mail para o Juizado, anexe <strong>obrigatoriamente</strong>:</p>
+                        <ul class="text-sm text-gray-600 mt-2 ml-4 list-disc space-y-1">
+                            <li><strong>O PDF assinado eletronicamente</strong> (baixado no passo 7)</li>
+                            <li><strong>O comprovante/relatório de validação da assinatura</strong> (obtido no passo 8)</li>
+                            <li>Os documentos pessoais e provas que acompanham a petição (RG, CPF, comprovante de residência, fotos, notas fiscais, etc.)</li>
+                        </ul>
+                        <p class="text-sm text-gray-500 mt-2"><em>Lembre-se: os nomes dos arquivos NÃO devem conter os caracteres: \ / : * ? " &lt; &gt; |</em></p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-6 pt-4 border-t text-center">
+                <p class="text-xs text-gray-400 mb-3">Referência: <a href="https://www.gov.br/governodigital/pt-br/assinatura-eletronica" target="_blank" class="text-indigo-500 underline">gov.br/assinatura-eletronica</a></p>
+                <button id="close-signing-guide-btn-2" class="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 px-6 rounded-lg">Entendi</button>
+            </div>
+        </div>
+    </div>
+
     <div id="main-form-container" class="w-full max-w-5xl mx-auto bg-white md:rounded-2xl md:shadow-lg md:p-8 blurred">
+        <!-- Banner de Auto-save -->
+        <div id="autosave-banner" class="hidden bg-yellow-50 border border-yellow-300 rounded-lg p-3 mb-4 flex items-center justify-between flex-wrap gap-2">
+            <span class="text-sm text-yellow-800">📝 Encontramos um rascunho salvo automaticamente<span class="autosave-date"></span>.</span>
+            <div class="flex gap-2">
+                <button id="autosave-restore-btn" type="button" class="bg-yellow-500 hover:bg-yellow-600 text-white text-sm font-semibold py-1 px-3 rounded-lg">Restaurar</button>
+                <button id="autosave-discard-btn" type="button" class="bg-gray-400 hover:bg-gray-500 text-white text-sm font-semibold py-1 px-3 rounded-lg">Descartar</button>
+            </div>
+        </div>
+
         <header class="text-center mb-8">
             <h1 id="main-title" class="text-2xl md:text-3xl font-bold text-gray-800">Gerador de Atermação</h1>
             <p id="main-subtitle" class="text-gray-500 mt-2">Preencha os campos abaixo para criar o Termo de Atermação
@@ -206,6 +394,39 @@
                     class="tooltip-icon inline-flex">?</span> para obter ajuda. Campos com <span
                     class="text-red-500 font-bold">*</span> são obrigatórios.</p>
         </header>
+
+        <!-- Seletor de Modo de Preenchimento -->
+        <div id="mode-selector" class="flex justify-center mb-4">
+            <div class="inline-flex rounded-lg border border-gray-200 p-1 bg-gray-100">
+                <button id="mode-guided-btn" type="button" class="mode-btn-active px-4 py-2 rounded-md text-sm font-medium transition-all duration-200">📋 Passo a Passo</button>
+                <button id="mode-full-btn" type="button" class="mode-btn-inactive px-4 py-2 rounded-md text-sm font-medium transition-all duration-200">📝 Formulário Completo</button>
+            </div>
+        </div>
+
+        <!-- Wizard Progress Bar -->
+        <div id="wizard-progress" class="mb-6 px-4">
+            <div class="flex items-center justify-between relative">
+                <div class="absolute top-4 left-[12%] right-[12%] h-0.5 bg-gray-200 z-0">
+                    <div id="wizard-progress-bar" class="h-full bg-indigo-600 transition-all duration-500 ease-out rounded-full" style="width: 0%"></div>
+                </div>
+                <div class="wizard-step-indicator active flex flex-col items-center relative z-10 flex-1" data-for-step="1">
+                    <div class="step-circle w-9 h-9 rounded-full bg-white border-2 border-gray-300 flex items-center justify-center text-sm font-bold shadow-sm">1</div>
+                    <span class="step-label text-xs mt-1.5 text-gray-500 text-center leading-tight">Partes</span>
+                </div>
+                <div class="wizard-step-indicator flex flex-col items-center relative z-10 flex-1" data-for-step="2">
+                    <div class="step-circle w-9 h-9 rounded-full bg-white border-2 border-gray-300 flex items-center justify-center text-sm font-bold shadow-sm">2</div>
+                    <span class="step-label text-xs mt-1.5 text-gray-500 text-center leading-tight">Ação</span>
+                </div>
+                <div class="wizard-step-indicator flex flex-col items-center relative z-10 flex-1" data-for-step="3">
+                    <div class="step-circle w-9 h-9 rounded-full bg-white border-2 border-gray-300 flex items-center justify-center text-sm font-bold shadow-sm">3</div>
+                    <span class="step-label text-xs mt-1.5 text-gray-500 text-center leading-tight">Relato</span>
+                </div>
+                <div class="wizard-step-indicator flex flex-col items-center relative z-10 flex-1" data-for-step="4">
+                    <div class="step-circle w-9 h-9 rounded-full bg-white border-2 border-gray-300 flex items-center justify-center text-sm font-bold shadow-sm">4</div>
+                    <span class="step-label text-xs mt-1.5 text-gray-500 text-center leading-tight">Finalizar</span>
+                </div>
+            </div>
+        </div>
 
         <main>
             <!-- ############################################ -->
@@ -347,7 +568,7 @@
                     </div>
 
                     <!-- Seção de Partes -->
-                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-6 main-columns">
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-6 main-columns" data-wizard-step="1">
                         <!-- Coluna dos Autores -->
                         <div class="p-4 border border-gray-200 rounded-lg bg-gray-50">
                             <h3 class="flex items-center text-lg font-semibold text-gray-800 mb-4">
@@ -387,7 +608,7 @@
                     <hr class="my-6 border-t-2 border-dashed">
 
                     <!-- Seção Dados da Ação -->
-                    <div class="p-4 border border-gray-200 rounded-lg mb-6">
+                    <div class="p-4 border border-gray-200 rounded-lg mb-6" data-wizard-step="2">
                         <h3 class="text-lg font-semibold text-gray-800 mb-4">Dados da Ação</h3>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div>
@@ -420,6 +641,14 @@
                                 <input type="text" id="action-type-other"
                                     class="hidden w-full mt-2 p-3 border border-gray-300 rounded-lg shadow-sm"
                                     placeholder="Especifique o tipo de ação">
+                                <!-- Banner de Template -->
+                                <div id="template-banner" class="hidden mt-3 bg-blue-50 border border-blue-200 rounded-lg p-3 flex items-center justify-between flex-wrap gap-2">
+                                    <div class="flex items-center gap-2 flex-wrap">
+                                        <span class="text-sm text-blue-800">💡 Modelo disponível para este tipo de ação.</span>
+                                        <select id="template-select" class="hidden text-sm border border-blue-300 rounded px-2 py-1 bg-white"></select>
+                                    </div>
+                                    <button id="use-template-btn" type="button" class="bg-blue-500 hover:bg-blue-600 text-white text-sm font-semibold py-1 px-3 rounded-lg">Usar Modelo</button>
+                                </div>
                             </div>
                             <div>
                                 <label for="action-value"
@@ -435,6 +664,162 @@
                                 <input type="text" id="action-value"
                                     class="value-input w-full p-3 border border-gray-300 rounded-lg shadow-sm"
                                     placeholder="1.000,00">
+                            </div>
+                        </div>
+
+                        <!-- Campos Dinâmicos - Acidente de Trânsito -->
+                        <div id="accident-dynamic-fields" class="hidden mt-4 p-4 border border-amber-200 rounded-lg bg-amber-50 space-y-4">
+                            <h4 class="text-md font-semibold text-amber-800 flex items-center gap-2">
+                                🚗 Dados do Acidente de Trânsito
+                                <span class="text-xs font-normal text-amber-600">(preencha para gerar o modelo automaticamente)</span>
+                            </h4>
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                                <div><label class="block text-sm font-medium text-gray-700">Data do Acidente</label><input type="text" id="acc-date" class="w-full mt-1 p-2 border border-gray-300 rounded-lg" placeholder="DD/MM/AAAA"></div>
+                                <div><label class="block text-sm font-medium text-gray-700">Horário</label><input type="text" id="acc-time" class="w-full mt-1 p-2 border border-gray-300 rounded-lg" placeholder="Ex: 14h30"></div>
+                                <div><label class="block text-sm font-medium text-gray-700">Local do Acidente</label><input type="text" id="acc-location" class="w-full mt-1 p-2 border border-gray-300 rounded-lg" placeholder="Ex: Rua X, cruzamento com Av. Y"></div>
+                            </div>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                <div><label class="block text-sm font-medium text-gray-700">Tipo da Via</label>
+                                    <select id="acc-road-type" class="w-full mt-1 p-2 border border-gray-300 rounded-lg bg-white">
+                                        <option value="">Selecione...</option>
+                                        <option value="via urbana">Via Urbana</option>
+                                        <option value="rodovia estadual">Rodovia Estadual</option>
+                                        <option value="rodovia federal">Rodovia Federal</option>
+                                        <option value="rodovia municipal">Rodovia Municipal</option>
+                                        <option value="estrada vicinal">Estrada Vicinal</option>
+                                    </select>
+                                </div>
+                                <div><label class="block text-sm font-medium text-gray-700">Tipo de Colisão</label>
+                                    <select id="acc-collision-type" class="w-full mt-1 p-2 border border-gray-300 rounded-lg bg-white">
+                                        <option value="">Selecione...</option>
+                                        <option value="uma colisão traseira">Colisão Traseira</option>
+                                        <option value="uma colisão lateral">Colisão Lateral</option>
+                                        <option value="uma colisão frontal">Colisão Frontal</option>
+                                        <option value="uma colisão em cruzamento">Colisão em Cruzamento</option>
+                                        <option value="um abalroamento">Abalroamento</option>
+                                        <option value="um atropelamento">Atropelamento</option>
+                                        <option value="uma colisão">Colisão (outro tipo)</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                <div class="p-3 border rounded-lg bg-white">
+                                    <h5 class="text-sm font-semibold text-gray-700 mb-2">🚙 Veículo do Requerente</h5>
+                                    <div class="grid grid-cols-2 gap-2">
+                                        <div><label class="block text-xs text-gray-600">Modelo/Marca</label><input type="text" id="acc-author-model" class="w-full mt-1 p-1.5 text-sm border rounded-lg" placeholder="Ex: Gol 1.0"></div>
+                                        <div><label class="block text-xs text-gray-600">Cor</label><input type="text" id="acc-author-color" class="w-full mt-1 p-1.5 text-sm border rounded-lg" placeholder="Prata"></div>
+                                        <div><label class="block text-xs text-gray-600">Placa</label><input type="text" id="acc-author-plate" class="w-full mt-1 p-1.5 text-sm border rounded-lg" placeholder="ABC-1234"></div>
+                                        <div><label class="block text-xs text-gray-600">Ano</label><input type="text" id="acc-author-year" class="w-full mt-1 p-1.5 text-sm border rounded-lg" placeholder="2020"></div>
+                                    </div>
+                                </div>
+                                <div class="p-3 border rounded-lg bg-white">
+                                    <h5 class="text-sm font-semibold text-gray-700 mb-2">🚘 Veículo do Requerido</h5>
+                                    <div class="grid grid-cols-2 gap-2">
+                                        <div><label class="block text-xs text-gray-600">Modelo/Marca</label><input type="text" id="acc-defendant-model" class="w-full mt-1 p-1.5 text-sm border rounded-lg" placeholder="Ex: HB20"></div>
+                                        <div><label class="block text-xs text-gray-600">Cor</label><input type="text" id="acc-defendant-color" class="w-full mt-1 p-1.5 text-sm border rounded-lg" placeholder="Branco"></div>
+                                        <div><label class="block text-xs text-gray-600">Placa</label><input type="text" id="acc-defendant-plate" class="w-full mt-1 p-1.5 text-sm border rounded-lg" placeholder="DEF-5678"></div>
+                                        <div><label class="block text-xs text-gray-600">Ano</label><input type="text" id="acc-defendant-year" class="w-full mt-1 p-1.5 text-sm border rounded-lg" placeholder="2022"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div><label class="block text-sm font-medium text-gray-700">Descrição do Acidente</label><textarea id="acc-description" rows="3" class="w-full mt-1 p-2 border border-gray-300 rounded-lg" placeholder="Descreva como ocorreu o acidente (dinâmica, culpa, etc.)"></textarea></div>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                <div>
+                                    <label class="flex items-center text-sm"><input type="checkbox" id="acc-bo-check" class="h-4 w-4 mr-2 text-indigo-600 rounded">Boletim de Ocorrência lavrado</label>
+                                    <input type="text" id="acc-bo-number" class="hidden w-full mt-1 p-2 border rounded-lg text-sm" placeholder="Nº do B.O.">
+                                </div>
+                            </div>
+                            <h5 class="text-sm font-semibold text-gray-700 pt-2 border-t">💰 Danos a Serem Pleiteados</h5>
+                            <!-- Tipo de Dano Material -->
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">Tipo do Pedido de Danos Materiais</label>
+                                <select id="acc-repair-type" class="w-full mt-1 p-2 border border-gray-300 rounded-lg bg-white">
+                                    <option value="">Selecione...</option>
+                                    <option value="cobranca">Cobrança (veículo ainda NÃO foi consertado)</option>
+                                    <option value="reparacao">Reparação dos Danos Materiais (veículo JÁ foi consertado)</option>
+                                </select>
+                            </div>
+                            <!-- Cobrança: orçamentos -->
+                            <div id="acc-cobranca-fields" class="hidden space-y-3 p-3 border rounded-lg bg-blue-50">
+                                <p class="text-xs text-blue-700">📋 Recomenda-se apresentar pelo menos 3 orçamentos.</p>
+                                <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                                    <div><label class="block text-xs text-gray-600">Orçamento 1 (R$)</label><input type="text" id="acc-quote-1" class="acc-value-input w-full mt-1 p-1.5 text-sm border rounded-lg" placeholder="0,00"></div>
+                                    <div><label class="block text-xs text-gray-600">Orçamento 2 (R$)</label><input type="text" id="acc-quote-2" class="acc-value-input w-full mt-1 p-1.5 text-sm border rounded-lg" placeholder="0,00"></div>
+                                    <div><label class="block text-xs text-gray-600">Orçamento 3 (R$)</label><input type="text" id="acc-quote-3" class="acc-value-input w-full mt-1 p-1.5 text-sm border rounded-lg" placeholder="0,00"></div>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700">Valor que deseja cobrar</label>
+                                    <select id="acc-repair-value-select" class="w-full mt-1 p-2 border border-gray-300 rounded-lg bg-white text-sm">
+                                        <option value="">Preencha os orçamentos acima...</option>
+                                    </select>
+                                    <input type="hidden" id="acc-repair-value">
+                                    <p id="acc-repair-value-label" class="text-xs text-gray-500 mt-1 hidden"></p>
+                                </div>
+                            </div>
+                            <!-- Reparação: valor do conserto -->
+                            <div id="acc-reparacao-fields" class="hidden space-y-3 p-3 border rounded-lg bg-green-50">
+                                <div><label class="block text-sm font-medium text-gray-700">Valor gasto no reparo (R$)</label><input type="text" id="acc-reparacao-value" class="acc-value-input w-full mt-1 p-2 border rounded-lg" placeholder="0,00"></div>
+                            </div>
+                            <div class="space-y-3">
+                                <!-- Danos Morais -->
+                                <div class="border rounded-lg p-3 bg-white">
+                                    <label class="flex items-center text-sm">
+                                        <input type="checkbox" id="acc-moral-check" class="h-4 w-4 mr-2 text-indigo-600 rounded">
+                                        <span class="font-medium">Danos Morais</span>
+                                        <div class="tooltip-container">
+                                            <span class="tooltip-icon">?</span>
+                                            <span class="tooltip-text">Danos morais são prejuízos não patrimoniais: sofrimento, angústia, dor, humilhação, abalo psicológico. Descreva o que sentiu e como sua vida foi afetada. Ex: "sofreu abalo emocional, insônia e ansiedade em decorrência do acidente".</span>
+                                        </div>
+                                    </label>
+                                    <div id="acc-moral-fields" class="hidden mt-2 space-y-2 pl-6">
+                                        <div><label class="block text-xs text-gray-600">Valor pretendido (R$)</label><input type="text" id="acc-moral-value" class="acc-value-input w-full mt-1 p-1.5 text-sm border rounded-lg" placeholder="0,00"></div>
+                                        <div><label class="block text-xs text-gray-600">Descreva o abalo sofrido</label><textarea id="acc-moral-desc" rows="2" class="w-full mt-1 p-1.5 text-sm border rounded-lg" placeholder="Ex: Em razão do acidente, a parte autora sofreu intenso abalo emocional, apresentando episódios de ansiedade e insônia, ficando impossibilitada de conduzir veículos por semanas..."></textarea></div>
+                                    </div>
+                                </div>
+                                <!-- Danos Estéticos -->
+                                <div class="border rounded-lg p-3 bg-white">
+                                    <label class="flex items-center text-sm">
+                                        <input type="checkbox" id="acc-aesthetic-check" class="h-4 w-4 mr-2 text-indigo-600 rounded">
+                                        <span class="font-medium">Danos Estéticos</span>
+                                        <div class="tooltip-container">
+                                            <span class="tooltip-icon">?</span>
+                                            <span class="tooltip-text">Danos estéticos são lesões que causam alteração permanente ou duradoura na aparência física: cicatrizes, marcas, deformidades. Descreva detalhadamente a lesão e como afetou sua imagem. Ex: "o acidente causou cicatriz de 10cm no rosto".</span>
+                                        </div>
+                                    </label>
+                                    <div id="acc-aesthetic-fields" class="hidden mt-2 space-y-2 pl-6">
+                                        <div><label class="block text-xs text-gray-600">Valor pretendido (R$)</label><input type="text" id="acc-aesthetic-value" class="acc-value-input w-full mt-1 p-1.5 text-sm border rounded-lg" placeholder="0,00"></div>
+                                        <div><label class="block text-xs text-gray-600">Descreva a lesão estética sofrida</label><textarea id="acc-aesthetic-desc" rows="2" class="w-full mt-1 p-1.5 text-sm border rounded-lg" placeholder="Ex: Em decorrência do acidente, a parte autora sofreu lesões que resultaram em cicatriz permanente no braço esquerdo, causando constrangimento e vergonha em situações sociais..."></textarea></div>
+                                    </div>
+                                </div>
+                                <!-- Lucros Cessantes -->
+                                <div class="border rounded-lg p-3 bg-white">
+                                    <label class="flex items-center text-sm">
+                                        <input type="checkbox" id="acc-lost-income-check" class="h-4 w-4 mr-2 text-indigo-600 rounded">
+                                        <span class="font-medium">Lucros Cessantes</span>
+                                        <div class="tooltip-container">
+                                            <span class="tooltip-icon">?</span>
+                                            <span class="tooltip-text">Lucros cessantes são os ganhos que você deixou de receber por causa do acidente. Descreva quanto ganhava, por quanto tempo ficou sem receber e como o acidente impediu seu trabalho. Ex: "ficou 30 dias afastado do trabalho, deixando de receber R$ 3.000,00 mensais".</span>
+                                        </div>
+                                    </label>
+                                    <div id="acc-lost-income-fields" class="hidden mt-2 space-y-2 pl-6">
+                                        <div><label class="block text-xs text-gray-600">Valor pretendido (R$)</label><input type="text" id="acc-lost-income-value" class="acc-value-input w-full mt-1 p-1.5 text-sm border rounded-lg" placeholder="0,00"></div>
+                                        <div><label class="block text-xs text-gray-600">Descreva os ganhos que deixou de receber</label><textarea id="acc-lost-income-desc" rows="2" class="w-full mt-1 p-1.5 text-sm border rounded-lg" placeholder="Ex: A parte autora trabalha como motorista de aplicativo e ficou impossibilitada de exercer sua atividade por 45 dias em razão das lesões sofridas, deixando de auferir renda mensal média de R$ 4.000,00..."></textarea></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
+                            <div>
+                                <label for="comarca-input" class="flex items-center text-sm font-medium text-gray-700 mb-2">
+                                    Comarca
+                                    <div class="tooltip-container">
+                                        <span class="tooltip-icon">?</span>
+                                        <span class="tooltip-text">A comarca é preenchida automaticamente ao digitar o CEP do primeiro autor. Altere se necessário.</span>
+                                    </div>
+                                </label>
+                                <input type="text" id="comarca-input" value="Marília/SP"
+                                    class="w-full p-3 border border-gray-300 rounded-lg shadow-sm" placeholder="Cidade/UF">
                             </div>
                         </div>
                         <div class="mt-4 space-y-3 pt-4 border-t">
@@ -516,7 +901,7 @@
                     </div>
 
                     <!-- Seção de Fatos e Pedidos -->
-                    <div class="mb-6">
+                    <div class="mb-6" data-wizard-step="3">
                         <label for="fatos-content" class="flex items-center text-sm font-medium text-gray-700 mb-2">
                             DOS FATOS
                             <div class="tooltip-container">
@@ -528,7 +913,7 @@
                         <textarea id="fatos-content" rows="10"
                             class="w-full p-3 border border-gray-300 rounded-lg shadow-sm"></textarea>
                     </div>
-                    <div class="mb-6">
+                    <div class="mb-6" data-wizard-step="3">
                         <label for="pedido-content" class="flex items-center text-sm font-medium text-gray-700 mb-2">
                             PEDIDOS
                             <div class="tooltip-container">
@@ -542,8 +927,24 @@
                             class="w-full p-3 border border-gray-300 rounded-lg shadow-sm"></textarea>
                     </div>
 
+                    <!-- Seção de Testemunhas -->
+                    <div id="witness-section" class="space-y-4 mb-6 p-4 border border-gray-200 rounded-lg" data-wizard-step="4">
+                        <h3 class="flex items-center text-lg font-semibold text-gray-800 mb-4">
+                            Rol de Testemunhas (Opcional)
+                            <div class="tooltip-container">
+                                <span class="tooltip-icon">?</span>
+                                <span class="tooltip-text">Não é necessário levar testemunhas na audiência de conciliação. Se desejar arrolá-las, inclua nome completo e endereço.</span>
+                            </div>
+                        </h3>
+                        <div id="witness-list" class="space-y-4"></div>
+                        <div class="flex justify-start">
+                            <button id="add-witness-btn" type="button"
+                                class="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded-lg shadow-md">+ Adicionar Testemunha</button>
+                        </div>
+                    </div>
+
                     <!-- Seção de Documentos -->
-                    <div id="document-section" class="space-y-4 mb-6 p-4 border border-gray-200 rounded-lg">
+                    <div id="document-section" class="space-y-4 mb-6 p-4 border border-gray-200 rounded-lg" data-wizard-step="4">
                         <h3 class="flex items-center text-lg font-semibold text-gray-800 mb-4">
                             Lista dos Documentos que acompanham a ação
                             <div class="tooltip-container">
@@ -561,18 +962,30 @@
                         </div>
                     </div>
 
-                    <div id="action-buttons-container" class="flex gap-4 justify-end mt-8 flex-wrap">
-                        <!--button id="test-fill-btn" type="button"
+                    <div id="action-buttons-container" class="flex gap-4 justify-end mt-8 flex-wrap" data-wizard-step="4">
+                        <button id="test-fill-btn" type="button"
                             class="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-lg shadow-lg">Preencher
-                            para Teste</button-->
+                            para Teste</button>
                         <button id="clear-form-btn" type="button"
                             class="bg-gray-500 hover:bg-red-600 text-white font-bold py-3 px-6 rounded-lg shadow-lg">Limpar
                             Tudo</button>
                         <button id="preview-btn" type="button"
                             class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg shadow-lg">Pré-visualizar</button>
+                        <button id="copy-text-btn" type="button"
+                            class="bg-teal-600 hover:bg-teal-700 text-white font-bold py-3 px-6 rounded-lg shadow-lg">Copiar Texto</button>
                         <button id="generate-pdf-btn" type="button"
                             class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-6 rounded-lg shadow-lg">Gerar
                             PDF</button>
+                        <button id="generate-docx-btn" type="button"
+                            class="bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-6 rounded-lg shadow-lg">Gerar
+                            DOCX</button>
+                    </div>
+
+                    <!-- Wizard Navigation -->
+                    <div id="wizard-nav" class="hidden flex justify-between mt-6 mb-4">
+                        <button id="wizard-prev-btn" type="button" class="bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold py-3 px-6 rounded-lg shadow transition-all">← Anterior</button>
+                        <div class="flex-1"></div>
+                        <button id="wizard-next-btn" type="button" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-8 rounded-lg shadow-lg transition-all">Próximo →</button>
                     </div>
                 </form>
             </div>
@@ -591,648 +1004,7 @@
             </div>
         </div>
     </div>
-
-
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            // --- REFERÊNCIAS GERAIS ---
-            const disclaimerModal = document.getElementById('disclaimer-modal');
-            const disclaimerChecks = document.querySelectorAll('.disclaimer-check');
-            const disclaimerAgreeBtn = document.getElementById('disclaimer-agree-btn');
-            const mainFormContainer = document.getElementById('main-form-container');
-
-            // --- REFERÊNCIAS DO GERADOR DE ATERMAÇÃO ---
-            const atermacaoForm = document.getElementById('atermacao-form');
-            const autoresList = document.getElementById('autores-list');
-            const reusList = document.getElementById('reus-list');
-            const addAutorBtn = document.getElementById('add-autor-btn');
-            const addReuBtn = document.getElementById('add-reu-btn');
-            const partyTemplate = document.querySelector('.party-item-template');
-
-            // Custom dropdown refs
-            const actionTypeContainer = document.getElementById('action-type-container');
-            const actionTypeButton = document.getElementById('action-type-button');
-            const actionTypeOptions = document.getElementById('action-type-options');
-            const actionTypeText = document.getElementById('action-type-text');
-            const actionTypeOtherInput = document.getElementById('action-type-other');
-
-            const tutelaCheck = document.getElementById('tutela-antecipada-check');
-            const tutelaJustificativaContainer = document.getElementById('tutela-justificativa-container');
-            const sigiloCheck = document.getElementById('segredo-justica-check');
-            const sigiloJustificativaContainer = document.getElementById('sigilo-justificativa-container');
-            const audienciaRadios = document.querySelectorAll('input[name="audiencia"]');
-            const audienciaJustificativaContainer = document.getElementById('audiencia-justificativa-container');
-            const documentList = document.getElementById('document-list');
-            const addDocumentBtn = document.getElementById('add-document-btn');
-            const clearFormBtn = document.getElementById('clear-form-btn');
-            const generatePdfBtn = document.getElementById('generate-pdf-btn');
-            const previewBtn = document.getElementById('preview-btn');
-            const previewModal = document.getElementById('preview-modal');
-            const closePreviewBtn = document.getElementById('close-preview-btn');
-            const previewContent = document.getElementById('preview-content');
-            //   const testFillBtn = document.getElementById('test-fill-btn');
-
-
-            // --- LÓGICA DO DISCLAIMER ---
-            const checkDisclaimer = () => {
-                disclaimerAgreeBtn.disabled = !Array.from(disclaimerChecks).every(c => c.checked);
-            };
-
-            disclaimerAgreeBtn.addEventListener('click', () => {
-                disclaimerModal.classList.add('hidden');
-                mainFormContainer.classList.remove('blurred');
-            });
-
-            // --- FUNÇÕES DE FORMATAÇÃO E UI ---
-            const formatCpfCnpj = (value) => {
-                value = value.replace(/\D/g, '').slice(0, 14);
-                if (value.length <= 11) value = value.replace(/(\d{3})(\d)/, '$1.$2').replace(/(\d{3})(\d)/, '$1.$2').replace(/(\d{3})(\d{1,2})$/, '$1-$2');
-                else value = value.replace(/^(\d{2})(\d)/, '$1.$2').replace(/^(\d{2})\.(\d{3})(\d)/, '$1.$2.$3').replace(/\.(\d{3})(\d)/, '.$1/$2').replace(/(\d{4})(\d)/, '$1-$2');
-                return value;
-            };
-
-            const formatPhone = (value) => {
-                value = value.replace(/\D/g, '').slice(0, 11);
-                if (value.length > 10) value = value.replace(/^(\d\d)(\d{5})(\d{4}).*/, "($1) $2-$3");
-                else if (value.length > 5) value = value.replace(/^(\d\d)(\d{4})(\d{0,4}).*/, "($1) $2-$3");
-                else if (value.length > 2) value = value.replace(/^(\d\d)(\d{0,5}).*/, "($1) $2");
-                else value = value.replace(/^(\d*)/, "($1");
-                return value;
-            };
-
-            const formatDate = (value) => value.replace(/\D/g, '').slice(0, 8).replace(/(\d{2})(\d)/, '$1/$2').replace(/(\d{2})\/(\d{2})(\d)/, '$1/$2/$3');
-            const formatValueOnBlur = (e) => {
-                let value = e.target.value.replace(/[^\d,]/g, '').replace(',', '.');
-                e.target.value = !isNaN(parseFloat(value)) ? parseFloat(value).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '';
-            };
-
-            const createPartyElement = (isAuthor) => {
-                const newParty = partyTemplate.firstElementChild.cloneNode(true);
-                if (isAuthor) {
-                    newParty.querySelector('.party-digital-exclusion-field').classList.remove('hidden');
-                } else {
-                    newParty.querySelector('.party-dob-field').style.display = 'none';
-                    newParty.querySelector('.party-cpf-required').style.display = 'none';
-                    newParty.querySelector('.no-address-option').style.display = 'flex';
-                }
-                return newParty;
-            };
-
-            const updateRemoveButtons = () => {
-                [autoresList, reusList].forEach(list => {
-                    const items = list.querySelectorAll('.party-item');
-                    items.forEach(item => {
-                        const removeBtn = item.querySelector('.remove-party-btn');
-                        if (removeBtn) {
-                            removeBtn.style.display = items.length > 1 ? 'flex' : 'none';
-                        }
-                    });
-                });
-            };
-
-            const addParty = (listElement, isAuthor) => {
-                const newParty = createPartyElement(isAuthor);
-                listElement.appendChild(newParty);
-                addInputBehaviors(newParty);
-                updateRemoveButtons();
-            };
-
-            const addInputBehaviors = (container) => {
-                container.querySelectorAll('.party-cpf').forEach(input => input.addEventListener('input', (e) => e.target.value = formatCpfCnpj(e.target.value)));
-                container.querySelectorAll('.party-phone').forEach(input => input.addEventListener('input', (e) => e.target.value = formatPhone(e.target.value)));
-                container.querySelectorAll('.party-dob').forEach(input => input.addEventListener('input', (e) => e.target.value = formatDate(e.target.value)));
-
-                const noCepCheck = container.querySelector('.no-cep-check');
-                noCepCheck.addEventListener('change', (e) => {
-                    const isChecked = e.target.checked;
-                    const addressContainer = container.querySelector('.address-container');
-                    addressContainer.querySelectorAll('input:not(.party-cep)').forEach(input => {
-                        input.readOnly = !isChecked;
-                        input.classList.toggle('bg-gray-100', !isChecked);
-                        if (isChecked) input.value = '';
-                    });
-                    addressContainer.querySelector('.party-cep').disabled = isChecked;
-                });
-
-                const noAddressCheck = container.querySelector('.no-address-check');
-                noAddressCheck.addEventListener('change', (e) => {
-                    const isChecked = e.target.checked;
-                    container.querySelector('.address-container').style.display = isChecked ? 'none' : 'block';
-                    container.querySelector('.no-cep-option').style.display = isChecked ? 'none' : 'flex';
-                    container.querySelector('.no-address-justification-field').classList.toggle('hidden', !isChecked);
-                });
-
-                container.querySelectorAll('.party-cep').forEach(input => {
-                    input.addEventListener('input', function () {
-                        if (container.querySelector('.no-cep-check').checked) return;
-                        this.value = this.value.replace(/\D/g, '').replace(/^(\d{5})(\d)/, '$1-$2');
-                        const cep = this.value.replace(/\D/g, '');
-                        if (cep.length === 8) {
-                            const parent = this.closest('.party-item');
-                            fetch(`https://viacep.com.br/ws/${cep}/json/`)
-                                .then(response => response.json())
-                                .then(data => {
-                                    if (!data.erro) {
-                                        parent.querySelector('.party-street').value = data.logradouro;
-                                        parent.querySelector('.party-district').value = data.bairro;
-                                        parent.querySelector('.party-city').value = data.localidade;
-                                        parent.querySelector('.party-state').value = data.uf;
-                                        parent.querySelector('.party-number').focus();
-                                    } else { alert('CEP não encontrado.'); }
-                                }).catch(error => console.error('Erro ao buscar o CEP:', error));
-                        }
-                    });
-                });
-            };
-
-            // --- LÓGICA CUSTOM DROPDOWN ---
-            const actionTypes = [
-                { value: "Indenização por Danos Morais", text: "Indenização por Danos Morais" },
-                { value: "Indenização por Danos Materiais", text: "Indenização por Danos Materiais" },
-                { value: "Obrigação de Fazer/Não Fazer", text: "Obrigação de Fazer/Não Fazer" },
-                { value: "Rescisão de Contrato c/c Devolução do Dinheiro", text: "Rescisão de Contrato c/c Devolução do Dinheiro" },
-                { value: "Rescisão de Contrato", text: "Rescisão de Contrato" },
-                { value: "Inexigibilidade de Débito", text: "Inexigibilidade de Débito" },
-                { value: "Ação de Cobrança", text: "Ação de Cobrança" },
-                { value: "Defesa do Consumidor (Inscrição Indevida)", text: "Defesa do Consumidor (Inscrição Indevida)" },
-                { value: "Defesa do Consumidor (Produto/Serviço Defeituoso)", text: "Defesa do Consumidor (Produto/Serviço)" },
-                { value: "Outros", text: "Outros (especificar)" },
-            ];
-
-            actionTypes.forEach(action => {
-                const optionLabel = document.createElement('label');
-                optionLabel.className = 'flex items-center p-2 cursor-pointer';
-                optionLabel.innerHTML = `
-                    <input type="checkbox" class="h-4 w-4 text-indigo-600 border-gray-300 rounded action-type-checkbox" value="${action.value}">
-                    <span class="ml-2 text-gray-700">${action.text}</span>
-                `;
-                actionTypeOptions.appendChild(optionLabel);
-            });
-
-            const updateActionTypeDisplay = () => {
-                const selected = Array.from(actionTypeOptions.querySelectorAll('.action-type-checkbox:checked'))
-                    .map(cb => cb.parentElement.querySelector('span').textContent);
-
-                if (selected.length === 0) {
-                    actionTypeText.textContent = 'Selecione...';
-                    actionTypeText.classList.add('text-gray-500');
-                } else {
-                    actionTypeText.textContent = selected.join(', ');
-                    actionTypeText.classList.remove('text-gray-500');
-                }
-                const isOtherSelected = selected.some(s => s.includes('Outros'));
-                actionTypeOtherInput.classList.toggle('hidden', !isOtherSelected);
-            };
-
-            actionTypeButton.addEventListener('click', (e) => {
-                e.stopPropagation();
-                actionTypeOptions.classList.toggle('hidden');
-            });
-
-            document.addEventListener('click', (e) => {
-                if (!actionTypeContainer.contains(e.target)) {
-                    actionTypeOptions.classList.add('hidden');
-                }
-            });
-
-            actionTypeOptions.addEventListener('change', updateActionTypeDisplay);
-
-            // --- FUNÇÕES DE GERAÇÃO DE CONTEÚDO E PDF ---
-
-            const fillWithTestData = () => {
-                // Limpa o formulário manualmente para evitar o diálogo de confirmação
-                autoresList.innerHTML = '';
-                reusList.innerHTML = '';
-                documentList.innerHTML = '';
-                atermacaoForm.reset();
-
-                // Reset custom dropdown
-                actionTypeOptions.querySelectorAll('.action-type-checkbox').forEach(cb => cb.checked = false);
-                updateActionTypeDisplay();
-
-                actionTypeOtherInput.classList.add('hidden');
-                tutelaJustificativaContainer.classList.add('hidden');
-                sigiloJustificativaContainer.classList.add('hidden');
-
-                // Adiciona e preenche Autor
-                addParty(autoresList, true);
-                const autor1 = autoresList.querySelector('.party-item');
-                autor1.querySelector('.party-name').value = 'João da Silva Sauro';
-                autor1.querySelector('.party-marital-status').value = 'solteiro(a)';
-                autor1.querySelector('.party-profession').value = 'Desenvolvedor de Software';
-                autor1.querySelector('.party-dob').value = '15/05/1990';
-                autor1.querySelector('.party-cpf').value = formatCpfCnpj('12345678901');
-                autor1.querySelector('.party-rg').value = '12.345.678-9';
-                autor1.querySelector('.party-emitter').value = 'SSP/SP';
-                autor1.querySelector('.party-phone').value = formatPhone('14998765432');
-                autor1.querySelector('.party-email').value = 'joao.silva@emailteste.com';
-                autor1.querySelector('.party-cep').value = '17500-001';
-                autor1.querySelector('.party-cep').dispatchEvent(new Event('input', { bubbles: true }));
-                setTimeout(() => {
-                    autor1.querySelector('.party-number').value = '100';
-                    autor1.querySelector('.party-complement').value = 'Apto 10';
-                }, 500);
-                autor1.querySelector('.party-excluded').checked = true;
-
-                // Adiciona e preenche Réu 1 (Empresa com endereço manual)
-                addParty(reusList, false);
-                const reu1 = reusList.querySelector('.party-item');
-                reu1.querySelector('.party-name').value = 'Empresa de Telefonia Fictícia S/A';
-                reu1.querySelector('.party-cpf').value = formatCpfCnpj('12345678000190');
-                reu1.querySelector('.no-cep-check').checked = true;
-                reu1.querySelector('.no-cep-check').dispatchEvent(new Event('change'));
-                reu1.querySelector('.party-street').value = 'Avenida dos Testes';
-                reu1.querySelector('.party-number').value = '987';
-                reu1.querySelector('.party-district').value = 'Centro';
-                reu1.querySelector('.party-city').value = 'Marília';
-                reu1.querySelector('.party-state').value = 'SP';
-
-                // Adiciona e preenche Réu 2 (Pessoa sem endereço)
-                addParty(reusList, false);
-                const reu2 = reusList.querySelectorAll('.party-item')[1];
-                reu2.querySelector('.party-name').value = 'Maria Oliveira';
-                reu2.querySelector('.no-address-check').checked = true;
-                reu2.querySelector('.no-address-check').dispatchEvent(new Event('change'));
-                reu2.querySelector('.no-address-justification').value = 'a parte autora desconhece o paradeiro da requerida, sendo esta a última informação de contato. Requer-se a pesquisa via sistemas conveniados (BacenJud, InfoJud, etc).';
-
-                // Preenche Dados da Ação
-                actionTypeOptions.querySelectorAll('.action-type-checkbox').forEach(cb => {
-                    if (cb.value === 'Obrigação de Fazer/Não Fazer' || cb.value === 'Indenização por Danos Morais') {
-                        cb.checked = true;
-                    }
-                });
-                updateActionTypeDisplay();
-
-
-                document.getElementById('action-value').value = '12.500,00';
-
-                tutelaCheck.checked = true;
-                tutelaCheck.dispatchEvent(new Event('change'));
-                document.getElementById('tutela-justificativa').value = 'a imediata remoção do nome do autor dos cadastros de inadimplentes, uma vez que a cobrança é indevida e está causando prejuízos diários.';
-
-                sigiloCheck.checked = true;
-                sigiloCheck.dispatchEvent(new Event('change'));
-                document.getElementById('sigilo-justificativa').value = 'o processo contém extratos bancários e dados fiscais sensíveis.';
-
-                document.querySelector('input[name="audiencia"][value="nao"]').checked = true;
-                audienciaJustificativaContainer.classList.remove('hidden');
-                document.getElementById('audiencia-justificativa').value = 'a parte ré (Empresa de Telefonia Fictícia S/A) possui sede em outra comarca, tornando a tentativa de conciliação presencial infrutífera e apenas protelatória.';
-
-                // Preenche Fatos e Pedidos
-                document.getElementById('fatos-content').value = `Em 01/08/2025, o autor adquiriu um smartphone modelo XPTO da empresa requerida, pelo valor de R$ 2.500,00, conforme nota fiscal anexa.\n\nOcorre que, com menos de uma semana de uso, o aparelho começou a apresentar superaquecimento e a bateria não durava mais que duas horas, mesmo com pouco uso.\n\nO autor contatou o suporte técnico por diversas vezes (protocolos anexos), mas não obteve solução, sendo informado que deveria arcar com os custos de um reparo que, segundo a empresa, foi causado por "mau uso", o que não é verdade.`;
-                document.getElementById('pedido-content').value = `b) A procedência da ação para condenar a empresa ré a substituir o aparelho por um novo, idêntico ou superior, em perfeitas condições de uso;\nc) Subsidiariamente, caso não seja possível a troca, a rescisão do contrato com a devolução do valor pago de R$ 2.500,00, devidamente corrigido;\nd) A condenação da empresa ré ao pagamento de uma indenização por danos morais no valor de R$ 10.000,00, em razão do descaso e do tempo perdido pelo autor na tentativa de solucionar o problema.`;
-
-                // Preenche Documentos
-                const docTypes = ['Nota Fiscal', 'Conversas em WhatsApp', 'Outro'];
-                docTypes.forEach(type => {
-                    addDocumentBtn.click();
-                    const lastDoc = documentList.lastElementChild;
-                    const select = lastDoc.querySelector('.document-type');
-                    select.value = type;
-                    if (type === 'Outro') {
-                        const otherInput = lastDoc.querySelector('.document-other-type');
-                        otherInput.classList.remove('hidden');
-                        otherInput.value = 'Protocolos de Atendimento';
-                    }
-                });
-
-                alert('Dados de teste preenchidos!');
-            };
-
-            const getFormData = () => {
-                const getPartyData = (listElement, isAuthor) => {
-                    return Array.from(listElement.querySelectorAll('.party-item')).map(item => ({
-                        name: item.querySelector('.party-name').value.trim(),
-                        maritalStatus: item.querySelector('.party-marital-status').value,
-                        profession: item.querySelector('.party-profession').value.trim(),
-                        cpf: item.querySelector('.party-cpf').value.trim(),
-                        dob: isAuthor ? item.querySelector('.party-dob').value.trim() : null,
-                        rg: item.querySelector('.party-rg').value.trim(),
-                        emitter: item.querySelector('.party-emitter').value.trim(),
-                        phone: item.querySelector('.party-phone').value.trim(),
-                        email: item.querySelector('.party-email').value.trim(),
-                        address: (() => {
-                            if (item.querySelector('.no-address-check').checked) return null;
-                            const cep = item.querySelector('.party-cep').value.trim();
-                            return `${item.querySelector('.party-street').value}, nº ${item.querySelector('.party-number').value}, ${item.querySelector('.party-complement').value || ''}`.trim() +
-                                ` - ${item.querySelector('.party-district').value}${cep ? `, CEP: ${cep}` : ''}, ${item.querySelector('.party-city').value}/${item.querySelector('.party-state').value}`;
-                        })(),
-                        noAddressJustification: item.querySelector('.no-address-check').checked ? item.querySelector('.no-address-justification').value.trim() : null,
-                        isExcluded: isAuthor ? item.querySelector('.party-excluded').checked : false,
-                        city: item.querySelector('.party-city').value,
-                        state: item.querySelector('.party-state').value,
-                    })).filter(p => p.name);
-                };
-
-                const getDocuments = () => {
-                    return Array.from(documentList.querySelectorAll('.document-item')).map(item => {
-                        const type = item.querySelector('.document-type').value;
-                        return type === 'Outro' ? item.querySelector('.document-other-type').value.trim() : type;
-                    }).filter(Boolean);
-                };
-
-                const selectedActions = Array.from(actionTypeOptions.querySelectorAll('.action-type-checkbox:checked')).map(cb => cb.value);
-                const otherIndex = selectedActions.indexOf('Outros');
-                if (otherIndex > -1) {
-                    selectedActions[otherIndex] = actionTypeOtherInput.value.trim();
-                }
-                const actionType = selectedActions.filter(Boolean).join(' c/c ');
-
-                return {
-                    autores: getPartyData(autoresList, true),
-                    reus: getPartyData(reusList, false),
-                    actionType: actionType,
-                    actionValue: document.getElementById('action-value').value.trim(),
-                    fatos: document.getElementById('fatos-content').value.trim(),
-                    pedido: document.getElementById('pedido-content').value.trim(),
-                    documents: getDocuments(),
-                    tutela: tutelaCheck.checked,
-                    tutelaJustificativa: document.getElementById('tutela-justificativa').value.trim(),
-                    sigilo: sigiloCheck.checked,
-                    sigiloJustificativa: document.getElementById('sigilo-justificativa').value.trim(),
-                    audiencia: document.querySelector('input[name="audiencia"]:checked') ? document.querySelector('input[name="audiencia"]:checked').value : null,
-                    audienciaJustificativa: document.getElementById('audiencia-justificativa').value.trim(),
-                };
-            };
-
-            const validateForm = (data) => {
-                if (data.autores.length === 0) {
-                    alert("Adicione pelo menos um autor.");
-                    return false;
-                }
-                const autorElements = autoresList.querySelectorAll('.party-item');
-                for (const autorEl of autorElements) {
-                    if (!autorEl.querySelector('.party-name').value.trim() ||
-                        !autorEl.querySelector('.party-cpf').value.trim() ||
-                        !autorEl.querySelector('.party-dob').value.trim() ||
-                        autorEl.querySelector('.party-dob').value.trim().length < 10 ||
-                        !autorEl.querySelector('.party-street').value.trim() ||
-                        !autorEl.querySelector('.party-number').value.trim() ||
-                        !autorEl.querySelector('.party-cep').value.trim()
-                    ) {
-                        alert("Para todos os autores, é obrigatório preencher: Nome, CPF, Data de Nascimento e Endereço completo (CEP, Logradouro, Número).");
-                        return false;
-                    }
-                }
-
-                if (data.reus.length === 0) { alert("Adicione pelo menos um réu com Nome."); return false; }
-                if (!data.actionType) { alert("Selecione ou especifique o tipo de ação."); return false; }
-                if (!data.fatos) { alert("O campo 'DOS FATOS' é obrigatório."); return false; }
-                if (!data.pedido) { alert("O campo 'PEDIDOS' é obrigatório."); return false; }
-                if (!data.actionValue) { alert("O campo 'Valor da Causa' é obrigatório."); return false; }
-                if (data.tutela && !data.tutelaJustificativa) { alert("Justifique o pedido de tutela de urgência."); return false; }
-                if (data.sigilo && !data.sigiloJustificativa) { alert("Justifique o pedido de segredo de justiça."); return false; }
-                return true;
-            };
-
-            const calculateAge = (dobString) => {
-                if (!dobString || dobString.length < 10) return null;
-                const [day, month, year] = dobString.split('/');
-                const birthDate = new Date(+year, +month - 1, +day);
-                const today = new Date();
-                let age = today.getFullYear() - birthDate.getFullYear();
-                const m = today.getMonth() - birthDate.getMonth();
-                if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) age--;
-                return age;
-            };
-
-            const generateContentHTML = (data) => {
-                const today = new Date();
-                const dateStr = today.toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' });
-                const locationStr = data.autores[0] && data.autores[0].city ? `${data.autores[0].city}/${data.autores[0].state}` : 'Marília/SP';
-
-
-                const generatePartyHTML = (party, isAuthor) => {
-                    const age = calculateAge(party.dob);
-                    const isMinor = isAuthor && age !== null && age < 18;
-
-                    const nameHTML = `<span style="font-weight: bold;">${party.name.toUpperCase()}</span>`;
-
-                    let details = '';
-                    if (isMinor) details += `, menor`;
-                    if (party.maritalStatus) details += `, ${party.maritalStatus}`;
-                    if (party.profession) details += `, ${party.profession}`;
-                    if (party.rg) details += `, portador(a) do RG nº ${party.rg}` + (party.emitter ? ` - ${party.emitter}` : '');
-                    if (party.cpf) details += `, inscrito(a) no CPF/CNPJ sob o nº ${party.cpf}`;
-
-                    if (party.address) details += `, residente e domiciliado(a) no endereço: ${party.address}`;
-                    else details += `, em lugar incerto e não sabido, requerendo-se a pesquisa do seu endereço`;
-
-                    if (!isAuthor && !party.cpf && !party.rg) {
-                        details += ', demais dados desconhecidos';
-                    }
-
-                    if (party.phone) details += `, Telefone: ${party.phone}`;
-                    if (party.email) details += `, E-mail: ${party.email}`;
-
-                    const detailsHTML = `<span>${details}</span>`;
-
-                    return `<p>${nameHTML}${detailsHTML}</p>`;
-                };
-
-                const fatosHTML = data.fatos.split('\n').map(p => `<p style="text-indent: 4em;">${p}</p>`).join('');
-
-                let citacaoText = `a) A citação da parte ré para, querendo, apresentar defesa, sob pena de revelia;`;
-                if (data.audiencia === 'sim') {
-                    citacaoText = `a) A citação e intimação da parte ré para comparecer à audiência de conciliação a ser designada, sob pena de revelia;`
-                }
-
-                let pedidoFinal = `${citacaoText}\n\n${data.pedido}`;
-
-                if (data.tutela) pedidoFinal += `\n\n- A concessão da tutela de urgência para ${data.tutelaJustificativa}`;
-                if (data.autores.some(a => a.isExcluded)) pedidoFinal += "\n\n- A designação de eventuais audiências na modalidade presencial, em razão da declarada exclusão digital da parte autora.";
-                if (data.sigilo) pedidoFinal += `\n\n- A tramitação do feito em segredo de justiça, pois ${data.sigiloJustificativa}`;
-                data.reus.forEach(reu => {
-                    if (reu.noAddressJustification) {
-                        pedidoFinal += `\n\n- A localização do endereço do(a) réu(ré) ${reu.name}, uma vez que ${reu.noAddressJustification}`;
-                    }
-                });
-
-                pedidoFinal += "\n\n- Havendo relação de consumo, a parte autora, desde logo, postula pela inversão do ônus da prova.";
-
-                if (data.audiencia === 'sim') {
-                    // Já tratado na citação
-                } else if (data.audiencia === 'nao' && data.audienciaJustificativa) {
-                    pedidoFinal += `\n\n- A parte autora manifesta o desinteresse na designação de audiência de conciliação, pela seguinte razão: ${data.audienciaJustificativa}`;
-                } else if (data.audiencia === 'nao') {
-                    pedidoFinal += "\n\n- A parte autora manifesta o desinteresse na designação de audiência de conciliação.";
-                }
-
-
-                const pedidoHTML = pedidoFinal.split('\n').filter(p => p.trim() !== '').map(p => `<p style="text-indent: 4em;">${p}</p>`).join('');
-
-                const documentsHTML = data.documents.length > 0 ? `<p style="text-indent: 4em;">Acompanham a presente petição os seguintes documentos: ${data.documents.join(', ')}.</p>` : '';
-                const signaturesHTML = data.autores.map(autor => `<div style="text-align: center; margin-top: 60px; page-break-inside: avoid;"><p style="border-top: 1px solid black; width: 75%; margin: 0 auto; padding-top: 5px;">${autor.name.toUpperCase()}</p><p style="margin:0; font-size: 10pt;">${autor.cpf}</p></div>`).join('');
-
-                const actionName = data.actionType.toUpperCase() + (data.tutela ? " COM PEDIDO DE TUTELA DE URGÊNCIA" : "");
-
-                let headersHTML = '';
-                if (data.tutela) headersHTML += `<p style="text-align: right; font-weight: bold; color: red;">URGENTE - PEDIDO DE TUTELA DE URGÊNCIA</p>`;
-                if (data.sigilo) headersHTML += `<p style="text-align: right; font-weight: bold;">TRAMITAÇÃO EM SEGREDO DE JUSTIÇA</p>`;
-                if (data.autores.some(a => a.isExcluded)) headersHTML += `<p style="text-align: right; font-weight: bold;">PARTE AUTORA EXCLUÍDA DIGITAL</p>`;
-                if (data.autores.some(a => calculateAge(a.dob) < 18)) headersHTML += `<p style="text-align: right; font-weight: bold; color: blue;">PARTE AUTORA MENOR DE IDADE</p>`;
-
-                const orientacoesHTML = `
-                    <div style="margin-top: 2cm; padding: 10px; border: 2px solid #e5e7eb; background-color: #f9fafb; page-break-inside: avoid;">
-                        <h3 style="text-align: center; font-weight: bold; font-size: 11pt; margin: 0 0 10px 0;">ORIENTAÇÕES IMPORTANTES</h3>
-                        <ul style="font-size: 10pt; line-height: 1.5; margin: 0; padding-left: 20px;">
-                            <li style="margin-bottom: 5px;"><strong>Responsabilidade:</strong> Os fatos, fundamentos e pedidos contidos nesta atermação são de sua inteira responsabilidade.</li>
-                            <li style="margin-bottom: 5px;"><strong>Envio de Documentos:</strong> Os documentos devem ser enviados junto com esta manifestação. Tamanho máximo por arquivo: 10MB. Formatos aceitos: PDF, JPG, PNG, MP3, MP4, etc. <strong>Atenção:</strong> o nome dos arquivos <strong>NÃO</strong> deve conter os caracteres: \\ / : * ? " &lt; &gt; |</li>
-                            <li style="margin-bottom: 5px;"><strong>Mudança de Endereço:</strong> Comunique ao Juizado qualquer mudança de endereço durante o processo. Intimações enviadas ao endereço antigo serão consideradas válidas.</li>
-                            <li style="margin-bottom: 5px;"><strong>Limite de Valor:</strong> A escolha pelo Juizado Especial implica na renúncia de valores que ultrapassem 40 salários mínimos, salvo em caso de acordo.</li>
-                            <li style="margin-bottom: 5px;"><strong>Testemunhas:</strong> Não é necessário levar testemunhas na audiência de conciliação. O pedido para ouvi-las em audiência de instrução deve ser feito separadamente, com a qualificação completa (nome e endereço).</li>
-                        </ul>
-                    </div>
-                `;
-
-                return `
-                    <div style="font-size: 12pt; line-height: 2; text-align: justify;">
-                        <p style="text-align: center; font-weight: bold;">EXCELENTÍSSIMO(A) SENHOR(A) DOUTOR(A) JUIZ(A) DE DIREITO DO JUIZADO ESPECIAL CÍVEL DA COMARCA DE MARÍLIA/SP</p>
-                        <div style="margin-top: 1cm;">${headersHTML}</div>
-                        
-                        <div style="margin-top: 1cm;">
-                            <p><strong>REQUERENTE(S):</strong><br>${data.autores.map(p => generatePartyHTML(p, true)).join(' ')}</p>
-                        </div>
-                        <div style="margin-top: 1cm;">
-                            <p><strong>REQUERIDO(S):</strong><br>${data.reus.map(p => generatePartyHTML(p, false)).join(' ')}</p>
-                        </div>
-
-                        <p style="text-align: center; font-weight: bold; margin-top: 1cm; margin-bottom: 0.5cm;">AÇÃO DE ${actionName}</p>
-                        <p style="text-align: left; font-weight: bold; margin-top: 1cm; margin-bottom: 0.5cm;">DOS FATOS</p>
-                        ${fatosHTML}
-                        <p style="text-align: left; font-weight: bold; margin-top: 1cm; margin-bottom: 0.5cm;">PEDIDOS</p>
-                        <p style="text-indent: 4em;">Diante do exposto, requer a Vossa Excelência:</p>
-                        ${pedidoHTML}
-                        <p style="margin-top: 1cm;">${documentsHTML}</p>
-                        <p>&nbsp;</p>
-                        <p>Dá-se à causa o valor de <span style="font-weight: bold;">R$ ${data.actionValue}</span>.</p>
-                        
-                        <div style="margin-top: 2cm; page-break-inside: avoid; text-align: left;">
-                             <p>Nestes termos, pede deferimento.</p>
-                             <p style="margin-top: 1cm;">${locationStr}, ${dateStr}.</p>
-                             ${orientacoesHTML}
-                             ${signaturesHTML}
-                        </div>
-                    </div>
-                `;
-            };
-
-            function showPreview() {
-                const data = getFormData();
-                if (!validateForm(data)) return;
-                previewContent.innerHTML = generateContentHTML(data);
-                previewModal.classList.remove('hidden');
-            }
-
-            function generatePDF() {
-                const data = getFormData();
-                if (!validateForm(data)) return;
-
-                const { jsPDF } = window.jspdf;
-                const pdf = new jsPDF('p', 'mm', 'a4');
-
-                const content = document.createElement('div');
-                content.innerHTML = generateContentHTML(data);
-                content.style.width = '210mm';
-                content.style.padding = '15mm';
-                content.style.boxSizing = 'border-box';
-                content.style.fontFamily = 'Times New Roman, Times, serif';
-                content.style.color = '#111827';
-                document.body.appendChild(content);
-
-                pdf.html(content, {
-                    callback: function (doc) {
-                        document.body.removeChild(content);
-                        doc.save(`Atermacao_${data.autores[0].name.split(' ')[0]}.pdf`);
-                    },
-                    margin: [15, 15, 15, 15],
-                    autoPaging: 'text',
-                    width: 180,
-                    windowWidth: 794
-                });
-            }
-
-            // --- EVENT LISTENERS (Moved to the end) ---
-            disclaimerChecks.forEach(c => c.addEventListener('change', checkDisclaimer));
-            addAutorBtn.addEventListener('click', () => addParty(autoresList, true));
-            addReuBtn.addEventListener('click', () => addParty(reusList, false));
-            document.getElementById('action-value').addEventListener('blur', formatValueOnBlur);
-            document.getElementById('atermacao-app-container').addEventListener('click', (e) => {
-                if (e.target.classList.contains('remove-party-btn')) {
-                    e.target.closest('.party-item').remove();
-                    updateRemoveButtons();
-                }
-            });
-
-            tutelaCheck.addEventListener('change', () => tutelaJustificativaContainer.classList.toggle('hidden', !tutelaCheck.checked));
-            sigiloCheck.addEventListener('change', () => sigiloJustificativaContainer.classList.toggle('hidden', !sigiloCheck.checked));
-
-            audienciaRadios.forEach(radio => {
-                radio.addEventListener('change', () => {
-                    audienciaJustificativaContainer.classList.toggle('hidden', radio.value !== 'nao');
-                });
-            });
-
-            addDocumentBtn.addEventListener('click', () => {
-                const newItem = document.createElement('div');
-                newItem.className = 'document-item grid grid-cols-1 md:grid-cols-2 gap-4 items-center';
-                newItem.innerHTML = `
-                    <div class="flex items-center gap-2">
-                        <select class="document-type w-full p-2 border border-gray-300 rounded-lg bg-white">
-                            <option value="RG/CPF">RG/CPF</option>
-                            <option value="Comprovante de Residência">Comprovante de Residência</option>
-                            <option value="Nota Fiscal">Nota Fiscal</option>
-                            <option value="Extrato Bancário">Extrato Bancário</option>
-                            <option value="Comprovante de Transferência/PIX">Comprovante de Transferência/PIX</option>
-                            <option value="Comprovante de Pagamento">Comprovante de Pagamento</option>
-                            <option value="Conversas em WhatsApp">Conversas em WhatsApp</option>
-                            <option value="Foto/Print">Foto/Print</option>
-                            <option value="Contrato/Termo de Adesão">Contrato/Termo de Adesão</option>
-                            <option value="Laudo/Atestado Médico">Laudo/Atestado Médico</option>
-                            <option value="Boletim de Ocorrência">Boletim de Ocorrência</option>
-                            <option value="Outro">Outro</option>
-                        </select>
-                        <button type="button" class="remove-document-btn bg-red-500 hover:bg-red-600 text-white font-bold h-8 w-8 rounded-lg flex-shrink-0 flex items-center justify-center" title="Remover Documento">&times;</button>
-                    </div>
-                    <input type="text" class="document-other-type w-full p-2 border border-gray-300 rounded-lg hidden" placeholder="Especifique o tipo de documento">
-                `;
-                documentList.appendChild(newItem);
-                newItem.querySelector('.document-type').addEventListener('change', (e) => {
-                    e.target.parentElement.parentElement.querySelector('.document-other-type').classList.toggle('hidden', e.target.value !== 'Outro');
-                });
-            });
-
-            documentList.addEventListener('click', (e) => {
-                if (e.target.classList.contains('remove-document-btn')) e.target.closest('.document-item').remove();
-            });
-
-            clearFormBtn.addEventListener('click', () => {
-                if (confirm("Tem certeza que deseja limpar todos os campos?")) {
-                    atermacaoForm.reset();
-                    autoresList.innerHTML = ''; reusList.innerHTML = ''; documentList.innerHTML = '';
-                    addParty(autoresList, true); addParty(reusList, false);
-                    actionTypeOtherInput.classList.add('hidden');
-                    tutelaJustificativaContainer.classList.add('hidden');
-                    sigiloJustificativaContainer.classList.add('hidden');
-                    audienciaJustificativaContainer.classList.add('hidden');
-                    // Reset custom dropdown
-                    actionTypeOptions.querySelectorAll('.action-type-checkbox').forEach(cb => cb.checked = false);
-                    updateActionTypeDisplay();
-                }
-            });
-
-            previewBtn.addEventListener('click', showPreview);
-            generatePdfBtn.addEventListener('click', generatePDF);
-            //   testFillBtn.addEventListener('click', fillWithTestData);
-            closePreviewBtn.addEventListener('click', () => previewModal.classList.add('hidden'));
-            previewModal.addEventListener('click', (e) => { if (e.target === previewModal) previewModal.classList.add('hidden'); });
-
-            // --- INICIALIZAÇÃO ---
-            addParty(autoresList, true);
-            addParty(reusList, false);
-            updateRemoveButtons();
-        });
-    </script>
+    <script src="script.js"></script>
 </body>
 
 </html>
