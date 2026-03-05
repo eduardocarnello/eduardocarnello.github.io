@@ -68,6 +68,18 @@
 
     <div class="w-full max-w-4xl mx-auto bg-white rounded-2xl shadow-lg p-6 md:p-8">
 
+        <!-- Banner de restauração de dados salvos -->
+        <div id="restore-banner" class="hidden mb-4 p-4 bg-blue-50 border border-blue-300 rounded-xl flex flex-col sm:flex-row items-center justify-between gap-3">
+            <div class="flex items-center gap-2 text-blue-800">
+                <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M12 2a10 10 0 100 20 10 10 0 000-20z"/></svg>
+                <span class="text-sm font-medium">Há dados preenchidos salvos automaticamente. Deseja restaurá-los?</span>
+            </div>
+            <div class="flex gap-2">
+                <button id="restore-yes-btn" class="bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold py-1.5 px-4 rounded-lg transition-colors">Restaurar</button>
+                <button id="restore-no-btn" class="bg-gray-200 hover:bg-gray-300 text-gray-700 text-sm font-semibold py-1.5 px-4 rounded-lg transition-colors">Descartar</button>
+            </div>
+        </div>
+
         <header class="text-center mb-8">
             <h1 class="text-2xl md:text-3xl font-bold text-gray-800">Calculadora de Atualização de Débito Judicial</h1>
             <p class="text-gray-500 mt-2">Selecione o tipo de cálculo e insira os dados para a atualização monetária.
@@ -1408,10 +1420,6 @@
                 pdf.setFont('helvetica', 'bold');
                 pdf.text('Demonstrativo de Descumprimento de Acordo', pdf.internal.pageSize.getWidth() / 2, 20, { align: 'center' });
                 pdf.setFontSize(10);
-
-                pdf.setFontSize(8);
-                pdf.setFont('helvetica', 'italic');
-                pdf.text(jurosNote, 15, finalY + 8);
                 pdf.setFont('helvetica', 'normal');
                 pdf.text(`Cálculo realizado em: ${data.finalCalcDate.toLocaleDateString('pt-BR')}`, pdf.internal.pageSize.getWidth() / 2, 27, { align: 'center' });
                 pdf.text(`Processo nº: ${data.processNumber}`, 15, 40);
@@ -1496,6 +1504,10 @@
                 pdf.setFont('helvetica', 'bold');
                 pdf.text('Valor Total do Débito:', 15, finalY);
                 pdf.text(formatCurrency(s.grandTotal), 195, finalY, { align: 'right' });
+
+                pdf.setFontSize(8);
+                pdf.setFont('helvetica', 'italic');
+                pdf.text(jurosNote, 15, finalY + 8);
 
             };
 
@@ -1789,6 +1801,199 @@
             previewModal.addEventListener('click', (e) => { if (e.target === previewModal) previewModal.classList.add('hidden'); });
             processNumberInput.addEventListener('input', formatCNJOnInput);
 
+            // --- SISTEMA DE AUTO-SAVE (localStorage, 4h de validade) ---
+            const AUTOSAVE_KEY = 'calculadora_autosave';
+            const AUTOSAVE_TTL = 4 * 60 * 60 * 1000; // 4 horas em ms
+            let autosaveTimer = null;
+
+            const collectFormData = () => {
+                const data = {};
+                // Campos simples
+                data.processNumber = processNumberInput.value;
+                data.calculationType = calculationTypeSelect.value;
+                data.finalDate = document.getElementById('final-date').value;
+                data.addFine = addFineCheckbox.checked;
+                data.complianceRequest = complianceRequestCheckbox.checked;
+
+                // Linhas de cálculo (condenação)
+                data.condemnationRows = [];
+                document.querySelectorAll('.calculation-row').forEach(row => {
+                    data.condemnationRows.push({
+                        description: row.querySelector('.description-select').value,
+                        otherDescription: row.querySelector('.other-description-input').value,
+                        value: row.querySelector('.value-input').value,
+                        correctionDate: row.querySelector('.correction-date-input').value,
+                        interestDate: row.querySelector('.interest-date-input').value
+                    });
+                });
+
+                // Campos do acordo
+                data.agreementType = document.getElementById('agreement-type').value;
+                data.agreementTotalInstallments = document.getElementById('agreement-total-installments').value;
+                data.agreementPaidInstallments = document.getElementById('agreement-paid-installments').value;
+                data.agreementInstallmentValue = document.getElementById('agreement-installment-value').value;
+                data.agreementLastDifferentCheck = agreementLastDifferentCheck.checked;
+                data.agreementLastInstallmentValue = document.getElementById('agreement-last-installment-value').value;
+                data.agreementStartDate = document.getElementById('agreement-start-date').value;
+                data.agreementPenalty = agreementPenaltySelect.value;
+                const penaltyBase = document.querySelector('input[name="penalty-base"]:checked');
+                data.penaltyBase = penaltyBase ? penaltyBase.value : 'remaining';
+                data.agreementDeductionValue = document.getElementById('agreement-deduction-value').value;
+                data.agreementDeductionDate = document.getElementById('agreement-deduction-date').value;
+
+                // Exequentes
+                data.exequentes = Array.from(exequentesList.querySelectorAll('.exequente-name-input')).map(inp => inp.value);
+
+                // Penhora
+                data.penhoraContas = document.getElementById('penhora-contas').checked;
+                data.penhoraVeiculos = document.getElementById('penhora-veiculos').checked;
+                data.penhoraMandado = document.getElementById('penhora-mandado').checked;
+                data.penhoraOutrosCheck = penhoraOutrosCheck.checked;
+                data.penhoraOutrosText = penhoraOutrosText.value;
+
+                // Intimação
+                data.includeIntimation = includeIntimationCheckbox.checked;
+                data.intimationDeadline = document.getElementById('intimation-deadline').value;
+
+                return data;
+            };
+
+            const saveFormData = () => {
+                try {
+                    const payload = { timestamp: Date.now(), data: collectFormData() };
+                    localStorage.setItem(AUTOSAVE_KEY, JSON.stringify(payload));
+                } catch (e) {
+                    // silently ignore if storage is full or blocked
+                }
+            };
+
+            const getSavedFormData = () => {
+                try {
+                    const raw = localStorage.getItem(AUTOSAVE_KEY);
+                    if (!raw) return null;
+                    const payload = JSON.parse(raw);
+                    if (Date.now() - payload.timestamp > AUTOSAVE_TTL) {
+                        localStorage.removeItem(AUTOSAVE_KEY);
+                        return null;
+                    }
+                    return payload.data;
+                } catch (e) {
+                    return null;
+                }
+            };
+
+            const clearSavedFormData = () => {
+                localStorage.removeItem(AUTOSAVE_KEY);
+            };
+
+            const restoreFormData = (data) => {
+                if (!data) return;
+
+                // Campos simples
+                processNumberInput.value = data.processNumber || '';
+                calculationTypeSelect.value = data.calculationType || 'condemnation';
+                document.getElementById('final-date').value = data.finalDate || '';
+                addFineCheckbox.checked = !!data.addFine;
+                complianceRequestCheckbox.checked = !!data.complianceRequest;
+
+                // Restaurar linhas de condenação
+                if (data.condemnationRows && data.condemnationRows.length > 0) {
+                    // Garantir que temos linhas suficientes
+                    while (rowsContainer.children.length < data.condemnationRows.length) {
+                        addRow();
+                    }
+                    const rows = rowsContainer.querySelectorAll('.calculation-row');
+                    data.condemnationRows.forEach((saved, i) => {
+                        if (!rows[i]) return;
+                        const row = rows[i];
+                        const descSelect = row.querySelector('.description-select');
+                        descSelect.value = saved.description || 'Dano Material';
+                        const otherInput = row.querySelector('.other-description-input');
+                        otherInput.value = saved.otherDescription || '';
+                        otherInput.classList.toggle('hidden', saved.description !== 'Outro');
+                        row.querySelector('.value-input').value = saved.value || '';
+                        row.querySelector('.correction-date-input').value = saved.correctionDate || '';
+                        row.querySelector('.interest-date-input').value = saved.interestDate || '';
+
+                        // Disparar change para aplicar estados visuais (Multa %, Dedução, etc)
+                        descSelect.dispatchEvent(new Event('change', { bubbles: true }));
+                    });
+                }
+
+                // Campos do acordo
+                document.getElementById('agreement-type').value = data.agreementType || 'conhecimento';
+                document.getElementById('agreement-total-installments').value = data.agreementTotalInstallments || '';
+                document.getElementById('agreement-paid-installments').value = data.agreementPaidInstallments || '';
+                document.getElementById('agreement-installment-value').value = data.agreementInstallmentValue || '';
+                agreementLastDifferentCheck.checked = !!data.agreementLastDifferentCheck;
+                agreementLastValueContainer.classList.toggle('hidden', !data.agreementLastDifferentCheck);
+                document.getElementById('agreement-last-installment-value').value = data.agreementLastInstallmentValue || '';
+                document.getElementById('agreement-start-date').value = data.agreementStartDate || '';
+                agreementPenaltySelect.value = data.agreementPenalty || '20';
+                const safePenaltyBase = ['remaining', 'total'].includes(data.penaltyBase) ? data.penaltyBase : 'remaining';
+                const penaltyRadio = document.querySelector(`input[name="penalty-base"][value="${safePenaltyBase}"]`);
+                if (penaltyRadio) penaltyRadio.checked = true;
+                document.getElementById('agreement-deduction-value').value = data.agreementDeductionValue || '';
+                document.getElementById('agreement-deduction-date').value = data.agreementDeductionDate || '';
+
+                // Restaurar exequentes
+                if (data.exequentes && data.exequentes.length > 0) {
+                    // Primeiro exequente já existe
+                    const existingInputs = exequentesList.querySelectorAll('.exequente-name-input');
+                    existingInputs[0].value = data.exequentes[0] || '';
+                    for (let i = 1; i < data.exequentes.length; i++) {
+                        addExequenteBtn.click();
+                        const allInputs = exequentesList.querySelectorAll('.exequente-name-input');
+                        allInputs[allInputs.length - 1].value = data.exequentes[i] || '';
+                    }
+                }
+
+                // Penhora
+                document.getElementById('penhora-contas').checked = data.penhoraContas !== false;
+                document.getElementById('penhora-veiculos').checked = data.penhoraVeiculos !== false;
+                document.getElementById('penhora-mandado').checked = data.penhoraMandado !== false;
+                penhoraOutrosCheck.checked = !!data.penhoraOutrosCheck;
+                penhoraOutrosText.value = data.penhoraOutrosText || '';
+                penhoraOutrosText.classList.toggle('hidden', !data.penhoraOutrosCheck);
+
+                // Intimação
+                includeIntimationCheckbox.checked = !!data.includeIntimation;
+                document.getElementById('intimation-deadline').value = data.intimationDeadline || '15';
+                intimationDeadlineWrapper.classList.toggle('hidden', !data.includeIntimation);
+
+                // Atualizar visibilidade geral
+                toggleCalculationView();
+                petitionOptionsContainer.classList.toggle('hidden',
+                    data.calculationType === 'condemnation' ? !data.complianceRequest : false
+                );
+            };
+
+            const scheduleAutosave = () => {
+                if (autosaveTimer) clearTimeout(autosaveTimer);
+                autosaveTimer = setTimeout(saveFormData, 1000); // debounce 1s
+            };
+
+            // Ouvir mudanças em todo o formulário para auto-save
+            const mainContainer = document.querySelector('.w-full.max-w-4xl');
+            mainContainer.addEventListener('input', scheduleAutosave);
+            mainContainer.addEventListener('change', scheduleAutosave);
+
+            // Banner de restauração
+            const restoreBanner = document.getElementById('restore-banner');
+            const restoreYesBtn = document.getElementById('restore-yes-btn');
+            const restoreNoBtn = document.getElementById('restore-no-btn');
+
+            restoreYesBtn.addEventListener('click', () => {
+                const saved = getSavedFormData();
+                if (saved) restoreFormData(saved);
+                restoreBanner.classList.add('hidden');
+            });
+
+            restoreNoBtn.addEventListener('click', () => {
+                clearSavedFormData();
+                restoreBanner.classList.add('hidden');
+            });
+
             // --- INICIALIZAÇÃO ---
             addInputBehaviors(document.body);
             fetchEconomicData();
@@ -1801,6 +2006,12 @@
             const month = String(today.getMonth() + 1).padStart(2, '0'); // Janeiro é 0
             const year = today.getFullYear();
             document.getElementById('final-date').value = `${day}/${month}/${year}`;
+
+            // Verificar se há dados salvos para restaurar
+            const savedData = getSavedFormData();
+            if (savedData) {
+                restoreBanner.classList.remove('hidden');
+            }
         });
     </script>
 </body>
