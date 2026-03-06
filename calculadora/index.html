@@ -61,6 +61,55 @@
                 transform: rotate(360deg);
             }
         }
+
+        /* Estilos para modais customizados */
+        .modal-overlay {
+            transition: opacity 0.2s ease;
+        }
+
+        .modal-overlay.fade-in {
+            opacity: 1;
+        }
+
+        .modal-overlay.fade-out {
+            opacity: 0;
+        }
+
+        .batch-period-row {
+            animation: fadeInRow 0.2s ease;
+        }
+
+        @keyframes fadeInRow {
+            from {
+                opacity: 0;
+                transform: translateY(-8px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Update modal */
+        #update-modal-overlay .update-icon-box {
+            width: 42px;
+            height: 42px;
+            border-radius: 14px;
+            background: rgba(99, 102, 241, 0.12);
+            color: #6366f1;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.15rem;
+        }
+
+        #update-modal-overlay .update-highlight {
+            border-radius: 0.5rem;
+            border: 1px solid rgba(99, 102, 241, 0.18);
+            background: rgba(99, 102, 241, 0.06);
+            padding: 0.8rem 1rem;
+        }
     </style>
 </head>
 
@@ -177,11 +226,21 @@
                     </div>
                 </div>
 
-                <!-- Botão para adicionar mais linhas -->
-                <div class="mt-6 flex justify-start">
+                <!-- Botões para adicionar linhas -->
+                <div class="mt-6 flex flex-wrap gap-3 items-center">
                     <button id="add-row-btn"
                         class="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded-lg shadow-md transition-transform transform hover:scale-105">+
                         Adicionar Linha</button>
+                    <button id="open-batch-btn"
+                        class="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-2 px-4 rounded-lg shadow-md transition-transform transform hover:scale-105 flex items-center gap-2">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 10h16M4 14h16M4 18h16" />
+                        </svg>
+                        Gerar Parcelas em Lote
+                    </button>
+                    <button id="open-batch-help-btn"
+                        class="w-7 h-7 rounded-full bg-gray-200 hover:bg-gray-300 text-gray-600 font-bold text-sm flex items-center justify-center"
+                        title="Como usar o Lote?">?</button>
                 </div>
 
             </div>
@@ -446,6 +505,195 @@
     <!-- Div oculta para renderizar a petição para o PDF -->
     <div style="position: absolute; left: -9999px; width: 210mm;">
         <div id="petition-area" class="w-full p-8 bg-white"></div>
+    </div>
+
+    <!-- Modal: Gerar Parcelas em Lote -->
+    <div id="batch-modal"
+        class="modal-overlay hidden fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center p-4 z-50">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto p-6 relative">
+            <button id="close-batch-modal"
+                class="absolute top-3 right-3 text-2xl font-bold text-gray-400 hover:text-gray-700 leading-none">&times;</button>
+            <h2 class="text-xl font-bold text-gray-800 mb-1">Gerar Parcelas em Lote</h2>
+            <p class="text-sm text-gray-500 mb-5">Preencha os períodos abaixo e o sistema criará uma linha para cada mês
+                automaticamente.</p>
+
+            <!-- Campos comuns -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-5">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Descrição</label>
+                    <select id="batch-description"
+                        class="w-full p-2 border border-gray-300 rounded-lg shadow-sm bg-white">
+                        <option value="Dano Material">Dano Material</option>
+                        <option value="Dano Moral">Dano Moral</option>
+                        <option value="Restituição" selected>Restituição</option>
+                        <option value="Multa">Multa</option>
+                        <option value="Outro">Outro</option>
+                    </select>
+                    <input type="text" id="batch-other-description"
+                        class="hidden w-full mt-2 p-2 border border-gray-300 rounded-lg shadow-sm"
+                        placeholder="Digite a descrição">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Dia do vencimento</label>
+                    <input type="number" id="batch-due-day"
+                        class="w-full p-2 border border-gray-300 rounded-lg shadow-sm" value="1" min="1" max="31">
+                </div>
+            </div>
+
+            <div class="mb-5">
+                <label class="block text-sm font-medium text-gray-700 mb-1">Juros a partir de:</label>
+                <div class="flex gap-4">
+                    <label class="flex items-center cursor-pointer text-sm">
+                        <input type="radio" name="batch-interest" value="each" checked
+                            class="h-4 w-4 text-indigo-600 border-gray-300">
+                        <span class="ml-2 text-gray-700">Cada vencimento</span>
+                    </label>
+                    <label class="flex items-center cursor-pointer text-sm">
+                        <input type="radio" name="batch-interest" value="fixed"
+                            class="h-4 w-4 text-indigo-600 border-gray-300">
+                        <span class="ml-2 text-gray-700">Data fixa</span>
+                    </label>
+                </div>
+                <input type="text" id="batch-fixed-interest-date"
+                    class="hidden date-input w-full mt-2 p-2 border border-gray-300 rounded-lg shadow-sm"
+                    placeholder="DD/MM/AAAA">
+            </div>
+
+            <!-- Períodos -->
+            <div id="batch-periods" class="space-y-3 mb-4">
+                <div class="batch-period-row grid grid-cols-12 gap-2 items-end">
+                    <div class="col-span-4">
+                        <label class="block text-xs font-medium text-gray-600">Mês/Ano Início</label>
+                        <input type="text"
+                            class="batch-start w-full mt-1 p-2 border border-gray-300 rounded-lg shadow-sm text-sm"
+                            placeholder="MM/AAAA" maxlength="7">
+                    </div>
+                    <div class="col-span-4">
+                        <label class="block text-xs font-medium text-gray-600">Mês/Ano Fim</label>
+                        <input type="text"
+                            class="batch-end w-full mt-1 p-2 border border-gray-300 rounded-lg shadow-sm text-sm"
+                            placeholder="MM/AAAA" maxlength="7">
+                    </div>
+                    <div class="col-span-3">
+                        <label class="block text-xs font-medium text-gray-600">Valor (R$)</label>
+                        <input type="text"
+                            class="batch-value value-input w-full mt-1 p-2 border border-gray-300 rounded-lg shadow-sm text-sm"
+                            placeholder="500,00">
+                    </div>
+                    <div class="col-span-1">
+                        <button
+                            class="batch-remove-period w-full bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-1 rounded-lg text-sm"
+                            title="Remover">&times;</button>
+                    </div>
+                </div>
+            </div>
+
+            <button id="batch-add-period" class="text-sm text-emerald-700 font-semibold hover:underline mb-4">+
+                Adicionar outro período</button>
+
+            <!-- Prévia -->
+            <div id="batch-preview" class="text-sm text-gray-600 bg-gray-50 rounded-lg p-3 mb-5 hidden">
+                <span id="batch-preview-text"></span>
+            </div>
+
+            <!-- Ações -->
+            <div class="flex gap-3 justify-end">
+                <button id="batch-cancel"
+                    class="px-4 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-100 font-medium">Cancelar</button>
+                <button id="batch-generate"
+                    class="px-5 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-semibold shadow-md">Gerar
+                    Linhas</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Ajuda do Lote -->
+    <div id="batch-help-modal"
+        class="modal-overlay hidden fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center p-4 z-50">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full max-h-[90vh] overflow-y-auto p-6 relative">
+            <button id="close-batch-help-modal"
+                class="absolute top-3 right-3 text-2xl font-bold text-gray-400 hover:text-gray-700 leading-none">&times;</button>
+            <h2 class="text-lg font-bold text-gray-800 mb-3 flex items-center gap-2">
+                <svg class="w-5 h-5 text-emerald-600" fill="none" stroke="currentColor" stroke-width="2"
+                    viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                        d="M13 16h-1v-4h-1m1-4h.01M12 2a10 10 0 100 20 10 10 0 000-20z" />
+                </svg>
+                Como usar o Gerador em Lote
+            </h2>
+            <div class="text-sm text-gray-700 space-y-3">
+                <p>O Gerador em Lote serve para quando você precisa atualizar <strong>vários valores mensais</strong> de
+                    uma vez — por exemplo, parcelas de aluguel, pensão, restituições mensais etc.</p>
+                <p><strong>Passo a passo:</strong></p>
+                <ol class="list-decimal pl-5 space-y-2">
+                    <li>Escolha a <strong>descrição</strong> (ex: Restituição) e o <strong>dia do vencimento</strong>
+                        (ex: dia 10).</li>
+                    <li>Defina se os <strong>juros</strong> começam a partir de cada vencimento ou de uma data fixa.
+                    </li>
+                    <li>Em <strong>"Períodos"</strong>, informe o mês/ano de início, o mês/ano de fim e o valor mensal.
+                        <br><span class="text-gray-500">Ex: 01/2018 a 12/2018 → R$ 500,00</span>
+                    </li>
+                    <li>Se o valor muda com o tempo, clique em <strong>"+ Adicionar outro período"</strong> e preencha o
+                        novo intervalo com o novo valor.
+                        <br><span class="text-gray-500">Ex: 01/2019 a 08/2025 → R$ 550,00</span>
+                    </li>
+                    <li>Clique em <strong>"Gerar Linhas"</strong>. O sistema cria automaticamente uma linha de cálculo
+                        para cada mês do período.</li>
+                </ol>
+                <p class="bg-blue-50 border border-blue-200 rounded-lg p-3">💡 <strong>Dica:</strong> Após gerar, você
+                    pode editar qualquer linha individualmente, caso algum mês específico tenha valor diferente.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Novidades / Changelog -->
+    <div id="update-modal-overlay"
+        class="modal-overlay hidden fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center p-4 z-50">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-sm w-full p-0 relative overflow-hidden">
+            <div class="flex items-center gap-3 px-5 pt-5 pb-3">
+                <span class="update-icon-box">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                    </svg>
+                </span>
+                <div>
+                    <p class="font-semibold text-gray-800 leading-tight">Novidades</p>
+                    <p class="text-xs text-gray-500">06 mar 2026</p>
+                </div>
+            </div>
+            <div class="px-5 pb-5">
+                <div class="update-highlight mb-4">
+                    <p class="font-semibold text-sm text-gray-800 mb-2">O que mudou</p>
+                    <ul class="text-sm space-y-2 text-gray-700">
+                        <li class="flex items-start gap-2">
+                            <span class="font-semibold text-xs text-gray-400 mt-0.5 shrink-0">06 mar</span>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <svg class="w-4 h-4 text-emerald-500 mt-0.5 shrink-0" fill="currentColor"
+                                viewBox="0 0 20 20">
+                                <path fill-rule="evenodd"
+                                    d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                                    clip-rule="evenodd" />
+                            </svg>
+                            <span><strong>Gerador em Lote</strong> — gere dezenas de linhas de uma vez para valores
+                                mensais repetitivos (aluguel, pensão, restituições etc.).</span>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <svg class="w-4 h-4 text-emerald-500 mt-0.5 shrink-0" fill="currentColor"
+                                viewBox="0 0 20 20">
+                                <path fill-rule="evenodd"
+                                    d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                                    clip-rule="evenodd" />
+                            </svg>
+                            <span><strong>Salvamento automático</strong> — seus dados ficam salvos por 4 horas. Se a
+                                página fechar sem querer, é só restaurar ao reabrir.</span>
+                        </li>
+                    </ul>
+                </div>
+                <button id="dismiss-update-btn"
+                    class="w-full py-2 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold shadow-sm transition-colors">Entendi</button>
+            </div>
+        </div>
     </div>
 
 
@@ -820,7 +1068,9 @@
                         totalInterest,
                         finalValueForRow,
                         indexInitial: fatorPeriodo.iniValor,
-                        indexFinal: fatorPeriodo.fimValor
+                        indexFinal: fatorPeriodo.fimValor,
+                        correctionDate: correctionDate,
+                        interestDate: interestDate
                     };
 
                     if (descriptionSelect.value === 'Dedução/Pagamento Parcial') {
@@ -847,7 +1097,9 @@
                         totalInterest: 0,
                         finalValueForRow: fineAmount,
                         indexInitial: 1,
-                        indexFinal: 1
+                        indexFinal: 1,
+                        correctionDate: null,
+                        interestDate: null
                     };
                     positiveRows.push(rowData);
                 });
@@ -1058,6 +1310,7 @@
                     const isDeduction = data.summary.totalDeductions > 0 && row.description.includes('Dedução');
 
                     // Renderização especial para "Multa (%)"
+                    const fmtDateRow = (d) => d ? d.toLocaleDateString('pt-BR') : '—';
                     if (row.description.startsWith('Multa (') && row.originalValue === 0) {
                         html += `<div class="p-4 border rounded-lg bg-white border-l-4 border-yellow-500">
                             <p class="font-semibold text-lg text-gray-800">${index + 1}. ${row.description}</p>
@@ -1065,10 +1318,15 @@
                                 <span class="font-medium text-gray-600 mr-2">Valor da Multa:</span>
                                 <span class="text-xl font-bold text-gray-800">${formatCurrency(row.finalValueForRow)}</span>
                             </div>
-                            <p class="mt-2 text-xs text-gray-500 italic">Índice inicial: ${(row.indexInitial ?? 1).toFixed(6)} | Índice final: ${(row.indexFinal ?? 1).toFixed(6)}</p>
+                            <p class="mt-2 text-xs text-gray-500 italic">Calculada sobre o subtotal atualizado</p>
                         </div>`;
                     } else {
-                        html += `<div class="p-4 border rounded-lg bg-white"><p class="font-semibold text-lg ${isDeduction ? 'text-red-600' : 'text-indigo-700'}">${index + 1}. ${row.description}</p><div class="grid grid-cols-2 md:grid-cols-4 gap-x-4 gap-y-2 mt-2 text-sm"><div><span class="font-medium text-gray-600">Valor Original:</span><br>${formatCurrency(row.originalValue)}</div><div><span class="font-medium text-gray-600">Correção (IPCA):</span><br>${formatCurrency(row.totalCorrection)}</div><div><span class="font-medium text-gray-600">Juros de Mora:</span><br>${formatCurrency(row.totalInterest)}</div><div class="font-bold"><span class="font-medium text-gray-600">Subtotal:</span><br>${formatCurrency(row.finalValueForRow)}</div></div><p class="mt-2 text-xs text-gray-500 italic">Índice inicial: ${(row.indexInitial ?? 1).toFixed(6)} | Índice final: ${(row.indexFinal ?? 1).toFixed(6)}</p></div>`;
+                        const detailParts = [];
+                        if (row.correctionDate) detailParts.push(`Correção desde: ${fmtDateRow(row.correctionDate)}`);
+                        if (row.interestDate) detailParts.push(`Juros desde: ${fmtDateRow(row.interestDate)}`);
+                        detailParts.push(`Índice inicial: ${(row.indexInitial ?? 1).toFixed(6)}`);
+                        detailParts.push(`Índice final: ${(row.indexFinal ?? 1).toFixed(6)}`);
+                        html += `<div class="p-4 border rounded-lg bg-white"><p class="font-semibold text-lg ${isDeduction ? 'text-red-600' : 'text-indigo-700'}">${index + 1}. ${row.description}</p><div class="grid grid-cols-2 md:grid-cols-4 gap-x-4 gap-y-2 mt-2 text-sm"><div><span class="font-medium text-gray-600">Valor Original:</span><br>${formatCurrency(row.originalValue)}</div><div><span class="font-medium text-gray-600">Correção (IPCA):</span><br>${formatCurrency(row.totalCorrection)}</div><div><span class="font-medium text-gray-600">Juros de Mora:</span><br>${formatCurrency(row.totalInterest)}</div><div class="font-bold"><span class="font-medium text-gray-600">Subtotal:</span><br>${formatCurrency(row.finalValueForRow)}</div></div><p class="mt-2 text-xs text-gray-500 italic">${detailParts.join(' | ')}</p></div>`;
                     }
                 });
                 html += `</div>`;
@@ -1372,7 +1630,12 @@
                             { content: formatCurrency(row.finalValueForRow), styles: { halign: 'right' } }
                         ];
 
-                    const detailText = `Índice inicial: ${(row.indexInitial ?? 1).toFixed(6)} | Índice final: ${(row.indexFinal ?? 1).toFixed(6)}`;
+                    const fmtDatePdf = (d) => d ? d.toLocaleDateString('pt-BR') : null;
+                    const pdfParts = [];
+                    if (row.correctionDate) pdfParts.push(`Correção desde: ${fmtDatePdf(row.correctionDate)}`);
+                    if (row.interestDate) pdfParts.push(`Juros desde: ${fmtDatePdf(row.interestDate)}`);
+                    const datePart = pdfParts.length > 0 ? pdfParts.join(' | ') + ' | ' : '';
+                    const detailText = `${datePart}Índice inicial: ${(row.indexInitial ?? 1).toFixed(6)} | Índice final: ${(row.indexFinal ?? 1).toFixed(6)}`;
                     const detailRow = [
                         { content: detailText, colSpan: 5, styles: detailStyles }
                     ];
@@ -1807,6 +2070,250 @@
             closePreviewBtn.addEventListener('click', () => previewModal.classList.add('hidden'));
             previewModal.addEventListener('click', (e) => { if (e.target === previewModal) previewModal.classList.add('hidden'); });
             processNumberInput.addEventListener('input', formatCNJOnInput);
+
+            // --- GERADOR DE PARCELAS EM LOTE ---
+            const batchModal = document.getElementById('batch-modal');
+            const batchPeriodsContainer = document.getElementById('batch-periods');
+            const batchPreview = document.getElementById('batch-preview');
+            const batchPreviewText = document.getElementById('batch-preview-text');
+            const batchDescriptionSelect = document.getElementById('batch-description');
+            const batchOtherDescription = document.getElementById('batch-other-description');
+            const batchFixedInterestDate = document.getElementById('batch-fixed-interest-date');
+
+            const openModal = (modal) => { modal.classList.remove('hidden'); };
+            const closeModal = (modal) => { modal.classList.add('hidden'); };
+
+            document.getElementById('open-batch-btn').addEventListener('click', () => openModal(batchModal));
+            document.getElementById('close-batch-modal').addEventListener('click', () => closeModal(batchModal));
+            document.getElementById('batch-cancel').addEventListener('click', () => closeModal(batchModal));
+            batchModal.addEventListener('click', (e) => { if (e.target === batchModal) closeModal(batchModal); });
+
+            // Help modal
+            const batchHelpModal = document.getElementById('batch-help-modal');
+            document.getElementById('open-batch-help-btn').addEventListener('click', () => openModal(batchHelpModal));
+            document.getElementById('close-batch-help-modal').addEventListener('click', () => closeModal(batchHelpModal));
+            batchHelpModal.addEventListener('click', (e) => { if (e.target === batchHelpModal) closeModal(batchHelpModal); });
+
+            // Toggle "Outro" description
+            batchDescriptionSelect.addEventListener('change', () => {
+                batchOtherDescription.classList.toggle('hidden', batchDescriptionSelect.value !== 'Outro');
+            });
+
+            // Toggle fixed interest date
+            batchModal.addEventListener('change', (e) => {
+                if (e.target.name === 'batch-interest') {
+                    batchFixedInterestDate.classList.toggle('hidden', e.target.value !== 'fixed');
+                }
+            });
+
+            // Format MM/AAAA inputs
+            const formatMonthYearOnInput = (e) => {
+                let v = e.target.value.replace(/\D/g, '').slice(0, 6);
+                v = v.replace(/(\d{2})(\d)/, '$1/$2');
+                e.target.value = v;
+            };
+
+            const addBatchInputBehaviors = (container) => {
+                container.querySelectorAll('.batch-start, .batch-end').forEach(input => {
+                    input.removeEventListener('input', formatMonthYearOnInput);
+                    input.addEventListener('input', formatMonthYearOnInput);
+                    input.removeEventListener('blur', updateBatchPreview);
+                    input.addEventListener('blur', updateBatchPreview);
+                });
+                container.querySelectorAll('.batch-value').forEach(input => {
+                    input.removeEventListener('blur', formatValueOnBlur);
+                    input.addEventListener('blur', formatValueOnBlur);
+                    input.removeEventListener('blur', updateBatchPreview);
+                    input.addEventListener('blur', updateBatchPreview);
+                });
+            };
+
+            // Add period
+            document.getElementById('batch-add-period').addEventListener('click', () => {
+                const template = batchPeriodsContainer.querySelector('.batch-period-row');
+                const newPeriod = template.cloneNode(true);
+                newPeriod.querySelectorAll('input').forEach(inp => inp.value = '');
+                batchPeriodsContainer.appendChild(newPeriod);
+                addBatchInputBehaviors(newPeriod);
+            });
+
+            // Remove period (delegation)
+            batchPeriodsContainer.addEventListener('click', (e) => {
+                if (e.target.classList.contains('batch-remove-period')) {
+                    if (batchPeriodsContainer.children.length > 1) {
+                        e.target.closest('.batch-period-row').remove();
+                        updateBatchPreview();
+                    }
+                }
+            });
+
+            // Parse MM/AAAA to {month, year}
+            const parseMonthYear = (str) => {
+                if (!str || str.length < 7) return null;
+                const [m, y] = str.split('/');
+                const month = parseInt(m, 10);
+                const year = parseInt(y, 10);
+                if (month < 1 || month > 12 || year < 1900 || year > 2100) return null;
+                return { month, year };
+            };
+
+            // Count months across all periods
+            const countBatchMonths = () => {
+                let total = 0;
+                let firstMonth = null;
+                let lastMonth = null;
+                batchPeriodsContainer.querySelectorAll('.batch-period-row').forEach(row => {
+                    const start = parseMonthYear(row.querySelector('.batch-start').value);
+                    const end = parseMonthYear(row.querySelector('.batch-end').value);
+                    if (!start || !end) return;
+                    const startDate = new Date(start.year, start.month - 1, 1);
+                    const endDate = new Date(end.year, end.month - 1, 1);
+                    if (endDate < startDate) return;
+                    let count = (end.year - start.year) * 12 + (end.month - start.month) + 1;
+                    total += count;
+                    if (!firstMonth || startDate < firstMonth) firstMonth = startDate;
+                    if (!lastMonth || endDate > lastMonth) lastMonth = endDate;
+                });
+                return { total, firstMonth, lastMonth };
+            };
+
+            const updateBatchPreview = () => {
+                const { total, firstMonth, lastMonth } = countBatchMonths();
+                if (total > 0 && firstMonth && lastMonth) {
+                    const fmtDate = (d) => `${String(d.getMonth() + 1).padStart(2, '0')}/${d.getFullYear()}`;
+                    batchPreviewText.textContent = `Serão geradas ${total} linha${total > 1 ? 's' : ''} (de ${fmtDate(firstMonth)} a ${fmtDate(lastMonth)})`;
+                    batchPreview.classList.remove('hidden');
+                } else {
+                    batchPreview.classList.add('hidden');
+                }
+            };
+
+            // Generate rows
+            document.getElementById('batch-generate').addEventListener('click', () => {
+                const { total } = countBatchMonths();
+                if (total === 0) {
+                    alert('Preencha pelo menos um período completo (início, fim e valor).');
+                    return;
+                }
+                if (total > 300) {
+                    alert('O limite é de 300 linhas por vez para evitar lentidão.');
+                    return;
+                }
+
+                let description = batchDescriptionSelect.value;
+                if (description === 'Outro') {
+                    description = batchOtherDescription.value.trim() || 'Outro';
+                }
+                const dueDay = Math.min(31, Math.max(1, parseInt(document.getElementById('batch-due-day').value) || 1));
+                const interestMode = document.querySelector('input[name="batch-interest"]:checked').value;
+                const fixedInterestDateStr = batchFixedInterestDate.value;
+
+                // Collect all months from all periods
+                const months = [];
+                batchPeriodsContainer.querySelectorAll('.batch-period-row').forEach(row => {
+                    const start = parseMonthYear(row.querySelector('.batch-start').value);
+                    const end = parseMonthYear(row.querySelector('.batch-end').value);
+                    const rawValue = row.querySelector('.batch-value').value;
+                    const value = rawValue.replace(/\./g, '').replace(',', '.');
+                    const numValue = parseFloat(value);
+                    if (!start || !end || isNaN(numValue) || numValue <= 0) return;
+
+                    let current = new Date(start.year, start.month - 1, 1);
+                    const endDate = new Date(end.year, end.month - 1, 1);
+                    while (current <= endDate) {
+                        const m = current.getMonth() + 1;
+                        const y = current.getFullYear();
+                        // Adjust day for months with fewer days
+                        const maxDay = new Date(y, m, 0).getDate();
+                        const actualDay = Math.min(dueDay, maxDay);
+                        const dateStr = `${String(actualDay).padStart(2, '0')}/${String(m).padStart(2, '0')}/${y}`;
+                        months.push({ dateStr, value: numValue });
+                        current.setMonth(current.getMonth() + 1);
+                    }
+                });
+
+                if (months.length === 0) {
+                    alert('Nenhuma linha pôde ser gerada. Confira os valores preenchidos.');
+                    return;
+                }
+
+                // Remove the first blank row if it's empty
+                const existingRows = rowsContainer.querySelectorAll('.calculation-row');
+                const firstRow = existingRows[0];
+                const firstRowValue = firstRow.querySelector('.value-input').value.trim();
+                const firstRowDate = firstRow.querySelector('.correction-date-input').value.trim();
+                const shouldReplaceFirst = existingRows.length === 1 && !firstRowValue && !firstRowDate;
+
+                months.forEach((item, index) => {
+                    let row;
+                    if (index === 0 && shouldReplaceFirst) {
+                        row = firstRow;
+                    } else {
+                        addRow();
+                        const allRows = rowsContainer.querySelectorAll('.calculation-row');
+                        row = allRows[allRows.length - 1];
+                    }
+
+                    // Set description
+                    const descSelect = row.querySelector('.description-select');
+                    if (description === 'Outro' || !Array.from(descSelect.options).some(o => o.value === description)) {
+                        descSelect.value = 'Outro';
+                        const otherInput = row.querySelector('.other-description-input');
+                        otherInput.classList.remove('hidden');
+                        otherInput.value = description;
+                    } else {
+                        descSelect.value = description;
+                    }
+
+                    // Set value
+                    row.querySelector('.value-input').value = item.value.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+                    // Set correction date
+                    row.querySelector('.correction-date-input').value = item.dateStr;
+
+                    // Set interest date
+                    if (interestMode === 'fixed' && fixedInterestDateStr) {
+                        row.querySelector('.interest-date-input').value = fixedInterestDateStr;
+                    } else {
+                        row.querySelector('.interest-date-input').value = item.dateStr;
+                    }
+                });
+
+                closeModal(batchModal);
+
+                // Scroll to the rows
+                rowsContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+                // Brief confirmation
+                const countEl = document.createElement('div');
+                countEl.className = 'fixed bottom-6 right-6 bg-emerald-600 text-white py-3 px-5 rounded-xl shadow-lg z-50 text-sm font-semibold';
+                countEl.textContent = `✓ ${months.length} linha${months.length > 1 ? 's' : ''} gerada${months.length > 1 ? 's' : ''} com sucesso!`;
+                document.body.appendChild(countEl);
+                setTimeout(() => countEl.remove(), 3500);
+            });
+
+            addBatchInputBehaviors(batchPeriodsContainer);
+
+            // --- UPDATE MODAL (Novidades) ---
+            const UPDATE_VERSION = 'calc-update-2026-03-06';
+            const updateModalOverlay = document.getElementById('update-modal-overlay');
+            const dismissUpdateBtn = document.getElementById('dismiss-update-btn');
+            const updateStorageKey = 'calculadora_update_ack';
+
+            if (localStorage.getItem(updateStorageKey) !== UPDATE_VERSION) {
+                openModal(updateModalOverlay);
+            }
+
+            dismissUpdateBtn.addEventListener('click', () => {
+                localStorage.setItem(updateStorageKey, UPDATE_VERSION);
+                closeModal(updateModalOverlay);
+            });
+            updateModalOverlay.addEventListener('click', (e) => {
+                if (e.target === updateModalOverlay) {
+                    localStorage.setItem(updateStorageKey, UPDATE_VERSION);
+                    closeModal(updateModalOverlay);
+                }
+            });
 
             // --- SISTEMA DE AUTO-SAVE (localStorage, 4h de validade) ---
             const AUTOSAVE_KEY = 'calculadora_autosave';
