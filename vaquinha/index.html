@@ -599,9 +599,9 @@
             return d.toLocaleDateString('pt-BR');
         }
 
-        function closeModal(id) {
+        window.closeModal = function (id) {
             document.getElementById(id).classList.add('hidden');
-        }
+        };
 
         function escapeHtml(text) {
             const div = document.createElement('div');
