@@ -331,6 +331,31 @@
                         <div id="detail-progress-bar" class="bg-green-500 h-3 rounded-full progress-bar"
                             style="width: 0%"></div>
                     </div>
+                    <!-- PIX Info -->
+                    <div id="detail-pix-section" class="mt-4 bg-gray-50 rounded-lg p-4 hidden">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-sm font-bold text-gray-700">💳 Dados para Pagamento (PIX)</span>
+                        </div>
+                        <div class="space-y-2">
+                            <div id="detail-pix-copiaecola" class="hidden">
+                                <p class="text-xs text-gray-500 mb-1">PIX Copia e Cola (clique para copiar):</p>
+                                <div onclick="copiarPix('pix-code')"
+                                    class="bg-white border border-gray-200 rounded-lg p-2 cursor-pointer hover:bg-amber-50 transition-colors">
+                                    <code id="pix-code" class="text-xs text-gray-600 break-all"></code>
+                                    <span class="text-xs text-amber-600 block mt-1">📋 Clique para copiar</span>
+                                </div>
+                            </div>
+                            <div class="bg-white border border-gray-200 rounded-lg p-2">
+                                <p class="text-xs text-gray-500 mb-1">PIX por CPF:</p>
+                                <div onclick="copiarPix('pix-cpf')"
+                                    class="cursor-pointer hover:bg-amber-50 transition-colors rounded p-1">
+                                    <code id="pix-cpf"
+                                        class="text-sm font-mono font-bold text-gray-700">38481080896</code>
+                                    <span class="text-xs text-amber-600 ml-2">📋 Copiar</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- Participants Table -->
@@ -384,13 +409,20 @@
             <div id="view-funcionarios" class="hidden fade-in">
                 <div class="flex items-center justify-between mb-4">
                     <h2 class="text-lg font-bold text-gray-700">👥 Funcionários</h2>
-                    <button onclick="openModalFuncionario()" id="btn-add-func"
-                        class="btn-primary flex items-center gap-2 hidden">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-                        </svg>
-                        Adicionar
-                    </button>
+                    <div class="flex gap-2">
+                        <button onclick="importarFuncionarios()" id="btn-import-func"
+                            class="btn-secondary flex items-center gap-2 text-sm hidden">
+                            📥 Importar do Excel
+                        </button>
+                        <button onclick="openModalFuncionario()" id="btn-add-func"
+                            class="btn-primary flex items-center gap-2 hidden">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M12 4v16m8-8H4" />
+                            </svg>
+                            Adicionar
+                        </button>
+                    </div>
                 </div>
                 <div id="funcionarios-list" class="grid gap-2">
                     <p class="text-gray-400 text-center py-8">Carregando...</p>
@@ -437,6 +469,11 @@
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Data de Cobrança</label>
                     <input type="date" id="inp-data" class="input-field">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">PIX Copia e Cola (dinâmico)</label>
+                    <textarea id="inp-pix" class="input-field h-20 resize-none text-sm"
+                        placeholder="Cole aqui o código PIX Copia e Cola de cobrança (opcional)"></textarea>
                 </div>
             </div>
             <div class="flex gap-3 mt-6 justify-end">
@@ -501,14 +538,15 @@
             </h3>
             <p class="text-gray-500 text-sm mb-4">Selecione o tipo de mensagem e copie para enviar.</p>
             <div class="flex gap-2 mb-4">
-                <button onclick="gerarMensagem('convite')" id="btn-msg-convite" class="btn-secondary text-sm flex-1">📩
-                    Convite</button>
+                <button onclick="gerarMensagem('cobranca')" id="btn-msg-cobranca"
+                    class="btn-secondary text-sm flex-1">💰
+                    Cobrança</button>
                 <button onclick="gerarMensagem('lembrete')" id="btn-msg-lembrete" class="btn-secondary text-sm flex-1">⏰
                     Lembrete</button>
                 <button onclick="gerarMensagem('agradecimento')" id="btn-msg-agradecimento"
                     class="btn-secondary text-sm flex-1">🙏 Obrigado</button>
             </div>
-            <textarea id="whatsapp-text" class="input-field h-48 resize-none text-sm" readonly></textarea>
+            <textarea id="whatsapp-text" class="input-field h-64 resize-none text-sm" readonly></textarea>
             <div class="flex gap-3 mt-4 justify-end">
                 <button onclick="closeModal('modal-whatsapp')" class="btn-secondary">Fechar</button>
                 <button onclick="copiarMensagem()" class="btn-primary flex items-center gap-2">
@@ -670,6 +708,7 @@
             const isAdmin = currentRole === 'admin';
             document.getElementById('btn-nova-vaquinha').classList.toggle('hidden', !isAdmin);
             document.getElementById('btn-add-func').classList.toggle('hidden', !isAdmin);
+            document.getElementById('btn-import-func').classList.toggle('hidden', !isAdmin);
             document.getElementById('tab-admin').classList.toggle('hidden', !isAdmin);
         }
 
@@ -816,6 +855,17 @@
             document.getElementById('btn-whatsapp-geral').classList.toggle('hidden', currentRole !== 'admin');
             document.getElementById('btn-add-comprovante').classList.toggle('hidden', currentRole !== 'admin');
 
+            // PIX info
+            const pixSection = document.getElementById('detail-pix-section');
+            const pixCopiaECola = document.getElementById('detail-pix-copiaecola');
+            pixSection.classList.remove('hidden');
+            if (v.pixCopiaECola) {
+                pixCopiaECola.classList.remove('hidden');
+                document.getElementById('pix-code').textContent = v.pixCopiaECola;
+            } else {
+                pixCopiaECola.classList.add('hidden');
+            }
+
             // Participants table
             const tbody = document.getElementById('participantes-tbody');
             const sorted = Object.entries(p).sort((a, b) => a[1].nome.localeCompare(b[1].nome));
@@ -878,6 +928,7 @@
             document.getElementById('inp-valor').value = '';
             document.getElementById('inp-descricao').value = '';
             document.getElementById('inp-data').value = '';
+            document.getElementById('inp-pix').value = '';
             document.getElementById('modal-vaquinha').classList.remove('hidden');
         };
 
@@ -889,6 +940,7 @@
             document.getElementById('inp-valor').value = v.valorPresente;
             document.getElementById('inp-descricao').value = v.descricaoPresente || '';
             document.getElementById('inp-data').value = v.dataCobranca || '';
+            document.getElementById('inp-pix').value = v.pixCopiaECola || '';
             document.getElementById('modal-vaquinha').classList.remove('hidden');
         };
 
@@ -897,6 +949,7 @@
             const valorPresente = document.getElementById('inp-valor').value;
             const descricaoPresente = document.getElementById('inp-descricao').value.trim();
             const dataCobranca = document.getElementById('inp-data').value;
+            const pixCopiaECola = document.getElementById('inp-pix').value.trim();
 
             if (!aniversariante || !valorPresente) {
                 toast('Preencha o aniversariante e o valor.', 'warning');
@@ -907,11 +960,11 @@
             showLoading('Salvando...');
             try {
                 if (editingVaquinhaId) {
-                    await apiCall('vaq/editar', { id: editingVaquinhaId, aniversariante, valorPresente, descricaoPresente, dataCobranca });
+                    await apiCall('vaq/editar', { id: editingVaquinhaId, aniversariante, valorPresente, descricaoPresente, dataCobranca, pixCopiaECola });
                     toast('Vaquinha atualizada!');
                     await openVaquinhaDetail(editingVaquinhaId);
                 } else {
-                    const result = await apiCall('vaq/criar', { aniversariante, valorPresente, descricaoPresente, dataCobranca });
+                    const result = await apiCall('vaq/criar', { aniversariante, valorPresente, descricaoPresente, dataCobranca, pixCopiaECola });
                     toast('Vaquinha criada!');
                     await openVaquinhaDetail(result.id);
                 }
@@ -1027,7 +1080,7 @@
             document.getElementById('modal-whatsapp').classList.remove('hidden');
             window._whatsappTipo = tipo;
             window._whatsappFuncId = funcId;
-            gerarMensagem('convite');
+            gerarMensagem('cobranca');
         };
 
         window.gerarMensagem = function (estilo) {
@@ -1039,30 +1092,36 @@
             const dataFormatada = formatDate(v.dataCobranca);
 
             // Highlight active button
-            ['convite', 'lembrete', 'agradecimento'].forEach(s => {
+            ['cobranca', 'lembrete', 'agradecimento'].forEach(s => {
                 const btn = document.getElementById(`btn-msg-${s}`);
                 btn.className = s === estilo ? 'btn-primary text-sm flex-1' : 'btn-secondary text-sm flex-1';
             });
+
+            const PIX_CPF = '38481080896';
+            const pixCopiaECola = v.pixCopiaECola || '';
+            const dadosPix = pixCopiaECola
+                ? `\n\n💳 *Dados para pagamento (PIX):*\n\n📋 *PIX Copia e Cola:*\n${pixCopiaECola}\n\n_Ou se preferir:_\n🔑 *Chave PIX (CPF):* ${PIX_CPF}`
+                : `\n\n💳 *Dados para pagamento (PIX):*\n🔑 *Chave PIX (CPF):* ${PIX_CPF}`;
 
             let texto = '';
 
             if (window._whatsappTipo === 'individual' && window._whatsappFuncId) {
                 const func = p[window._whatsappFuncId];
                 const nome = func ? func.nome : '';
-                if (estilo === 'convite') {
-                    texto = `Olá, ${nome}! 👋\n\nEstamos organizando uma vaquinha para o presente de aniversário do(a) *${v.aniversariante}*! 🎂🎁\n\n🎁 *Presente:* ${v.descricaoPresente || 'Surpresa!'}\n💰 *Valor por pessoa:* ${valorFormatado}\n📅 *Prazo para pagamento:* ${dataFormatada}\n\nPode confirmar se vai participar? Qualquer dúvida é só chamar!\n\nObrigado! 🙏`;
+                if (estilo === 'cobranca') {
+                    texto = `Olá, ${nome}! 👋\n\nEstamos com uma vaquinha para o presente de aniversário do(a) *${v.aniversariante}*! 🎂🎁\n\n🎁 *Presente:* ${v.descricaoPresente || 'Surpresa!'}\n💰 *Sua cota:* ${valorFormatado}\n📅 *Prazo para pagamento:* ${dataFormatada}${dadosPix}\n\nDepois de pagar, me avisa pra eu dar baixa! Obrigado! 🙏`;
                 } else if (estilo === 'lembrete') {
-                    texto = `Oi, ${nome}! 👋\n\nSó passando para lembrar da vaquinha do(a) *${v.aniversariante}*. 🎂\n\n💰 *Seu valor:* ${valorFormatado}\n📅 *Prazo:* ${dataFormatada}\n\nPode fazer o pagamento quando puder? Obrigado! 🙏`;
+                    texto = `Oi, ${nome}! 👋\n\nSó passando para lembrar da vaquinha do(a) *${v.aniversariante}*. 🎂\n\n💰 *Sua cota:* ${valorFormatado}\n📅 *Prazo:* ${dataFormatada}${dadosPix}\n\nQuando puder, faz a transferência e me avisa! Obrigado! 🙏`;
                 } else {
                     texto = `${nome}, obrigado por participar da vaquinha do(a) *${v.aniversariante}*! 🎉\n\nSeu pagamento foi confirmado. Valeu pela colaboração! 🙏`;
                 }
             } else {
                 // Mensagem geral (para o grupo)
-                if (estilo === 'convite') {
-                    texto = `Pessoal! 👋\n\nEstamos organizando uma vaquinha para o presente de aniversário do(a) *${v.aniversariante}*! 🎂🎁\n\n🎁 *Presente:* ${v.descricaoPresente || 'Surpresa!'}\n💰 *Valor por pessoa:* ${valorFormatado}\n📅 *Prazo para pagamento:* ${dataFormatada}\n\nQuem puder participar, é só confirmar! Qualquer dúvida me chama.\n\nObrigado! 🙏`;
+                if (estilo === 'cobranca') {
+                    texto = `Pessoal! 👋\n\nVaquinha para o presente de aniversário do(a) *${v.aniversariante}*! 🎂🎁\n\n🎁 *Presente:* ${v.descricaoPresente || 'Surpresa!'}\n💰 *Cota por pessoa:* ${valorFormatado}\n📅 *Prazo para pagamento:* ${dataFormatada}${dadosPix}\n\nDepois de pagar, me avisem pra eu dar baixa! Obrigado! 🙏`;
                 } else if (estilo === 'lembrete') {
                     const naoPagaram = Object.values(p).filter(x => x.participa && !x.pago).map(x => x.nome);
-                    texto = `Oi pessoal! 👋\n\nLembrando da vaquinha do(a) *${v.aniversariante}*. 🎂\n\n💰 *Valor por pessoa:* ${valorFormatado}\n📅 *Prazo:* ${dataFormatada}\n\n⏳ *Ainda falta o pagamento de:*\n${naoPagaram.map(n => `• ${n}`).join('\n')}\n\nQuem puder resolver logo, agradeço! 🙏`;
+                    texto = `Oi pessoal! 👋\n\nLembrando da vaquinha do(a) *${v.aniversariante}*. 🎂\n\n💰 *Cota por pessoa:* ${valorFormatado}\n📅 *Prazo:* ${dataFormatada}\n\n⏳ *Ainda falta o pagamento de:*\n${naoPagaram.map(n => `• ${n}`).join('\n')}${dadosPix}\n\nQuem puder resolver logo, agradeço! 🙏`;
                 } else {
                     texto = `Pessoal, obrigado a todos que participaram da vaquinha do(a) *${v.aniversariante}*! 🎉🎁\n\nConseguimos juntar *${formatCurrency(v.valorPresente)}* e o presente já foi comprado!\n\nValeu pela colaboração de todos! 🙏`;
                 }
@@ -1081,6 +1140,15 @@
                 ta.select();
                 document.execCommand('copy');
                 toast('Mensagem copiada!', 'info');
+            });
+        };
+
+        window.copiarPix = function (elementId) {
+            const text = document.getElementById(elementId).textContent;
+            navigator.clipboard.writeText(text).then(() => {
+                toast('PIX copiado! 📋', 'success');
+            }).catch(() => {
+                toast('Não foi possível copiar.', 'error');
             });
         };
 
@@ -1164,6 +1232,36 @@
                 }
             };
             document.getElementById('modal-confirm').classList.remove('hidden');
+        };
+
+        // ===================== IMPORTAR FUNCIONÁRIOS =====================
+        window.importarFuncionarios = async function () {
+            const nomes = [
+                'Helton', 'Eduardo', 'Camila', 'Ocimeire', 'Antonio', 'Mario',
+                'Regiane', 'Sidney', 'Luciana', 'Sandra', 'Tifany',
+                'Helton Marcelo', 'Sandro', 'Beto', 'Letícia', 'Sabrina'
+            ];
+            const existentes = funcionarios.map(f => f.nome.trim().toLowerCase());
+            const novos = nomes.filter(n => !existentes.includes(n.toLowerCase()));
+
+            if (novos.length === 0) {
+                toast('Todos os funcionários já estão cadastrados!', 'info');
+                return;
+            }
+
+            showLoading(`Importando ${novos.length} funcionários...`);
+            let ok = 0, erros = 0;
+            for (const nome of novos) {
+                try {
+                    await apiCall('func/salvar', { nome });
+                    ok++;
+                } catch (e) {
+                    erros++;
+                }
+            }
+            hideLoading();
+            toast(`Importação concluída: ${ok} adicionados` + (erros > 0 ? `, ${erros} erros` : ''), erros > 0 ? 'warning' : 'success');
+            await loadFuncionarios();
         };
 
         // ===================== ADMIN (USUÁRIOS) =====================

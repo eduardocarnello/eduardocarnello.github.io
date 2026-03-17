@@ -209,7 +209,7 @@ async function handleVaqDetalhe(payload, res) {
 }
 
 async function handleVaqCriar(payload, uid, email, res) {
-    const { aniversariante, valorPresente, descricaoPresente, dataCobranca } = payload;
+    const { aniversariante, valorPresente, descricaoPresente, dataCobranca, pixCopiaECola } = payload;
     if (!aniversariante || !valorPresente) return res.status(400).json({ error: 'Aniversariante e valor são obrigatórios.' });
 
     const valor = parseFloat(valorPresente);
@@ -237,6 +237,7 @@ async function handleVaqCriar(payload, uid, email, res) {
         valorPresente: valor,
         descricaoPresente: (descricaoPresente || '').trim(),
         dataCobranca: dataCobranca || '',
+        pixCopiaECola: (pixCopiaECola || '').trim(),
         status: 'aberta',
         criadoPor: uid,
         criadoPorEmail: email,
@@ -250,7 +251,7 @@ async function handleVaqCriar(payload, uid, email, res) {
 }
 
 async function handleVaqEditar(payload, res) {
-    const { id, aniversariante, valorPresente, descricaoPresente, dataCobranca } = payload;
+    const { id, aniversariante, valorPresente, descricaoPresente, dataCobranca, pixCopiaECola } = payload;
     if (!id) return res.status(400).json({ error: 'ID é obrigatório.' });
 
     const docRef = db.collection('vaq_vaquinhas').doc(id);
@@ -261,6 +262,7 @@ async function handleVaqEditar(payload, res) {
     if (aniversariante !== undefined) updates.aniversariante = aniversariante.trim();
     if (descricaoPresente !== undefined) updates.descricaoPresente = descricaoPresente.trim();
     if (dataCobranca !== undefined) updates.dataCobranca = dataCobranca;
+    if (pixCopiaECola !== undefined) updates.pixCopiaECola = (pixCopiaECola || '').trim();
 
     if (valorPresente !== undefined) {
         const valor = parseFloat(valorPresente);
