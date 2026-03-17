@@ -58,6 +58,9 @@ export default async function handler(req, res) {
             case 'vaq/deletar':
                 if (role !== 'admin') return res.status(403).json({ error: 'Apenas admins.' });
                 return await handleVaqDeletar(payload, res);
+            case 'vaq/addParticipante':
+                if (role !== 'admin') return res.status(403).json({ error: 'Apenas admins.' });
+                return await handleVaqAddParticipante(payload, res);
             case 'vaq/toggleParticipa':
                 if (role !== 'admin') return res.status(403).json({ error: 'Apenas admins.' });
                 return await handleVaqToggleParticipa(payload, res);
@@ -285,6 +288,36 @@ async function handleVaqDeletar(payload, res) {
     if (!id) return res.status(400).json({ error: 'ID é obrigatório.' });
     await db.collection('vaq_vaquinhas').doc(id).delete();
     return res.status(200).json({ message: 'Vaquinha removida.' });
+}
+
+async function handleVaqAddParticipante(payload, res) {
+    const { vaquinhaId, funcionarioId } = payload;
+    if (!vaquinhaId || !funcionarioId) return res.status(400).json({ error: 'IDs obrigatórios.' });
+
+    const docRef = db.collection('vaq_vaquinhas').doc(vaquinhaId);
+    const doc = await docRef.get();
+    if (!doc.exists) return res.status(404).json({ error: 'Vaquinha não encontrada.' });
+
+    const funcDoc = await db.collection('vaq_funcionarios').doc(funcionarioId).get();
+    if (!funcDoc.exists) return res.status(404).json({ error: 'Funcionário não encontrado.' });
+
+    const data = doc.data();
+    const p = data.participantes || {};
+    if (p[funcionarioId]) return res.status(400).json({ error: 'Funcionário já está nesta vaquinha.' });
+
+    const f = funcDoc.data();
+    const ehAniversariante = f.nome.toLowerCase().trim() === data.aniversariante.toLowerCase().trim();
+    p[funcionarioId] = {
+        nome: f.nome,
+        participa: !ehAniversariante,
+        pago: false,
+        valorAPagar: 0
+    };
+
+    recalcularValores(p, data.valorPresente);
+    await docRef.update({ participantes: p });
+
+    return res.status(200).json({ message: 'Participante adicionado.', participantes: p });
 }
 
 async function handleVaqToggleParticipa(payload, res) {

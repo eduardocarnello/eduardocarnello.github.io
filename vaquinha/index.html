@@ -362,6 +362,11 @@
                 <div class="card p-6 mb-6">
                     <h3 class="font-bold text-gray-700 mb-4 flex items-center gap-2">
                         👥 Participantes
+                        <button onclick="openModalAddParticipante()" id="btn-add-participante"
+                            class="btn-secondary text-sm py-1 px-2.5 hidden"
+                            title="Adicionar funcionário a esta vaquinha">
+                            + Funcionário
+                        </button>
                         <button onclick="openModalWhatsApp('cobranca_geral')"
                             class="ml-auto btn-primary text-sm py-1.5 px-3 flex items-center gap-1"
                             id="btn-whatsapp-geral">
@@ -552,6 +557,19 @@
                 <button onclick="copiarMensagem()" class="btn-primary flex items-center gap-2">
                     📋 Copiar Texto
                 </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Confirmação -->
+    <div id="modal-add-participante" class="fixed inset-0 bg-black/50 z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-sm w-full p-6 fade-in">
+            <h3 class="text-lg font-bold text-gray-800 mb-4">👥 Adicionar Participante</h3>
+            <div id="add-participante-list" class="max-h-64 overflow-y-auto space-y-2 mb-4">
+                <p class="text-gray-400 text-sm">Carregando...</p>
+            </div>
+            <div class="flex justify-end">
+                <button onclick="closeModal('modal-add-participante')" class="btn-secondary">Fechar</button>
             </div>
         </div>
     </div>
@@ -854,6 +872,7 @@
             // Hide admin buttons for non-admins
             document.getElementById('btn-whatsapp-geral').classList.toggle('hidden', currentRole !== 'admin');
             document.getElementById('btn-add-comprovante').classList.toggle('hidden', currentRole !== 'admin');
+            document.getElementById('btn-add-participante').classList.toggle('hidden', currentRole !== 'admin');
 
             // PIX info
             const pixSection = document.getElementById('detail-pix-section');
@@ -1024,6 +1043,40 @@
                 renderVaquinhaDetail();
             } catch (error) {
                 toast('Erro: ' + error.message, 'error');
+            }
+        };
+
+        // ===================== ADICIONAR PARTICIPANTE =====================
+        window.openModalAddParticipante = function () {
+            const p = currentVaquinhaData.participantes || {};
+            const idsNaVaquinha = new Set(Object.keys(p));
+            const faltam = funcionarios.filter(f => !idsNaVaquinha.has(f.id) && f.ativo !== false);
+            const list = document.getElementById('add-participante-list');
+            if (faltam.length === 0) {
+                list.innerHTML = '<p class="text-gray-400 text-sm text-center py-4">Todos os funcionários já estão na vaquinha.</p>';
+            } else {
+                list.innerHTML = faltam.sort((a, b) => a.nome.localeCompare(b.nome)).map(f => `
+                    <button onclick="addParticipanteToVaquinha('${f.id}')" class="w-full flex items-center justify-between p-2.5 rounded-lg border border-gray-200 hover:border-amber-300 hover:bg-amber-50 transition-colors text-left">
+                        <span class="font-medium text-gray-700">${escapeHtml(f.nome)}</span>
+                        <span class="text-amber-500 text-sm font-semibold">+ Adicionar</span>
+                    </button>
+                `).join('');
+            }
+            document.getElementById('modal-add-participante').classList.remove('hidden');
+        };
+
+        window.addParticipanteToVaquinha = async function (funcId) {
+            try {
+                showLoading('Adicionando...');
+                const result = await apiCall('vaq/addParticipante', { vaquinhaId: currentVaquinhaId, funcionarioId: funcId });
+                currentVaquinhaData.participantes = result.participantes;
+                renderVaquinhaDetail();
+                closeModal('modal-add-participante');
+                toast('Participante adicionado!');
+            } catch (error) {
+                toast('Erro: ' + error.message, 'error');
+            } finally {
+                hideLoading();
             }
         };
 
