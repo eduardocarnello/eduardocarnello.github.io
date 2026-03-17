@@ -1,0 +1,1254 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="h-full">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vaquinha - Presentes de Aniversário</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body,
+        html {
+            font-family: 'Inter', sans-serif;
+        }
+
+        .fade-in {
+            animation: fadeIn 0.3s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(8px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .slide-in {
+            animation: slideIn 0.3s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .toast-enter {
+            animation: toastIn 0.3s ease-out;
+        }
+
+        @keyframes toastIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .progress-bar {
+            transition: width 0.5s ease-in-out;
+        }
+
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #f1f5f9;
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+
+        .btn-primary {
+            background-color: #f59e0b;
+            color: #fff;
+            font-weight: 600;
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            transition: all 0.2s;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+            border: none;
+            cursor: pointer;
+        }
+
+        .btn-primary:hover {
+            background-color: #d97706;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .btn-danger {
+            background-color: #ef4444;
+            color: #fff;
+            font-weight: 600;
+            padding: 0.5rem 0.75rem;
+            border-radius: 0.5rem;
+            transition: all 0.2s;
+            border: none;
+            cursor: pointer;
+        }
+
+        .btn-danger:hover {
+            background-color: #dc2626;
+        }
+
+        .btn-secondary {
+            background-color: #e5e7eb;
+            color: #374151;
+            font-weight: 600;
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            transition: all 0.2s;
+            border: none;
+            cursor: pointer;
+        }
+
+        .btn-secondary:hover {
+            background-color: #d1d5db;
+        }
+
+        .card {
+            background: #fff;
+            border-radius: 0.75rem;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+            border: 1px solid #f3f4f6;
+            transition: box-shadow 0.2s;
+        }
+
+        .card:hover {
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.07);
+        }
+
+        .input-field {
+            width: 100%;
+            padding: 0.5rem 0.75rem;
+            border: 1px solid #d1d5db;
+            border-radius: 0.5rem;
+            outline: none;
+            transition: all 0.2s;
+            box-sizing: border-box;
+        }
+
+        .input-field:focus {
+            border-color: #fbbf24;
+            box-shadow: 0 0 0 2px rgba(251, 191, 36, 0.3);
+        }
+    </style>
+</head>
+
+<body class="bg-gray-50 h-full">
+
+    <!-- ==================== LOADING OVERLAY ==================== -->
+    <div id="loading-overlay" class="fixed inset-0 bg-white/80 z-50 flex items-center justify-center hidden">
+        <div class="flex flex-col items-center gap-3">
+            <div class="w-10 h-10 border-4 border-amber-500 border-t-transparent rounded-full animate-spin"></div>
+            <span class="text-gray-600 font-medium" id="loading-text">Carregando...</span>
+        </div>
+    </div>
+
+    <!-- ==================== TOAST CONTAINER ==================== -->
+    <div id="toast-container" class="fixed top-4 right-4 z-50 flex flex-col gap-2"></div>
+
+    <!-- ==================== VIEW: LOGIN ==================== -->
+    <div id="view-login"
+        class="min-h-screen flex items-center justify-center bg-gradient-to-br from-amber-50 via-orange-50 to-yellow-50">
+        <div class="bg-white rounded-2xl shadow-xl p-8 max-w-md w-full mx-4 text-center fade-in">
+            <div class="text-6xl mb-4">🎁</div>
+            <h1 class="text-3xl font-extrabold text-gray-800 mb-2">Vaquinha</h1>
+            <p class="text-gray-500 mb-8">Organize presentes de aniversário do seu time de forma simples e prática.</p>
+            <button id="google-login-btn" onclick="handleGoogleLogin()"
+                class="w-full flex items-center justify-center gap-3 bg-white border-2 border-gray-200 hover:border-amber-400 hover:bg-amber-50 rounded-xl py-3 px-6 font-semibold text-gray-700 transition-all duration-200 shadow-sm hover:shadow-md">
+                <svg width="20" height="20" viewBox="0 0 48 48">
+                    <path fill="#EA4335"
+                        d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z" />
+                    <path fill="#4285F4"
+                        d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z" />
+                    <path fill="#FBBC05"
+                        d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z" />
+                    <path fill="#34A853"
+                        d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z" />
+                </svg>
+                Entrar com Google
+            </button>
+            <p id="login-status" class="text-red-500 text-sm mt-4 hidden"></p>
+        </div>
+    </div>
+
+    <!-- ==================== APP SHELL ==================== -->
+    <div id="app-shell" class="hidden min-h-screen">
+        <!-- Header -->
+        <header class="bg-white shadow-sm border-b border-gray-100 sticky top-0 z-40">
+            <div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <span class="text-2xl">🎁</span>
+                    <h1 class="text-xl font-bold text-gray-800">Vaquinha</h1>
+                </div>
+                <div class="flex items-center gap-4">
+                    <span id="user-email-display" class="text-sm text-gray-500 hidden sm:block"></span>
+                    <span id="user-role-badge"
+                        class="text-xs font-bold px-2 py-1 rounded-full bg-amber-100 text-amber-700"></span>
+                    <button onclick="handleLogout()" class="text-gray-400 hover:text-red-500 transition-colors"
+                        title="Sair">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+            <!-- Navigation Tabs -->
+            <div class="max-w-6xl mx-auto px-4">
+                <nav class="flex gap-1 -mb-px">
+                    <button onclick="showView('dashboard')" id="tab-dashboard"
+                        class="nav-tab px-4 py-2.5 text-sm font-medium border-b-2 border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 transition-all">
+                        📊 Vaquinhas
+                    </button>
+                    <button onclick="showView('funcionarios')" id="tab-funcionarios"
+                        class="nav-tab px-4 py-2.5 text-sm font-medium border-b-2 border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 transition-all">
+                        👥 Funcionários
+                    </button>
+                    <button onclick="showView('admin')" id="tab-admin"
+                        class="nav-tab px-4 py-2.5 text-sm font-medium border-b-2 border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 transition-all hidden">
+                        ⚙️ Admin
+                    </button>
+                </nav>
+            </div>
+        </header>
+
+        <!-- Main Content Area -->
+        <main class="max-w-6xl mx-auto px-4 py-6">
+
+            <!-- ========== VIEW: DASHBOARD ========== -->
+            <div id="view-dashboard" class="fade-in">
+                <!-- Stats -->
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                    <div class="card p-4 text-center">
+                        <div class="text-2xl font-bold text-amber-600" id="stat-total">0</div>
+                        <div class="text-xs text-gray-500 mt-1">Total</div>
+                    </div>
+                    <div class="card p-4 text-center">
+                        <div class="text-2xl font-bold text-green-600" id="stat-abertas">0</div>
+                        <div class="text-xs text-gray-500 mt-1">Abertas</div>
+                    </div>
+                    <div class="card p-4 text-center">
+                        <div class="text-2xl font-bold text-gray-400" id="stat-fechadas">0</div>
+                        <div class="text-xs text-gray-500 mt-1">Fechadas</div>
+                    </div>
+                    <div class="card p-4 text-center">
+                        <div class="text-2xl font-bold text-blue-600" id="stat-arrecadado">R$ 0</div>
+                        <div class="text-xs text-gray-500 mt-1">Arrecadado</div>
+                    </div>
+                </div>
+
+                <!-- Actions -->
+                <div class="flex items-center justify-between mb-4">
+                    <h2 class="text-lg font-bold text-gray-700">Vaquinhas</h2>
+                    <button onclick="openModalNovaVaquinha()" id="btn-nova-vaquinha"
+                        class="btn-primary flex items-center gap-2 hidden">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                        </svg>
+                        Nova Vaquinha
+                    </button>
+                </div>
+
+                <!-- Vaquinhas List -->
+                <div id="vaquinhas-list" class="grid gap-4">
+                    <p class="text-gray-400 text-center py-8">Carregando...</p>
+                </div>
+            </div>
+
+            <!-- ========== VIEW: VAQUINHA DETAIL ========== -->
+            <div id="view-detail" class="hidden slide-in">
+                <button onclick="showView('dashboard')"
+                    class="flex items-center gap-2 text-gray-500 hover:text-gray-700 mb-4 transition-colors">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                    </svg>
+                    Voltar
+                </button>
+
+                <!-- Info Card -->
+                <div class="card p-6 mb-6">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
+                        <div>
+                            <div class="flex items-center gap-3">
+                                <span class="text-3xl">🎂</span>
+                                <div>
+                                    <h2 class="text-2xl font-bold text-gray-800" id="detail-aniversariante"></h2>
+                                    <p class="text-gray-500 text-sm" id="detail-descricao"></p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span id="detail-status-badge" class="px-3 py-1 rounded-full text-sm font-bold"></span>
+                            <div class="flex gap-1" id="detail-admin-actions"></div>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        <div class="bg-amber-50 rounded-lg p-3 text-center">
+                            <div class="text-lg font-bold text-amber-700" id="detail-valor"></div>
+                            <div class="text-xs text-amber-600">Valor do Presente</div>
+                        </div>
+                        <div class="bg-blue-50 rounded-lg p-3 text-center">
+                            <div class="text-lg font-bold text-blue-700" id="detail-por-pessoa"></div>
+                            <div class="text-xs text-blue-600">Por Pessoa</div>
+                        </div>
+                        <div class="bg-green-50 rounded-lg p-3 text-center">
+                            <div class="text-lg font-bold text-green-700" id="detail-progresso"></div>
+                            <div class="text-xs text-green-600">Pagaram</div>
+                        </div>
+                        <div class="bg-purple-50 rounded-lg p-3 text-center">
+                            <div class="text-lg font-bold text-purple-700" id="detail-data"></div>
+                            <div class="text-xs text-purple-600">Data Cobrança</div>
+                        </div>
+                    </div>
+                    <!-- Progress Bar -->
+                    <div class="mt-4 bg-gray-200 rounded-full h-3">
+                        <div id="detail-progress-bar" class="bg-green-500 h-3 rounded-full progress-bar"
+                            style="width: 0%"></div>
+                    </div>
+                </div>
+
+                <!-- Participants Table -->
+                <div class="card p-6 mb-6">
+                    <h3 class="font-bold text-gray-700 mb-4 flex items-center gap-2">
+                        👥 Participantes
+                        <button onclick="openModalWhatsApp('cobranca_geral')"
+                            class="ml-auto btn-primary text-sm py-1.5 px-3 flex items-center gap-1"
+                            id="btn-whatsapp-geral">
+                            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
+                                <path
+                                    d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" />
+                            </svg>
+                            WhatsApp
+                        </button>
+                    </h3>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-sm">
+                            <thead>
+                                <tr class="border-b border-gray-200">
+                                    <th class="text-left py-2 text-gray-500 font-medium">Funcionário</th>
+                                    <th class="text-center py-2 text-gray-500 font-medium">Participa?</th>
+                                    <th class="text-right py-2 text-gray-500 font-medium">Valor</th>
+                                    <th class="text-center py-2 text-gray-500 font-medium">Pago?</th>
+                                    <th class="text-center py-2 text-gray-500 font-medium">WhatsApp</th>
+                                </tr>
+                            </thead>
+                            <tbody id="participantes-tbody"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Receipts Section -->
+                <div class="card p-6 mb-6">
+                    <h3 class="font-bold text-gray-700 mb-4 flex items-center gap-2">
+                        🧾 Comprovantes do Presente
+                        <button onclick="document.getElementById('file-comprovante').click()"
+                            class="ml-auto btn-primary text-sm py-1.5 px-3" id="btn-add-comprovante">
+                            + Adicionar
+                        </button>
+                        <input type="file" id="file-comprovante" accept="image/*,.pdf" class="hidden"
+                            onchange="handleUploadComprovante(event)">
+                    </h3>
+                    <div id="comprovantes-list" class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                        <p class="text-gray-400 text-sm col-span-full">Nenhum comprovante ainda.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ========== VIEW: FUNCIONÁRIOS ========== -->
+            <div id="view-funcionarios" class="hidden fade-in">
+                <div class="flex items-center justify-between mb-4">
+                    <h2 class="text-lg font-bold text-gray-700">👥 Funcionários</h2>
+                    <button onclick="openModalFuncionario()" id="btn-add-func"
+                        class="btn-primary flex items-center gap-2 hidden">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                        </svg>
+                        Adicionar
+                    </button>
+                </div>
+                <div id="funcionarios-list" class="grid gap-2">
+                    <p class="text-gray-400 text-center py-8">Carregando...</p>
+                </div>
+            </div>
+
+            <!-- ========== VIEW: ADMIN ========== -->
+            <div id="view-admin" class="hidden fade-in">
+                <div class="flex items-center justify-between mb-4">
+                    <h2 class="text-lg font-bold text-gray-700">⚙️ Gerenciar Usuários</h2>
+                    <button onclick="openModalAddUsuario()" class="btn-primary flex items-center gap-2">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                        </svg>
+                        Adicionar Usuário
+                    </button>
+                </div>
+                <div id="usuarios-list" class="grid gap-2">
+                    <p class="text-gray-400 text-center py-8">Carregando...</p>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- ==================== MODALS ==================== -->
+
+    <!-- Modal: Nova/Editar Vaquinha -->
+    <div id="modal-vaquinha" class="fixed inset-0 bg-black/50 z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-lg w-full p-6 fade-in">
+            <h3 class="text-lg font-bold text-gray-800 mb-4" id="modal-vaquinha-title">Nova Vaquinha</h3>
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Aniversariante *</label>
+                    <input type="text" id="inp-aniversariante" class="input-field" placeholder="Nome da pessoa">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Valor do Presente (R$) *</label>
+                    <input type="number" id="inp-valor" class="input-field" placeholder="0.00" step="0.01" min="0">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Descrição do Presente</label>
+                    <input type="text" id="inp-descricao" class="input-field" placeholder="Ex: Kit de maquiagem">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Data de Cobrança</label>
+                    <input type="date" id="inp-data" class="input-field">
+                </div>
+            </div>
+            <div class="flex gap-3 mt-6 justify-end">
+                <button onclick="closeModal('modal-vaquinha')" class="btn-secondary">Cancelar</button>
+                <button onclick="salvarVaquinha()" class="btn-primary">Salvar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Funcionário -->
+    <div id="modal-funcionario" class="fixed inset-0 bg-black/50 z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 fade-in">
+            <h3 class="text-lg font-bold text-gray-800 mb-4" id="modal-func-title">Novo Funcionário</h3>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Nome *</label>
+                <input type="text" id="inp-func-nome" class="input-field" placeholder="Nome do funcionário">
+            </div>
+            <div class="flex gap-3 mt-6 justify-end">
+                <button onclick="closeModal('modal-funcionario')" class="btn-secondary">Cancelar</button>
+                <button onclick="salvarFuncionario()" class="btn-primary">Salvar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Add Usuário -->
+    <div id="modal-usuario" class="fixed inset-0 bg-black/50 z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 fade-in">
+            <h3 class="text-lg font-bold text-gray-800 mb-4">Adicionar Usuário</h3>
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">E-mail *</label>
+                    <input type="email" id="inp-user-email" class="input-field" placeholder="email@exemplo.com">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Nome</label>
+                    <input type="text" id="inp-user-nome" class="input-field" placeholder="Nome (opcional)">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Papel</label>
+                    <select id="inp-user-role" class="input-field">
+                        <option value="admin">Admin</option>
+                        <option value="user">Visualizador</option>
+                    </select>
+                </div>
+            </div>
+            <div class="flex gap-3 mt-6 justify-end">
+                <button onclick="closeModal('modal-usuario')" class="btn-secondary">Cancelar</button>
+                <button onclick="salvarUsuario()" class="btn-primary">Adicionar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: WhatsApp Message -->
+    <div id="modal-whatsapp" class="fixed inset-0 bg-black/50 z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-lg w-full p-6 fade-in">
+            <h3 class="text-lg font-bold text-gray-800 mb-2 flex items-center gap-2">
+                <svg class="w-6 h-6 text-green-500" viewBox="0 0 24 24" fill="currentColor">
+                    <path
+                        d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" />
+                </svg>
+                Mensagem WhatsApp
+            </h3>
+            <p class="text-gray-500 text-sm mb-4">Selecione o tipo de mensagem e copie para enviar.</p>
+            <div class="flex gap-2 mb-4">
+                <button onclick="gerarMensagem('convite')" id="btn-msg-convite" class="btn-secondary text-sm flex-1">📩
+                    Convite</button>
+                <button onclick="gerarMensagem('lembrete')" id="btn-msg-lembrete" class="btn-secondary text-sm flex-1">⏰
+                    Lembrete</button>
+                <button onclick="gerarMensagem('agradecimento')" id="btn-msg-agradecimento"
+                    class="btn-secondary text-sm flex-1">🙏 Obrigado</button>
+            </div>
+            <textarea id="whatsapp-text" class="input-field h-48 resize-none text-sm" readonly></textarea>
+            <div class="flex gap-3 mt-4 justify-end">
+                <button onclick="closeModal('modal-whatsapp')" class="btn-secondary">Fechar</button>
+                <button onclick="copiarMensagem()" class="btn-primary flex items-center gap-2">
+                    📋 Copiar Texto
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Confirmação -->
+    <div id="modal-confirm" class="fixed inset-0 bg-black/50 z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-sm w-full p-6 fade-in text-center">
+            <div class="text-4xl mb-3" id="confirm-icon">⚠️</div>
+            <h3 class="text-lg font-bold text-gray-800 mb-2" id="confirm-title">Tem certeza?</h3>
+            <p class="text-gray-500 text-sm mb-6" id="confirm-message"></p>
+            <div class="flex gap-3 justify-center">
+                <button onclick="closeModal('modal-confirm')" class="btn-secondary">Cancelar</button>
+                <button id="confirm-btn" class="btn-danger">Confirmar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== JAVASCRIPT ==================== -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, onAuthStateChanged, signInWithPopup, GoogleAuthProvider, signOut, getIdToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-storage.js";
+
+        // ===================== CONFIG =====================
+        // IMPORTANTE: Atualize API_BASE_URL com a URL do seu deploy Vercel do vaquinha-api
+        const API_BASE_URL = 'https://vaquinha-api.vercel.app';
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyChhpPXpLTFGQfvJH55D_uQ2FG5PdKykcQ",
+            authDomain: "minha-base-conhecimento.firebaseapp.com",
+            projectId: "minha-base-conhecimento",
+            storageBucket: "minha-base-conhecimento.firebasestorage.app",
+            messagingSenderId: "586899421039",
+            appId: "1:586899421039:web:99be661136602118175a9a"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const authInstance = getAuth(app);
+        const googleProvider = new GoogleAuthProvider();
+        const storage = getStorage(app);
+
+        // ===================== STATE =====================
+        let currentUser = null;
+        let currentRole = null;
+        let vaquinhas = [];
+        let funcionarios = [];
+        let currentVaquinhaId = null;
+        let currentVaquinhaData = null;
+        let editingVaquinhaId = null;
+        let editingFuncId = null;
+
+        // ===================== UTILS =====================
+        function showLoading(text = 'Carregando...') {
+            document.getElementById('loading-text').textContent = text;
+            document.getElementById('loading-overlay').classList.remove('hidden');
+        }
+        function hideLoading() {
+            document.getElementById('loading-overlay').classList.add('hidden');
+        }
+
+        function toast(message, type = 'success') {
+            const container = document.getElementById('toast-container');
+            const colors = {
+                success: 'bg-green-500',
+                error: 'bg-red-500',
+                info: 'bg-blue-500',
+                warning: 'bg-amber-500'
+            };
+            const div = document.createElement('div');
+            div.className = `${colors[type]} text-white px-4 py-3 rounded-lg shadow-lg text-sm font-medium toast-enter max-w-sm`;
+            div.textContent = message;
+            container.appendChild(div);
+            setTimeout(() => { div.style.opacity = '0'; div.style.transition = 'opacity 0.3s'; setTimeout(() => div.remove(), 300); }, 3500);
+        }
+
+        function formatCurrency(value) {
+            return `R$ ${parseFloat(value || 0).toFixed(2).replace('.', ',')}`;
+        }
+
+        function formatDate(dateStr) {
+            if (!dateStr) return '-';
+            const d = new Date(dateStr + 'T12:00:00');
+            return d.toLocaleDateString('pt-BR');
+        }
+
+        function closeModal(id) {
+            document.getElementById(id).classList.add('hidden');
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // ===================== API =====================
+        async function apiCall(action, payload = {}) {
+            if (!currentUser) throw new Error('Não autenticado');
+            const token = await getIdToken(currentUser, true);
+            const response = await fetch(`${API_BASE_URL}/api`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                body: JSON.stringify({ action, payload })
+            });
+            const data = await response.json();
+            if (!response.ok) throw new Error(data.error || 'Erro na API');
+            return data;
+        }
+
+        // ===================== AUTH =====================
+        window.handleGoogleLogin = async function () {
+            try {
+                document.getElementById('login-status').classList.add('hidden');
+                await signInWithPopup(authInstance, googleProvider);
+            } catch (error) {
+                const status = document.getElementById('login-status');
+                status.textContent = 'Erro ao fazer login: ' + error.message;
+                status.classList.remove('hidden');
+            }
+        };
+
+        window.handleLogout = async function () {
+            await signOut(authInstance);
+        };
+
+        onAuthStateChanged(authInstance, async (user) => {
+            if (user) {
+                currentUser = user;
+                showLoading('Verificando acesso...');
+                try {
+                    const result = await apiCall('user/login');
+                    currentRole = result.role;
+                    document.getElementById('user-email-display').textContent = user.email;
+                    document.getElementById('user-role-badge').textContent = currentRole === 'admin' ? 'Admin' : 'Visualizador';
+                    document.getElementById('view-login').classList.add('hidden');
+                    document.getElementById('app-shell').classList.remove('hidden');
+                    setupUIForRole();
+                    showView('dashboard');
+                } catch (error) {
+                    toast('Acesso negado: ' + error.message, 'error');
+                    await signOut(authInstance);
+                } finally {
+                    hideLoading();
+                }
+            } else {
+                currentUser = null;
+                currentRole = null;
+                document.getElementById('view-login').classList.remove('hidden');
+                document.getElementById('app-shell').classList.add('hidden');
+            }
+        });
+
+        function setupUIForRole() {
+            const isAdmin = currentRole === 'admin';
+            document.getElementById('btn-nova-vaquinha').classList.toggle('hidden', !isAdmin);
+            document.getElementById('btn-add-func').classList.toggle('hidden', !isAdmin);
+            document.getElementById('tab-admin').classList.toggle('hidden', !isAdmin);
+        }
+
+        // ===================== NAVIGATION =====================
+        window.showView = async function (viewId) {
+            const views = ['dashboard', 'detail', 'funcionarios', 'admin'];
+            views.forEach(v => {
+                const el = document.getElementById(`view-${v}`);
+                el.classList.toggle('hidden', v !== viewId);
+            });
+            // Update tab styles
+            document.querySelectorAll('.nav-tab').forEach(tab => {
+                tab.classList.remove('border-amber-500', 'text-amber-600');
+                tab.classList.add('border-transparent', 'text-gray-500');
+            });
+            const activeTab = document.getElementById(`tab-${viewId}`);
+            if (activeTab) {
+                activeTab.classList.add('border-amber-500', 'text-amber-600');
+                activeTab.classList.remove('border-transparent', 'text-gray-500');
+            }
+
+            // Load data
+            if (viewId === 'dashboard') await loadVaquinhas();
+            if (viewId === 'funcionarios') await loadFuncionarios();
+            if (viewId === 'admin') await loadUsuarios();
+        };
+
+        // ===================== DASHBOARD =====================
+        async function loadVaquinhas() {
+            try {
+                vaquinhas = await apiCall('vaq/listar');
+                renderDashboard();
+            } catch (error) {
+                toast('Erro ao carregar vaquinhas: ' + error.message, 'error');
+            }
+        }
+
+        function renderDashboard() {
+            const abertas = vaquinhas.filter(v => v.status === 'aberta').length;
+            const fechadas = vaquinhas.filter(v => v.status === 'fechada').length;
+            const arrecadado = vaquinhas.reduce((sum, v) => sum + (v.valorPresente || 0), 0);
+
+            document.getElementById('stat-total').textContent = vaquinhas.length;
+            document.getElementById('stat-abertas').textContent = abertas;
+            document.getElementById('stat-fechadas').textContent = fechadas;
+            document.getElementById('stat-arrecadado').textContent = formatCurrency(arrecadado);
+
+            const list = document.getElementById('vaquinhas-list');
+            if (vaquinhas.length === 0) {
+                list.innerHTML = '<div class="text-center py-12 text-gray-400"><div class="text-4xl mb-2">🎈</div><p>Nenhuma vaquinha ainda.</p></div>';
+                return;
+            }
+
+            list.innerHTML = vaquinhas.map(v => {
+                const pct = v.totalParticipa > 0 ? Math.round((v.totalPago / v.totalParticipa) * 100) : 0;
+                const statusColor = v.status === 'aberta' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500';
+                const statusText = v.status === 'aberta' ? 'Aberta' : 'Fechada';
+                return `
+                    <div class="card p-4 cursor-pointer hover:border-amber-200" onclick="openVaquinhaDetail('${v.id}')">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-3">
+                                <span class="text-2xl">🎂</span>
+                                <div>
+                                    <div class="font-bold text-gray-800">${escapeHtml(v.aniversariante)}</div>
+                                    <div class="text-sm text-gray-500">${escapeHtml(v.descricaoPresente || 'Sem descrição')} · ${formatCurrency(v.valorPresente)}</div>
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <span class="text-xs font-bold px-2 py-1 rounded-full ${statusColor}">${statusText}</span>
+                                <div class="text-sm text-gray-500 mt-1">${v.totalPago}/${v.totalParticipa} pagaram</div>
+                            </div>
+                        </div>
+                        <div class="mt-3 bg-gray-200 rounded-full h-2">
+                            <div class="bg-green-500 h-2 rounded-full progress-bar" style="width: ${pct}%"></div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // ===================== VAQUINHA DETAIL =====================
+        window.openVaquinhaDetail = async function (id) {
+            currentVaquinhaId = id;
+            showLoading('Carregando detalhes...');
+            try {
+                currentVaquinhaData = await apiCall('vaq/detalhe', { id });
+                renderVaquinhaDetail();
+                document.getElementById('view-dashboard').classList.add('hidden');
+                document.getElementById('view-detail').classList.remove('hidden');
+                // Reset tab highlighting
+                document.querySelectorAll('.nav-tab').forEach(tab => {
+                    tab.classList.remove('border-amber-500', 'text-amber-600');
+                    tab.classList.add('border-transparent', 'text-gray-500');
+                });
+                document.getElementById('tab-dashboard').classList.add('border-amber-500', 'text-amber-600');
+                document.getElementById('tab-dashboard').classList.remove('border-transparent', 'text-gray-500');
+            } catch (error) {
+                toast('Erro: ' + error.message, 'error');
+            } finally {
+                hideLoading();
+            }
+        };
+
+        function renderVaquinhaDetail() {
+            const v = currentVaquinhaData;
+            const p = v.participantes || {};
+            const participaList = Object.entries(p).filter(([, d]) => d.participa);
+            const pagoList = participaList.filter(([, d]) => d.pago);
+            const valorPorPessoa = participaList.length > 0 ? v.valorPresente / participaList.length : 0;
+            const pct = participaList.length > 0 ? Math.round((pagoList.length / participaList.length) * 100) : 0;
+
+            document.getElementById('detail-aniversariante').textContent = v.aniversariante;
+            document.getElementById('detail-descricao').textContent = v.descricaoPresente || 'Sem descrição';
+            document.getElementById('detail-valor').textContent = formatCurrency(v.valorPresente);
+            document.getElementById('detail-por-pessoa').textContent = formatCurrency(valorPorPessoa);
+            document.getElementById('detail-progresso').textContent = `${pagoList.length}/${participaList.length}`;
+            document.getElementById('detail-data').textContent = formatDate(v.dataCobranca);
+            document.getElementById('detail-progress-bar').style.width = `${pct}%`;
+
+            const badge = document.getElementById('detail-status-badge');
+            if (v.status === 'aberta') {
+                badge.className = 'px-3 py-1 rounded-full text-sm font-bold bg-green-100 text-green-700';
+                badge.textContent = 'Aberta';
+            } else {
+                badge.className = 'px-3 py-1 rounded-full text-sm font-bold bg-gray-100 text-gray-500';
+                badge.textContent = 'Fechada';
+            }
+
+            // Admin actions
+            const adminActions = document.getElementById('detail-admin-actions');
+            if (currentRole === 'admin') {
+                const statusBtnText = v.status === 'aberta' ? '🔒 Fechar' : '🔓 Reabrir';
+                const statusAction = v.status === 'aberta' ? 'fechada' : 'aberta';
+                adminActions.innerHTML = `
+                    <button onclick="editarVaquinhaModal()" class="text-xs bg-blue-50 hover:bg-blue-100 text-blue-700 px-2 py-1 rounded-lg transition-colors">✏️ Editar</button>
+                    <button onclick="alterarStatusVaquinha('${statusAction}')" class="text-xs bg-gray-50 hover:bg-gray-100 text-gray-700 px-2 py-1 rounded-lg transition-colors">${statusBtnText}</button>
+                    <button onclick="confirmarDeletarVaquinha()" class="text-xs bg-red-50 hover:bg-red-100 text-red-700 px-2 py-1 rounded-lg transition-colors">🗑️</button>
+                `;
+            } else {
+                adminActions.innerHTML = '';
+            }
+
+            // Hide admin buttons for non-admins
+            document.getElementById('btn-whatsapp-geral').classList.toggle('hidden', currentRole !== 'admin');
+            document.getElementById('btn-add-comprovante').classList.toggle('hidden', currentRole !== 'admin');
+
+            // Participants table
+            const tbody = document.getElementById('participantes-tbody');
+            const sorted = Object.entries(p).sort((a, b) => a[1].nome.localeCompare(b[1].nome));
+            tbody.innerHTML = sorted.map(([fid, data]) => {
+                const participaChecked = data.participa ? 'checked' : '';
+                const pagoChecked = data.pago ? 'checked' : '';
+                const pagoDisabled = !data.participa ? 'disabled' : '';
+                const rowBg = data.pago ? 'bg-green-50' : (data.participa ? '' : 'bg-gray-50 opacity-60');
+                const isAdmin = currentRole === 'admin';
+                return `
+                    <tr class="border-b border-gray-100 ${rowBg}">
+                        <td class="py-2.5 font-medium text-gray-700">${escapeHtml(data.nome)}</td>
+                        <td class="py-2.5 text-center">
+                            <input type="checkbox" ${participaChecked} ${isAdmin ? '' : 'disabled'} onchange="toggleParticipacao('${fid}')" class="w-4 h-4 accent-amber-500 cursor-pointer">
+                        </td>
+                        <td class="py-2.5 text-right font-mono text-sm ${data.participa ? 'text-gray-700' : 'text-gray-300'}">${formatCurrency(data.valorAPagar)}</td>
+                        <td class="py-2.5 text-center">
+                            <input type="checkbox" ${pagoChecked} ${pagoDisabled} ${isAdmin ? '' : 'disabled'} onchange="togglePagamento('${fid}')" class="w-4 h-4 accent-green-500 cursor-pointer">
+                        </td>
+                        <td class="py-2.5 text-center">
+                            ${data.participa && !data.pago && isAdmin ? `<button onclick="openModalWhatsApp('individual', '${fid}')" class="text-green-500 hover:text-green-700 transition-colors" title="Enviar lembrete"><svg class="w-5 h-5 inline" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg></button>` : '-'}
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+
+            // Receipts
+            renderComprovantes();
+        }
+
+        function renderComprovantes() {
+            const v = currentVaquinhaData;
+            const list = document.getElementById('comprovantes-list');
+            const comprovantes = v.comprovantes || [];
+
+            if (comprovantes.length === 0) {
+                list.innerHTML = '<p class="text-gray-400 text-sm col-span-full">Nenhum comprovante ainda.</p>';
+                return;
+            }
+
+            list.innerHTML = comprovantes.map((c, i) => `
+                <div class="relative group border border-gray-200 rounded-lg overflow-hidden">
+                    <a href="${escapeHtml(c.url)}" target="_blank" class="block">
+                        <div class="bg-gray-100 p-4 text-center">
+                            <span class="text-3xl">🧾</span>
+                            <div class="text-xs text-gray-500 mt-1 truncate px-2">${escapeHtml(c.nome)}</div>
+                            <div class="text-xs text-gray-400">${formatDate(c.uploadadoEm?.split('T')[0])}</div>
+                        </div>
+                    </a>
+                    ${currentRole === 'admin' ? `<button onclick="removerComprovante(${i})" class="absolute top-1 right-1 bg-red-500 text-white rounded-full w-5 h-5 text-xs opacity-0 group-hover:opacity-100 transition-opacity" title="Remover">×</button>` : ''}
+                </div>
+            `).join('');
+        }
+
+        // ===================== VAQUINHA ACTIONS =====================
+        window.openModalNovaVaquinha = function () {
+            editingVaquinhaId = null;
+            document.getElementById('modal-vaquinha-title').textContent = 'Nova Vaquinha';
+            document.getElementById('inp-aniversariante').value = '';
+            document.getElementById('inp-valor').value = '';
+            document.getElementById('inp-descricao').value = '';
+            document.getElementById('inp-data').value = '';
+            document.getElementById('modal-vaquinha').classList.remove('hidden');
+        };
+
+        window.editarVaquinhaModal = function () {
+            const v = currentVaquinhaData;
+            editingVaquinhaId = currentVaquinhaId;
+            document.getElementById('modal-vaquinha-title').textContent = 'Editar Vaquinha';
+            document.getElementById('inp-aniversariante').value = v.aniversariante;
+            document.getElementById('inp-valor').value = v.valorPresente;
+            document.getElementById('inp-descricao').value = v.descricaoPresente || '';
+            document.getElementById('inp-data').value = v.dataCobranca || '';
+            document.getElementById('modal-vaquinha').classList.remove('hidden');
+        };
+
+        window.salvarVaquinha = async function () {
+            const aniversariante = document.getElementById('inp-aniversariante').value.trim();
+            const valorPresente = document.getElementById('inp-valor').value;
+            const descricaoPresente = document.getElementById('inp-descricao').value.trim();
+            const dataCobranca = document.getElementById('inp-data').value;
+
+            if (!aniversariante || !valorPresente) {
+                toast('Preencha o aniversariante e o valor.', 'warning');
+                return;
+            }
+
+            closeModal('modal-vaquinha');
+            showLoading('Salvando...');
+            try {
+                if (editingVaquinhaId) {
+                    await apiCall('vaq/editar', { id: editingVaquinhaId, aniversariante, valorPresente, descricaoPresente, dataCobranca });
+                    toast('Vaquinha atualizada!');
+                    await openVaquinhaDetail(editingVaquinhaId);
+                } else {
+                    const result = await apiCall('vaq/criar', { aniversariante, valorPresente, descricaoPresente, dataCobranca });
+                    toast('Vaquinha criada!');
+                    await openVaquinhaDetail(result.id);
+                }
+            } catch (error) {
+                toast('Erro: ' + error.message, 'error');
+            } finally {
+                hideLoading();
+            }
+        };
+
+        window.confirmarDeletarVaquinha = function () {
+            document.getElementById('confirm-title').textContent = 'Deletar Vaquinha?';
+            document.getElementById('confirm-message').textContent = `Tem certeza que deseja deletar a vaquinha de "${currentVaquinhaData.aniversariante}"? Esta ação não pode ser desfeita.`;
+            document.getElementById('confirm-btn').onclick = async () => {
+                closeModal('modal-confirm');
+                showLoading('Deletando...');
+                try {
+                    await apiCall('vaq/deletar', { id: currentVaquinhaId });
+                    toast('Vaquinha deletada.');
+                    showView('dashboard');
+                } catch (error) {
+                    toast('Erro: ' + error.message, 'error');
+                } finally {
+                    hideLoading();
+                }
+            };
+            document.getElementById('modal-confirm').classList.remove('hidden');
+        };
+
+        window.alterarStatusVaquinha = async function (novoStatus) {
+            showLoading('Alterando status...');
+            try {
+                await apiCall('vaq/alterarStatus', { id: currentVaquinhaId, status: novoStatus });
+                toast(novoStatus === 'fechada' ? 'Vaquinha fechada!' : 'Vaquinha reaberta!');
+                await openVaquinhaDetail(currentVaquinhaId);
+            } catch (error) {
+                toast('Erro: ' + error.message, 'error');
+            } finally {
+                hideLoading();
+            }
+        };
+
+        window.toggleParticipacao = async function (funcId) {
+            try {
+                const result = await apiCall('vaq/toggleParticipa', { vaquinhaId: currentVaquinhaId, funcionarioId: funcId });
+                currentVaquinhaData.participantes = result.participantes;
+                renderVaquinhaDetail();
+            } catch (error) {
+                toast('Erro: ' + error.message, 'error');
+            }
+        };
+
+        window.togglePagamento = async function (funcId) {
+            try {
+                const result = await apiCall('vaq/togglePago', { vaquinhaId: currentVaquinhaId, funcionarioId: funcId });
+                currentVaquinhaData.participantes = result.participantes;
+                renderVaquinhaDetail();
+            } catch (error) {
+                toast('Erro: ' + error.message, 'error');
+            }
+        };
+
+        // ===================== COMPROVANTES (UPLOAD) =====================
+        window.handleUploadComprovante = async function (event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            event.target.value = ''; // reset input
+
+            showLoading('Enviando comprovante...');
+            try {
+                const ext = file.name.split('.').pop();
+                const fileName = `comprovante_${Date.now()}.${ext}`;
+                const fileRef = storageRef(storage, `vaquinha-comprovantes/${currentVaquinhaId}/${fileName}`);
+                await uploadBytes(fileRef, file);
+                const url = await getDownloadURL(fileRef);
+
+                await apiCall('vaq/addComprovante', { vaquinhaId: currentVaquinhaId, url, nome: file.name });
+                currentVaquinhaData.comprovantes = currentVaquinhaData.comprovantes || [];
+                currentVaquinhaData.comprovantes.push({ url, nome: file.name, uploadadoEm: new Date().toISOString(), uploadadoPor: currentUser.email });
+                renderComprovantes();
+                toast('Comprovante enviado!');
+            } catch (error) {
+                toast('Erro ao enviar: ' + error.message, 'error');
+            } finally {
+                hideLoading();
+            }
+        };
+
+        window.removerComprovante = async function (index) {
+            const comp = currentVaquinhaData.comprovantes[index];
+            if (!comp) return;
+            document.getElementById('confirm-title').textContent = 'Remover comprovante?';
+            document.getElementById('confirm-message').textContent = `Remover "${comp.nome}"?`;
+            document.getElementById('confirm-btn').onclick = async () => {
+                closeModal('modal-confirm');
+                showLoading('Removendo...');
+                try {
+                    await apiCall('vaq/delComprovante', { vaquinhaId: currentVaquinhaId, comprovante: comp });
+                    currentVaquinhaData.comprovantes.splice(index, 1);
+                    renderComprovantes();
+                    toast('Comprovante removido.');
+                } catch (error) {
+                    toast('Erro: ' + error.message, 'error');
+                } finally {
+                    hideLoading();
+                }
+            };
+            document.getElementById('modal-confirm').classList.remove('hidden');
+        };
+
+        // ===================== WHATSAPP =====================
+        window.openModalWhatsApp = function (tipo, funcId = null) {
+            document.getElementById('modal-whatsapp').classList.remove('hidden');
+            window._whatsappTipo = tipo;
+            window._whatsappFuncId = funcId;
+            gerarMensagem('convite');
+        };
+
+        window.gerarMensagem = function (estilo) {
+            const v = currentVaquinhaData;
+            const p = v.participantes || {};
+            const participaList = Object.values(p).filter(x => x.participa);
+            const valorPorPessoa = participaList.length > 0 ? (v.valorPresente / participaList.length) : 0;
+            const valorFormatado = formatCurrency(valorPorPessoa);
+            const dataFormatada = formatDate(v.dataCobranca);
+
+            // Highlight active button
+            ['convite', 'lembrete', 'agradecimento'].forEach(s => {
+                const btn = document.getElementById(`btn-msg-${s}`);
+                btn.className = s === estilo ? 'btn-primary text-sm flex-1' : 'btn-secondary text-sm flex-1';
+            });
+
+            let texto = '';
+
+            if (window._whatsappTipo === 'individual' && window._whatsappFuncId) {
+                const func = p[window._whatsappFuncId];
+                const nome = func ? func.nome : '';
+                if (estilo === 'convite') {
+                    texto = `Olá, ${nome}! 👋\n\nEstamos organizando uma vaquinha para o presente de aniversário do(a) *${v.aniversariante}*! 🎂🎁\n\n🎁 *Presente:* ${v.descricaoPresente || 'Surpresa!'}\n💰 *Valor por pessoa:* ${valorFormatado}\n📅 *Prazo para pagamento:* ${dataFormatada}\n\nPode confirmar se vai participar? Qualquer dúvida é só chamar!\n\nObrigado! 🙏`;
+                } else if (estilo === 'lembrete') {
+                    texto = `Oi, ${nome}! 👋\n\nSó passando para lembrar da vaquinha do(a) *${v.aniversariante}*. 🎂\n\n💰 *Seu valor:* ${valorFormatado}\n📅 *Prazo:* ${dataFormatada}\n\nPode fazer o pagamento quando puder? Obrigado! 🙏`;
+                } else {
+                    texto = `${nome}, obrigado por participar da vaquinha do(a) *${v.aniversariante}*! 🎉\n\nSeu pagamento foi confirmado. Valeu pela colaboração! 🙏`;
+                }
+            } else {
+                // Mensagem geral (para o grupo)
+                if (estilo === 'convite') {
+                    texto = `Pessoal! 👋\n\nEstamos organizando uma vaquinha para o presente de aniversário do(a) *${v.aniversariante}*! 🎂🎁\n\n🎁 *Presente:* ${v.descricaoPresente || 'Surpresa!'}\n💰 *Valor por pessoa:* ${valorFormatado}\n📅 *Prazo para pagamento:* ${dataFormatada}\n\nQuem puder participar, é só confirmar! Qualquer dúvida me chama.\n\nObrigado! 🙏`;
+                } else if (estilo === 'lembrete') {
+                    const naoPagaram = Object.values(p).filter(x => x.participa && !x.pago).map(x => x.nome);
+                    texto = `Oi pessoal! 👋\n\nLembrando da vaquinha do(a) *${v.aniversariante}*. 🎂\n\n💰 *Valor por pessoa:* ${valorFormatado}\n📅 *Prazo:* ${dataFormatada}\n\n⏳ *Ainda falta o pagamento de:*\n${naoPagaram.map(n => `• ${n}`).join('\n')}\n\nQuem puder resolver logo, agradeço! 🙏`;
+                } else {
+                    texto = `Pessoal, obrigado a todos que participaram da vaquinha do(a) *${v.aniversariante}*! 🎉🎁\n\nConseguimos juntar *${formatCurrency(v.valorPresente)}* e o presente já foi comprado!\n\nValeu pela colaboração de todos! 🙏`;
+                }
+            }
+
+            document.getElementById('whatsapp-text').value = texto;
+        };
+
+        window.copiarMensagem = function () {
+            const text = document.getElementById('whatsapp-text').value;
+            navigator.clipboard.writeText(text).then(() => {
+                toast('Mensagem copiada! Cole no WhatsApp.', 'info');
+            }).catch(() => {
+                // Fallback
+                const ta = document.getElementById('whatsapp-text');
+                ta.select();
+                document.execCommand('copy');
+                toast('Mensagem copiada!', 'info');
+            });
+        };
+
+        // ===================== FUNCIONÁRIOS =====================
+        async function loadFuncionarios() {
+            try {
+                funcionarios = await apiCall('func/listar');
+                renderFuncionarios();
+            } catch (error) {
+                toast('Erro: ' + error.message, 'error');
+            }
+        }
+
+        function renderFuncionarios() {
+            const list = document.getElementById('funcionarios-list');
+            if (funcionarios.length === 0) {
+                list.innerHTML = '<div class="text-center py-12 text-gray-400"><div class="text-4xl mb-2">👥</div><p>Nenhum funcionário cadastrado.</p></div>';
+                return;
+            }
+            list.innerHTML = funcionarios.map(f => `
+                <div class="card p-3 flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                        <div class="w-8 h-8 rounded-full bg-amber-100 flex items-center justify-center text-amber-700 font-bold text-sm">${escapeHtml(f.nome.charAt(0).toUpperCase())}</div>
+                        <span class="font-medium text-gray-700">${escapeHtml(f.nome)}</span>
+                    </div>
+                    ${currentRole === 'admin' ? `
+                        <div class="flex gap-1">
+                            <button onclick="editarFuncionarioModal('${f.id}', '${escapeHtml(f.nome)}')" class="text-xs bg-blue-50 hover:bg-blue-100 text-blue-700 px-2 py-1 rounded-lg">✏️</button>
+                            <button onclick="confirmarDeletarFuncionario('${f.id}', '${escapeHtml(f.nome)}')" class="text-xs bg-red-50 hover:bg-red-100 text-red-700 px-2 py-1 rounded-lg">🗑️</button>
+                        </div>
+                    ` : ''}
+                </div>
+            `).join('');
+        }
+
+        window.openModalFuncionario = function () {
+            editingFuncId = null;
+            document.getElementById('modal-func-title').textContent = 'Novo Funcionário';
+            document.getElementById('inp-func-nome').value = '';
+            document.getElementById('modal-funcionario').classList.remove('hidden');
+        };
+
+        window.editarFuncionarioModal = function (id, nome) {
+            editingFuncId = id;
+            document.getElementById('modal-func-title').textContent = 'Editar Funcionário';
+            document.getElementById('inp-func-nome').value = nome;
+            document.getElementById('modal-funcionario').classList.remove('hidden');
+        };
+
+        window.salvarFuncionario = async function () {
+            const nome = document.getElementById('inp-func-nome').value.trim();
+            if (!nome) { toast('Preencha o nome.', 'warning'); return; }
+
+            closeModal('modal-funcionario');
+            showLoading('Salvando...');
+            try {
+                await apiCall('func/salvar', { id: editingFuncId, nome });
+                toast(editingFuncId ? 'Funcionário atualizado!' : 'Funcionário adicionado!');
+                await loadFuncionarios();
+            } catch (error) {
+                toast('Erro: ' + error.message, 'error');
+            } finally {
+                hideLoading();
+            }
+        };
+
+        window.confirmarDeletarFuncionario = function (id, nome) {
+            document.getElementById('confirm-title').textContent = 'Remover Funcionário?';
+            document.getElementById('confirm-message').textContent = `Remover "${nome}" da lista?`;
+            document.getElementById('confirm-btn').onclick = async () => {
+                closeModal('modal-confirm');
+                showLoading('Removendo...');
+                try {
+                    await apiCall('func/deletar', { id });
+                    toast('Funcionário removido.');
+                    await loadFuncionarios();
+                } catch (error) {
+                    toast('Erro: ' + error.message, 'error');
+                } finally {
+                    hideLoading();
+                }
+            };
+            document.getElementById('modal-confirm').classList.remove('hidden');
+        };
+
+        // ===================== ADMIN (USUÁRIOS) =====================
+        async function loadUsuarios() {
+            try {
+                const usuarios = await apiCall('admin/listarUsuarios');
+                renderUsuarios(usuarios);
+            } catch (error) {
+                toast('Erro: ' + error.message, 'error');
+            }
+        }
+
+        function renderUsuarios(usuarios) {
+            const list = document.getElementById('usuarios-list');
+            if (usuarios.length === 0) {
+                list.innerHTML = '<div class="text-center py-12 text-gray-400">Nenhum usuário.</div>';
+                return;
+            }
+            list.innerHTML = usuarios.map(u => {
+                const roleBadge = u.role === 'admin' ? 'bg-amber-100 text-amber-700' : 'bg-gray-100 text-gray-600';
+                const roleText = u.role === 'admin' ? 'Admin' : 'Visualizador';
+                return `
+                    <div class="card p-3 flex items-center justify-between">
+                        <div class="flex items-center gap-3">
+                            <div class="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-700 font-bold text-sm">${escapeHtml((u.nome || u.email).charAt(0).toUpperCase())}</div>
+                            <div>
+                                <div class="font-medium text-gray-700 text-sm">${escapeHtml(u.nome || 'Sem nome')}</div>
+                                <div class="text-xs text-gray-400">${escapeHtml(u.email)}</div>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="text-xs font-bold px-2 py-1 rounded-full ${roleBadge}">${roleText}</span>
+                            <button onclick="confirmarRemoverUsuario('${u.id}', '${escapeHtml(u.email)}')" class="text-xs bg-red-50 hover:bg-red-100 text-red-700 px-2 py-1 rounded-lg">🗑️</button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        window.openModalAddUsuario = function () {
+            document.getElementById('inp-user-email').value = '';
+            document.getElementById('inp-user-nome').value = '';
+            document.getElementById('inp-user-role').value = 'admin';
+            document.getElementById('modal-usuario').classList.remove('hidden');
+        };
+
+        window.salvarUsuario = async function () {
+            const email = document.getElementById('inp-user-email').value.trim();
+            const nome = document.getElementById('inp-user-nome').value.trim();
+            const role = document.getElementById('inp-user-role').value;
+            if (!email) { toast('Preencha o e-mail.', 'warning'); return; }
+
+            closeModal('modal-usuario');
+            showLoading('Adicionando...');
+            try {
+                await apiCall('admin/addUsuario', { email, nome, role });
+                toast('Usuário adicionado!');
+                await loadUsuarios();
+            } catch (error) {
+                toast('Erro: ' + error.message, 'error');
+            } finally {
+                hideLoading();
+            }
+        };
+
+        window.confirmarRemoverUsuario = function (id, email) {
+            document.getElementById('confirm-title').textContent = 'Remover Usuário?';
+            document.getElementById('confirm-message').textContent = `Remover "${email}" do sistema?`;
+            document.getElementById('confirm-btn').onclick = async () => {
+                closeModal('modal-confirm');
+                showLoading('Removendo...');
+                try {
+                    await apiCall('admin/removerUsuario', { id });
+                    toast('Usuário removido.');
+                    await loadUsuarios();
+                } catch (error) {
+                    toast('Erro: ' + error.message, 'error');
+                } finally {
+                    hideLoading();
+                }
+            };
+            document.getElementById('modal-confirm').classList.remove('hidden');
+        };
+
+    </script>
+</body>
+
+</html>

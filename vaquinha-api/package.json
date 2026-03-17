@@ -1,0 +1,9 @@
+{
+    "name": "vaquinha-api",
+    "version": "1.0.0",
+    "private": true,
+    "description": "API serverless para o app de Vaquinha (presentes de aniversário)",
+    "dependencies": {
+        "firebase-admin": "^12.0.0"
+    }
+}
