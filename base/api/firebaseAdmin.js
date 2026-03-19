@@ -81,6 +81,6 @@ async function getUserRole(token) {
     }
 }
 
-// CORREÇÃO: Exporta os módulos 'Timestamp' e 'FieldValue'
-export { db, auth, Timestamp, FieldValue, getUserRole };
+// CORREÇÃO: Exporta os módulos 'Timestamp', 'FieldValue' e 'SUPER_ADMIN_EMAIL'
+export { db, auth, Timestamp, FieldValue, getUserRole, SUPER_ADMIN_EMAIL };
 
