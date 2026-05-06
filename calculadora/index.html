@@ -257,44 +257,92 @@
                             <option value="execucao">Acordo Descumprido em Execução/Cumprimento de Sentença</option>
                         </select>
                     </div>
-                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 items-start">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700">Nº de Parcelas Totais</label>
-                            <input id="agreement-total-installments" type="number"
-                                class="w-full mt-1 p-2 border border-gray-300 rounded-lg shadow-sm"
-                                placeholder="Ex: 10">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700">Nº de Parcelas Pagas</label>
-                            <input id="agreement-paid-installments" type="number"
-                                class="w-full mt-1 p-2 border border-gray-300 rounded-lg shadow-sm" placeholder="Ex: 3">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700">Valor da Parcela (R$)</label>
-                            <input id="agreement-installment-value" type="text"
-                                class="value-input w-full mt-1 p-2 border border-gray-300 rounded-lg shadow-sm"
-                                placeholder="500,00">
-
-                            <div class="mt-2">
-                                <label class="flex items-center space-x-2 cursor-pointer">
-                                    <input type="checkbox" id="agreement-last-different-check"
-                                        class="h-4 w-4 text-indigo-600 border-gray-300 rounded">
-                                    <span class="text-xs text-indigo-700 font-semibold">Última parcela diferente?</span>
-                                </label>
+                    <!-- Tipo de Parcelamento -->
+                    <div class="flex flex-wrap items-center gap-x-6 gap-y-2 p-2 bg-indigo-50 border border-indigo-200 rounded-lg">
+                        <span class="text-sm font-semibold text-gray-700">Tipo de Parcelamento:</span>
+                        <label class="flex items-center cursor-pointer">
+                            <input type="radio" name="installment-mode" value="regular" checked
+                                class="h-4 w-4 text-indigo-600 border-gray-300">
+                            <span class="ml-2 text-sm text-gray-700">Regular</span>
+                        </label>
+                        <label class="flex items-center cursor-pointer">
+                            <input type="radio" name="installment-mode" value="irregular"
+                                class="h-4 w-4 text-indigo-600 border-gray-300">
+                            <span class="ml-2 text-sm text-gray-700">Irregular (grupos de parcelas)</span>
+                        </label>
+                    </div>
+                    <!-- Parcelas Pagas - campo compartilhado -->
+                    <div class="w-48">
+                        <label class="block text-sm font-medium text-gray-700">Nº de Parcelas Pagas</label>
+                        <input id="agreement-paid-installments" type="number"
+                            class="w-full mt-1 p-2 border border-gray-300 rounded-lg shadow-sm" placeholder="Ex: 3">
+                    </div>
+                    <!-- Campos de parcelamento REGULAR -->
+                    <div id="regular-installments-fields">
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-start">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">Nº de Parcelas Totais</label>
+                                <input id="agreement-total-installments" type="number"
+                                    class="w-full mt-1 p-2 border border-gray-300 rounded-lg shadow-sm"
+                                    placeholder="Ex: 10">
                             </div>
-                            <div id="agreement-last-value-container" class="hidden mt-1">
-                                <label class="block text-xs font-medium text-gray-700">Valor da Última (R$)</label>
-                                <input id="agreement-last-installment-value" type="text"
-                                    class="value-input w-full mt-1 p-2 border border-gray-300 rounded-lg shadow-sm bg-yellow-50"
-                                    placeholder="Ex: 50,00">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">Valor da Parcela (R$)</label>
+                                <input id="agreement-installment-value" type="text"
+                                    class="value-input w-full mt-1 p-2 border border-gray-300 rounded-lg shadow-sm"
+                                    placeholder="500,00">
+                                <div class="mt-2">
+                                    <label class="flex items-center space-x-2 cursor-pointer">
+                                        <input type="checkbox" id="agreement-last-different-check"
+                                            class="h-4 w-4 text-indigo-600 border-gray-300 rounded">
+                                        <span class="text-xs text-indigo-700 font-semibold">Última parcela diferente?</span>
+                                    </label>
+                                </div>
+                                <div id="agreement-last-value-container" class="hidden mt-1">
+                                    <label class="block text-xs font-medium text-gray-700">Valor da Última (R$)</label>
+                                    <input id="agreement-last-installment-value" type="text"
+                                        class="value-input w-full mt-1 p-2 border border-gray-300 rounded-lg shadow-sm bg-yellow-50"
+                                        placeholder="Ex: 50,00">
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">Data Início do Acordo</label>
+                                <input id="agreement-start-date" type="text"
+                                    class="date-input w-full mt-1 p-2 border border-gray-300 rounded-lg shadow-sm"
+                                    placeholder="DD/MM/AAAA">
                             </div>
                         </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700">Data Início do Acordo</label>
-                            <input id="agreement-start-date" type="text"
-                                class="date-input w-full mt-1 p-2 border border-gray-300 rounded-lg shadow-sm"
-                                placeholder="DD/MM/AAAA">
+                    </div>
+                    <!-- Campos de parcelamento IRREGULAR -->
+                    <div id="irregular-installments-fields" class="hidden">
+                        <div class="flex items-center justify-between mb-2">
+                            <label class="block text-sm font-medium text-gray-700">Grupos de Parcelas</label>
+                            <div class="flex gap-2">
+                                <button type="button" id="sort-installment-groups-btn"
+                                    class="text-xs bg-gray-500 hover:bg-gray-600 text-white font-semibold px-3 py-1 rounded-lg"
+                                    title="Ordenar grupos pelo mês inicial">
+                                    Ordenar por Data ↑
+                                </button>
+                                <button type="button" id="add-installment-group-btn"
+                                    class="text-xs bg-indigo-600 hover:bg-indigo-700 text-white font-semibold px-3 py-1 rounded-lg">
+                                    + Adicionar Grupo
+                                </button>
+                            </div>
                         </div>
+                        <div class="overflow-x-auto rounded-lg border border-gray-200">
+                            <table class="w-full text-sm">
+                                <thead class="bg-indigo-50">
+                                    <tr>
+                                        <th class="p-2 text-left font-semibold text-gray-700 w-20">Qtd</th>
+                                        <th class="p-2 text-left font-semibold text-gray-700">Valor (R$)</th>
+                                        <th class="p-2 text-left font-semibold text-gray-700">Mês Inicial (MM/AAAA)</th>
+                                        <th class="p-2 w-20"></th>
+                                    </tr>
+                                </thead>
+                                <tbody id="installment-groups-list"></tbody>
+                            </table>
+                        </div>
+                        <p class="text-xs text-gray-500 mt-1">Total de parcelas: <span id="total-irregular-count" class="font-semibold text-indigo-700">0</span></p>
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700">Multa pelo Descumprimento</label>
@@ -1126,70 +1174,148 @@
                 return (calculationResult.rows.length === 0) ? null : calculationResult;
             };
 
+            const updateTotalIrregularCount = () => {
+                let total = 0;
+                document.querySelectorAll('#installment-groups-list .installment-group-row').forEach(row => {
+                    total += parseInt(row.querySelector('.group-qty').value) || 0;
+                });
+                const counter = document.getElementById('total-irregular-count');
+                if (counter) counter.textContent = total;
+            };
+
+            const addInstallmentGroupRow = () => {
+                const tbody = document.getElementById('installment-groups-list');
+                const row = document.createElement('tr');
+                row.className = 'installment-group-row border-b border-gray-100';
+                row.innerHTML = `
+                    <td class="p-1"><input type="number" class="group-qty w-full p-1 border border-gray-300 rounded text-sm" placeholder="6" min="1"></td>
+                    <td class="p-1"><input type="text" class="group-value value-input w-full p-1 border border-gray-300 rounded text-sm" placeholder="400,00"></td>
+                    <td class="p-1"><input type="text" class="group-month month-year-input w-full p-1 border border-gray-300 rounded text-sm" placeholder="09/2025" maxlength="7"></td>
+                    <td class="p-1 text-center whitespace-nowrap">
+                        <button type="button" class="move-group-up-btn text-gray-400 hover:text-indigo-600 font-bold px-1" title="Mover para cima">▲</button>
+                        <button type="button" class="move-group-down-btn text-gray-400 hover:text-indigo-600 font-bold px-1" title="Mover para baixo">▼</button>
+                        <button type="button" class="remove-group-btn text-red-500 hover:text-red-700 font-bold px-1" title="Remover grupo">×</button>
+                    </td>
+                `;
+                tbody.appendChild(row);
+                addInputBehaviors(row);
+                row.querySelector('.group-month').addEventListener('input', formatMonthYearOnInput);
+                row.querySelector('.group-qty').addEventListener('input', updateTotalIrregularCount);
+                updateTotalIrregularCount();
+            };
+
+            const sortGroupsByDate = () => {
+                const tbody = document.getElementById('installment-groups-list');
+                const rows = Array.from(tbody.querySelectorAll('.installment-group-row'));
+                const parseMonthYear = (str) => {
+                    if (!str || str.length < 7) return Infinity;
+                    const [mm, yyyy] = str.split('/');
+                    return parseInt(yyyy) * 100 + parseInt(mm);
+                };
+                rows.sort((a, b) => {
+                    const ma = parseMonthYear(a.querySelector('.group-month').value);
+                    const mb = parseMonthYear(b.querySelector('.group-month').value);
+                    return ma - mb;
+                });
+                rows.forEach(r => tbody.appendChild(r));
+            };
+
+            const toggleInstallmentMode = () => {
+                const mode = document.querySelector('input[name="installment-mode"]:checked')?.value || 'regular';
+                document.getElementById('regular-installments-fields').classList.toggle('hidden', mode === 'irregular');
+                document.getElementById('irregular-installments-fields').classList.toggle('hidden', mode === 'regular');
+            };
+
             const performAgreementCalculation = () => {
-                const totalInstallments = parseInt(document.getElementById('agreement-total-installments').value) || 0;
                 const paidInstallments = parseInt(document.getElementById('agreement-paid-installments').value) || 0;
-
-                // Lógica de valores de parcela
-                const rawInstallmentValue = document.getElementById('agreement-installment-value').value;
-                const standardInstallmentValue = parseFloat(rawInstallmentValue.replace(/\./g, '').replace(',', '.')) || 0;
-
-                // Lógica da última parcela diferente
-                const hasDifferentLastInstallment = document.getElementById('agreement-last-different-check').checked;
-                const rawLastInstallmentValue = document.getElementById('agreement-last-installment-value').value;
-                let lastInstallmentValue = 0;
-
-                if (hasDifferentLastInstallment) {
-                    lastInstallmentValue = parseFloat(rawLastInstallmentValue.replace(/\./g, '').replace(',', '.')) || 0;
-                }
-
-                const startDate = parseDate(document.getElementById('agreement-start-date').value);
                 const penaltyPercent = parseFloat(document.getElementById('agreement-penalty').value) || 0;
                 const penaltyBaseType = document.querySelector('input[name="penalty-base"]:checked').value;
-
-
-                if (totalInstallments <= 0 || standardInstallmentValue <= 0 || !startDate) {
-                    alert('Preencha todos os campos do acordo: parcelas totais, valor da parcela e data de início.');
-                    return null;
-                }
+                const installmentMode = document.querySelector('input[name="installment-mode"]:checked')?.value || 'regular';
 
                 const finalCalcDate = getFinalCalcDate();
                 const installmentsDetails = [];
+                let totalOriginalDebt = 0;
 
                 const updateValue = (value, dateFrom, dateTo) => {
                     let updated = value;
                     for (let d = new Date(dateFrom); d < dateTo; d.setMonth(d.getMonth() + 1)) {
                         const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
-                        updated *= (1 + (ipcaData[key] || 0) / 100); // Apenas correção IPCA
+                        updated *= (1 + (ipcaData[key] || 0) / 100);
                     }
                     return updated;
                 };
 
-                let totalOriginalDebt = 0;
+                if (installmentMode === 'regular') {
+                    const totalInstallments = parseInt(document.getElementById('agreement-total-installments').value) || 0;
+                    const rawInstallmentValue = document.getElementById('agreement-installment-value').value;
+                    const standardInstallmentValue = parseFloat(rawInstallmentValue.replace(/\./g, '').replace(',', '.')) || 0;
+                    const hasDifferentLastInstallment = document.getElementById('agreement-last-different-check').checked;
+                    const rawLastInstallmentValue = document.getElementById('agreement-last-installment-value').value;
+                    let lastInstallmentValue = 0;
+                    if (hasDifferentLastInstallment) {
+                        lastInstallmentValue = parseFloat(rawLastInstallmentValue.replace(/\./g, '').replace(',', '.')) || 0;
+                    }
+                    const startDate = parseDate(document.getElementById('agreement-start-date').value);
 
-                for (let i = 0; i < totalInstallments; i++) {
-                    const installmentDate = new Date(startDate);
-                    installmentDate.setMonth(startDate.getMonth() + i);
-
-                    // Determina o valor da parcela atual
-                    let currentInstallmentValue = standardInstallmentValue;
-
-                    // Se for a última parcela e a checkbox estiver marcada, usa o valor diferenciado
-                    if (hasDifferentLastInstallment && i === (totalInstallments - 1)) {
-                        currentInstallmentValue = lastInstallmentValue;
+                    if (totalInstallments <= 0 || standardInstallmentValue <= 0 || !startDate) {
+                        alert('Preencha todos os campos do acordo: parcelas totais, valor da parcela e data de início.');
+                        return null;
                     }
 
-                    totalOriginalDebt += currentInstallmentValue;
-
-                    const updatedInstallment = updateValue(currentInstallmentValue, installmentDate, finalCalcDate);
-
-                    installmentsDetails.push({
-                        number: i + 1,
-                        originalDate: installmentDate,
-                        originalValue: currentInstallmentValue,
-                        updatedValue: updatedInstallment,
-                        status: i < paidInstallments ? 'Paga' : 'Não Paga'
+                    for (let i = 0; i < totalInstallments; i++) {
+                        const installmentDate = new Date(startDate);
+                        installmentDate.setMonth(startDate.getMonth() + i);
+                        let currentInstallmentValue = standardInstallmentValue;
+                        if (hasDifferentLastInstallment && i === (totalInstallments - 1)) {
+                            currentInstallmentValue = lastInstallmentValue;
+                        }
+                        totalOriginalDebt += currentInstallmentValue;
+                        const updatedInstallment = updateValue(currentInstallmentValue, installmentDate, finalCalcDate);
+                        installmentsDetails.push({
+                            number: i + 1,
+                            originalDate: installmentDate,
+                            originalValue: currentInstallmentValue,
+                            updatedValue: updatedInstallment,
+                            status: i < paidInstallments ? 'Paga' : 'Não Paga'
+                        });
+                    }
+                } else {
+                    const groupRows = document.querySelectorAll('#installment-groups-list .installment-group-row');
+                    if (groupRows.length === 0) {
+                        alert('Adicione pelo menos um grupo de parcelas no modo irregular.');
+                        return null;
+                    }
+                    let installmentNum = 0;
+                    let hasError = false;
+                    groupRows.forEach((row) => {
+                        if (hasError) return;
+                        const qty = parseInt(row.querySelector('.group-qty').value) || 0;
+                        const rawVal = row.querySelector('.group-value').value;
+                        const val = parseFloat(rawVal.replace(/\./g, '').replace(',', '.')) || 0;
+                        const monthStr = row.querySelector('.group-month').value;
+                        if (qty <= 0 || val <= 0 || !monthStr || monthStr.length < 7) {
+                            alert('Preencha todos os campos dos grupos: quantidade, valor e mês inicial (MM/AAAA).');
+                            hasError = true;
+                            return;
+                        }
+                        const parts = monthStr.split('/');
+                        const groupStartDate = new Date(`${parts[1]}-${parts[0].padStart(2, '0')}-01T12:00:00Z`);
+                        for (let i = 0; i < qty; i++) {
+                            const installmentDate = new Date(groupStartDate);
+                            installmentDate.setMonth(groupStartDate.getMonth() + i);
+                            totalOriginalDebt += val;
+                            installmentNum++;
+                            const updatedInstallment = updateValue(val, installmentDate, finalCalcDate);
+                            installmentsDetails.push({
+                                number: installmentNum,
+                                originalDate: installmentDate,
+                                originalValue: val,
+                                updatedValue: updatedInstallment,
+                                status: (installmentNum - 1) < paidInstallments ? 'Paga' : 'Não Paga'
+                            });
+                        }
                     });
+                    if (hasError) return null;
                 }
 
                 const totalUpdatedValue = installmentsDetails.reduce((sum, inst) => sum + inst.updatedValue, 0);
@@ -1201,7 +1327,7 @@
                 let penaltyBaseValue = 0;
                 if (penaltyBaseType === 'remaining') {
                     penaltyBaseValue = updatedDebt;
-                } else { // 'total'
+                } else {
                     penaltyBaseValue = totalOriginalDebt;
                 }
                 const penaltyValue = penaltyBaseValue * (penaltyPercent / 100);
@@ -1981,9 +2107,27 @@
                 intimationDeadlineWrapper.classList.toggle('hidden', !includeIntimationCheckbox.checked);
             });
 
-            // Listener novo para mostrar/esconder o campo da última parcela
+            // Listener para mostrar/esconder o campo da última parcela
             agreementLastDifferentCheck.addEventListener('change', () => {
                 agreementLastValueContainer.classList.toggle('hidden', !agreementLastDifferentCheck.checked);
+            });
+
+            // Listeners para modo de parcelamento irregular
+            document.getElementById('add-installment-group-btn').addEventListener('click', addInstallmentGroupRow);
+            document.getElementById('sort-installment-groups-btn').addEventListener('click', sortGroupsByDate);
+            document.getElementById('installment-groups-list').addEventListener('click', (e) => {
+                const row = e.target.closest('.installment-group-row');
+                if (!row) return;
+                if (e.target.classList.contains('remove-group-btn')) {
+                    row.remove();
+                    updateTotalIrregularCount();
+                } else if (e.target.classList.contains('move-group-up-btn')) {
+                    const prev = row.previousElementSibling;
+                    if (prev) prev.parentNode.insertBefore(row, prev);
+                } else if (e.target.classList.contains('move-group-down-btn')) {
+                    const next = row.nextElementSibling;
+                    if (next) next.parentNode.insertBefore(next, row);
+                }
             });
 
 
@@ -2055,8 +2199,11 @@
             calculateBtn.addEventListener('click', handleCalculateClick);
             addFineCheckbox.addEventListener('change', () => { if (lastCalculationData && lastCalculationData.type === 'condemnation') handleCalculateClick(); });
 
-            // Recalcula se a base da multa do acordo mudar
+            // Recalcula se a base da multa mudar; alterna modo de parcelamento
             agreementContainer.addEventListener('change', (e) => {
+                if (e.target.name === 'installment-mode') {
+                    toggleInstallmentMode();
+                }
                 if (e.target.name === 'penalty-base' && lastCalculationData && lastCalculationData.type === 'agreement') {
                     handleCalculateClick();
                 }
@@ -2343,12 +2490,20 @@
 
                 // Campos do acordo
                 data.agreementType = document.getElementById('agreement-type').value;
-                data.agreementTotalInstallments = document.getElementById('agreement-total-installments').value;
                 data.agreementPaidInstallments = document.getElementById('agreement-paid-installments').value;
+                data.installmentMode = document.querySelector('input[name="installment-mode"]:checked')?.value || 'regular';
+                // Modo regular
+                data.agreementTotalInstallments = document.getElementById('agreement-total-installments').value;
                 data.agreementInstallmentValue = document.getElementById('agreement-installment-value').value;
                 data.agreementLastDifferentCheck = agreementLastDifferentCheck.checked;
                 data.agreementLastInstallmentValue = document.getElementById('agreement-last-installment-value').value;
                 data.agreementStartDate = document.getElementById('agreement-start-date').value;
+                // Modo irregular
+                data.installmentGroups = Array.from(document.querySelectorAll('#installment-groups-list .installment-group-row')).map(row => ({
+                    qty: row.querySelector('.group-qty').value,
+                    value: row.querySelector('.group-value').value,
+                    month: row.querySelector('.group-month').value
+                }));
                 data.agreementPenalty = agreementPenaltySelect.value;
                 const penaltyBase = document.querySelector('input[name="penalty-base"]:checked');
                 data.penaltyBase = penaltyBase ? penaltyBase.value : 'remaining';
@@ -2436,13 +2591,32 @@
 
                 // Campos do acordo
                 document.getElementById('agreement-type').value = data.agreementType || 'conhecimento';
-                document.getElementById('agreement-total-installments').value = data.agreementTotalInstallments || '';
                 document.getElementById('agreement-paid-installments').value = data.agreementPaidInstallments || '';
+                // Modo de parcelamento
+                const savedMode = data.installmentMode || 'regular';
+                const modeRadio = document.querySelector(`input[name="installment-mode"][value="${savedMode}"]`);
+                if (modeRadio) modeRadio.checked = true;
+                toggleInstallmentMode();
+                // Modo regular
+                document.getElementById('agreement-total-installments').value = data.agreementTotalInstallments || '';
                 document.getElementById('agreement-installment-value').value = data.agreementInstallmentValue || '';
                 agreementLastDifferentCheck.checked = !!data.agreementLastDifferentCheck;
                 agreementLastValueContainer.classList.toggle('hidden', !data.agreementLastDifferentCheck);
                 document.getElementById('agreement-last-installment-value').value = data.agreementLastInstallmentValue || '';
                 document.getElementById('agreement-start-date').value = data.agreementStartDate || '';
+                // Modo irregular
+                if (savedMode === 'irregular' && data.installmentGroups && data.installmentGroups.length > 0) {
+                    document.getElementById('installment-groups-list').innerHTML = '';
+                    data.installmentGroups.forEach(g => {
+                        addInstallmentGroupRow();
+                        const rows = document.querySelectorAll('#installment-groups-list .installment-group-row');
+                        const last = rows[rows.length - 1];
+                        last.querySelector('.group-qty').value = g.qty || '';
+                        last.querySelector('.group-value').value = g.value || '';
+                        last.querySelector('.group-month').value = g.month || '';
+                    });
+                    updateTotalIrregularCount();
+                }
                 agreementPenaltySelect.value = data.agreementPenalty || '20';
                 const safePenaltyBase = ['remaining', 'total'].includes(data.penaltyBase) ? data.penaltyBase : 'remaining';
                 const penaltyRadio = document.querySelector(`input[name="penalty-base"][value="${safePenaltyBase}"]`);
