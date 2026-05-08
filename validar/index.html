@@ -1,0 +1,2364 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Validador de Documentos · JEC Marília</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --ink: #0F1B2D;
+            --ink-2: #2D3D54;
+            --ink-3: #5A6A80;
+            --paper: #FAF7F2;
+            --paper-2: #F2EDE3;
+            --paper-3: #E8E1D2;
+            --line: #D9D2C2;
+            --gold: #A87A1F;
+            --green: #2D6A4F;
+            --green-bg: #E5F1EB;
+            --red: #9B2D26;
+            --red-bg: #F7E5E3;
+            --amber: #A6741A;
+            --amber-bg: #FAF0DC;
+            --shadow-sm: 0 1px 2px rgba(15, 27, 45, .05);
+            --shadow: 0 1px 3px rgba(15, 27, 45, .06), 0 4px 16px rgba(15, 27, 45, .04);
+            --shadow-lg: 0 8px 32px rgba(15, 27, 45, .08);
+            --r: 8px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0
+        }
+
+        html,
+        body {
+            height: 100%
+        }
+
+        body {
+            font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--paper);
+            color: var(--ink);
+            line-height: 1.5;
+            -webkit-font-smoothing: antialiased;
+            font-feature-settings: 'ss01', 'cv11';
+        }
+
+        .wrap {
+            max-width: 880px;
+            margin: 0 auto;
+            padding: 32px 24px 64px
+        }
+
+        header {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding-bottom: 24px;
+            border-bottom: 1px solid var(--line);
+            margin-bottom: 8px
+        }
+
+        .crest {
+            width: 48px;
+            height: 48px;
+            flex: none;
+            background: var(--ink);
+            color: var(--paper);
+            border-radius: 50%;
+            display: grid;
+            place-items: center;
+            font-family: 'Fraunces', serif;
+            font-weight: 600;
+            font-size: 22px;
+            letter-spacing: -.02em;
+        }
+
+        .brand h1 {
+            font-family: 'Fraunces', serif;
+            font-weight: 500;
+            font-size: 22px;
+            letter-spacing: -.015em;
+            line-height: 1.1;
+            font-variation-settings: 'opsz' 32
+        }
+
+        .brand .sub {
+            font-size: 13px;
+            color: var(--ink-3);
+            margin-top: 2px
+        }
+
+        .tabs {
+            display: flex;
+            gap: 4px;
+            margin: 24px 0 28px;
+            border-bottom: 1px solid var(--line)
+        }
+
+        .tab {
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 12px 18px;
+            font: inherit;
+            font-weight: 500;
+            font-size: 14px;
+            color: var(--ink-3);
+            border-bottom: 2px solid transparent;
+            margin-bottom: -1px;
+            transition: color .15s, border-color .15s;
+            letter-spacing: .01em;
+        }
+
+        .tab:hover {
+            color: var(--ink-2)
+        }
+
+        .tab.active {
+            color: var(--ink);
+            border-bottom-color: var(--ink)
+        }
+
+        .panel {
+            display: none
+        }
+
+        .panel.active {
+            display: block
+        }
+
+        h2 {
+            font-family: 'Fraunces', serif;
+            font-weight: 500;
+            font-size: 28px;
+            letter-spacing: -.02em;
+            line-height: 1.15;
+            font-variation-settings: 'opsz' 48;
+            margin-bottom: 8px
+        }
+
+        h3 {
+            font-family: 'Fraunces', serif;
+            font-weight: 500;
+            font-size: 17px;
+            letter-spacing: -.01em;
+            margin-bottom: 8px
+        }
+
+        p.lead {
+            color: var(--ink-2);
+            font-size: 15px;
+            max-width: 60ch;
+            margin-bottom: 24px
+        }
+
+        .rules {
+            background: var(--paper-2);
+            border: 1px solid var(--line);
+            border-radius: var(--r);
+            padding: 16px 20px;
+            margin-bottom: 24px;
+            font-size: 14px
+        }
+
+        .rules h3 {
+            font-size: 13px;
+            font-family: 'DM Sans', sans-serif;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: .08em;
+            color: var(--ink-3);
+            margin-bottom: 10px
+        }
+
+        .rules ul {
+            list-style: none;
+            display: grid;
+            gap: 6px
+        }
+
+        .rules li {
+            padding-left: 18px;
+            position: relative;
+            color: var(--ink-2)
+        }
+
+        .rules li::before {
+            content: "";
+            position: absolute;
+            left: 2px;
+            top: 9px;
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: var(--gold)
+        }
+
+        .rules strong {
+            color: var(--ink);
+            font-weight: 600
+        }
+
+        .dropzone {
+            border: 2px dashed var(--line);
+            border-radius: var(--r);
+            padding: 40px 24px;
+            text-align: center;
+            background: #fff;
+            transition: border-color .15s, background .15s;
+            cursor: pointer;
+        }
+
+        .dropzone:hover,
+        .dropzone.over {
+            border-color: var(--ink);
+            background: var(--paper-2)
+        }
+
+        .dropzone.over {
+            border-style: solid
+        }
+
+        .dropzone .icon {
+            font-size: 28px;
+            display: block;
+            margin-bottom: 8px;
+            font-family: 'Fraunces', serif;
+            font-weight: 400;
+            color: var(--ink-3)
+        }
+
+        .dropzone .title {
+            font-weight: 500;
+            font-size: 15px;
+            margin-bottom: 2px
+        }
+
+        .dropzone .or {
+            font-size: 13px;
+            color: var(--ink-3);
+            margin: 6px 0
+        }
+
+        .btn {
+            background: var(--ink);
+            color: var(--paper);
+            border: none;
+            cursor: pointer;
+            padding: 9px 18px;
+            border-radius: 6px;
+            font: inherit;
+            font-weight: 500;
+            font-size: 14px;
+            transition: opacity .15s, transform .05s;
+        }
+
+        .btn:hover {
+            opacity: .9
+        }
+
+        .btn:active {
+            transform: translateY(1px)
+        }
+
+        .btn.ghost {
+            background: transparent;
+            color: var(--ink);
+            border: 1px solid var(--line)
+        }
+
+        .btn.ghost:hover {
+            background: var(--paper-2);
+            opacity: 1
+        }
+
+        .btn.link {
+            background: transparent;
+            color: var(--ink-2);
+            border: none;
+            text-decoration: underline;
+            text-underline-offset: 3px;
+            text-decoration-color: var(--line);
+            padding: 6px 8px;
+            font-size: 13px
+        }
+
+        .btn.link:hover {
+            color: var(--ink);
+            text-decoration-color: var(--ink-3)
+        }
+
+        .btn.sm {
+            padding: 6px 12px;
+            font-size: 13px
+        }
+
+        .btn.active-kind {
+            background: var(--ink);
+            color: var(--paper);
+            border-color: var(--ink)
+        }
+
+        .results {
+            margin-top: 24px;
+            display: grid;
+            gap: 10px
+        }
+
+        .summary {
+            padding: 14px 18px;
+            border-radius: var(--r);
+            font-size: 14px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 10px
+        }
+
+        .summary.ok {
+            background: var(--green-bg);
+            color: var(--green)
+        }
+
+        .summary.bad {
+            background: var(--red-bg);
+            color: var(--red)
+        }
+
+        .summary.mixed {
+            background: var(--amber-bg);
+            color: var(--amber)
+        }
+
+        .file-card {
+            background: #fff;
+            border: 1px solid var(--line);
+            border-left: 3px solid var(--line);
+            border-radius: var(--r);
+            padding: 14px 18px;
+            font-size: 14px;
+        }
+
+        .file-card.ok {
+            border-left-color: var(--green)
+        }
+
+        .file-card.bad {
+            border-left-color: var(--red)
+        }
+
+        .file-card.warn {
+            border-left-color: var(--amber)
+        }
+
+        .file-head {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            justify-content: space-between;
+            margin-bottom: 8px
+        }
+
+        .file-name {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 13px;
+            word-break: break-all;
+            color: var(--ink);
+            font-weight: 500
+        }
+
+        .badge {
+            flex: none;
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: .06em;
+            text-transform: uppercase;
+            padding: 3px 8px;
+            border-radius: 4px
+        }
+
+        .badge.ok {
+            background: var(--green-bg);
+            color: var(--green)
+        }
+
+        .badge.bad {
+            background: var(--red-bg);
+            color: var(--red)
+        }
+
+        .badge.warn {
+            background: var(--amber-bg);
+            color: var(--amber)
+        }
+
+        .checks {
+            display: grid;
+            gap: 4px;
+            margin-top: 8px;
+            font-size: 13px
+        }
+
+        .check {
+            display: flex;
+            align-items: flex-start;
+            gap: 8px;
+            color: var(--ink-2)
+        }
+
+        .check .mark {
+            font-family: 'JetBrains Mono', monospace;
+            flex: none;
+            font-weight: 500;
+            font-size: 12px;
+            width: 14px
+        }
+
+        .check.pass .mark {
+            color: var(--green)
+        }
+
+        .check.fail .mark {
+            color: var(--red)
+        }
+
+        .check.warn .mark {
+            color: var(--amber)
+        }
+
+        .check .info {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 12px;
+            color: var(--ink-3)
+        }
+
+        .issues {
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px dashed var(--line);
+            font-size: 13px;
+            color: var(--ink-2)
+        }
+
+        .issues li {
+            margin-left: 18px;
+            margin-bottom: 4px
+        }
+
+        .sig-row {
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px dashed var(--line);
+            font-size: 13px
+        }
+
+        .sig-status {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 6px;
+            flex-wrap: wrap
+        }
+
+        .sig-status .label {
+            font-weight: 500;
+            color: var(--ink-2)
+        }
+
+        .sig-status .value {
+            color: var(--ink-3)
+        }
+
+        .sig-status .value.detected {
+            color: var(--green);
+            font-weight: 500
+        }
+
+        .sig-status .value.undetected {
+            color: var(--amber)
+        }
+
+        .sig-radios {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 4px 14px;
+            margin-top: 4px
+        }
+
+        .sig-radios label {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            cursor: pointer;
+            color: var(--ink-2);
+            user-select: none
+        }
+
+        .sig-radios input[type=radio] {
+            margin: 0;
+            cursor: pointer;
+            accent-color: var(--ink)
+        }
+
+        .sig-note {
+            font-size: 12px;
+            color: var(--ink-3);
+            margin-top: 6px;
+            font-style: italic
+        }
+
+        .email-section {
+            margin-top: 32px;
+            padding-top: 24px;
+            border-top: 1px solid var(--line)
+        }
+
+        .email-section-head {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-bottom: 6px
+        }
+
+        .email-section-head h3 {
+            margin: 0
+        }
+
+        .email-actions {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap
+        }
+
+        .email-output {
+            background: #fff;
+            border: 1px solid var(--line);
+            border-radius: var(--r);
+            overflow: hidden;
+            margin-top: 12px
+        }
+
+        .email-output-head {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 16px;
+            background: var(--paper-2);
+            border-bottom: 1px solid var(--line)
+        }
+
+        .email-output-title {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--ink-3);
+            text-transform: uppercase;
+            letter-spacing: .06em
+        }
+
+        .email-body {
+            padding: 18px 22px;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 14px;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            line-height: 1.65;
+            color: var(--ink)
+        }
+
+        .gate {
+            max-width: 420px;
+            margin: 48px auto;
+            background: #fff;
+            border: 1px solid var(--line);
+            border-radius: var(--r);
+            padding: 32px;
+            box-shadow: var(--shadow)
+        }
+
+        .gate h2 {
+            margin-bottom: 6px
+        }
+
+        .gate p.lead {
+            margin-bottom: 20px;
+            font-size: 14px
+        }
+
+        .field {
+            display: grid;
+            gap: 6px;
+            margin-bottom: 16px
+        }
+
+        .field label {
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--ink-2)
+        }
+
+        .field input {
+            font: inherit;
+            font-size: 14px;
+            padding: 10px 12px;
+            border: 1px solid var(--line);
+            border-radius: 6px;
+            background: var(--paper);
+            color: var(--ink);
+            transition: border-color .15s, background .15s
+        }
+
+        .field input:focus {
+            outline: none;
+            border-color: var(--ink);
+            background: #fff
+        }
+
+        .gate-actions {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            flex-wrap: wrap
+        }
+
+        .subtabs {
+            display: flex;
+            gap: 2px;
+            background: var(--paper-2);
+            padding: 3px;
+            border-radius: 7px;
+            margin-bottom: 24px;
+            width: fit-content
+        }
+
+        .subtab {
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 7px 14px;
+            font: inherit;
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--ink-3);
+            border-radius: 5px;
+            transition: background .15s, color .15s
+        }
+
+        .subtab:hover {
+            color: var(--ink-2)
+        }
+
+        .subtab.active {
+            background: #fff;
+            color: var(--ink);
+            box-shadow: var(--shadow-sm)
+        }
+
+        .subpanel {
+            display: none
+        }
+
+        .subpanel.active {
+            display: block
+        }
+
+        .notice {
+            background: var(--amber-bg);
+            border: 1px solid var(--paper-3);
+            border-left: 3px solid var(--amber);
+            padding: 12px 16px;
+            border-radius: var(--r);
+            font-size: 13px;
+            color: var(--ink-2);
+            margin-bottom: 20px
+        }
+
+        .notice strong {
+            color: var(--ink)
+        }
+
+        .link-input {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-bottom: 16px
+        }
+
+        .link-input input {
+            flex: 1;
+            min-width: 240px;
+            font: inherit;
+            font-size: 14px;
+            padding: 10px 12px;
+            border: 1px solid var(--line);
+            border-radius: 6px;
+            background: #fff;
+            color: var(--ink)
+        }
+
+        .link-input input:focus {
+            outline: none;
+            border-color: var(--ink)
+        }
+
+        .modal {
+            position: fixed;
+            inset: 0;
+            background: rgba(15, 27, 45, .5);
+            display: none;
+            place-items: center;
+            z-index: 100;
+            padding: 24px
+        }
+
+        .modal.show {
+            display: grid
+        }
+
+        .modal-card {
+            background: #fff;
+            border-radius: var(--r);
+            padding: 28px;
+            max-width: 500px;
+            width: 100%;
+            box-shadow: var(--shadow-lg)
+        }
+
+        .modal-card h3 {
+            font-size: 20px;
+            margin-bottom: 6px
+        }
+
+        .modal-card p {
+            font-size: 14px;
+            color: var(--ink-2);
+            margin-bottom: 16px
+        }
+
+        .hash-out {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 12px;
+            background: var(--paper-2);
+            padding: 12px;
+            border-radius: 6px;
+            word-break: break-all;
+            border: 1px solid var(--line);
+            margin-top: 8px;
+            color: var(--ink-2);
+            user-select: all
+        }
+
+        .hidden {
+            display: none !important
+        }
+
+        footer {
+            margin-top: 48px;
+            padding-top: 24px;
+            border-top: 1px solid var(--line);
+            font-size: 12px;
+            color: var(--ink-3);
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 8px
+        }
+
+        .email-meta {
+            background: var(--paper-2);
+            border: 1px solid var(--line);
+            border-radius: var(--r);
+            padding: 12px 16px;
+            font-size: 13px;
+            color: var(--ink-2);
+            margin-bottom: 16px
+        }
+
+        .email-meta dt {
+            display: inline;
+            font-weight: 500;
+            color: var(--ink)
+        }
+
+        .email-meta dd {
+            display: inline;
+            margin-right: 16px
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 14px;
+            height: 14px;
+            border: 2px solid var(--line);
+            border-top-color: var(--ink);
+            border-radius: 50%;
+            animation: spin .8s linear infinite;
+            vertical-align: middle;
+            margin-right: 6px
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg)
+            }
+        }
+
+        .processing {
+            text-align: center;
+            padding: 24px;
+            color: var(--ink-3);
+            font-size: 14px
+        }
+
+        .cases-list {
+            display: grid;
+            gap: 8px;
+            margin-bottom: 8px
+        }
+
+        .case-item {
+            background: #fff;
+            border: 1px solid var(--line);
+            border-radius: var(--r);
+            overflow: hidden
+        }
+
+        .case-toggle {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            padding: 12px 16px;
+            cursor: pointer;
+            user-select: none
+        }
+
+        .case-toggle input[type=checkbox] {
+            margin: 3px 0 0;
+            cursor: pointer;
+            accent-color: var(--ink);
+            flex: none;
+            width: 16px;
+            height: 16px
+        }
+
+        .case-title {
+            font-weight: 500;
+            font-size: 14px;
+            color: var(--ink);
+            flex: 1;
+            line-height: 1.4
+        }
+
+        .case-detail {
+            padding: 0 16px 14px 42px
+        }
+
+        .case-detail textarea {
+            width: 100%;
+            font: inherit;
+            font-size: 13px;
+            padding: 8px 10px;
+            border: 1px solid var(--line);
+            border-radius: 6px;
+            background: var(--paper);
+            color: var(--ink);
+            resize: vertical;
+            min-height: 70px
+        }
+
+        .case-detail textarea:focus {
+            outline: none;
+            border-color: var(--ink);
+            background: #fff
+        }
+
+        .body-preview {
+            background: #fff;
+            border: 1px solid var(--line);
+            border-radius: var(--r);
+            padding: 12px 16px;
+            font-size: 13px;
+            color: var(--ink-2);
+            max-height: 180px;
+            overflow-y: auto;
+            margin-bottom: 16px;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            font-family: 'DM Sans', sans-serif;
+            line-height: 1.5
+        }
+
+        .body-preview-head {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--ink-3);
+            text-transform: uppercase;
+            letter-spacing: .06em;
+            margin-bottom: 6px
+        }
+
+        .body-empty-warn {
+            background: var(--amber-bg);
+            border: 1px solid var(--paper-3);
+            border-left: 3px solid var(--amber);
+            padding: 10px 14px;
+            border-radius: var(--r);
+            font-size: 13px;
+            color: var(--ink-2);
+            margin-bottom: 16px
+        }
+
+        @media (max-width:520px) {
+            .wrap {
+                padding: 20px 16px 48px
+            }
+
+            h2 {
+                font-size: 24px
+            }
+
+            .dropzone {
+                padding: 28px 16px
+            }
+
+            .sig-radios {
+                gap: 6px 12px
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="wrap">
+
+        <header>
+            <div class="crest">JEC</div>
+            <div class="brand">
+                <h1>Validador de Documentos</h1>
+                <div class="sub">Juizado Especial Cível · Marília/SP</div>
+            </div>
+        </header>
+
+        <nav class="tabs" role="tablist">
+            <button class="tab active" data-tab="public" role="tab">Pública</button>
+            <button class="tab" data-tab="private" role="tab">Acesso restrito</button>
+        </nav>
+
+        <!-- ============ PUBLIC TAB ============ -->
+        <section id="panel-public" class="panel active">
+            <h2>Verifique seus arquivos antes de enviar</h2>
+            <p class="lead">Esta ferramenta confere se os arquivos a serem enviados ao Juizado por e-mail atendem aos
+                requisitos do sistema. A validação ocorre integralmente no seu navegador — nenhum arquivo é enviado para
+                qualquer servidor.</p>
+
+            <div class="rules">
+                <h3>Requisitos</h3>
+                <ul>
+                    <li><strong>Documentos:</strong> PDF</li>
+                    <li><strong>Áudios:</strong> MP3, WMA, WAV</li>
+                    <li><strong>Imagens:</strong> JPEG, JPG, PNG</li>
+                    <li><strong>Vídeos:</strong> MP4, WMV, MPG, MPEG</li>
+                    <li><strong>Tamanho:</strong> até 10 MB por arquivo</li>
+                    <li><strong>Nome:</strong> letras (com ou sem acento), números, espaços, hífen (-) e underline (_)
+                    </li>
+                    <li><strong>Acima de 10 MB ou outros formatos:</strong> envie via Google Drive, OneDrive ou Dropbox
+                        em pasta única, com link sem senha</li>
+                    <li><strong>Petição inicial em PDF:</strong> deve estar assinada (eletronicamente ou à mão na cópia
+                        digitalizada)</li>
+                </ul>
+            </div>
+
+            <div class="dropzone" id="dz-public" tabindex="0">
+                <span class="icon">+</span>
+                <div class="title">Arraste os arquivos aqui</div>
+                <div class="or">ou</div>
+                <button class="btn" type="button">Selecionar arquivos</button>
+                <input type="file" multiple hidden id="input-public">
+            </div>
+
+            <div class="results" id="results-public"></div>
+        </section>
+
+        <!-- ============ PRIVATE TAB ============ -->
+        <section id="panel-private" class="panel">
+
+            <div id="gate" class="gate">
+                <h2>Acesso restrito</h2>
+                <p class="lead">Área de uso interno da Secretaria do Juizado.</p>
+                <div class="field">
+                    <label for="gate-pw">Senha</label>
+                    <input type="password" id="gate-pw" autocomplete="current-password">
+                </div>
+                <div id="gate-error" class="notice hidden">Senha incorreta.</div>
+                <div class="gate-actions">
+                    <button class="btn" id="gate-submit">Entrar</button>
+                    <button class="btn link" id="gate-show-hash">Gerar hash de nova senha</button>
+                </div>
+            </div>
+
+            <div id="private-area" class="hidden">
+                <h2>Validação interna</h2>
+                <p class="lead">Confira os arquivos recebidos, parseie um e-mail salvo (.eml/.msg) ou valide o formato
+                    de um link de nuvem. Em PDFs, há detecção automática de assinatura digital e classificação manual de
+                    assinatura física.</p>
+
+                <nav class="subtabs">
+                    <button class="subtab active" data-sub="files">Anexos do e-mail</button>
+                    <button class="subtab" data-sub="email">Arquivo .eml/.msg</button>
+                    <button class="subtab" data-sub="link">Link de nuvem</button>
+                    <button class="subtab" data-sub="cases">Outros casos</button>
+                </nav>
+
+                <div id="sub-files" class="subpanel active">
+                    <div class="notice">
+                        <strong>Como usar:</strong> arraste os anexos diretamente do painel de anexos do Outlook para a
+                        área abaixo. Tamanho, nome, tipo e detecção de assinatura digital ocorrem sem upload.
+                    </div>
+                    <div class="dropzone" id="dz-priv" tabindex="0">
+                        <span class="icon">+</span>
+                        <div class="title">Arraste os anexos aqui</div>
+                        <div class="or">ou</div>
+                        <button class="btn" type="button">Selecionar arquivos</button>
+                        <input type="file" multiple hidden id="input-priv">
+                    </div>
+                    <div class="results" id="results-priv"></div>
+                </div>
+
+                <div id="sub-email" class="subpanel">
+                    <div class="notice">
+                        <strong>Como obter:</strong> no Outlook desktop, arraste a mensagem para o desktop (gera
+                        <code>.msg</code>); no Outlook web, use "Salvar como .eml". O parser extrai os metadados de
+                        todos os anexos sem precisar dos arquivos individualmente. <strong>A detecção automática de
+                            assinatura digital, nesta modalidade, não é possível</strong> — ela exige o PDF em si e deve
+                        ser classificada manualmente.
+                    </div>
+                    <div class="dropzone" id="dz-email" tabindex="0">
+                        <span class="icon">+</span>
+                        <div class="title">Carregue o arquivo .eml ou .msg</div>
+                        <div class="or">ou</div>
+                        <button class="btn" type="button">Selecionar arquivo</button>
+                        <input type="file" accept=".eml,.msg,message/rfc822,application/vnd.ms-outlook" hidden
+                            id="input-email">
+                    </div>
+                    <div id="email-meta" class="email-meta hidden"></div>
+                    <div class="results" id="results-email"></div>
+                </div>
+
+                <div id="sub-link" class="subpanel">
+                    <div class="notice">
+                        <strong>Limitação:</strong> por restrição de CORS, o navegador não consegue listar o conteúdo de
+                        pastas compartilhadas. Esta validação confere apenas o <strong>formato do link</strong>
+                        (provedor reconhecido, HTTPS, padrão de pasta, ausência de senha óbvia). A conferência dos
+                        arquivos em si é manual.
+                    </div>
+                    <div class="link-input">
+                        <input type="url" id="input-link" placeholder="https://drive.google.com/drive/folders/...">
+                        <button class="btn" id="btn-link">Validar</button>
+                    </div>
+                    <div class="results" id="results-link"></div>
+                </div>
+
+                <div id="sub-cases" class="subpanel">
+                    <div class="notice">
+                        <strong>Como usar:</strong> selecione as situações aplicáveis ao caso recebido. A minuta será
+                        gerada combinando todos os trechos pertinentes — ideal para cenários que não envolvem (apenas)
+                        inadequação de arquivo, como relato no corpo do e-mail, ausência de petição inicial ou de
+                        documentos essenciais.
+                    </div>
+
+                    <div class="cases-list">
+                        <div class="case-item">
+                            <label class="case-toggle">
+                                <input type="checkbox" data-case="report-only">
+                                <span class="case-title">A parte fez o relato no corpo do e-mail (sem petição formal
+                                    anexada)</span>
+                            </label>
+                            <div class="case-detail hidden" data-detail-for="report-only">
+                                <div class="sig-radios" style="margin-top:0">
+                                    <label><input type="radio" name="report-attachments" value="no" checked> Sem
+                                        documentos anexados</label>
+                                    <label><input type="radio" name="report-attachments" value="yes"> Com documentos
+                                        anexados</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="case-item">
+                            <label class="case-toggle">
+                                <input type="checkbox" data-case="no-petition">
+                                <span class="case-title">Foram enviados apenas documentos, sem petição inicial</span>
+                            </label>
+                        </div>
+
+                        <div class="case-item">
+                            <label class="case-toggle">
+                                <input type="checkbox" data-case="missing-docs">
+                                <span class="case-title">Faltam documentos essenciais à ação</span>
+                            </label>
+                            <div class="case-detail hidden" data-detail-for="missing-docs">
+                                <textarea data-detail-input="missing-docs-detail"
+                                    placeholder="Descreva os documentos essenciais que faltam (ex.: contrato; nota fiscal; comprovante de pagamento; boletim de ocorrência etc.)"></textarea>
+                            </div>
+                        </div>
+
+                        <div class="case-item">
+                            <label class="case-toggle">
+                                <input type="checkbox" data-case="no-id">
+                                <span class="case-title">Petição assinada fisicamente, sem documento de identidade da
+                                    parte autora</span>
+                            </label>
+                        </div>
+
+                        <div class="case-item">
+                            <label class="case-toggle">
+                                <input type="checkbox" data-case="no-residence">
+                                <span class="case-title">Comprovante de residência ausente (relevante para competência
+                                    territorial)</span>
+                            </label>
+                        </div>
+
+                        <div class="case-item">
+                            <label class="case-toggle">
+                                <input type="checkbox" data-case="illegible">
+                                <span class="case-title">Documentos ilegíveis</span>
+                            </label>
+                            <div class="case-detail hidden" data-detail-for="illegible">
+                                <textarea data-detail-input="illegible-detail"
+                                    placeholder="Descreva quais documentos estão ilegíveis"></textarea>
+                            </div>
+                        </div>
+
+                        <div class="case-item">
+                            <label class="case-toggle">
+                                <input type="checkbox" data-case="custom">
+                                <span class="case-title">Outras observações (texto livre)</span>
+                            </label>
+                            <div class="case-detail hidden" data-detail-for="custom">
+                                <textarea data-detail-input="custom-detail"
+                                    placeholder="Texto livre que será inserido na minuta"></textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="email-section" style="margin-top:8px;border-top:none;padding-top:0">
+                        <div class="email-section-head">
+                            <h3>Minuta de resposta</h3>
+                            <button class="btn ghost sm" id="btn-cases-generate">Gerar minuta</button>
+                        </div>
+                        <div class="email-output hidden" id="cases-email-output">
+                            <div class="email-output-head">
+                                <span class="email-output-title">Minuta — outros casos</span>
+                                <button class="btn ghost sm" id="btn-cases-copy">Copiar</button>
+                            </div>
+                            <div class="email-body" id="cases-email-body"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <div class="modal" id="hash-modal">
+            <div class="modal-card">
+                <h3>Gerar hash de nova senha</h3>
+                <p>Digite a senha desejada. O hash SHA-256 será gerado abaixo. Copie o valor e substitua a constante
+                    <code>PASSWORD_HASH</code> no código-fonte do arquivo.
+                </p>
+                <div class="field">
+                    <label for="hash-pw">Nova senha</label>
+                    <input type="text" id="hash-pw">
+                </div>
+                <div class="hash-out" id="hash-out">—</div>
+                <div style="display:flex;gap:8px;margin-top:16px;justify-content:flex-end">
+                    <button class="btn ghost" id="hash-close">Fechar</button>
+                </div>
+            </div>
+        </div>
+
+        <footer>
+            <span>JEC Marília · 31ª Circunscrição Judiciária</span>
+            <span>Validação 100% client-side · Nenhum arquivo é enviado a servidor</span>
+        </footer>
+
+    </div>
+
+    <script>
+        /* =========================================================
+           CONFIGURAÇÃO
+           ========================================================= */
+
+        // Hash SHA-256 da senha de acesso à aba privada.
+        // Default: "admin"
+        // Para trocar: clique em "Gerar hash de nova senha", copie e substitua aqui.
+        const PASSWORD_HASH = '8c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918';
+
+        const RULES = {
+            formats: {
+                'Documentos': ['pdf'],
+                'Áudios': ['mp3', 'wma', 'wav'],
+                'Imagens': ['jpeg', 'jpg', 'png'],
+                'Vídeos': ['mp4', 'wmv', 'mpg', 'mpeg']
+            },
+            maxSize: 10 * 1024 * 1024,             // 10 MB
+            filenameRegex: /^[\p{L}\p{N} _\-]+$/u,    // letras Unicode (acentos OK), números, espaço, hífen e underline
+            extensionRegex: /^[a-zA-Z0-9]+$/
+        };
+
+        const ALLOWED_FORMATS = Object.values(RULES.formats).flat();
+
+        // Tokens que sugerem que um arquivo é petição inicial (insensível a acento e maiúsculas).
+        // Usado para limitar a exibição do aviso de assinatura aos PDFs efetivamente relevantes.
+        const PETITION_TOKENS = [
+            'inicial',
+            'peticao',
+            'exordial',
+            'vestibular',
+            'inaugural',
+            'ajuizamento',
+            'atermacao',
+            'reclamacao',
+            'acao',
+            'demanda'
+        ];
+
+        // Normaliza nome para comparação: minúsculas, sem acento, separadores → espaço
+        function normalizeName(name) {
+            return name.toLowerCase()
+                .normalize('NFD')
+                .replace(/[\u0300-\u036f]/g, '')
+                .replace(/\.[a-z0-9]+$/, '')   // remove extensão
+                .replace(/[._\-]+/g, ' ');
+        }
+
+        function looksLikePetition(name) {
+            const norm = normalizeName(name);
+            return PETITION_TOKENS.some(t => new RegExp('\\b' + t + '\\b').test(norm));
+        }
+
+        /* =========================================================
+           UTILIDADES
+           ========================================================= */
+
+        const $ = sel => document.querySelector(sel);
+        const $$ = sel => document.querySelectorAll(sel);
+
+        function formatBytes(b) {
+            if (b == null || isNaN(b)) return '—';
+            if (b < 1024) return b + ' B';
+            if (b < 1024 * 1024) return (b / 1024).toFixed(1) + ' KB';
+            return (b / (1024 * 1024)).toFixed(2) + ' MB';
+        }
+
+        async function sha256(text) {
+            const buf = new TextEncoder().encode(text);
+            const hash = await crypto.subtle.digest('SHA-256', buf);
+            return [...new Uint8Array(hash)]
+                .map(b => b.toString(16).padStart(2, '0'))
+                .join('');
+        }
+
+        function escapeHtml(s) {
+            return String(s).replace(/[&<>"']/g, c => ({
+                '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+            }[c]));
+        }
+
+        /* =========================================================
+           DETECÇÃO DE ASSINATURA DIGITAL EM PDFs
+           ========================================================= */
+        /*
+          Estratégia: ler o arquivo como bytes, decodificar como Latin1 e buscar
+          marcadores típicos de assinatura digital:
+            /Type /Sig                       — dicionário de assinatura
+            /ByteRange [                     — intervalo de bytes assinados
+            /Filter /Adobe.PPKLite           — filtro Adobe
+            /SubFilter /adbe.pkcs7.detached  — PKCS#7 (usado por ICP-Brasil)
+            /SubFilter /ETSI.CAdES.detached  — CAdES (assinatura avançada)
+            /FT /Sig                         — campo de formulário do tipo assinatura
+        
+          Limitações conhecidas:
+            - Não detecta assinaturas físicas (rubricas escaneadas) — exige OCR
+            - Pode haver falso negativo em PDFs com estrutura corrompida
+            - O servidor pode sobrescrever a detecção via radio buttons
+        */
+        async function detectPdfSignature(file) {
+            try {
+                const buf = await file.arrayBuffer();
+                const bytes = new Uint8Array(buf);
+                const decoder = new TextDecoder('latin1');
+
+                let str;
+                if (bytes.length <= 2 * 1024 * 1024) {
+                    str = decoder.decode(bytes);
+                } else {
+                    // Para arquivos grandes, foca em início e fim (onde fica o trailer/xref)
+                    const head = decoder.decode(bytes.subarray(0, 50 * 1024));
+                    const tail = decoder.decode(bytes.subarray(bytes.length - 500 * 1024));
+                    str = head + '\n' + tail;
+                }
+
+                const patterns = [
+                    /\/Type\s*\/Sig\b/,
+                    /\/ByteRange\s*\[/,
+                    /\/Filter\s*\/Adobe\.PPK/,
+                    /\/SubFilter\s*\/(?:adbe\.pkcs7|ETSI\.)/i,
+                    /\/FT\s*\/Sig\b/
+                ];
+
+                for (const p of patterns) {
+                    if (p.test(str)) return 'electronic';
+                }
+                return 'undetermined';
+            } catch (e) {
+                console.warn('Erro na detecção de assinatura:', e);
+                return 'undetermined';
+            }
+        }
+
+        /* =========================================================
+           VALIDAÇÃO DE ARQUIVO INDIVIDUAL
+           ========================================================= */
+
+        function validateFile({ name, size, type, signatureAuto }) {
+            const dot = name.lastIndexOf('.');
+            const ext = dot > -1 ? name.substring(dot + 1).toLowerCase() : '';
+            const base = dot > -1 ? name.substring(0, dot) : name;
+
+            // Formato
+            const formatPass = ALLOWED_FORMATS.includes(ext);
+
+            // Tamanho
+            const sizeKnown = size != null && !isNaN(size);
+            const sizePass = sizeKnown ? size <= RULES.maxSize : null;
+
+            // Nome
+            const baseValid = base.length > 0 && RULES.filenameRegex.test(base);
+            const extValid = ext.length === 0 || RULES.extensionRegex.test(ext);
+            const namePass = baseValid && extValid;
+
+            const issues = [];
+            if (!formatPass) {
+                issues.push(
+                    ext
+                        ? `Formato .${ext} não aceito. Use ${ALLOWED_FORMATS.map(f => '.' + f).join(', ')}.`
+                        : `O arquivo não possui extensão identificável.`
+                );
+            }
+            if (sizePass === false) {
+                issues.push(`Arquivo de ${formatBytes(size)} excede o limite de 10 MB. Envie via link de nuvem (Google Drive, OneDrive ou Dropbox), em pasta única e sem senha.`);
+            }
+            if (!namePass) {
+                const invalid = [...base].filter(c => !/[\p{L}\p{N} _\-]/u.test(c));
+                const unique = [...new Set(invalid)];
+                if (unique.length) {
+                    issues.push(
+                        `Caracteres não permitidos no nome: ${unique.map(c => '"' + c + '"').join(', ')}. ` +
+                        `Renomeie usando apenas letras, números, espaços, hífen (-) e underline (_).`
+                    );
+                } else if (!baseValid) {
+                    issues.push('Nome do arquivo inválido (vazio ou apenas com caracteres não permitidos).');
+                }
+            }
+
+            // Assinatura: aplicável apenas a PDFs
+            const signatureApplies = ext === 'pdf';
+            const isPetition = signatureApplies && looksLikePetition(name);
+
+            // Estado inicial da assinatura:
+            //   - Não-PDF                       → 'na'
+            //   - PDF que parece petição        → resultado da detecção automática (electronic | undetermined)
+            //   - PDF que NÃO parece petição    → 'na' (servidor pode trocar manualmente se for o caso)
+            let initialStatus;
+            if (!signatureApplies) initialStatus = 'na';
+            else if (isPetition) initialStatus = signatureAuto || 'undetermined';
+            else initialStatus = 'na';
+
+            const signature = {
+                applies: signatureApplies,
+                isPetition,
+                auto: signatureApplies ? (signatureAuto || 'undetermined') : 'na',
+                status: initialStatus,
+                isManual: false
+            };
+
+            return {
+                name, size, type, ext,
+                checks: {
+                    format: { pass: formatPass, label: 'Formato', detail: ext ? '.' + ext : '(sem extensão)' },
+                    size: { pass: sizePass, label: 'Tamanho', detail: sizeKnown ? formatBytes(size) : 'desconhecido' },
+                    name: { pass: namePass, label: 'Nome', detail: name }
+                },
+                signature,
+                valid: formatPass && (sizePass !== false) && namePass,
+                issues
+            };
+        }
+
+        async function processFile(file) {
+            const isPdf = file.name.toLowerCase().endsWith('.pdf');
+            const signatureAuto = isPdf ? await detectPdfSignature(file) : 'na';
+            return validateFile({
+                name: file.name, size: file.size, type: file.type, signatureAuto
+            });
+        }
+
+        /* =========================================================
+           AVALIAÇÃO FINAL (incluindo assinatura)
+           ========================================================= */
+
+        function finalStatus(r, mode) {
+            if (!r.valid) return 'bad';
+            if (mode === 'private' && r.signature.applies) {
+                if (r.signature.status === 'none') return 'bad';
+                if (r.signature.status === 'undetermined') return 'warn';
+            }
+            return 'ok';
+        }
+
+        function fileIssuesForEmail(r, mode) {
+            const list = [...r.issues];
+            if (mode === 'private' && r.signature.applies && r.signature.status === 'none') {
+                list.push('Petição sem assinatura. Necessário assinar — eletronicamente (com certificado digital) ou à mão, com a rubrica visível na cópia digitalizada — e reenviar.');
+            }
+            return list;
+        }
+
+        /* =========================================================
+           RENDERIZAÇÃO DE RESULTADOS
+           ========================================================= */
+
+        function renderResults(results, container, opts = {}) {
+            const mode = opts.mode || 'public';
+            container.innerHTML = '';
+            if (!results.length) return;
+
+            // Sumário
+            const statuses = results.map(r => finalStatus(r, mode));
+            const okCount = statuses.filter(s => s === 'ok').length;
+            const total = results.length;
+            const summary = document.createElement('div');
+            let summaryClass, summaryText;
+            if (okCount === total) {
+                summaryClass = 'ok';
+                summaryText = `Todos os ${total} arquivo${total > 1 ? 's estão' : ' está'} em conformidade.`;
+            } else if (okCount === 0) {
+                summaryClass = 'bad';
+                summaryText = `Nenhum dos ${total} arquivo${total > 1 ? 's atende' : ' atende'} aos requisitos.`;
+            } else {
+                summaryClass = 'mixed';
+                summaryText = `${okCount} de ${total} arquivos em conformidade. ${total - okCount} precisa${total - okCount > 1 ? 'm' : ''} de ajuste.`;
+            }
+            summary.className = 'summary ' + summaryClass;
+            summary.textContent = summaryText;
+            container.appendChild(summary);
+
+            // Cards
+            results.forEach((r, idx) => {
+                const status = finalStatus(r, mode);
+                const card = document.createElement('div');
+                card.className = 'file-card ' + (status === 'ok' ? 'ok' : status === 'warn' ? 'warn' : 'bad');
+                card.dataset.idx = idx;
+
+                const head = document.createElement('div');
+                head.className = 'file-head';
+                const badgeCls = status === 'ok' ? 'ok' : status === 'warn' ? 'warn' : 'bad';
+                const badgeTxt = status === 'ok' ? 'OK' : status === 'warn' ? 'verificar' : 'ajuste';
+                head.innerHTML = `
+      <div class="file-name">${escapeHtml(r.name)}</div>
+      <span class="badge ${badgeCls}">${badgeTxt}</span>
+    `;
+                card.appendChild(head);
+
+                const checks = document.createElement('div');
+                checks.className = 'checks';
+                for (const key of ['format', 'size', 'name']) {
+                    const c = r.checks[key];
+                    const passClass = c.pass === true ? 'pass' : c.pass === false ? 'fail' : '';
+                    const mark = c.pass === true ? '✓' : c.pass === false ? '✗' : '?';
+                    const row = document.createElement('div');
+                    row.className = 'check ' + passClass;
+                    row.innerHTML = `
+        <span class="mark">${mark}</span>
+        <span>${c.label}: <span class="info">${escapeHtml(c.detail)}</span></span>
+      `;
+                    checks.appendChild(row);
+                }
+                card.appendChild(checks);
+
+                // Linha de assinatura
+                //   - Aba pública: apenas se o arquivo é PDF e o nome sugere petição (looksLikePetition)
+                //   - Aba restrita: para todo PDF (servidor classifica caso a caso); pré-seleção
+                //     já tratada em validateFile (não-petição → 'na' por default)
+                const showSignature = r.signature.applies && (mode === 'private' || r.signature.isPetition);
+                if (showSignature) {
+                    const sigRow = document.createElement('div');
+                    sigRow.className = 'sig-row';
+
+                    const autoStatus = document.createElement('div');
+                    autoStatus.className = 'sig-status';
+                    const autoLabel = r.signature.auto === 'electronic'
+                        ? '<span class="value detected">✓ Assinatura digital detectada</span>'
+                        : '<span class="value undetected">⚠ Assinatura digital não detectada</span>';
+                    autoStatus.innerHTML = `<span class="label">Detecção automática:</span> ${autoLabel}`;
+                    sigRow.appendChild(autoStatus);
+
+                    if (mode === 'private') {
+                        const radios = document.createElement('div');
+                        radios.className = 'sig-radios';
+                        const sigOpts = [
+                            { v: 'electronic', l: 'Eletrônica' },
+                            { v: 'physical', l: 'Física (rubrica visível)' },
+                            { v: 'none', l: 'Sem assinatura' },
+                            { v: 'na', l: 'Não é petição' }
+                        ];
+                        sigOpts.forEach(o => {
+                            const checked = r.signature.status === o.v ? 'checked' : '';
+                            radios.innerHTML += `
+            <label>
+              <input type="radio" name="sig-${idx}" value="${o.v}" ${checked} data-idx="${idx}">
+              ${o.l}
+            </label>
+          `;
+                        });
+                        sigRow.appendChild(radios);
+
+                        const note = document.createElement('div');
+                        note.className = 'sig-note';
+                        if (!r.signature.isPetition) {
+                            note.textContent = 'O nome do arquivo não sugere petição inicial. Marque manualmente caso seja.';
+                        } else if (r.signature.auto === 'undetermined') {
+                            note.textContent = 'Sem detecção automática — confirme manualmente o tipo de assinatura.';
+                        } else {
+                            note.textContent = 'Confirme ou ajuste a classificação manualmente, se necessário.';
+                        }
+                        sigRow.appendChild(note);
+                    } else {
+                        // Aba pública — só chega aqui se isPetition && !electronic
+                        const note = document.createElement('div');
+                        note.className = 'sig-note';
+                        note.textContent = 'Petição inicial deve estar assinada — eletronicamente ou à mão (rubrica visível na cópia digitalizada).';
+                        sigRow.appendChild(note);
+                    }
+
+                    card.appendChild(sigRow);
+                }
+
+                // Pendências
+                const allIssues = fileIssuesForEmail(r, mode);
+                if (allIssues.length) {
+                    const issuesEl = document.createElement('ul');
+                    issuesEl.className = 'issues';
+                    allIssues.forEach(i => {
+                        const li = document.createElement('li');
+                        li.textContent = i;
+                        issuesEl.appendChild(li);
+                    });
+                    card.appendChild(issuesEl);
+                }
+
+                container.appendChild(card);
+            });
+
+            // Seção de minuta (aba privada)
+            if (mode === 'private') {
+                renderEmailSection(results, container);
+            }
+        }
+
+        /* =========================================================
+           GERAÇÃO DE MINUTA DE RESPOSTA
+           ========================================================= */
+
+        function buildGenericEmail(results) {
+            const formatLines = Object.entries(RULES.formats)
+                .map(([cat, fmts]) => `   • ${cat}: ${fmts.map(f => f.toUpperCase()).join(', ')}`)
+                .join('\n');
+
+            const hasUnsigned = results.some(r =>
+                r.signature.applies && r.signature.status === 'none'
+            );
+
+            let body =
+                `Prezado(a),
+
+Recebemos sua mensagem, porém os arquivos enviados não atendem aos requisitos para tramitação por este canal.
+
+Para que o pedido seja processado, reenvie observando:
+
+1. Os arquivos devem ser anexados diretamente à mensagem (não por link), nos seguintes formatos:
+${formatLines}
+
+2. Cada arquivo com no máximo 10 MB.
+
+3. Nome do arquivo apenas com letras, números, espaços, hífen (-) e underline (_).
+
+4. Arquivos acima de 10 MB ou em formatos diferentes dos listados devem ser enviados por meio de Google Drive, OneDrive ou Dropbox, em pasta única, com link de acesso livre (sem senha).`;
+
+            if (hasUnsigned) {
+                body += `\n\n5. A petição inicial deve estar assinada — eletronicamente (com certificado digital) ou à mão, com a rubrica visível na cópia digitalizada.`;
+            }
+
+            body += `\n\nCaso prefira, compareça pessoalmente ao balcão deste Juizado, com cópias impressas, de segunda a sexta-feira, em dias de expediente forense, das 13h às 16h.
+
+Atenciosamente,
+Secretaria do Juizado Especial Cível de Marília/SP`;
+
+            return body;
+        }
+
+        function buildDetailedEmail(results) {
+            const problematic = results
+                .map(r => ({ r, issues: fileIssuesForEmail(r, 'private') }))
+                .filter(x => x.issues.length > 0);
+
+            if (problematic.length === 0) {
+                return `Prezado(a),
+
+Confirmamos o recebimento dos arquivos. Todos atendem aos requisitos para tramitação por este canal.
+
+Atenciosamente,
+Secretaria do Juizado Especial Cível de Marília/SP`;
+            }
+
+            const lines = problematic.map(({ r, issues }, i) => {
+                const issuesText = issues.map(s => `   • ${s}`).join('\n');
+                return `${i + 1}. "${r.name}"\n${issuesText}`;
+            }).join('\n\n');
+
+            return `Prezado(a),
+
+Recebemos sua mensagem, porém os seguintes arquivos não atendem aos requisitos para tramitação por este canal:
+
+${lines}
+
+Aguardamos o reenvio em conformidade com as observações acima.
+
+Caso prefira, compareça pessoalmente ao balcão deste Juizado, com cópias impressas, de segunda a sexta-feira, em dias de expediente forense, das 13h às 16h.
+
+Atenciosamente,
+Secretaria do Juizado Especial Cível de Marília/SP`;
+        }
+
+        // Memoriza qual tipo de minuta foi gerada, por container, para regenerar
+        // automaticamente após mudanças nos radios de assinatura.
+        const emailKindByContainer = new WeakMap();
+
+        function renderEmailSection(results, container) {
+            const section = document.createElement('div');
+            section.className = 'email-section';
+
+            const head = document.createElement('div');
+            head.className = 'email-section-head';
+            head.innerHTML = `
+    <h3>Minuta de resposta</h3>
+    <div class="email-actions">
+      <button class="btn ghost sm" data-kind="generic">Modelo enxuto</button>
+      <button class="btn ghost sm" data-kind="detailed">Modelo discriminado</button>
+    </div>
+  `;
+            section.appendChild(head);
+
+            const output = document.createElement('div');
+            output.className = 'email-output hidden';
+            output.innerHTML = `
+    <div class="email-output-head">
+      <span class="email-output-title">Minuta</span>
+      <button class="btn ghost sm" data-action="copy">Copiar</button>
+    </div>
+    <div class="email-body"></div>
+  `;
+            section.appendChild(output);
+            container.appendChild(section);
+
+            const setKind = (kind) => {
+                const body = kind === 'detailed'
+                    ? buildDetailedEmail(results)
+                    : buildGenericEmail(results);
+                output.querySelector('.email-body').textContent = body;
+                output.querySelector('.email-output-title').textContent =
+                    kind === 'detailed' ? 'Minuta — modelo discriminado' : 'Minuta — modelo enxuto';
+                output.classList.remove('hidden');
+                section.querySelectorAll('.email-actions .btn').forEach(b => {
+                    b.classList.toggle('active-kind', b.dataset.kind === kind);
+                });
+                emailKindByContainer.set(container, kind);
+            };
+
+            section.querySelectorAll('.email-actions .btn').forEach(b => {
+                b.addEventListener('click', () => setKind(b.dataset.kind));
+            });
+
+            output.querySelector('[data-action="copy"]').addEventListener('click', async () => {
+                const text = output.querySelector('.email-body').textContent;
+                const btn = output.querySelector('[data-action="copy"]');
+                try {
+                    await navigator.clipboard.writeText(text);
+                    const orig = btn.textContent;
+                    btn.textContent = 'Copiado ✓';
+                    setTimeout(() => { btn.textContent = orig; }, 1500);
+                } catch {
+                    const range = document.createRange();
+                    range.selectNode(output.querySelector('.email-body'));
+                    window.getSelection().removeAllRanges();
+                    window.getSelection().addRange(range);
+                }
+            });
+
+            // Se já havia uma minuta gerada antes, regenera com o mesmo tipo
+            const prev = emailKindByContainer.get(container);
+            if (prev) setKind(prev);
+        }
+
+        /* =========================================================
+           DROPZONE GENÉRICO
+           ========================================================= */
+
+        function setupDropzone({ zone, input, handler }) {
+            zone.addEventListener('click', () => input.click());
+            zone.addEventListener('keydown', e => {
+                if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); input.click(); }
+            });
+            ['dragenter', 'dragover'].forEach(ev =>
+                zone.addEventListener(ev, e => { e.preventDefault(); zone.classList.add('over'); })
+            );
+            ['dragleave', 'drop'].forEach(ev =>
+                zone.addEventListener(ev, e => { e.preventDefault(); zone.classList.remove('over'); })
+            );
+            zone.addEventListener('drop', e => {
+                if (e.dataTransfer && e.dataTransfer.files.length) handler(e.dataTransfer.files);
+            });
+            input.addEventListener('change', () => {
+                if (input.files.length) handler(input.files);
+                input.value = '';
+            });
+        }
+
+        function showProcessing(container, n) {
+            container.innerHTML = `<div class="processing"><span class="spinner"></span>Processando ${n} arquivo${n > 1 ? 's' : ''}…</div>`;
+        }
+
+        /* =========================================================
+           ABA PÚBLICA
+           ========================================================= */
+
+        setupDropzone({
+            zone: $('#dz-public'),
+            input: $('#input-public'),
+            handler: async files => {
+                showProcessing($('#results-public'), files.length);
+                const results = await Promise.all([...files].map(processFile));
+                renderResults(results, $('#results-public'), { mode: 'public' });
+            }
+        });
+
+        /* =========================================================
+           AUTENTICAÇÃO
+           ========================================================= */
+
+        async function tryAuth() {
+            const pw = $('#gate-pw').value;
+            const err = $('#gate-error');
+            err.classList.add('hidden');
+            if (!pw) return;
+            const h = await sha256(pw);
+            if (h === PASSWORD_HASH) {
+                $('#gate').classList.add('hidden');
+                $('#private-area').classList.remove('hidden');
+            } else {
+                err.classList.remove('hidden');
+                $('#gate-pw').select();
+            }
+        }
+        $('#gate-submit').addEventListener('click', tryAuth);
+        $('#gate-pw').addEventListener('keydown', e => { if (e.key === 'Enter') tryAuth(); });
+
+        $('#gate-show-hash').addEventListener('click', () => $('#hash-modal').classList.add('show'));
+        $('#hash-close').addEventListener('click', () => $('#hash-modal').classList.remove('show'));
+        $('#hash-modal').addEventListener('click', e => {
+            if (e.target.id === 'hash-modal') $('#hash-modal').classList.remove('show');
+        });
+        $('#hash-pw').addEventListener('input', async e => {
+            const v = e.target.value;
+            $('#hash-out').textContent = v ? await sha256(v) : '—';
+        });
+
+        /* =========================================================
+           ABA PRIVADA — Anexos
+           ========================================================= */
+
+        let privResults = [];
+
+        setupDropzone({
+            zone: $('#dz-priv'),
+            input: $('#input-priv'),
+            handler: async files => {
+                showProcessing($('#results-priv'), files.length);
+                privResults = await Promise.all([...files].map(processFile));
+                renderResults(privResults, $('#results-priv'), { mode: 'private' });
+            }
+        });
+
+        $('#results-priv').addEventListener('change', e => {
+            if (e.target.matches('input[type="radio"][name^="sig-"]')) {
+                const idx = parseInt(e.target.dataset.idx, 10);
+                if (privResults[idx]) {
+                    privResults[idx].signature.status = e.target.value;
+                    privResults[idx].signature.isManual = true;
+                    renderResults(privResults, $('#results-priv'), { mode: 'private' });
+                }
+            }
+        });
+
+        /* =========================================================
+           ABA PRIVADA — .eml/.msg
+           ========================================================= */
+
+        function decodeRfc2047(s) {
+            return s.replace(/=\?([^?]+)\?([BbQq])\?([^?]+)\?=/g, (_, charset, enc, content) => {
+                try {
+                    let bytes;
+                    if (enc.toUpperCase() === 'B') {
+                        const dec = atob(content);
+                        bytes = new Uint8Array([...dec].map(c => c.charCodeAt(0)));
+                    } else {
+                        const dec = content.replace(/_/g, ' ')
+                            .replace(/=([0-9A-Fa-f]{2})/g, (_, h) => String.fromCharCode(parseInt(h, 16)));
+                        bytes = new Uint8Array([...dec].map(c => c.charCodeAt(0)));
+                    }
+                    return new TextDecoder(charset).decode(bytes);
+                } catch { return content; }
+            });
+        }
+
+        function unquote(s) { return s.trim().replace(/^["']|["']$/g, ''); }
+
+        function getHeader(part, name) {
+            const re = new RegExp('^' + name + ':\\s*([^\\r\\n]*(?:\\r?\\n[ \\t][^\\r\\n]*)*)', 'im');
+            const m = part.match(re);
+            return m ? m[1].replace(/\r?\n[ \t]+/g, ' ').trim() : null;
+        }
+
+        function getParam(headerValue, paramName) {
+            if (!headerValue) return null;
+            const reStar = new RegExp(paramName + '\\*\\d*\\*?\\s*=\\s*([^;\\r\\n]+)', 'i');
+            const reSimple = new RegExp(paramName + '\\s*=\\s*("[^"]*"|[^;\\r\\n]+)', 'i');
+            let m = headerValue.match(reStar);
+            if (m) {
+                let v = unquote(m[1]);
+                v = v.replace(/^[^']*'[^']*'/, '');
+                try { v = decodeURIComponent(v); } catch { }
+                return v;
+            }
+            m = headerValue.match(reSimple);
+            return m ? unquote(m[1]) : null;
+        }
+
+        // Decodifica conteúdo de body conforme encoding e charset
+        function decodeBodyContent(body, enc, charset) {
+            charset = charset || 'utf-8';
+            try {
+                if (enc === 'base64') {
+                    const dec = atob(body.replace(/\s+/g, ''));
+                    const bytes = new Uint8Array([...dec].map(c => c.charCodeAt(0)));
+                    return new TextDecoder(charset).decode(bytes);
+                } else if (enc === 'quoted-printable') {
+                    const s = body.replace(/=\r?\n/g, '')
+                        .replace(/=([0-9A-Fa-f]{2})/g, (_, h) => String.fromCharCode(parseInt(h, 16)));
+                    const bytes = new Uint8Array([...s].map(c => c.charCodeAt(0)));
+                    return new TextDecoder(charset).decode(bytes);
+                }
+                return body;
+            } catch {
+                return body;
+            }
+        }
+
+        // Strip rudimentar de tags HTML (fallback quando só há text/html)
+        function stripHtml(html) {
+            return html
+                .replace(/<style[\s\S]*?<\/style>/gi, '')
+                .replace(/<script[\s\S]*?<\/script>/gi, '')
+                .replace(/<br\s*\/?>/gi, '\n')
+                .replace(/<\/p>/gi, '\n\n')
+                .replace(/<[^>]+>/g, '')
+                .replace(/&nbsp;/g, ' ')
+                .replace(/&amp;/g, '&')
+                .replace(/&lt;/g, '<')
+                .replace(/&gt;/g, '>')
+                .replace(/&quot;/g, '"')
+                .replace(/&#39;/g, "'")
+                .replace(/\n{3,}/g, '\n\n')
+                .trim();
+        }
+
+        async function parseEml(file) {
+            const text = await file.text();
+            const subject = decodeRfc2047(getHeader(text, 'Subject') || '');
+            const from = decodeRfc2047(getHeader(text, 'From') || '');
+
+            const ct = getHeader(text, 'Content-Type');
+            if (!ct) return { error: 'Content-Type não encontrado.' };
+            const bMatch = ct.match(/boundary\s*=\s*("[^"]+"|[^;\s]+)/i);
+
+            // E-mail simples (sem multipart): todo o body é a mensagem
+            if (!bMatch) {
+                const sepRn = text.indexOf('\r\n\r\n');
+                const sepN = text.indexOf('\n\n');
+                let sepIdx, sepLen;
+                if (sepRn !== -1 && (sepN === -1 || sepRn < sepN)) { sepIdx = sepRn; sepLen = 4; }
+                else if (sepN !== -1) { sepIdx = sepN; sepLen = 2; }
+                let bodyText = '';
+                if (sepIdx > -1) {
+                    const enc = (getHeader(text, 'Content-Transfer-Encoding') || '7bit').toLowerCase();
+                    const charsetMatch = ct.match(/charset\s*=\s*("[^"]+"|[^;\s]+)/i);
+                    const charset = charsetMatch ? unquote(charsetMatch[1]) : 'utf-8';
+                    bodyText = decodeBodyContent(text.substring(sepIdx + sepLen).trim(), enc, charset);
+                }
+                return { subject, from, attachments: [], bodyText, simple: true };
+            }
+
+            const boundary = unquote(bMatch[1]);
+            const parts = text.split('--' + boundary);
+            const attachments = [];
+            let bodyTextPlain = '';
+            let bodyTextHtml = '';
+
+            for (const part of parts) {
+                if (!part.trim() || part.trim() === '--') continue;
+                const sepRn = part.indexOf('\r\n\r\n');
+                const sepN = part.indexOf('\n\n');
+                let sepIdx, sepLen;
+                if (sepRn !== -1 && (sepN === -1 || sepRn < sepN)) { sepIdx = sepRn; sepLen = 4; }
+                else if (sepN !== -1) { sepIdx = sepN; sepLen = 2; }
+                else continue;
+
+                const headers = part.substring(0, sepIdx);
+                let body = part.substring(sepIdx + sepLen);
+                const cd = getHeader(headers, 'Content-Disposition');
+                const ct2 = getHeader(headers, 'Content-Type');
+                const isAttachment = cd && /attachment/i.test(cd);
+                const enc = (getHeader(headers, 'Content-Transfer-Encoding') || '7bit').toLowerCase();
+                body = body.replace(/\r?\n--\s*$/, '').trim();
+
+                if (isAttachment) {
+                    let filename = getParam(cd, 'filename') || getParam(ct2, 'name');
+                    if (!filename) continue;
+                    filename = decodeRfc2047(filename);
+
+                    let size;
+                    if (enc === 'base64') {
+                        const clean = body.replace(/\s+/g, '');
+                        const padding = (clean.match(/=+$/) || [''])[0].length;
+                        size = Math.floor(clean.length * 3 / 4) - padding;
+                    } else if (enc === 'quoted-printable') {
+                        const decoded = body.replace(/=\r?\n/g, '').replace(/=([0-9A-Fa-f]{2})/g, 'X');
+                        size = decoded.length;
+                    } else {
+                        size = body.length;
+                    }
+
+                    attachments.push({ name: filename, size, type: '' });
+                } else if (ct2) {
+                    // Possível body text/plain ou text/html
+                    const charsetMatch = ct2.match(/charset\s*=\s*("[^"]+"|[^;\s]+)/i);
+                    const charset = charsetMatch ? unquote(charsetMatch[1]) : 'utf-8';
+                    if (/text\/plain/i.test(ct2) && !bodyTextPlain) {
+                        bodyTextPlain = decodeBodyContent(body, enc, charset);
+                    } else if (/text\/html/i.test(ct2) && !bodyTextHtml) {
+                        bodyTextHtml = decodeBodyContent(body, enc, charset);
+                    }
+                }
+            }
+
+            // Prefere text/plain; converte text/html como fallback
+            const bodyText = bodyTextPlain || (bodyTextHtml ? stripHtml(bodyTextHtml) : '');
+
+            return { subject, from, attachments, bodyText };
+        }
+
+        let MsgReaderPromise = null;
+        function loadMsgReader() {
+            if (MsgReaderPromise) return MsgReaderPromise;
+            MsgReaderPromise = import('https://esm.sh/@kenjiuno/msgreader')
+                .then(mod => mod.default || mod.MsgReader || mod)
+                .catch(e => { console.warn('Falha ao carregar msgreader:', e); return null; });
+            return MsgReaderPromise;
+        }
+
+        async function parseMsg(file) {
+            const MsgReader = await loadMsgReader();
+            if (!MsgReader) {
+                return { error: 'Biblioteca de leitura .msg não pôde ser carregada. Use o método "Anexos" arrastando os arquivos diretamente.' };
+            }
+            try {
+                const buf = await file.arrayBuffer();
+                const reader = new MsgReader(buf);
+                const data = reader.getFileData();
+                const attachments = (data.attachments || []).map(a => ({
+                    name: a.fileName || a.name || '(sem nome)',
+                    size: a.contentLength != null ? a.contentLength
+                        : a.dataSize != null ? a.dataSize
+                            : (a.content && a.content.length) || null,
+                    type: ''
+                }));
+                return {
+                    subject: data.subject || '',
+                    from: (data.senderName || '') + (data.senderEmail ? ` <${data.senderEmail}>` : ''),
+                    attachments
+                };
+            } catch (e) {
+                return { error: 'Erro ao processar .msg: ' + e.message };
+            }
+        }
+
+        let emailResults = [];
+
+        setupDropzone({
+            zone: $('#dz-email'),
+            input: $('#input-email'),
+            handler: async files => {
+                const file = files[0];
+                const meta = $('#email-meta');
+                const out = $('#results-email');
+                out.innerHTML = '';
+                meta.classList.add('hidden');
+                showProcessing(out, 1);
+
+                const ext = file.name.split('.').pop().toLowerCase();
+                let result;
+                try {
+                    if (ext === 'eml') result = await parseEml(file);
+                    else if (ext === 'msg') result = await parseMsg(file);
+                    else result = { error: 'Formato não reconhecido. Use .eml ou .msg.' };
+                } catch (e) {
+                    result = { error: 'Falha no parsing: ' + e.message };
+                }
+
+                if (result.error) {
+                    out.innerHTML = `<div class="summary bad">${escapeHtml(result.error)}</div>`;
+                    return;
+                }
+
+                // Limpa o spinner antes de adicionar os elementos do resultado
+                out.innerHTML = '';
+
+                if (result.subject || result.from) {
+                    meta.classList.remove('hidden');
+                    meta.innerHTML = `
+        <dl>
+          ${result.from ? `<dt>De:</dt><dd>${escapeHtml(result.from)}</dd>` : ''}
+          ${result.subject ? `<dt>Assunto:</dt><dd>${escapeHtml(result.subject)}</dd>` : ''}
+          <dt>Anexos:</dt><dd>${result.attachments.length}</dd>
+          ${result.bodyText ? `<dt>Corpo:</dt><dd>${result.bodyText.length} caracteres</dd>` : ''}
+        </dl>
+      `;
+                }
+
+                // Mostra corpo do e-mail (quando extraído com sucesso)
+                if (result.bodyText && result.bodyText.trim().length > 0) {
+                    const bodyDiv = document.createElement('div');
+                    const preview = result.bodyText.length > 1500
+                        ? result.bodyText.substring(0, 1500) + '\n\n[... truncado ...]'
+                        : result.bodyText;
+                    bodyDiv.innerHTML = `
+        <div class="body-preview-head">Corpo da mensagem</div>
+        <div class="body-preview">${escapeHtml(preview)}</div>
+      `;
+                    out.appendChild(bodyDiv);
+
+                    // Aviso quando há relato no corpo mas nenhum anexo: provável caso para "Outros casos"
+                    if (result.bodyText.trim().length > 80 && (!result.attachments || result.attachments.length === 0)) {
+                        const warn = document.createElement('div');
+                        warn.className = 'body-empty-warn';
+                        warn.innerHTML = '<strong>Atenção:</strong> a mensagem possui corpo de texto mas nenhum anexo. Pode tratar-se de relato no corpo do e-mail — utilize a sub-aba <strong>"Outros casos"</strong> para gerar a minuta de resposta apropriada.';
+                        out.appendChild(warn);
+                    }
+                }
+
+                if (!result.attachments || !result.attachments.length) {
+                    const summary = document.createElement('div');
+                    summary.className = 'summary mixed';
+                    summary.textContent = 'Nenhum anexo identificado neste arquivo.';
+                    out.appendChild(summary);
+                    return;
+                }
+
+                // Sem bytes para detecção: assinatura inicia 'undetermined'
+                emailResults = result.attachments.map(a =>
+                    validateFile({ name: a.name, size: a.size, type: a.type, signatureAuto: 'undetermined' })
+                );
+                // Renderiza resultados num container interno para preservar a área de body acima
+                let resultsInner = $('#results-email-inner');
+                if (resultsInner) resultsInner.remove();
+                resultsInner = document.createElement('div');
+                resultsInner.id = 'results-email-inner';
+                out.appendChild(resultsInner);
+                renderResults(emailResults, resultsInner, { mode: 'private' });
+            }
+        });
+
+        $('#results-email').addEventListener('change', e => {
+            if (e.target.matches('input[type="radio"][name^="sig-"]')) {
+                const idx = parseInt(e.target.dataset.idx, 10);
+                if (emailResults[idx]) {
+                    emailResults[idx].signature.status = e.target.value;
+                    emailResults[idx].signature.isManual = true;
+                    const inner = $('#results-email-inner') || $('#results-email');
+                    renderResults(emailResults, inner, { mode: 'private' });
+                }
+            }
+        });
+
+        /* =========================================================
+           ABA PRIVADA — Link de nuvem
+           ========================================================= */
+
+        function validateCloudLink(url) {
+            const issues = [];
+            const warnings = [];
+            let provider = null;
+
+            if (!url || !url.trim()) return { issues: ['Informe uma URL.'], warnings, provider };
+
+            let u;
+            try { u = new URL(url.trim()); }
+            catch { return { issues: ['URL inválida.'], warnings, provider }; }
+
+            if (u.protocol !== 'https:') issues.push('O link deve usar HTTPS.');
+
+            const host = u.hostname.toLowerCase();
+
+            if (/(^|\.)drive\.google\.com$|^docs\.google\.com$/.test(host)) {
+                provider = 'Google Drive';
+                if (!/\/folders\//.test(u.pathname)) {
+                    warnings.push('O caminho não corresponde a uma pasta (/folders/...). Os arquivos devem estar agrupados em uma pasta única.');
+                }
+                if (/\/file\//.test(u.pathname)) {
+                    issues.push('Link de arquivo individual. Compartilhe a pasta inteira, não apenas um arquivo.');
+                }
+            } else if (/(^|\.)onedrive\.live\.com$|^1drv\.ms$|sharepoint\.com$/.test(host)) {
+                provider = 'OneDrive';
+            } else if (/(^|\.)dropbox\.com$/.test(host)) {
+                provider = 'Dropbox';
+                if (!/\/scl\/fo\//.test(u.pathname) && !/\/sh\//.test(u.pathname)) {
+                    warnings.push('O caminho não corresponde ao padrão de pasta compartilhada do Dropbox.');
+                }
+            } else {
+                issues.push(`Provedor não reconhecido (${host}). Use Google Drive, OneDrive ou Dropbox.`);
+            }
+
+            if (/[?&](pwd|password|senha)=/.test(url.toLowerCase())) {
+                warnings.push('O link contém parâmetro indicativo de senha. Confirme que o acesso é livre, sem restrição.');
+            }
+
+            return { provider, issues, warnings };
+        }
+
+        $('#btn-link').addEventListener('click', () => {
+            const url = $('#input-link').value;
+            const out = $('#results-link');
+            const r = validateCloudLink(url);
+
+            let html = '';
+            const ok = r.issues.length === 0;
+            const cls = ok ? (r.warnings.length ? 'mixed' : 'ok') : 'bad';
+            const msg = ok
+                ? r.warnings.length
+                    ? `Link aceito (${r.provider}) com observações.`
+                    : `Link compatível (${r.provider}).`
+                : `Link incompatível.`;
+            html += `<div class="summary ${cls}">${msg}</div>`;
+
+            if (r.issues.length || r.warnings.length || r.provider) {
+                html += `<div class="file-card ${ok ? 'ok' : 'bad'}">`;
+                html += `<div class="file-head"><div class="file-name">${escapeHtml(url || '(vazio)')}</div></div>`;
+                html += `<div class="checks">`;
+                html += `<div class="check ${r.provider ? 'pass' : 'fail'}"><span class="mark">${r.provider ? '✓' : '✗'}</span><span>Provedor: <span class="info">${r.provider || 'não reconhecido'}</span></span></div>`;
+                html += `</div>`;
+
+                if (r.issues.length || r.warnings.length) {
+                    html += `<ul class="issues">`;
+                    r.issues.forEach(i => html += `<li><strong style="color:var(--red)">Erro:</strong> ${escapeHtml(i)}</li>`);
+                    r.warnings.forEach(w => html += `<li><strong style="color:var(--amber)">Aviso:</strong> ${escapeHtml(w)}</li>`);
+                    html += `</ul>`;
+                }
+
+                if (ok) {
+                    html += `<div style="margin-top:10px"><a href="${escapeHtml(url)}" target="_blank" rel="noopener" style="color:var(--ink);font-size:13px">Abrir link em nova aba para conferência manual →</a></div>`;
+                }
+
+                html += `</div>`;
+            }
+
+            out.innerHTML = html;
+        });
+
+        /* =========================================================
+           ABA PRIVADA — Outros casos
+           ========================================================= */
+
+        // Cada cenário define como traduzir as escolhas do servidor em um trecho
+        // formal da minuta. Funções recebem o estado atual e retornam string ou null.
+        const CASE_BUILDERS = {
+            'report-only': (state) => {
+                if (state['report-attachments'] === 'yes') {
+                    return 'Os fatos foram relatados no corpo do e-mail. Embora documentos tenham sido anexados, é necessário apresentar petição inicial formal em arquivo PDF, contendo a narrativa dos fatos, o pedido e a qualificação completa das partes (nome, CPF/CNPJ, endereço, telefone e e-mail), devidamente assinada — eletronicamente (com certificado digital) ou à mão, com a rubrica visível na cópia digitalizada.';
+                }
+                return 'Os fatos foram relatados no corpo do e-mail, sem petição formal anexada e sem documentos. Para regular processamento, é necessário apresentar petição inicial em arquivo PDF, contendo a narrativa dos fatos, o pedido e a qualificação completa das partes (nome, CPF/CNPJ, endereço, telefone e e-mail), devidamente assinada — eletronicamente (com certificado digital) ou à mão, com a rubrica visível na cópia digitalizada — bem como juntar os documentos essenciais à pretensão.';
+            },
+            'no-petition': () =>
+                'Foram enviados apenas documentos, sem petição inicial. É necessário apresentar a petição inicial em arquivo PDF, contendo a narrativa dos fatos, o pedido e a qualificação completa das partes, devidamente assinada — eletronicamente ou à mão, com a rubrica visível na cópia digitalizada.',
+            'missing-docs': (state) => {
+                const docs = (state['missing-docs-detail'] || '').trim();
+                return docs
+                    ? `A petição apresentada não veio acompanhada de documentos essenciais à ação, especificamente: ${docs}. É necessário providenciá-los e juntá-los para o regular processamento.`
+                    : 'A petição apresentada não veio acompanhada de documentos essenciais à ação. É necessário providenciá-los e juntá-los para o regular processamento.';
+            },
+            'no-id': () =>
+                'A petição inicial está assinada à mão, mas não foi juntada cópia legível de documento oficial com foto da parte autora (RG, CNH ou similar), o que impede a aferição da autenticidade da assinatura. É necessário juntar a referida cópia.',
+            'no-residence': () =>
+                'Não foi juntado comprovante de residência da parte autora. Em razão da regra de competência territorial dos Juizados Especiais Cíveis (art. 4º, III, da Lei nº 9.099/95), é necessário apresentar comprovante atualizado em nome da parte autora — ou, na ausência, declaração com indicação documental do vínculo (contrato de locação, declaração do titular, conta de serviço público em nome de familiar etc.).',
+            'illegible': (state) => {
+                const docs = (state['illegible-detail'] || '').trim();
+                return docs
+                    ? `Os seguintes documentos enviados estão ilegíveis: ${docs}. É necessário reenviá-los com qualidade que permita leitura integral.`
+                    : 'Há documentos enviados em qualidade insuficiente, ilegíveis. É necessário reenviá-los com qualidade que permita leitura integral.';
+            },
+            'custom': (state) => {
+                const txt = (state['custom-detail'] || '').trim();
+                return txt || null;
+            }
+        };
+
+        // Ordem dos cenários na minuta (corresponde à ordem visual na UI)
+        const CASE_ORDER = ['report-only', 'no-petition', 'missing-docs', 'no-id', 'no-residence', 'illegible', 'custom'];
+
+        function readCasesState() {
+            const state = {};
+            $$('#sub-cases input[type="checkbox"][data-case]').forEach(cb => {
+                state[cb.dataset.case] = cb.checked;
+            });
+            const r = document.querySelector('#sub-cases input[name="report-attachments"]:checked');
+            state['report-attachments'] = r ? r.value : 'no';
+            $$('#sub-cases textarea[data-detail-input]').forEach(ta => {
+                state[ta.dataset.detailInput] = ta.value;
+            });
+            return state;
+        }
+
+        function buildCasesEmail(state) {
+            const items = [];
+            for (const key of CASE_ORDER) {
+                if (!state[key]) continue;
+                const txt = CASE_BUILDERS[key](state);
+                if (txt) items.push(txt);
+            }
+
+            if (items.length === 0) {
+                return 'Selecione ao menos uma situação acima para gerar a minuta.';
+            }
+
+            const numbered = items.length === 1
+                ? items[0]
+                : items.map((t, i) => `${i + 1}. ${t}`).join('\n\n');
+
+            return `Prezado(a),
+
+Recebemos sua mensagem, porém ela não atende aos requisitos para regular processamento por este canal:
+
+${numbered}
+
+Aguardamos a regularização para que a pretensão possa ser processada.
+
+Caso prefira, compareça pessoalmente ao balcão deste Juizado, com cópias impressas, de segunda a sexta-feira, em dias de expediente forense, das 13h às 16h.
+
+Atenciosamente,
+Secretaria do Juizado Especial Cível de Marília/SP`;
+        }
+
+        // Mostra/oculta o sub-bloco de detalhe conforme o checkbox correspondente
+        function updateCaseDetailVisibility() {
+            $$('#sub-cases input[type="checkbox"][data-case]').forEach(cb => {
+                const detail = document.querySelector('#sub-cases [data-detail-for="' + cb.dataset.case + '"]');
+                if (detail) detail.classList.toggle('hidden', !cb.checked);
+            });
+        }
+
+        let casesEmailGenerated = false;
+
+        function regenerateCasesEmailIfShown() {
+            if (!casesEmailGenerated) return;
+            const out = $('#cases-email-output');
+            if (out.classList.contains('hidden')) return;
+            $('#cases-email-body').textContent = buildCasesEmail(readCasesState());
+        }
+
+        document.querySelector('#sub-cases').addEventListener('change', e => {
+            if (e.target.matches('input[type="checkbox"][data-case]')) {
+                updateCaseDetailVisibility();
+            }
+            regenerateCasesEmailIfShown();
+        });
+
+        document.querySelector('#sub-cases').addEventListener('input', e => {
+            if (e.target.matches('textarea[data-detail-input], input[name="report-attachments"]')) {
+                regenerateCasesEmailIfShown();
+            }
+        });
+
+        $('#btn-cases-generate').addEventListener('click', () => {
+            const body = buildCasesEmail(readCasesState());
+            $('#cases-email-body').textContent = body;
+            $('#cases-email-output').classList.remove('hidden');
+            casesEmailGenerated = true;
+        });
+
+        $('#btn-cases-copy').addEventListener('click', async () => {
+            const text = $('#cases-email-body').textContent;
+            const btn = $('#btn-cases-copy');
+            try {
+                await navigator.clipboard.writeText(text);
+                const orig = btn.textContent;
+                btn.textContent = 'Copiado ✓';
+                setTimeout(() => { btn.textContent = orig; }, 1500);
+            } catch {
+                const range = document.createRange();
+                range.selectNode($('#cases-email-body'));
+                window.getSelection().removeAllRanges();
+                window.getSelection().addRange(range);
+            }
+        });
+
+        // Inicializa visibilidade
+        updateCaseDetailVisibility();
+
+        /* =========================================================
+           NAVEGAÇÃO ENTRE ABAS
+           ========================================================= */
+
+        $$('.tab').forEach(t => t.addEventListener('click', () => {
+            $$('.tab').forEach(x => x.classList.remove('active'));
+            $$('.panel').forEach(x => x.classList.remove('active'));
+            t.classList.add('active');
+            $('#panel-' + t.dataset.tab).classList.add('active');
+        }));
+
+        $$('.subtab').forEach(t => t.addEventListener('click', () => {
+            $$('.subtab').forEach(x => x.classList.remove('active'));
+            $$('.subpanel').forEach(x => x.classList.remove('active'));
+            t.classList.add('active');
+            $('#sub-' + t.dataset.sub).classList.add('active');
+        }));
+    </script>
+</body>
+
+</html>
