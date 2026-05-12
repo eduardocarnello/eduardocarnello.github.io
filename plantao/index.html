@@ -1,178 +1,116 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gerador de Termo de Plantão Judiciário</title>
+    <title>Plantão Judiciário</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        body {
-            font-family: 'Inter', sans-serif;
-        }
+        body { font-family: 'Inter', sans-serif; }
+        .font-verdana { font-family: Verdana, Geneva, sans-serif; }
 
-        .font-verdana {
-            font-family: Verdana, Geneva, sans-serif;
-        }
+        /* Termo document styles */
+        .document-preview { font-family: 'Times New Roman', Times, serif; line-height: 1.2; }
+        div#document-container { padding: 0 2rem; }
+        div#preview-processos-table-container { width: 105%; margin-left: -20px; }
+        th.border.border-gray-300.p-2 { padding: 0; font-size: 12px; }
+        td.border.border-gray-300.p-2 { padding: 0.2rem; font-size: 12px; }
+        .document-preview h2 { text-align: center; font-weight: bold; text-transform: uppercase; margin-bottom: 0.5rem; margin-top: 1rem; }
+        .document-preview p { text-align: justify; text-indent: 4em; margin-bottom: 1.5rem; }
+        .document-preview .signature { text-align: center; margin-top: 3rem; font-weight: bold; }
+        .text-center.mb-12 { margin-bottom: 10px; }
+        p.font-bold.text-sm.leading-tight, p.text-sm.leading-tight { text-align: center; text-indent: 0; margin-bottom: 0; }
+        #document-container { position: relative; z-index: 1; }
+        .watermark { position: absolute; top: 444px; left: 50%; transform: translate(-50%, -50%); z-index: -1; opacity: 0.1; width: 550px; pointer-events: none; }
+        .watermark img { width: 100%; height: auto; }
 
-        .document-preview {
-            font-family: 'Times New Roman', Times, serif;
-            line-height: 1.2;
-        }
+        /* Certidão document styles — mesmos do plantao-cert original */
+        .cert-document-preview { font-family: 'Times New Roman', Times, serif; line-height: 1.6; font-size: 12pt; color: #000; background: white; padding: 2.5cm 2cm; max-width: 21cm; min-height: 29.7cm; margin: auto; display: flex; flex-direction: column; }
+        .cert-document-preview .header-logo { display: block; margin: 0 auto 1.5rem auto; width: 80px; }
+        .cert-document-preview .header-text { text-align: center; text-indent: 0; margin-bottom: 0.25rem; line-height: 1.2; font-weight: bold; font-size: 11pt; }
+        .cert-document-preview .cert-title { text-align: center; font-weight: bold; text-transform: uppercase; margin-top: 3rem; margin-bottom: 3rem; letter-spacing: 0.2em; }
+        .body-container::after { content: ""; display: table; clear: both; }
+        .certifier-info-float { float: left; width: 38%; margin-right: 1.5em; text-align: justify; line-height: 1.4; }
+        .cert-document-preview p { text-align: justify; margin-bottom: 1.5rem; text-indent: 0; }
+        .final-paragraph { text-indent: 4em !important; }
+        .cert-document-preview .cert-signature { text-align: center; margin-top: 4rem; line-height: 1.4; }
+        .cert-document-preview .cert-footer { margin-top: auto; text-align: center; font-size: 9pt; border-top: 1px solid #ccc; padding-top: 0.5rem; }
 
-        div#document-container {
-            padding: 0 2rem;
-        }
+        /* Tabs */
+        .tab-btn { padding: 0.5rem 1.5rem; border-radius: 0.375rem 0.375rem 0 0; font-weight: 600; font-size: 0.875rem; cursor: pointer; background-color: #e5e7eb; color: #374151; transition: all 0.2s; }
+        .tab-btn.active { background-color: #1f2937; color: white; }
+        .tab-btn:hover:not(.active) { background-color: #d1d5db; }
 
-        div#preview-processos-table-container {
-            width: 105%;
+        /* Toast */
+        #toast { position: fixed; bottom: 1.5rem; right: 1.5rem; z-index: 9999; transition: opacity 0.3s; }
 
-            margin-left: -20px;
-        }
-
-        th.border.border-gray-300.p-2 {
-            padding: 0;
-            font-size: 12px;
-        }
-
-        td.border.border-gray-300.p-2 {
-            padding: 0.2rem;
-            font-size: 12px;
-        }
-
-        .document-preview h2 {
-            text-align: center;
-            font-weight: bold;
-            text-transform: uppercase;
-            margin-bottom: 0.5rem;
-            margin-top: 1rem;
-        }
-
-        .document-preview p {
-            text-align: justify;
-            text-indent: 4em;
-            margin-bottom: 1.5rem;
-        }
-
-        .document-preview .signature {
-            text-align: center;
-            margin-top: 3rem;
-            font-weight: bold;
-        }
-
-        .text-center.mb-12 {
-            margin-bottom: 10px;
-        }
-
-        .document-preview .signature-line {
-            border-top: 1px solid black;
-            width: 300px;
-            margin: 0 auto;
-        }
-
-        #document-container {
-            position: relative;
-            z-index: 1;
-            /* Ensures text is on top of the watermark's z-index */
-        }
-
-        .watermark {
-            position: absolute;
-            top: 444px;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            z-index: -1;
-            /* Puts the watermark behind the text */
-            opacity: 0.1;
-            width: 550px;
-            pointer-events: none;
-            /* Prevents the image from interfering with text selection */
-        }
-
-        .watermark img {
-            width: 100%;
-            height: auto;
-        }
-
-        p.font-bold.text-sm.leading-tight,
-        p.text-sm.leading-tight {
-            text-align: center;
-            text-indent: 0;
-            margin-bottom: 0;
-        }
-
+        /* Print */
         @media print {
-            body * {
-                visibility: hidden;
-            }
+            .no-print { display: none !important; }
 
-            div#form-container {
-                display: none;
-            }
+            /* Termo */
+            body.print-termo * { visibility: hidden; }
+            body.print-termo #document-container,
+            body.print-termo #document-container * { visibility: visible !important; }
+            body.print-termo #document-container { position: absolute; left: 0; top: 0; width: 100%; }
+            body.print-termo .document-preview p,
+            body.print-termo .document-preview h2,
+            body.print-termo .document-preview table { font-size: 12pt; }
 
-            #document-container,
-            #document-container * {
-                visibility: visible !important;
-            }
-
-            #document-container {
-                position: absolute;
-                left: 0;
-                top: 0;
-                width: 100%;
-            }
-
-            .document-preview p,
-            .document-preview h2,
-            .document-preview table {
-                font-size: 12pt;
-            }
-
-            .no-print {
-                display: none;
-            }
+            /* Certidão — mesmo estilo do plantao-cert original */
+            body.print-certidao * { visibility: hidden; }
+            body.print-certidao #cert-document-container,
+            body.print-certidao #cert-document-container * { visibility: visible !important; }
+            body.print-certidao #cert-document-container { position: absolute; left: 0; top: 0; width: 100%; }
+            body.print-certidao .cert-document-preview { max-width: 100%; min-height: 0; padding: 0; box-shadow: none; border: none; }
         }
     </style>
 </head>
-
 <body class="bg-gray-100 text-gray-800">
+
+    <!-- Toast -->
+    <div id="toast" class="hidden">
+        <div id="toast-content" class="bg-gray-800 text-white px-4 py-2 rounded-lg shadow-lg text-sm"></div>
+    </div>
 
     <div class="container mx-auto p-4 md:p-8">
         <div class="bg-white rounded-2xl shadow-2xl overflow-hidden">
-            <div class="p-6 bg-gray-800 text-white">
-                <h1 class="text-2xl md:text-3xl font-bold">Gerador de Termo de Plantão Judiciário</h1>
-                <p class="text-gray-300 mt-1">Preencha os campos abaixo para gerar o documento.</p>
+
+            <!-- Header -->
+            <div class="p-5 bg-gray-800 text-white flex items-center justify-between">
+                <div>
+                    <h1 class="text-2xl md:text-3xl font-bold">Plantão Judiciário</h1>
+                    <p class="text-gray-300 mt-1 text-sm">Termo de Plantão e Certidões</p>
+                </div>
+                <span id="autosave-indicator" class="text-xs text-gray-400">Salvamento automático ativo</span>
             </div>
 
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 p-6 md:p-8">
-                <!-- Coluna do Formulário -->
-                <div id="form-container">
-                    <h2 class="text-xl font-bold mb-6 border-b pb-2 border-gray-300 text-gray-700">Dados do Termo</h2>
+            <!-- Tabs -->
+            <div class="px-6 pt-4 bg-gray-50 border-b border-gray-200 no-print flex gap-1">
+                <button class="tab-btn active" id="tab-termo" onclick="switchTab('termo')">Termo de Plantão</button>
+                <button class="tab-btn" id="tab-certidao" onclick="switchTab('certidao')">Certidões</button>
+            </div>
 
+            <!-- ===== TAB TERMO ===== -->
+            <div id="content-termo" class="grid grid-cols-1 lg:grid-cols-2 gap-8 p-6 md:p-8">
+
+                <!-- Formulário Termo -->
+                <div id="form-container">
+                    <h2 class="text-xl font-bold mb-4 border-b pb-2 border-gray-300 text-gray-700">Dados do Termo</h2>
+
+                    <!-- Persistência -->
                     <div class="space-y-2 mb-6 no-print">
-                        <p class="text-sm font-medium text-gray-600">Salvar no Navegador:</p>
-                        <div class="flex space-x-2">
-                            <button onclick="saveData()"
-                                class="w-full py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">Salvar
-                                Progresso</button>
-                            <button onclick="loadData()"
-                                class="w-full py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">Carregar
-                                Dados</button>
-                            <button onclick="clearData()"
-                                class="w-full py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">Limpar
-                                Dados</button>
+                        <div class="flex gap-2">
+                            <button onclick="saveData()" class="flex-1 py-2 px-2 rounded-md text-xs font-medium text-white bg-blue-600 hover:bg-blue-700">💾 Salvar</button>
+                            <button onclick="loadData()" class="flex-1 py-2 px-2 rounded-md text-xs font-medium text-white bg-green-600 hover:bg-green-700">📂 Carregar</button>
+                            <button onclick="clearData()" class="flex-1 py-2 px-2 rounded-md text-xs font-medium text-white bg-red-600 hover:bg-red-700">🗑️ Limpar</button>
                         </div>
-                        <p class="text-sm font-medium text-gray-600 pt-2">Transferir entre Computadores:</p>
-                        <div class="flex space-x-2">
-                            <button onclick="exportData()"
-                                class="w-full py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500">Exportar
-                                para Arquivo</button>
-                            <button onclick="document.getElementById('import-file').click()"
-                                class="w-full py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-teal-600 hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500">Importar
-                                de Arquivo</button>
-                            <input type="file" id="import-file" onchange="importData(event)" accept=".json"
-                                class="hidden">
+                        <div class="flex gap-2">
+                            <button onclick="exportData()" class="flex-1 py-2 px-2 rounded-md text-xs font-medium text-white bg-purple-600 hover:bg-purple-700">⬇️ Exportar JSON</button>
+                            <button onclick="document.getElementById('import-file').click()" class="flex-1 py-2 px-2 rounded-md text-xs font-medium text-white bg-teal-600 hover:bg-teal-700">⬆️ Importar JSON</button>
+                            <button onclick="generateShareLink()" title="Gera link para abrir em outro PC" class="flex-1 py-2 px-2 rounded-md text-xs font-medium text-white bg-orange-500 hover:bg-orange-600">🔗 Link</button>
+                            <input type="file" id="import-file" onchange="importData(event)" accept=".json" class="hidden">
                         </div>
                     </div>
 
@@ -180,26 +118,18 @@
                     <div class="space-y-4 bg-gray-50 p-4 rounded-lg mb-6">
                         <h3 class="font-semibold text-lg text-gray-600">Dados Gerais</h3>
                         <div>
-                            <label for="circunscricao" class="block text-sm font-medium text-gray-700">Circunscrição
-                                Judiciária</label>
-                            <input type="text" id="circunscricao" oninput="updatePreview()"
-                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-                                value="31ª Circunscrição Judiciária">
+                            <label for="circunscricao" class="block text-sm font-medium text-gray-700">Circunscrição Judiciária</label>
+                            <input type="text" id="circunscricao" oninput="debouncedPreview()" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm sm:text-sm" value="31ª Circunscrição Judiciária">
                         </div>
-                        <h3 class="font-semibold text-lg text-gray-600 pt-4">Termo de Abertura</h3>
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <h3 class="font-semibold text-lg text-gray-600 pt-1">Termo de Abertura</h3>
+                        <div class="grid grid-cols-2 gap-4">
                             <div>
-                                <label for="hora_abertura" class="block text-sm font-medium text-gray-700">Horário de
-                                    Abertura</label>
-                                <input type="time" id="hora_abertura" oninput="updatePreview()"
-                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-                                    value="09:00">
+                                <label for="hora_abertura" class="block text-sm font-medium text-gray-700">Horário</label>
+                                <input type="time" id="hora_abertura" oninput="debouncedPreview()" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm sm:text-sm" value="09:00">
                             </div>
                             <div>
-                                <label for="data_abertura" class="block text-sm font-medium text-gray-700">Data de
-                                    Abertura</label>
-                                <input type="date" id="data_abertura" onchange="updatePreview()"
-                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                                <label for="data_abertura" class="block text-sm font-medium text-gray-700">Data</label>
+                                <input type="date" id="data_abertura" onchange="debouncedPreview()" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm sm:text-sm">
                             </div>
                         </div>
                     </div>
@@ -207,92 +137,71 @@
                     <!-- Participantes -->
                     <div class="space-y-4 bg-gray-50 p-4 rounded-lg mb-6">
                         <h3 class="font-semibold text-lg text-gray-600">Participantes</h3>
-                        <div class="grid grid-cols-3 gap-4">
-                            <div class="col-span-1">
-                                <label for="juiz_pronome"
-                                    class="block text-sm font-medium text-gray-700">Tratamento</label>
-                                <select id="juiz_pronome" onchange="updatePreview()"
-                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
-                                    <option>Dr.</option>
-                                    <option>Dra.</option>
+
+                        <!-- Juiz -->
+                        <div class="grid grid-cols-3 gap-3">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">Tratamento</label>
+                                <select id="juiz_pronome" onchange="debouncedPreview()" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm sm:text-sm">
+                                    <option>Dr.</option><option>Dra.</option>
                                 </select>
                             </div>
                             <div class="col-span-2">
-                                <label for="juiz" class="block text-sm font-medium text-gray-700">Juiz(a) de
-                                    Direito</label>
-                                <input type="text" id="juiz" oninput="updatePreview()"
-                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-                                    placeholder="NOME COMPLETO" value="PEDRO SIQUEIRA DE PRETTO">
+                                <label for="juiz" class="block text-sm font-medium text-gray-700">Juiz(a) de Direito</label>
+                                <input type="text" id="juiz" oninput="this.value=this.value.toUpperCase();debouncedPreview()" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm sm:text-sm" placeholder="NOME COMPLETO" value="PEDRO SIQUEIRA DE PRETTO">
                             </div>
                         </div>
                         <div>
-                            <label for="comarca_juiz" class="block text-sm font-medium text-gray-700">Vara e Comarca do
-                                Juiz(a)</label>
-                            <input type="text" id="comarca_juiz" oninput="updatePreview()"
-                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-                                placeholder="Ex: Juizado Especial Cível da Comarca de Marília, SP"
-                                value="Juizado Especial Cível da Comarca de Marília, SP">
+                            <label for="comarca_juiz" class="block text-sm font-medium text-gray-700">Vara e Comarca do Juiz(a)</label>
+                            <input type="text" id="comarca_juiz" oninput="debouncedPreview()" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm sm:text-sm" value="Juizado Especial Cível da Comarca de Marília, SP">
                         </div>
-                        <div class="grid grid-cols-3 gap-4">
-                            <div class="col-span-1">
-                                <label for="promotor_pronome"
-                                    class="block text-sm font-medium text-gray-700">Tratamento</label>
-                                <select id="promotor_pronome" onchange="updatePreview()"
-                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
-                                    <option>Dr.</option>
-                                    <option>Dra.</option>
+
+                        <!-- Promotor -->
+                        <div class="grid grid-cols-3 gap-3">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">Tratamento</label>
+                                <select id="promotor_pronome" onchange="debouncedPreview()" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm sm:text-sm">
+                                    <option>Dr.</option><option>Dra.</option>
                                 </select>
                             </div>
                             <div class="col-span-2">
-                                <label for="promotor" class="block text-sm font-medium text-gray-700">Representante do
-                                    Ministério Público</label>
-                                <input type="text" id="promotor" oninput="updatePreview()"
-                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-                                    placeholder="NOME COMPLETO">
+                                <label for="promotor" class="block text-sm font-medium text-gray-700">Representante do MP</label>
+                                <input type="text" id="promotor" oninput="this.value=this.value.toUpperCase();debouncedPreview()" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm sm:text-sm" placeholder="NOME COMPLETO">
                             </div>
                         </div>
-                        <div class="grid grid-cols-2 gap-4">
+                        <div class="grid grid-cols-2 gap-3">
                             <div>
-                                <label for="oficial_promotoria_cargo"
-                                    class="block text-sm font-medium text-gray-700">Cargo Promotoria</label>
-                                <select id="oficial_promotoria_cargo" onchange="updatePreview()"
-                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                                <label for="oficial_promotoria_cargo" class="block text-sm font-medium text-gray-700">Cargo Promotoria</label>
+                                <select id="oficial_promotoria_cargo" onchange="debouncedPreview()" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm sm:text-sm">
                                     <option>Oficial de Promotoria</option>
                                     <option>Analista de Promotoria</option>
                                 </select>
                             </div>
                             <div>
-                                <label for="oficial_promotoria_nome"
-                                    class="block text-sm font-medium text-gray-700">Nome</label>
-                                <input type="text" id="oficial_promotoria_nome" oninput="updatePreview()"
-                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-                                    placeholder="Ex: NOME COMPLETO">
+                                <label for="oficial_promotoria_nome" class="block text-sm font-medium text-gray-700">Nome</label>
+                                <input type="text" id="oficial_promotoria_nome" oninput="this.value=this.value.toUpperCase();debouncedPreview()" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm sm:text-sm" placeholder="NOME COMPLETO">
                             </div>
                         </div>
-                        <div class="grid grid-cols-3 gap-4">
-                            <div class="col-span-1">
-                                <label for="defensor_pronome"
-                                    class="block text-sm font-medium text-gray-700">Tratamento</label>
-                                <select id="defensor_pronome" onchange="updatePreview()"
-                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
-                                    <option>Dr.</option>
-                                    <option>Dra.</option>
+
+                        <!-- Defensor -->
+                        <div class="grid grid-cols-3 gap-3">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">Tratamento</label>
+                                <select id="defensor_pronome" onchange="debouncedPreview()" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm sm:text-sm">
+                                    <option>Dr.</option><option>Dra.</option>
                                 </select>
                             </div>
                             <div class="col-span-2">
-                                <label for="defensor" class="block text-sm font-medium text-gray-700">Defensor(a)
-                                    Público(a)</label>
-                                <input type="text" id="defensor" oninput="updatePreview()"
-                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-                                    placeholder="NOME COMPLETO">
+                                <label for="defensor" class="block text-sm font-medium text-gray-700">Defensor(a) Público(a)</label>
+                                <input type="text" id="defensor" oninput="this.value=this.value.toUpperCase();debouncedPreview()" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm sm:text-sm" placeholder="NOME COMPLETO">
                             </div>
                         </div>
-                        <div class="grid grid-cols-2 gap-4">
+
+                        <!-- Oficial Maior -->
+                        <div class="grid grid-cols-2 gap-3">
                             <div>
-                                <label for="oficial_maior_cargo" class="block text-sm font-medium text-gray-700">Cargo
-                                    (Digitador)</label>
-                                <select id="oficial_maior_cargo" onchange="updatePreview()"
-                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                                <label for="oficial_maior_cargo" class="block text-sm font-medium text-gray-700">Cargo (Digitador)</label>
+                                <select id="oficial_maior_cargo" onchange="debouncedPreview()" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm sm:text-sm">
                                     <option>Chefe de Seção Judiciário</option>
                                     <option selected>Oficial Maior</option>
                                     <option>Coordenador</option>
@@ -300,62 +209,55 @@
                                 </select>
                             </div>
                             <div>
-                                <label for="oficial_maior_nome" class="block text-sm font-medium text-gray-700">Nome
-                                    (Digitador)</label>
-                                <input type="text" id="oficial_maior_nome" oninput="updatePreview()"
-                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-                                    placeholder="Ex: NOME COMPLETO" value="EDUARDO CARNELLO JATOBÁ">
+                                <label for="oficial_maior_nome" class="block text-sm font-medium text-gray-700">Nome (Digitador)</label>
+                                <input type="text" id="oficial_maior_nome" oninput="this.value=this.value.toUpperCase();debouncedPreview()" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm sm:text-sm" value="EDUARDO CARNELLO JATOBÁ">
                             </div>
                         </div>
+
+                        <!-- Oficiais de Justiça -->
                         <div>
-                            <label for="oficiais_justica" class="block text-sm font-medium text-gray-700">Oficiais de
-                                Justiça (separados por vírgula)</label>
-                            <input type="text" id="oficiais_justica" oninput="updatePreview()"
-                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-                                placeholder="Ex: NOME 1, NOME 2">
+                            <div class="flex items-center justify-between mb-1">
+                                <label class="block text-sm font-medium text-gray-700">Oficiais de Justiça</label>
+                                <button onclick="addOficial()" class="text-xs text-indigo-600 hover:text-indigo-800 font-semibold no-print">+ Adicionar</button>
+                            </div>
+                            <div id="oficiais-container" class="space-y-2"></div>
                         </div>
+
+                        <!-- Escreventes -->
                         <div>
-                            <label for="escreventes" class="block text-sm font-medium text-gray-700">Escreventes
-                                (separados por vírgula)</label>
-                            <input type="text" id="escreventes" oninput="updatePreview()"
-                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-                                placeholder="Ex: NOME 1, NOME 2, NOME 3">
+                            <div class="flex items-center justify-between mb-1">
+                                <label class="block text-sm font-medium text-gray-700">Escreventes Técnicos Judiciários</label>
+                                <button onclick="addEscrevente()" class="text-xs text-indigo-600 hover:text-indigo-800 font-semibold no-print">+ Adicionar</button>
+                            </div>
+                            <div id="escreventes-container" class="space-y-2"></div>
                         </div>
+
+                        <!-- Assistente -->
                         <div>
-                            <label for="assistente_judiciario"
-                                class="block text-sm font-medium text-gray-700">Assistente Judiciário</label>
-                            <input type="text" id="assistente_judiciario" oninput="updatePreview()"
-                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-                                placeholder="Ex: NOME COMPLETO">
+                            <label for="assistente_judiciario" class="block text-sm font-medium text-gray-700">Assistente Judiciário</label>
+                            <input type="text" id="assistente_judiciario" oninput="this.value=this.value.toUpperCase();debouncedPreview()" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm sm:text-sm" placeholder="NOME COMPLETO">
                         </div>
-                        <div class="space-y-2 border-t pt-4 mt-4">
+
+                        <!-- Distribuidor -->
+                        <div class="space-y-3 border-t pt-4">
                             <p class="text-sm font-medium text-gray-700">Pessoal do Distribuidor Judicial</p>
-                            <!-- Person 1 -->
-                            <div class="grid grid-cols-2 gap-4">
+                            <div class="grid grid-cols-2 gap-3">
                                 <div>
-                                    <label for="distribuidor_cargo_1"
-                                        class="block text-sm font-medium text-gray-700">Cargo (Pessoa 1)</label>
-                                    <select id="distribuidor_cargo_1" onchange="updatePreview()"
-                                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                                    <label for="distribuidor_cargo_1" class="block text-sm font-medium text-gray-700">Cargo (Pessoa 1)</label>
+                                    <select id="distribuidor_cargo_1" onchange="debouncedPreview()" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm sm:text-sm">
                                         <option>Supervisor de Serviço do Distribuidor Judicial</option>
+                                        <option>Chefe de Seção Judiciário do Distribuidor</option>
                                         <option>Escrevente do Distribuidor Judicial</option>
                                     </select>
                                 </div>
                                 <div>
-                                    <label for="distribuidor_nome_1"
-                                        class="block text-sm font-medium text-gray-700">Nome (Pessoa 1)</label>
-                                    <input type="text" id="distribuidor_nome_1" oninput="updatePreview()"
-                                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-                                        placeholder="Ex: NOME COMPLETO">
+                                    <label for="distribuidor_nome_1" class="block text-sm font-medium text-gray-700">Nome (Pessoa 1)</label>
+                                    <input type="text" id="distribuidor_nome_1" oninput="this.value=this.value.toUpperCase();debouncedPreview()" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm sm:text-sm" placeholder="NOME COMPLETO">
                                 </div>
                             </div>
-                            <!-- Person 2 -->
                             <div>
-                                <label for="distribuidor_nome_2" class="block text-sm font-medium text-gray-700">Nome
-                                    (Pessoa 2 - Escrevente)</label>
-                                <input type="text" id="distribuidor_nome_2" oninput="updatePreview()"
-                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-                                    placeholder="Ex: NOME COMPLETO">
+                                <label for="distribuidor_nome_2" class="block text-sm font-medium text-gray-700">Nome (Pessoa 2 — Escrevente)</label>
+                                <input type="text" id="distribuidor_nome_2" oninput="this.value=this.value.toUpperCase();debouncedPreview()" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm sm:text-sm" placeholder="NOME COMPLETO">
                             </div>
                         </div>
                     </div>
@@ -363,37 +265,28 @@
                     <!-- Processos -->
                     <div class="space-y-4 bg-gray-50 p-4 rounded-lg mb-6">
                         <h3 class="font-semibold text-lg text-gray-600">Tabela de Processos</h3>
-                        <div id="processos-container" class="space-y-3">
-                        </div>
-                        <button onclick="addProcesso()"
-                            class="mt-2 w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                            Adicionar Processo
+                        <div id="processos-container" class="space-y-3"></div>
+                        <button onclick="addProcesso()" class="mt-2 w-full py-2 px-4 rounded-md text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 no-print">
+                            + Adicionar Processo
                         </button>
                     </div>
 
-                    <!-- Termo de Encerramento -->
+                    <!-- Encerramento -->
                     <div class="space-y-4 bg-gray-50 p-4 rounded-lg">
                         <h3 class="font-semibold text-lg text-gray-600">Termo de Encerramento</h3>
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div class="grid grid-cols-2 gap-4">
                             <div>
-                                <label for="hora_encerramento" class="block text-sm font-medium text-gray-700">Horário
-                                    de Encerramento</label>
-                                <input type="time" id="hora_encerramento" oninput="updatePreview()"
-                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-                                    value="13:00">
+                                <label for="hora_encerramento" class="block text-sm font-medium text-gray-700">Horário</label>
+                                <input type="time" id="hora_encerramento" oninput="debouncedPreview()" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm sm:text-sm" value="13:00">
                             </div>
                             <div>
-                                <label for="data_encerramento" class="block text-sm font-medium text-gray-700">Data de
-                                    Encerramento</label>
-                                <input type="date" id="data_encerramento" onchange="updatePreview()"
-                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                                <label for="data_encerramento" class="block text-sm font-medium text-gray-700">Data</label>
+                                <input type="date" id="data_encerramento" onchange="debouncedPreview()" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm sm:text-sm">
                             </div>
                         </div>
-                        <div class="mt-4">
-                            <label for="encerramento_ocorrencia"
-                                class="block text-sm font-medium text-gray-700">Situação do Encerramento</label>
-                            <select id="encerramento_ocorrencia" onchange="updatePreview()"
-                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                        <div>
+                            <label for="encerramento_ocorrencia" class="block text-sm font-medium text-gray-700">Situação</label>
+                            <select id="encerramento_ocorrencia" onchange="debouncedPreview()" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm sm:text-sm">
                                 <option>Com ocorrência</option>
                                 <option>Sem ocorrência</option>
                             </select>
@@ -401,506 +294,732 @@
                     </div>
                 </div>
 
-                <!-- Coluna do Documento -->
+                <!-- Preview Termo -->
                 <div class="border-2 border-dashed border-gray-300 rounded-lg p-4 lg:p-6 h-full min-h-[800px]">
                     <div class="flex justify-end mb-4 no-print">
-                        <button onclick="window.print()"
-                            class="py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-gray-600 hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500">
-                            Imprimir Documento
+                        <button onclick="printTermo()" class="py-2 px-4 rounded-md text-sm font-medium text-white bg-gray-600 hover:bg-gray-700">
+                            🖨️ Imprimir Termo
                         </button>
                     </div>
                     <div id="document-container" class="bg-white p-8 document-preview">
-                        <div class="watermark">
-                            <img src="tj.jpg" alt="Marca d'água TJSP">
-                        </div>
+                        <div class="watermark"><img src="tj.jpg" alt="Marca d'água TJSP"></div>
                         <div class="text-center mb-12">
                             <p class="font-bold text-sm leading-tight font-verdana">PODER JUDICIÁRIO</p>
                             <p class="text-sm leading-tight font-verdana">São Paulo</p>
                             <p></p>
-                            <p class="text-sm leading-tight">PLANTÃO JUDICIÁRIO - <span
-                                    id="preview-circunscricao_comarca"> [Circunscrição]</span>
+                            <p class="text-sm leading-tight">PLANTÃO JUDICIÁRIO - <span id="preview-circunscricao_comarca">[Circunscrição]</span></p>
                         </div>
-
-                        <h2 style="text-decoration: underline;">Termo de Abertura</h2>
+                        <h2 style="text-decoration:underline;">Termo de Abertura</h2>
                         <p>
-                            Às <span id="preview-hora_abertura" class="font-bold">[hora]</span> horas do dia <span
-                                id="preview-dia_extenso_abertura" class="font-bold">[dia por extenso]</span> (<span
-                                id="preview-dia_num_abertura" class="font-bold">[dia]</span>) de <span
-                                id="preview-mes_extenso_abertura" class="font-bold">[mês por extenso]</span> (<span
-                                id="preview-mes_num_abertura" class="font-bold">[mês]</span>) do ano de <span
-                                id="preview-ano_extenso_abertura" class="font-bold">[ano por extenso]</span> (<span
-                                id="preview-ano_num_abertura" class="font-bold">[ano]</span>), de forma remota nos
-                            termos do Provimento Conjunto nº 54/2022, foi realizado o Plantão Judiciário da <span
-                                id="preview-circunscricao_abertura" class="font-bold">[Circunscrição Judiciária]</span>,
-                            nos termos do art. 1.130, inciso I, Capítulo X, das NSCGJ. Foi procedida a abertura do
-                            Plantão Judiciário pelo(a) <span id="preview-juiz" class="font-bold">[Juiz(a) de
-                                Direito]</span>, MM. Juiz(a) de Direito do(a) <span id="preview-comarca_juiz"
-                                class="font-bold">[Vara e Comarca do Juiz(a)]</span>, do qual fizeram parte o
-                            representante do Ministério Público, <span id="preview-promotor"
-                                class="font-bold">[Representante do Ministério Público]</span>, <span
-                                id="preview-oficial_promotoria_completo" class="font-bold">[Info Oficial
-                                Promotoria]</span>, o(a) Defensor(a) Público(a), <span id="preview-defensor"
-                                class="font-bold">[Defensor(a) Público(a)]</span>, o(a) <span
-                                id="preview-oficial_maior_cargo">Oficial Maior</span> <span
-                                id="preview-oficial_maior_nome" class="font-bold">[Nome do Digitador]</span>, os
-                            Oficiais de Justiça <span id="preview-oficiais_justica" class="font-bold">[Oficiais de
-                                Justiça]</span>, os Escreventes Técnicos Judiciário <span id="preview-escreventes"
-                                class="font-bold">[Escreventes]</span>, o(a) assistente judiciário <span
-                                id="preview-assistente_judiciario" class="font-bold">[Assistente Judiciário]</span>,
-                            <span id="preview-distribuidor_completo" class="font-bold">[Info Distribuidor]</span>. Para
-                            Constar, lavrei o presente termo que lido e achado conforme, vai
-                            devidamente assinado. Eu, <span id="preview-oficial_maior_digitador" class="font-bold">[Nome
-                                do Digitador]</span>, digitei e subscrevi
-                            digitalmente.
+                            Às <span id="preview-hora_abertura" class="font-bold">[hora]</span> horas do dia <span id="preview-dia_extenso_abertura" class="font-bold">[dia por extenso]</span> (<span id="preview-dia_num_abertura" class="font-bold">[dia]</span>) de <span id="preview-mes_extenso_abertura" class="font-bold">[mês por extenso]</span> (<span id="preview-mes_num_abertura" class="font-bold">[mês]</span>) do ano de <span id="preview-ano_extenso_abertura" class="font-bold">[ano por extenso]</span> (<span id="preview-ano_num_abertura" class="font-bold">[ano]</span>), de forma remota nos termos do Provimento Conjunto nº 54/2022, foi realizado o Plantão Judiciário da <span id="preview-circunscricao_abertura" class="font-bold">[Circunscrição Judiciária]</span>, nos termos do art. 1.130, inciso I, Capítulo X, das NSCGJ. Foi procedida a abertura do Plantão Judiciário pelo(a) <span id="preview-juiz" class="font-bold">[Juiz(a) de Direito]</span>, MM. Juiz(a) de Direito do(a) <span id="preview-comarca_juiz" class="font-bold">[Vara e Comarca do Juiz(a)]</span>, do qual fizeram parte o representante do Ministério Público, <span id="preview-promotor" class="font-bold">[Representante do Ministério Público]</span>, <span id="preview-oficial_promotoria_completo" class="font-bold">[Info Oficial Promotoria]</span>, o(a) Defensor(a) Público(a), <span id="preview-defensor" class="font-bold">[Defensor(a) Público(a)]</span>, o(a) <span id="preview-oficial_maior_cargo">Oficial Maior</span> <span id="preview-oficial_maior_nome" class="font-bold">[Nome do Digitador]</span>, os Oficiais de Justiça <span id="preview-oficiais_justica" class="font-bold">[Oficiais de Justiça]</span>, os Escreventes Técnicos Judiciário <span id="preview-escreventes" class="font-bold">[Escreventes]</span>, o(a) assistente judiciário <span id="preview-assistente_judiciario" class="font-bold">[Assistente Judiciário]</span>, <span id="preview-distribuidor_completo" class="font-bold">[Info Distribuidor]</span>. Para Constar, lavrei o presente termo que lido e achado conforme, vai devidamente assinado. Eu, <span id="preview-oficial_maior_digitador" class="font-bold">[Nome do Digitador]</span>, digitei e subscrevi digitalmente.
                         </p>
                         <div class="signature">
-                            <span id="preview-juiz_assinatura_abertura" class="font-bold"
-                                style="text-align: center;">[Juiz(a) de Direito]</span>
-                            <p class="text-sm" style="text-align: center; text-indent: 0;">Juiz(a) de Direito</p>
+                            <span id="preview-juiz_assinatura_abertura" class="font-bold">[Juiz(a) de Direito]</span>
+                            <p class="text-sm" style="text-align:center;text-indent:0;">Juiz(a) de Direito</p>
                         </div>
-
                         <div id="preview-processos-table-container" class="my-8"></div>
-
                         <h2>Termo de Encerramento</h2>
                         <p>
-                            Às <span id="preview-hora_encerramento" class="font-bold">[hora]</span> horas do dia <span
-                                id="preview-dia_extenso_encerramento" class="font-bold">[dia por extenso]</span> (<span
-                                id="preview-dia_num_encerramento" class="font-bold">[dia]</span>) de <span
-                                id="preview-mes_extenso_encerramento" class="font-bold">[mês por extenso]</span> (<span
-                                id="preview-mes_num_encerramento" class="font-bold">[mês]</span>) do ano de <span
-                                id="preview-ano_extenso_encerramento" class="font-bold">[ano por extenso]</span> (<span
-                                id="preview-ano_num_encerramento" class="font-bold">[ano]</span>), foi procedido
-                            pelo(a)
-                            <span id="preview-juiz_encerramento" class="font-bold">[Juiz(a) de Direito]</span>, MM.
-                            Juiz(a) de Direito do(a) <span id="preview-comarca_juiz_encerramento"
-                                class="font-bold">[Vara e Comarca do Juiz(a)]</span>, o encerramento do Plantão
-                            Judiciário da <span id="preview-circunscricao_encerramento" class="font-bold">[Circunscrição
-                                Judiciária]</span>, <span id="preview-ocorrencia">[situação]</span>. Para Constar,
-                            lavrei o presente termo que
-                            lido e achado conforme, vai devidamente assinado. Eu, <span
-                                id="preview-oficial_maior_encerramento" class="font-bold">[Nome do Digitador]</span>,
-                            <span id="preview-oficial_maior_cargo_encerramento">Oficial Maior</span>, digitei e
-                            subscrevi digitalmente.
+                            Às <span id="preview-hora_encerramento" class="font-bold">[hora]</span> horas do dia <span id="preview-dia_extenso_encerramento" class="font-bold">[dia por extenso]</span> (<span id="preview-dia_num_encerramento" class="font-bold">[dia]</span>) de <span id="preview-mes_extenso_encerramento" class="font-bold">[mês por extenso]</span> (<span id="preview-mes_num_encerramento" class="font-bold">[mês]</span>) do ano de <span id="preview-ano_extenso_encerramento" class="font-bold">[ano por extenso]</span> (<span id="preview-ano_num_encerramento" class="font-bold">[ano]</span>), foi procedido pelo(a) <span id="preview-juiz_encerramento" class="font-bold">[Juiz(a) de Direito]</span>, MM. Juiz(a) de Direito do(a) <span id="preview-comarca_juiz_encerramento" class="font-bold">[Vara e Comarca do Juiz(a)]</span>, o encerramento do Plantão Judiciário da <span id="preview-circunscricao_encerramento" class="font-bold">[Circunscrição Judiciária]</span>, <span id="preview-ocorrencia">[situação]</span>. Para Constar, lavrei o presente termo que lido e achado conforme, vai devidamente assinado. Eu, <span id="preview-oficial_maior_encerramento" class="font-bold">[Nome do Digitador]</span>, <span id="preview-oficial_maior_cargo_encerramento">Oficial Maior</span>, digitei e subscrevi digitalmente.
                         </p>
                         <div class="signature">
-                            <span id="preview-juiz_assinatura_encerramento" class="font-bold">[Juiz(a) de
-                                Direito]</span>
-                            <p class="text-sm" style="text-align: center; text-indent: 0;">Juiz(a) de Direito</p>
+                            <span id="preview-juiz_assinatura_encerramento" class="font-bold">[Juiz(a) de Direito]</span>
+                            <p class="text-sm" style="text-align:center;text-indent:0;">Juiz(a) de Direito</p>
                         </div>
                     </div>
                 </div>
             </div>
+
+            <!-- ===== TAB CERTIDÕES ===== -->
+            <div id="content-certidao" class="hidden">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 p-6 md:p-8">
+
+                    <!-- Formulário Certidão -->
+                    <div id="cert-form-container">
+                        <h2 class="text-xl font-bold mb-4 border-b pb-2 text-gray-700">Dados da Certidão</h2>
+
+                        <div class="mb-5">
+                            <label for="tipo_certidao" class="block text-sm font-medium text-gray-700 font-bold">1. Tipo de Certidão</label>
+                            <select id="tipo_certidao" onchange="toggleCertFields()" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm sm:text-sm bg-indigo-50 text-indigo-800 font-semibold">
+                                <option value="juiz">Juiz(a)</option>
+                                <option value="promotor">Promotor(a) de Justiça</option>
+                                <option value="defensor">Defensor(a) Público(a)</option>
+                                <option value="analista_mp">Analista/Oficial do MP</option>
+                                <option value="escrevente">Escrevente / Oficial de Justiça</option>
+                            </select>
+                        </div>
+
+                        <div class="space-y-4 bg-gray-50 p-4 rounded-lg mb-5">
+                            <h3 class="font-semibold text-lg text-gray-600">2. Dados do Participante</h3>
+                            <div>
+                                <label for="cert_participante_nome" class="block text-sm font-medium text-gray-700">Nome Completo</label>
+                                <input type="text" id="cert_participante_nome" oninput="this.value=this.value.toUpperCase();updateCertPreview()" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm sm:text-sm" placeholder="FULANO DE TAL">
+                            </div>
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label for="cert_participante_genero" class="block text-sm font-medium text-gray-700">Gênero</label>
+                                    <select id="cert_participante_genero" onchange="toggleCertFields()" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm sm:text-sm">
+                                        <option value="m">Masculino</option>
+                                        <option value="f">Feminino</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label for="cert_participante_tratamento" class="block text-sm font-medium text-gray-700">Pronome</label>
+                                    <select id="cert_participante_tratamento" onchange="updateCertPreview()" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm sm:text-sm">
+                                        <option>Dr.</option><option>Dra.</option><option>Sr.</option><option>Sra.</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div>
+                                <label for="cert_plantao_datas" class="block text-sm font-medium text-gray-700">Dia(s) do Plantão (ex: 17 de abril de 2025)</label>
+                                <input type="text" id="cert_plantao_datas" oninput="updateCertPreview()" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm sm:text-sm" placeholder="17 e 18 de abril de 2025">
+                            </div>
+                        </div>
+
+                        <div class="space-y-4 bg-gray-50 p-4 rounded-lg mb-5">
+                            <h3 class="font-semibold text-lg text-gray-600">3. Dados Específicos do Cargo</h3>
+                            <div id="cert_field_juiz" class="cert-conditional">
+                                <label for="cert_juiz_vara_comarca" class="block text-sm font-medium text-gray-700">Vara e Comarca</label>
+                                <input type="text" id="cert_juiz_vara_comarca" oninput="updateCertPreview()" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm sm:text-sm" value="Juizado Especial Cível da Comarca de Marília, SP">
+                            </div>
+                            <div id="cert_field_promotor" class="cert-conditional hidden">
+                                <div class="grid grid-cols-3 gap-4">
+                                    <div>
+                                        <label for="cert_promotor_numero" class="block text-sm font-medium text-gray-700">Nº Promotor</label>
+                                        <input type="number" id="cert_promotor_numero" oninput="updateCertPreview()" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm sm:text-sm" value="1">
+                                    </div>
+                                    <div class="col-span-2">
+                                        <label for="cert_promotor_comarca" class="block text-sm font-medium text-gray-700">Comarca</label>
+                                        <input type="text" id="cert_promotor_comarca" oninput="updateCertPreview()" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm sm:text-sm" value="Garça, SP">
+                                    </div>
+                                </div>
+                            </div>
+                            <div id="cert_field_defensor" class="cert-conditional hidden">
+                                <label for="cert_defensor_comarca" class="block text-sm font-medium text-gray-700">Comarca</label>
+                                <input type="text" id="cert_defensor_comarca" oninput="updateCertPreview()" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm sm:text-sm" value="Marília, Estado de São Paulo">
+                            </div>
+                            <div id="cert_field_analista_mp" class="cert-conditional hidden">
+                                <label for="cert_analista_cargo" class="block text-sm font-medium text-gray-700">Cargo</label>
+                                <select id="cert_analista_cargo" onchange="updateCertPreview()" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm sm:text-sm">
+                                    <option>Analista de Promotoria/Assistente Jurídico</option>
+                                    <option>Oficial de Promotoria</option>
+                                </select>
+                                <label for="cert_analista_comarca" class="block text-sm font-medium text-gray-700 mt-2">Comarca</label>
+                                <input type="text" id="cert_analista_comarca" oninput="updateCertPreview()" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm sm:text-sm" value="Marília">
+                            </div>
+                            <div id="cert_field_escrevente" class="cert-conditional hidden">
+                                <label for="cert_escrevente_cargo" class="block text-sm font-medium text-gray-700">Cargo</label>
+                                <select id="cert_escrevente_cargo" onchange="updateCertPreview()" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm sm:text-sm">
+                                    <option>Escrevente Técnico Judiciário</option>
+                                    <option>Oficial de Justiça</option>
+                                    <option>Assistente Judiciário</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="space-y-4 bg-gray-50 p-4 rounded-lg">
+                            <h3 class="font-semibold text-lg text-gray-600">4. Certificante e Emissão</h3>
+                            <div class="grid grid-cols-2 gap-3">
+                                <div>
+                                    <label for="cert_certificante_nome" class="block text-sm font-medium text-gray-700">Nome</label>
+                                    <input type="text" id="cert_certificante_nome" oninput="updateCertPreview()" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm sm:text-sm" value="EDUARDO CARNELLO JATOBÁ">
+                                </div>
+                                <div>
+                                    <label for="cert_certificante_cargo" class="block text-sm font-medium text-gray-700">Cargo</label>
+                                    <input type="text" id="cert_certificante_cargo" oninput="updateCertPreview()" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm sm:text-sm" value="Oficial Maior">
+                                </div>
+                            </div>
+                            <div>
+                                <label for="cert_certificante_oficio" class="block text-sm font-medium text-gray-700">Ofício</label>
+                                <input type="text" id="cert_certificante_oficio" oninput="updateCertPreview()" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm sm:text-sm" value="do Ofício do Juizado Especial Cível da Comarca de Marília, Estado de São Paulo">
+                            </div>
+                            <div class="grid grid-cols-2 gap-3">
+                                <div>
+                                    <label for="cert_emissao_data" class="block text-sm font-medium text-gray-700">Data de Emissão</label>
+                                    <input type="date" id="cert_emissao_data" onchange="updateCertPreview()" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm sm:text-sm">
+                                </div>
+                                <div>
+                                    <label for="cert_emissao_comarca" class="block text-sm font-medium text-gray-700">Comarca</label>
+                                    <input type="text" id="cert_emissao_comarca" oninput="updateCertPreview()" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm sm:text-sm" value="Marília">
+                                </div>
+                            </div>
+                            <div>
+                                <label for="cert_circunscricao" class="block text-sm font-medium text-gray-700">Circunscrição Judiciária</label>
+                                <input type="text" id="cert_circunscricao" oninput="updateCertPreview()" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm sm:text-sm" value="31ª Circunscrição Judiciária">
+                            </div>
+                            <div>
+                                <label for="cert_footer_endereco" class="block text-sm font-medium text-gray-700">Endereço (rodapé)</label>
+                                <input type="text" id="cert_footer_endereco" oninput="updateCertPreview()" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm sm:text-sm" value="Rua Lourival Freire, 110 - Vila Fragata - Marília, SP - CEP 17519-902">
+                            </div>
+                            <div>
+                                <label for="cert_footer_contato" class="block text-sm font-medium text-gray-700">Contato (rodapé)</label>
+                                <input type="text" id="cert_footer_contato" oninput="updateCertPreview()" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm sm:text-sm" value="Fone: (14) 3311-1114 - e-mail: mariliajec@tjsp.jus.br">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Preview Certidão -->
+                    <div class="border-2 border-dashed border-gray-300 rounded-lg p-4 lg:p-6 h-full min-h-[800px]">
+                        <div class="flex justify-end mb-4 no-print">
+                            <button onclick="printCertidao()" class="py-2 px-4 rounded-md text-sm font-medium text-white bg-gray-600 hover:bg-gray-700">
+                                🖨️ Imprimir Certidão
+                            </button>
+                        </div>
+                        <div id="cert-document-container" class="cert-document-preview">
+                            <header>
+                                <img src="https://www.cnj.jus.br/wp-content/uploads/2011/02/brasao_pjud.png" alt="Brasão do Poder Judiciário" class="header-logo">
+                                <p class="header-text">PODER JUDICIÁRIO</p>
+                                <p class="header-text">SÃO PAULO</p>
+                                <p class="header-text" id="cert-preview-header-vara">VARA DO JUIZADO ESPECIAL CÍVEL DA COMARCA DE MARÍLIA</p>
+                            </header>
+                            <h2 class="cert-title">C E R T I D Ã O</h2>
+                            <main>
+                                <div class="body-container">
+                                    <div class="certifier-info-float">
+                                        <span id="cert-preview-certificante_nome" class="font-bold"></span>, <span id="cert-preview-certificante_cargo"></span>, <span id="cert-preview-certificante_oficio"></span>, na forma da lei, etc.
+                                    </div>
+                                    <p>
+                                        <span class="font-bold">CERTIFICA</span> que, atendendo a pedido formulado por pessoa interessada, revendo o Livro de Registro de Feitos destinado ao <span class="font-bold">PLANTÃO JUDICIÁRIO</span>, dele verificou-se que <span id="cert-preview-body"></span>. <span class="font-bold">NADA MAIS</span>. O referido é verdade e dou fé.
+                                    </p>
+                                </div>
+                                <p class="final-paragraph">
+                                    Dado e passado nesta cidade e Comarca de <span id="cert-preview-emissao_comarca" class="font-bold"></span>, aos <span id="cert-preview-emissao_dia_extenso" class="font-bold"></span> (<span id="cert-preview-emissao_dia_num" class="font-bold"></span>) dias do mês de <span id="cert-preview-emissao_mes_extenso" class="font-bold"></span> (<span id="cert-preview-emissao_mes_num" class="font-bold"></span>) do ano de <span id="cert-preview-emissao_ano_extenso" class="font-bold"></span> (<span id="cert-preview-emissao_ano_num" class="font-bold"></span>). Eu, <span id="cert-preview-certificante_nome_final" class="font-bold"></span>, <span id="cert-preview-certificante_cargo_final" class="font-bold"></span>, digitei, conferi e assinei digitalmente.
+                                </p>
+                            </main>
+                            <div class="cert-signature">
+                                <span id="cert-preview-assinatura" class="font-bold"></span><br>
+                                <span id="cert-preview-assinatura_cargo"></span>
+                            </div>
+                            <footer class="cert-footer">
+                                <span id="cert-preview-footer-endereco"></span><br>
+                                <span id="cert-preview-footer-contato"></span>
+                            </footer>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
         </div>
     </div>
 
     <script>
-        function updatePreview() {
-            // Dados Gerais
-            const circunscricao = document.getElementById('circunscricao').value || '[Circunscrição Judiciária]';
-            document.getElementById('preview-circunscricao_comarca').textContent = `${circunscricao.toUpperCase()}`;
-            document.getElementById('preview-circunscricao_abertura').textContent = circunscricao;
-            document.getElementById('preview-circunscricao_encerramento').textContent = circunscricao;
-
-            // Termo de Abertura
-            document.getElementById('preview-hora_abertura').textContent = document.getElementById('hora_abertura').value || '[hora]';
-
-            const dataAbertura = new Date(document.getElementById('data_abertura').value + 'T00:00:00');
-            if (window.extenso && !isNaN(dataAbertura.getTime())) {
-                const dia = dataAbertura.getDate();
-                const mes = dataAbertura.getMonth();
-                const ano = dataAbertura.getFullYear();
-                const meses = ["janeiro", "fevereiro", "março", "abril", "maio", "junho", "julho", "agosto", "setembro", "outubro", "novembro", "dezembro"];
-
-                document.getElementById('preview-dia_extenso_abertura').textContent = window.extenso(dia, { number: { gender: 'm' } });
-                document.getElementById('preview-dia_num_abertura').textContent = dia;
-                document.getElementById('preview-mes_extenso_abertura').textContent = meses[mes];
-                document.getElementById('preview-mes_num_abertura').textContent = mes + 1;
-                document.getElementById('preview-ano_extenso_abertura').textContent = window.extenso(ano);
-                document.getElementById('preview-ano_num_abertura').textContent = ano;
-            } else {
-                document.getElementById('preview-dia_extenso_abertura').textContent = '[dia por extenso]';
-                document.getElementById('preview-dia_num_abertura').textContent = '[dia]';
-                document.getElementById('preview-mes_extenso_abertura').textContent = '[mês por extenso]';
-                document.getElementById('preview-mes_num_abertura').textContent = '[mês]';
-                document.getElementById('preview-ano_extenso_abertura').textContent = '[ano por extenso]';
-                document.getElementById('preview-ano_num_abertura').textContent = '[ano]';
-            }
-
-            // Nomes com Tratamento
-            const pronomeJuiz = document.getElementById('juiz_pronome').value;
-            const nomeJuiz = document.getElementById('juiz').value;
-            const juizDisplay = nomeJuiz ? `${pronomeJuiz} ${nomeJuiz}` : '[Juiz(a) de Direito]';
-            document.getElementById('preview-juiz').textContent = juizDisplay;
-            document.getElementById('preview-juiz_assinatura_abertura').textContent = juizDisplay;
-            document.getElementById('preview-juiz_encerramento').textContent = juizDisplay;
-            document.getElementById('preview-juiz_assinatura_encerramento').textContent = juizDisplay;
-
-            const pronomePromotor = document.getElementById('promotor_pronome').value;
-            const nomePromotor = document.getElementById('promotor').value;
-            const promotorDisplay = nomePromotor ? `${pronomePromotor} ${nomePromotor}` : '[Representante do Ministério Público]';
-            document.getElementById('preview-promotor').textContent = promotorDisplay;
-
-            const pronomeDefensor = document.getElementById('defensor_pronome').value;
-            const nomeDefensor = document.getElementById('defensor').value;
-            const defensorDisplay = nomeDefensor ? `${pronomeDefensor} ${nomeDefensor}` : '[Defensor(a) Público(a)]';
-            document.getElementById('preview-defensor').textContent = defensorDisplay;
-
-            // Cargos com Nomes
-            const cargoOficialPromotoria = document.getElementById('oficial_promotoria_cargo').value;
-            const nomeOficialPromotoria = document.getElementById('oficial_promotoria_nome').value;
-            const oficialPromotoriaDisplay = nomeOficialPromotoria ? `o(a) ${cargoOficialPromotoria} ${nomeOficialPromotoria}` : `o(a) ${cargoOficialPromotoria}`;
-            document.getElementById('preview-oficial_promotoria_completo').textContent = oficialPromotoriaDisplay;
-
-            const cargo1 = document.getElementById('distribuidor_cargo_1').value;
-            const nome1 = document.getElementById('distribuidor_nome_1').value.trim();
-            const nome2 = document.getElementById('distribuidor_nome_2').value.trim();
-            const cargo2 = "Escrevente do Distribuidor Judicial";
-            let distribuidorText = "";
-
-            if (nome1 && nome2) {
-                if (cargo1 === cargo2) {
-                    distribuidorText = `e os Escreventes do Distribuidor Judicial ${nome1} e ${nome2}`;
-                } else {
-                    distribuidorText = `e o(a) ${cargo1} ${nome1}, e o(a) ${cargo2} ${nome2}`;
-                }
-            } else if (nome1) {
-                distribuidorText = `e o(a) ${cargo1} ${nome1}`;
-            } else if (nome2) {
-                distribuidorText = `e o(a) ${cargo2} ${nome2}`;
-            }
-            document.getElementById('preview-distribuidor_completo').textContent = distribuidorText;
-
-
-            const comarca = document.getElementById('comarca_juiz').value || '[Vara e Comarca do Juiz(a)]';
-            document.getElementById('preview-comarca_juiz').textContent = comarca;
-            document.getElementById('preview-comarca_juiz_encerramento').textContent = comarca;
-
-            const oficialMaiorCargo = document.getElementById('oficial_maior_cargo').value;
-            const oficialMaiorNome = document.getElementById('oficial_maior_nome').value || '[Nome do Digitador]';
-            document.getElementById('preview-oficial_maior_cargo').textContent = oficialMaiorCargo;
-            document.getElementById('preview-oficial_maior_nome').textContent = oficialMaiorNome;
-            document.getElementById('preview-oficial_maior_digitador').textContent = oficialMaiorNome;
-            document.getElementById('preview-oficial_maior_encerramento').textContent = oficialMaiorNome;
-            document.getElementById('preview-oficial_maior_cargo_encerramento').textContent = oficialMaiorCargo;
-
-
-            const fieldsToUpdate = {
-                'oficiais_justica': 'preview-oficiais_justica',
-                'escreventes': 'preview-escreventes',
-                'assistente_judiciario': 'preview-assistente_judiciario',
-            };
-
-            for (const inputId in fieldsToUpdate) {
-                const previewId = fieldsToUpdate[inputId];
-                const inputElement = document.getElementById(inputId);
-                const previewElement = document.getElementById(previewId);
-                previewElement.textContent = inputElement.value || `[${inputElement.placeholder}]`;
-            }
-
-            // Termo de Encerramento
-            document.getElementById('preview-hora_encerramento').textContent = document.getElementById('hora_encerramento').value || '[hora]';
-            const dataEncerramento = new Date(document.getElementById('data_encerramento').value + 'T00:00:00');
-            if (window.extenso && !isNaN(dataEncerramento.getTime())) {
-                const dia = dataEncerramento.getDate();
-                const mes = dataEncerramento.getMonth();
-                const ano = dataEncerramento.getFullYear();
-                const meses = ["janeiro", "fevereiro", "março", "abril", "maio", "junho", "julho", "agosto", "setembro", "outubro", "novembro", "dezembro"];
-
-                document.getElementById('preview-dia_extenso_encerramento').textContent = window.extenso(dia, { number: { gender: 'm' } });
-                document.getElementById('preview-dia_num_encerramento').textContent = dia;
-                document.getElementById('preview-mes_extenso_encerramento').textContent = meses[mes];
-                document.getElementById('preview-mes_num_encerramento').textContent = mes + 1;
-                document.getElementById('preview-ano_extenso_encerramento').textContent = window.extenso(ano);
-                document.getElementById('preview-ano_num_encerramento').textContent = ano;
-            } else {
-                document.getElementById('preview-dia_extenso_encerramento').textContent = '[dia por extenso]';
-                document.getElementById('preview-dia_num_encerramento').textContent = '[dia]';
-                document.getElementById('preview-mes_extenso_encerramento').textContent = '[mês por extenso]';
-                document.getElementById('preview-mes_num_encerramento').textContent = '[mês]';
-                document.getElementById('preview-ano_extenso_encerramento').textContent = '[ano por extenso]';
-                document.getElementById('preview-ano_num_encerramento').textContent = '[ano]';
-            }
-
-            const ocorrencia = document.getElementById('encerramento_ocorrencia').value;
-            const ocorrenciaTexto = (ocorrencia === 'Com ocorrência')
-                ? 'com ocorrência, sendo o retorno dos mandados expedidos, que serão verificados no dia seguinte para regularização'
-                : 'sem ocorrência';
-            document.getElementById('preview-ocorrencia').textContent = ocorrenciaTexto;
-
-            updateProcessosTable();
+        // ===== TABS =====
+        function switchTab(tab) {
+            document.getElementById('content-termo').classList.toggle('hidden', tab !== 'termo');
+            document.getElementById('content-certidao').classList.toggle('hidden', tab !== 'certidao');
+            document.getElementById('tab-termo').classList.toggle('active', tab === 'termo');
+            document.getElementById('tab-certidao').classList.toggle('active', tab === 'certidao');
         }
 
+        // ===== PRINT =====
+        function printTermo() {
+            document.body.classList.add('print-termo');
+            document.body.classList.remove('print-certidao');
+            window.print();
+        }
+        function printCertidao() {
+            document.body.classList.add('print-certidao');
+            document.body.classList.remove('print-termo');
+            window.print();
+        }
+        // Ctrl+P usa a aba ativa
+        window.onbeforeprint = () => {
+            const certidaoAtiva = !document.getElementById('content-certidao').classList.contains('hidden');
+            if (certidaoAtiva) {
+                document.body.classList.add('print-certidao');
+                document.body.classList.remove('print-termo');
+            } else {
+                document.body.classList.add('print-termo');
+                document.body.classList.remove('print-certidao');
+            }
+        };
+        window.onafterprint = () => document.body.classList.remove('print-termo', 'print-certidao');
+
+        // ===== TOAST =====
+        let toastTimer;
+        function showToast(msg, type = 'success') {
+            const el = document.getElementById('toast-content');
+            el.textContent = msg;
+            el.className = `px-4 py-2 rounded-lg shadow-lg text-sm text-white ${type === 'error' ? 'bg-red-600' : type === 'info' ? 'bg-blue-600' : 'bg-gray-800'}`;
+            document.getElementById('toast').classList.remove('hidden');
+            clearTimeout(toastTimer);
+            toastTimer = setTimeout(() => document.getElementById('toast').classList.add('hidden'), 3500);
+        }
+
+        // ===== DYNAMIC OFICIAIS =====
+        let oficialCount = 0;
+        function addOficial(value = '') {
+            oficialCount++;
+            const id = oficialCount;
+            const div = document.createElement('div');
+            div.id = `oficial-${id}`;
+            div.className = 'flex gap-2 items-center';
+            div.innerHTML = `
+                <input type="text" placeholder="NOME COMPLETO" value="${value}"
+                    class="oficial-input flex-1 rounded-md border-gray-300 shadow-sm sm:text-sm"
+                    oninput="this.value=this.value.toUpperCase();debouncedPreview()">
+                <button onclick="document.getElementById('oficial-${id}').remove();debouncedPreview()" class="text-red-500 hover:text-red-700 font-bold text-xl leading-none no-print">×</button>`;
+            document.getElementById('oficiais-container').appendChild(div);
+            debouncedPreview();
+        }
+
+        // ===== DYNAMIC ESCREVENTES =====
+        let escreventeCount = 0;
+        function addEscrevente(value = '') {
+            escreventeCount++;
+            const id = escreventeCount;
+            const div = document.createElement('div');
+            div.id = `escrevente-${id}`;
+            div.className = 'flex gap-2 items-center';
+            div.innerHTML = `
+                <input type="text" placeholder="NOME COMPLETO" value="${value}"
+                    class="escrevente-input flex-1 rounded-md border-gray-300 shadow-sm sm:text-sm"
+                    oninput="this.value=this.value.toUpperCase();debouncedPreview()">
+                <button onclick="document.getElementById('escrevente-${id}').remove();debouncedPreview()" class="text-red-500 hover:text-red-700 font-bold text-xl leading-none no-print">×</button>`;
+            document.getElementById('escreventes-container').appendChild(div);
+            debouncedPreview();
+        }
+
+        // ===== PROCESSOS =====
         let processoCount = 0;
         function addProcesso() {
             processoCount++;
-            const container = document.getElementById('processos-container');
-            const newProcessoDiv = document.createElement('div');
-            newProcessoDiv.id = `processo-${processoCount}`;
-            newProcessoDiv.className = 'p-3 border rounded-md bg-white grid grid-cols-1 sm:grid-cols-2 gap-3 relative';
-
+            const id = processoCount;
             const today = new Date().toISOString().split('T')[0];
-
-            newProcessoDiv.innerHTML = `
-                <button onclick="removeProcesso(${processoCount})" class="absolute top-2 right-2 text-red-500 hover:text-red-700 font-bold no-print">X</button>
-                <input type="text" placeholder="Processo" class="processo-input-processo sm:col-span-2 w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" oninput="updatePreview()">
-                <input type="date" placeholder="Data" class="processo-input-data w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" value="${today}" oninput="updatePreview()">
-                
-                <div class="sm:col-span-1">
-                    <select class="processo-input-natureza-select w-full rounded-md border-gray-300 shadow-sm" onchange="toggleNaturezaInput(this, ${processoCount}); updatePreview();">
+            const div = document.createElement('div');
+            div.id = `processo-${id}`;
+            div.className = 'p-3 border rounded-md bg-white grid grid-cols-1 sm:grid-cols-2 gap-3 relative';
+            div.innerHTML = `
+                <button onclick="document.getElementById('processo-${id}').remove();debouncedPreview()" class="absolute top-2 right-2 text-red-500 hover:text-red-700 font-bold no-print">×</button>
+                <input type="text" placeholder="Nº do Processo" class="processo-input-processo sm:col-span-2 w-full rounded-md border-gray-300 shadow-sm sm:text-sm" oninput="debouncedPreview()">
+                <input type="date" class="processo-input-data w-full rounded-md border-gray-300 shadow-sm sm:text-sm" value="${today}" oninput="debouncedPreview()">
+                <div>
+                    <select class="processo-input-natureza-select w-full rounded-md border-gray-300 shadow-sm sm:text-sm" onchange="toggleNaturezaInput(this,${id});debouncedPreview()">
                         <option>Comunicado de Mandado de Prisão</option>
                         <option>Auto de Prisão em Flagrante</option>
                         <option>Auto de Apreensão em Flagrante</option>
                         <option>Medidas Protetivas de Urgência</option>
                         <option>Petição Cível</option>
+                        <option>Alvará de Soltura</option>
+                        <option>Habeas Corpus</option>
                         <option value="Outro">Outro (digitar)</option>
                     </select>
-                    <input type="text" placeholder="Natureza da Ação" class="processo-input-natureza-outro mt-2 w-full rounded-md border-gray-300 shadow-sm hidden" oninput="updatePreview()">
+                    <input type="text" placeholder="Natureza da Ação" class="processo-input-natureza-outro mt-2 w-full rounded-md border-gray-300 shadow-sm sm:text-sm hidden" oninput="debouncedPreview()">
                 </div>
-
-                <input type="text" placeholder="Autor" class="processo-input-autor w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" value="Justiça Pública" oninput="updatePreview()">
-                <input type="text" placeholder="Réu" class="processo-input-reu w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" oninput="updatePreview()">
-            `;
-            container.appendChild(newProcessoDiv);
-            updatePreview();
+                <input type="text" placeholder="Autor" class="processo-input-autor w-full rounded-md border-gray-300 shadow-sm sm:text-sm" value="Justiça Pública" oninput="debouncedPreview()">
+                <input type="text" placeholder="Réu" class="processo-input-reu w-full rounded-md border-gray-300 shadow-sm sm:text-sm" oninput="debouncedPreview()">`;
+            document.getElementById('processos-container').appendChild(div);
+            debouncedPreview();
         }
 
-        function toggleNaturezaInput(selectElement, processoId) {
-            const container = document.getElementById(`processo-${processoId}`);
-            const outroInput = container.querySelector('.processo-input-natureza-outro');
-            if (selectElement.value === 'Outro') {
-                outroInput.classList.remove('hidden');
-            } else {
-                outroInput.classList.add('hidden');
-            }
+        function toggleNaturezaInput(sel, id) {
+            const outro = document.getElementById(`processo-${id}`).querySelector('.processo-input-natureza-outro');
+            outro.classList.toggle('hidden', sel.value !== 'Outro');
         }
 
-        function removeProcesso(id) {
-            const processoDiv = document.getElementById(`processo-${id}`);
-            if (processoDiv) {
-                processoDiv.remove();
-                updatePreview();
+        // ===== PREVIEW UPDATE (TERMO) =====
+        let previewTimer;
+        function debouncedPreview() {
+            clearTimeout(previewTimer);
+            previewTimer = setTimeout(updatePreview, 120);
+            scheduleAutoSave();
+        }
+
+        const MESES = ["janeiro","fevereiro","março","abril","maio","junho","julho","agosto","setembro","outubro","novembro","dezembro"];
+
+        function formatDateSpans(inputId, suffix) {
+            const val = document.getElementById(inputId).value;
+            if (window.extenso && val) {
+                const d = new Date(val + 'T00:00:00');
+                if (!isNaN(d.getTime())) {
+                    document.getElementById(`preview-dia_extenso_${suffix}`).textContent = window.extenso(d.getDate(), { number: { gender: 'm' } });
+                    document.getElementById(`preview-dia_num_${suffix}`).textContent = d.getDate();
+                    document.getElementById(`preview-mes_extenso_${suffix}`).textContent = MESES[d.getMonth()];
+                    document.getElementById(`preview-mes_num_${suffix}`).textContent = d.getMonth() + 1;
+                    document.getElementById(`preview-ano_extenso_${suffix}`).textContent = window.extenso(d.getFullYear());
+                    document.getElementById(`preview-ano_num_${suffix}`).textContent = d.getFullYear();
+                    return;
+                }
             }
+            document.getElementById(`preview-dia_extenso_${suffix}`).textContent = '[dia por extenso]';
+            document.getElementById(`preview-dia_num_${suffix}`).textContent = '[dia]';
+            document.getElementById(`preview-mes_extenso_${suffix}`).textContent = '[mês por extenso]';
+            document.getElementById(`preview-mes_num_${suffix}`).textContent = '[mês]';
+            document.getElementById(`preview-ano_extenso_${suffix}`).textContent = '[ano por extenso]';
+            document.getElementById(`preview-ano_num_${suffix}`).textContent = '[ano]';
+        }
+
+        function joinNames(arr) {
+            if (!arr.length) return '';
+            if (arr.length === 1) return arr[0];
+            return arr.slice(0, -1).join(', ') + ' e ' + arr[arr.length - 1];
+        }
+
+        function updatePreview() {
+            const circ = document.getElementById('circunscricao').value || '[Circunscrição]';
+            document.getElementById('preview-circunscricao_comarca').textContent = circ.toUpperCase();
+            document.getElementById('preview-circunscricao_abertura').textContent = circ;
+            document.getElementById('preview-circunscricao_encerramento').textContent = circ;
+
+            document.getElementById('preview-hora_abertura').textContent = document.getElementById('hora_abertura').value || '[hora]';
+            document.getElementById('preview-hora_encerramento').textContent = document.getElementById('hora_encerramento').value || '[hora]';
+            formatDateSpans('data_abertura', 'abertura');
+            formatDateSpans('data_encerramento', 'encerramento');
+
+            const juiz = `${document.getElementById('juiz_pronome').value} ${document.getElementById('juiz').value}`.trim() || '[Juiz(a) de Direito]';
+            ['preview-juiz','preview-juiz_assinatura_abertura','preview-juiz_encerramento','preview-juiz_assinatura_encerramento'].forEach(id => document.getElementById(id).textContent = juiz);
+
+            const promotor = document.getElementById('promotor').value;
+            document.getElementById('preview-promotor').textContent = promotor ? `${document.getElementById('promotor_pronome').value} ${promotor}` : '[Representante do MP]';
+
+            const defensor = document.getElementById('defensor').value;
+            document.getElementById('preview-defensor').textContent = defensor ? `${document.getElementById('defensor_pronome').value} ${defensor}` : '[Defensor(a) Público(a)]';
+
+            const cargoProm = document.getElementById('oficial_promotoria_cargo').value;
+            const nomeProm = document.getElementById('oficial_promotoria_nome').value;
+            document.getElementById('preview-oficial_promotoria_completo').textContent = `o(a) ${cargoProm}${nomeProm ? ' ' + nomeProm : ''}`;
+
+            const cargo = document.getElementById('oficial_maior_cargo').value;
+            const nomeOM = document.getElementById('oficial_maior_nome').value || '[Nome do Digitador]';
+            document.getElementById('preview-oficial_maior_cargo').textContent = cargo;
+            document.getElementById('preview-oficial_maior_nome').textContent = nomeOM;
+            document.getElementById('preview-oficial_maior_digitador').textContent = nomeOM;
+            document.getElementById('preview-oficial_maior_encerramento').textContent = nomeOM;
+            document.getElementById('preview-oficial_maior_cargo_encerramento').textContent = cargo;
+
+            const comarca = document.getElementById('comarca_juiz').value || '[Vara e Comarca do Juiz(a)]';
+            document.getElementById('preview-comarca_juiz').textContent = comarca;
+            document.getElementById('preview-comarca_juiz_encerramento').textContent = comarca;
+
+            const oficiais = [...document.querySelectorAll('#oficiais-container .oficial-input')].map(i => i.value.trim()).filter(Boolean);
+            document.getElementById('preview-oficiais_justica').textContent = joinNames(oficiais) || '[Oficiais de Justiça]';
+
+            const escreventes = [...document.querySelectorAll('#escreventes-container .escrevente-input')].map(i => i.value.trim()).filter(Boolean);
+            document.getElementById('preview-escreventes').textContent = joinNames(escreventes) || '[Escreventes]';
+
+            document.getElementById('preview-assistente_judiciario').textContent = document.getElementById('assistente_judiciario').value || '[Assistente Judiciário]';
+
+            const cargo1 = document.getElementById('distribuidor_cargo_1').value;
+            const nome1 = document.getElementById('distribuidor_nome_1').value.trim();
+            const nome2 = document.getElementById('distribuidor_nome_2').value.trim();
+            const cargo2 = 'Escrevente do Distribuidor Judicial';
+            let distText = '';
+            if (nome1 && nome2) {
+                distText = cargo1 === cargo2
+                    ? `e os Escreventes do Distribuidor Judicial ${nome1} e ${nome2}`
+                    : `e o(a) ${cargo1} ${nome1}, e o(a) ${cargo2} ${nome2}`;
+            } else if (nome1) distText = `e o(a) ${cargo1} ${nome1}`;
+            else if (nome2) distText = `e o(a) ${cargo2} ${nome2}`;
+            document.getElementById('preview-distribuidor_completo').textContent = distText;
+
+            const ocorrencia = document.getElementById('encerramento_ocorrencia').value;
+            document.getElementById('preview-ocorrencia').textContent = ocorrencia === 'Com ocorrência'
+                ? 'com ocorrência, sendo o retorno dos mandados expedidos, que serão verificados no dia seguinte para regularização'
+                : 'sem ocorrência';
+
+            updateProcessosTable();
         }
 
         function updateProcessosTable() {
             const container = document.getElementById('preview-processos-table-container');
             const processos = document.querySelectorAll('#processos-container > div');
-            if (processos.length === 0) {
-                container.innerHTML = ''; return;
-            }
-            let tableHTML = `
-                <table class="w-full border-collapse border border-gray-400 text-sm">
-                    <thead>
-                        <tr class="bg-gray-200">
-                            <th class="border border-gray-300 p-2">PROCESSO</th>
-                            <th class="border border-gray-300 p-2">DATA</th>
-                            <th class="border border-gray-300 p-2">NATUREZA DA AÇÃO</th>
-                            <th class="border border-gray-300 p-2">AUTOR</th>
-                            <th class="border border-gray-300 p-2">RÉU</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-            `;
+            if (!processos.length) { container.innerHTML = ''; return; }
+            let html = `<table class="w-full border-collapse border border-gray-400 text-sm">
+                <thead><tr class="bg-gray-200">
+                    <th class="border border-gray-300 p-2">PROCESSO</th>
+                    <th class="border border-gray-300 p-2">DATA</th>
+                    <th class="border border-gray-300 p-2">NATUREZA DA AÇÃO</th>
+                    <th class="border border-gray-300 p-2">AUTOR</th>
+                    <th class="border border-gray-300 p-2">RÉU</th>
+                </tr></thead><tbody>`;
             processos.forEach(proc => {
-                const processo = proc.querySelector('.processo-input-processo').value;
                 let data = proc.querySelector('.processo-input-data').value;
-                if (data) {
-                    const [year, month, day] = data.split('-');
-                    data = `${day}/${month}/${year}`;
-                }
-
-                const naturezaSelect = proc.querySelector('.processo-input-natureza-select');
-                let natureza = naturezaSelect.value;
-                if (natureza === 'Outro') {
-                    natureza = proc.querySelector('.processo-input-natureza-outro').value;
-                }
-
-                const autor = proc.querySelector('.processo-input-autor').value;
-                const reu = proc.querySelector('.processo-input-reu').value;
-                tableHTML += `
-                    <tr>
-                        <td class="border border-gray-300 p-2">${processo}</td>
-                        <td class="border border-gray-300 p-2">${data}</td>
-                        <td class="border border-gray-300 p-2">${natureza}</td>
-                        <td class="border border-gray-300 p-2">${autor}</td>
-                        <td class="border border-gray-300 p-2">${reu}</td>
-                    </tr>
-                `;
+                if (data) { const [y,m,d] = data.split('-'); data = `${d}/${m}/${y}`; }
+                const sel = proc.querySelector('.processo-input-natureza-select');
+                const natureza = sel.value === 'Outro' ? proc.querySelector('.processo-input-natureza-outro').value : sel.value;
+                html += `<tr>
+                    <td class="border border-gray-300 p-2">${proc.querySelector('.processo-input-processo').value}</td>
+                    <td class="border border-gray-300 p-2">${data}</td>
+                    <td class="border border-gray-300 p-2">${natureza}</td>
+                    <td class="border border-gray-300 p-2">${proc.querySelector('.processo-input-autor').value}</td>
+                    <td class="border border-gray-300 p-2">${proc.querySelector('.processo-input-reu').value}</td>
+                </tr>`;
             });
-            tableHTML += '</tbody></table>';
-            container.innerHTML = tableHTML;
+            container.innerHTML = html + '</tbody></table>';
         }
 
-        function getFormDataAsObject() {
-            const formData = {};
-            const inputs = document.querySelectorAll('#form-container input, #form-container select');
-            inputs.forEach(input => {
-                if (input.id && input.type !== 'file') {
-                    formData[input.id] = input.value;
-                }
-            });
+        // ===== CERTIDÃO =====
+        function toggleCertFields() {
+            const type = document.getElementById('tipo_certidao').value;
+            document.querySelectorAll('.cert-conditional').forEach(el => el.classList.add('hidden'));
+            document.getElementById(`cert_field_${type}`)?.classList.remove('hidden');
+            const genero = document.getElementById('cert_participante_genero').value;
+            const trat = document.getElementById('cert_participante_tratamento');
+            trat.value = (type === 'analista_mp' || type === 'escrevente')
+                ? (genero === 'f' ? 'Sra.' : 'Sr.')
+                : (genero === 'f' ? 'Dra.' : 'Dr.');
+            updateCertPreview();
+        }
 
-            formData.processos = [];
-            const processos = document.querySelectorAll('#processos-container > div');
-            processos.forEach(proc => {
-                const processoData = {
+        function updateCertPreview() {
+            const type = document.getElementById('tipo_certidao').value;
+            const nome = document.getElementById('cert_participante_nome').value.toUpperCase() || 'FULANO(A) DE TAL';
+            const genero = document.getElementById('cert_participante_genero').value;
+            const trat = document.getElementById('cert_participante_tratamento').value;
+            const datas = document.getElementById('cert_plantao_datas').value;
+            const circ = document.getElementById('cert_circunscricao').value;
+            const prep = datas.toLowerCase().includes(' e ') ? 'nos dias' : 'no dia';
+            const artigo = genero === 'f' ? 'a Senhora' : 'o Senhor';
+            const excel = genero === 'f' ? 'a Excelentíssima Senhora' : 'o Excelentíssimo Senhor';
+            const art = genero === 'f' ? 'a' : 'o';
+
+            let body = '';
+            if (type === 'juiz') {
+                const vara = document.getElementById('cert_juiz_vara_comarca').value;
+                body = `${prep} <b>${datas}</b>, ${excel} <b>${trat} ${nome}</b>, MM. Juiz(a) de Direito do(a) <b>${vara}</b>, participou do <b>PLANTÃO JUDICIÁRIO ORDINÁRIO</b> desta <b>${circ}</b>, realizado de maneira remota conforme disciplinado no Comunicado Conjunto nº 249/2020`;
+            } else if (type === 'promotor') {
+                const num = document.getElementById('cert_promotor_numero').value;
+                const com = document.getElementById('cert_promotor_comarca').value;
+                body = `${prep} <b>${datas}</b>, ${excel} <b>${trat} ${nome}</b>, <b>${num}º Promotor de Justiça da Comarca de ${com}</b>, participou do <b>PLANTÃO JUDICIÁRIO ORDINÁRIO</b> desta <b>${circ}</b>, realizado de maneira remota conforme disciplinado no Comunicado Conjunto nº 249/2020`;
+            } else if (type === 'defensor') {
+                const com = document.getElementById('cert_defensor_comarca').value;
+                body = `${prep} <b>${datas}</b>, ${artigo} <b>${trat} ${nome}</b>, Defensor(a) Público(a) desta <b>Comarca de ${com}</b>, participou do <b>PLANTÃO JUDICIÁRIO ORDINÁRIO</b> desta <b>${circ}</b>, realizado de maneira remota conforme disciplinado no Provimento Conjunto nº 54/2022`;
+            } else if (type === 'analista_mp') {
+                const cg = document.getElementById('cert_analista_cargo').value;
+                const com = document.getElementById('cert_analista_comarca').value;
+                body = `${prep} <b>${datas}</b>, ${art} <b>${cg} do Ministério Público da Comarca de ${com}</b>, <b>${trat} ${nome}</b>, participou do <b>PLANTÃO JUDICIÁRIO</b> desta <b>${circ}</b>, realizado de maneira remota conforme disciplinado no Provimento Conjunto nº 54/2022`;
+            } else if (type === 'escrevente') {
+                const cg = document.getElementById('cert_escrevente_cargo').value;
+                body = `${prep} <b>${datas}</b>, ${art} <b>${cg}</b> <b>${trat} ${nome}</b>, participou do <b>PLANTÃO JUDICIÁRIO</b> desta <b>${circ}</b>, realizado de maneira remota conforme disciplinado no Provimento Conjunto nº 54/2022`;
+            }
+            document.getElementById('cert-preview-body').innerHTML = body;
+
+            const certNome = document.getElementById('cert_certificante_nome').value;
+            const certCargo = document.getElementById('cert_certificante_cargo').value;
+            const certOficio = document.getElementById('cert_certificante_oficio').value;
+            document.getElementById('cert-preview-certificante_nome').textContent = certNome.toUpperCase();
+            document.getElementById('cert-preview-certificante_nome_final').textContent = certNome;
+            document.getElementById('cert-preview-certificante_cargo').textContent = certCargo;
+            document.getElementById('cert-preview-certificante_cargo_final').textContent = certCargo;
+            document.getElementById('cert-preview-certificante_oficio').textContent = certOficio;
+            document.getElementById('cert-preview-assinatura').textContent = certNome.toUpperCase();
+            document.getElementById('cert-preview-assinatura_cargo').textContent = certCargo;
+            document.getElementById('cert-preview-emissao_comarca').textContent = document.getElementById('cert_emissao_comarca').value;
+            document.getElementById('cert-preview-footer-endereco').textContent = document.getElementById('cert_footer_endereco').value;
+            document.getElementById('cert-preview-footer-contato').textContent = document.getElementById('cert_footer_contato').value;
+
+            // Header vara
+            let hdrVara = '';
+            if (type === 'juiz') hdrVara = document.getElementById('cert_juiz_vara_comarca').value.toUpperCase();
+            else hdrVara = certOficio.toUpperCase().replace(/^DO OFÍCIO D[AO] /i,'').replace(/^DO /i,'');
+            document.getElementById('cert-preview-header-vara').textContent = hdrVara || 'VARA DO JUIZADO ESPECIAL CÍVEL DA COMARCA DE MARÍLIA';
+
+            // Date
+            const dataIn = document.getElementById('cert_emissao_data').value;
+            if (window.extenso && dataIn) {
+                const d = new Date(dataIn + 'T12:00:00');
+                if (!isNaN(d.getTime())) {
+                    document.getElementById('cert-preview-emissao_dia_extenso').textContent = window.extenso(d.getDate(), { number: { gender: 'm' } });
+                    document.getElementById('cert-preview-emissao_dia_num').textContent = String(d.getDate()).padStart(2,'0');
+                    document.getElementById('cert-preview-emissao_mes_extenso').textContent = MESES[d.getMonth()];
+                    document.getElementById('cert-preview-emissao_mes_num').textContent = String(d.getMonth()+1).padStart(2,'0');
+                    document.getElementById('cert-preview-emissao_ano_extenso').textContent = window.extenso(d.getFullYear());
+                    document.getElementById('cert-preview-emissao_ano_num').textContent = d.getFullYear();
+                    return;
+                }
+            }
+            document.getElementById('cert-preview-emissao_dia_extenso').textContent = '[...]';
+            document.getElementById('cert-preview-emissao_dia_num').textContent = '00';
+            document.getElementById('cert-preview-emissao_mes_extenso').textContent = '[...]';
+            document.getElementById('cert-preview-emissao_mes_num').textContent = '00';
+            document.getElementById('cert-preview-emissao_ano_extenso').textContent = '[...]';
+            document.getElementById('cert-preview-emissao_ano_num').textContent = '0000';
+        }
+
+        // ===== DATA PERSISTENCE =====
+        function getFormDataAsObject() {
+            const data = {};
+            document.querySelectorAll('#form-container input[id], #form-container select[id]').forEach(el => {
+                if (el.type !== 'file') data[el.id] = el.value;
+            });
+            data.oficiais = [...document.querySelectorAll('#oficiais-container .oficial-input')].map(i => i.value.trim());
+            data.escreventes_list = [...document.querySelectorAll('#escreventes-container .escrevente-input')].map(i => i.value.trim());
+            data.processos = [];
+            document.querySelectorAll('#processos-container > div').forEach(proc => {
+                const sel = proc.querySelector('.processo-input-natureza-select');
+                data.processos.push({
                     processo: proc.querySelector('.processo-input-processo').value,
                     data: proc.querySelector('.processo-input-data').value,
-                    naturezaSelect: proc.querySelector('.processo-input-natureza-select').value,
+                    naturezaSelect: sel.value,
                     naturezaOutro: proc.querySelector('.processo-input-natureza-outro').value,
                     autor: proc.querySelector('.processo-input-autor').value,
                     reu: proc.querySelector('.processo-input-reu').value,
-                };
-                formData.processos.push(processoData);
+                });
             });
-            return formData;
+            document.querySelectorAll('#cert-form-container input[id], #cert-form-container select[id]').forEach(el => {
+                if (el.type !== 'file') data[el.id] = el.value;
+            });
+            return data;
         }
 
-        function populateFormFromObject(formData) {
-            if (!formData) return;
+        function populateFormFromObject(data) {
+            if (!data) return;
 
-            // Limpa processos existentes antes de carregar
-            document.getElementById('processos-container').innerHTML = '';
-            processoCount = 0;
-
-            // Carrega dados dos inputs e selects
-            const inputs = document.querySelectorAll('#form-container input, #form-container select');
-            inputs.forEach(input => {
-                if (input.id && formData[input.id]) {
-                    input.value = formData[input.id];
-                }
-            });
-
-            // Carrega processos
-            if (formData.processos) {
-                formData.processos.forEach(procData => {
-                    addProcesso();
-                    const newProcDiv = document.getElementById(`processo-${processoCount}`);
-                    if (newProcDiv) {
-                        newProcDiv.querySelector('.processo-input-processo').value = procData.processo || '';
-                        newProcDiv.querySelector('.processo-input-data').value = procData.data || '';
-
-                        const naturezaSelect = newProcDiv.querySelector('.processo-input-natureza-select');
-                        naturezaSelect.value = procData.naturezaSelect || 'Comunicado de Mandado de Prisão';
-
-                        const naturezaOutroInput = newProcDiv.querySelector('.processo-input-natureza-outro');
-                        naturezaOutroInput.value = procData.naturezaOutro || '';
-
-                        if (naturezaSelect.value === 'Outro') {
-                            naturezaOutroInput.classList.remove('hidden');
-                        } else {
-                            naturezaOutroInput.classList.add('hidden');
-                        }
-
-                        newProcDiv.querySelector('.processo-input-autor').value = procData.autor || '';
-                        newProcDiv.querySelector('.processo-input-reu').value = procData.reu || '';
-                    }
-                });
+            // Backward compat: old format used comma-separated strings
+            if (!data.oficiais && data.oficiais_justica) {
+                data.oficiais = data.oficiais_justica.split(',').map(s => s.trim()).filter(Boolean);
+            }
+            if (!data.escreventes_list && data.escreventes) {
+                data.escreventes_list = data.escreventes.split(',').map(s => s.trim()).filter(Boolean);
             }
 
+            document.querySelectorAll('#form-container input[id], #form-container select[id]').forEach(el => {
+                if (el.type !== 'file' && data[el.id] !== undefined) el.value = data[el.id];
+            });
+
+            document.getElementById('oficiais-container').innerHTML = '';
+            oficialCount = 0;
+            (data.oficiais || []).forEach(v => addOficial(v));
+
+            document.getElementById('escreventes-container').innerHTML = '';
+            escreventeCount = 0;
+            (data.escreventes_list || []).forEach(v => addEscrevente(v));
+
+            document.getElementById('processos-container').innerHTML = '';
+            processoCount = 0;
+            (data.processos || []).forEach(pd => {
+                addProcesso();
+                const div = document.getElementById(`processo-${processoCount}`);
+                if (!div) return;
+                div.querySelector('.processo-input-processo').value = pd.processo || '';
+                div.querySelector('.processo-input-data').value = pd.data || '';
+                const sel = div.querySelector('.processo-input-natureza-select');
+                sel.value = pd.naturezaSelect || 'Comunicado de Mandado de Prisão';
+                const outro = div.querySelector('.processo-input-natureza-outro');
+                outro.value = pd.naturezaOutro || '';
+                outro.classList.toggle('hidden', sel.value !== 'Outro');
+                div.querySelector('.processo-input-autor').value = pd.autor || '';
+                div.querySelector('.processo-input-reu').value = pd.reu || '';
+            });
+
+            document.querySelectorAll('#cert-form-container input[id], #cert-form-container select[id]').forEach(el => {
+                if (el.type !== 'file' && data[el.id] !== undefined) el.value = data[el.id];
+            });
+
+            toggleCertFields();
             updatePreview();
         }
 
+        let autoSaveTimer;
+        function scheduleAutoSave() {
+            clearTimeout(autoSaveTimer);
+            autoSaveTimer = setTimeout(() => {
+                localStorage.setItem('plantaoFormData', JSON.stringify(getFormDataAsObject()));
+                const now = new Date();
+                document.getElementById('autosave-indicator').textContent =
+                    `Salvo às ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+            }, 2500);
+        }
+
         function saveData() {
-            const formData = getFormDataAsObject();
-            localStorage.setItem('plantaoFormData', JSON.stringify(formData));
-            alert('Progresso salvo com sucesso no navegador!');
+            localStorage.setItem('plantaoFormData', JSON.stringify(getFormDataAsObject()));
+            showToast('Progresso salvo no navegador!');
         }
 
         function loadData() {
-            const savedData = localStorage.getItem('plantaoFormData');
-            if (!savedData) {
-                alert('Nenhum dado salvo foi encontrado no navegador.');
-                return;
-            }
-            const formData = JSON.parse(savedData);
-            populateFormFromObject(formData);
-            alert('Dados carregados com sucesso!');
-        }
-
-        function exportData() {
-            const formData = getFormDataAsObject();
-            const dataStr = JSON.stringify(formData, null, 2);
-            const dataBlob = new Blob([dataStr], { type: 'application/json' });
-            const url = URL.createObjectURL(dataBlob);
-            const link = document.createElement('a');
-            link.href = url;
-            link.download = 'dados-plantao.json';
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            URL.revokeObjectURL(url);
-            alert('Arquivo de dados gerado para download.');
-        }
-
-        function importData(event) {
-            const file = event.target.files[0];
-            if (!file) {
-                return;
-            }
-            const reader = new FileReader();
-            reader.onload = function (e) {
-                try {
-                    const formData = JSON.parse(e.target.result);
-                    populateFormFromObject(formData);
-                    alert('Dados importados do arquivo com sucesso!');
-                } catch (error) {
-                    alert('Erro ao ler o arquivo. Verifique se é um arquivo JSON válido.');
-                    console.error("Erro ao importar:", error);
-                }
-            };
-            reader.readAsText(file);
-            // Limpa o valor do input para permitir importar o mesmo arquivo novamente
-            event.target.value = '';
+            const saved = localStorage.getItem('plantaoFormData');
+            if (!saved) { showToast('Nenhum dado salvo encontrado.', 'error'); return; }
+            populateFormFromObject(JSON.parse(saved));
+            showToast('Dados carregados com sucesso!');
         }
 
         function clearData() {
-            if (confirm('Tem certeza que deseja limpar os dados salvos? Esta ação não pode ser desfeita.')) {
-                localStorage.removeItem('plantaoFormData');
-                alert('Dados salvos foram limpos.');
-                window.location.reload();
-            }
+            if (!confirm('Limpar todos os dados salvos? Esta ação não pode ser desfeita.')) return;
+            localStorage.removeItem('plantaoFormData');
+            window.location.reload();
         }
 
-        window.onload = () => {
-            const script = document.createElement('script');
-            script.src = 'https://cdn.jsdelivr.net/npm/numero-por-extenso@2.0.1/dist/numero-por-extenso.browser.min.js';
-            script.onload = () => {
-                // Esta função será chamada após o script ser carregado
-                initializePage();
+        function exportData() {
+            const blob = new Blob([JSON.stringify(getFormDataAsObject(), null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `plantao-${new Date().toISOString().slice(0,10)}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+            showToast('Arquivo gerado para download!');
+        }
+
+        function importData(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = ev => {
+                try {
+                    populateFormFromObject(JSON.parse(ev.target.result));
+                    showToast('Dados importados com sucesso!');
+                } catch {
+                    showToast('Erro ao ler arquivo JSON.', 'error');
+                }
             };
-            document.head.appendChild(script);
-        };
+            reader.readAsText(file);
+            e.target.value = '';
+        }
 
-        function initializePage() {
-            const savedData = localStorage.getItem('plantaoFormData');
-            if (savedData && confirm('Foram encontrados dados salvos. Deseja carregá-los?')) {
-                loadData(); // loadData já chama populateForm e updatePreview
-            } else {
-                // Define a data de hoje como padrão se não carregar dados salvos
-                const today = new Date().toISOString().split('T')[0];
-                document.getElementById('data_abertura').value = today;
-                document.getElementById('data_encerramento').value = today;
-
-                addProcesso();
-                addProcesso();
-                updatePreview();
+        function generateShareLink() {
+            try {
+                const encoded = btoa(encodeURIComponent(JSON.stringify(getFormDataAsObject())));
+                const url = window.location.href.split('#')[0] + '#data=' + encoded;
+                if (navigator.clipboard) {
+                    navigator.clipboard.writeText(url).then(() => showToast('Link copiado! Cole em outro navegador para carregar os dados.', 'info'));
+                } else {
+                    prompt('Copie este link:', url);
+                }
+            } catch {
+                showToast('Dados muito grandes. Use Exportar JSON.', 'error');
             }
         }
+
+        function loadFromHash() {
+            const hash = window.location.hash;
+            if (!hash.startsWith('#data=')) return false;
+            try {
+                const data = JSON.parse(decodeURIComponent(atob(hash.slice(6))));
+                populateFormFromObject(data);
+                history.replaceState(null, '', window.location.pathname);
+                showToast('Dados carregados do link compartilhado!', 'info');
+                return true;
+            } catch {
+                showToast('Erro ao carregar dados do link.', 'error');
+                return false;
+            }
+        }
+
+        // ===== INIT =====
         window.onload = () => {
             const script = document.createElement('script');
             script.src = 'https://cdn.jsdelivr.net/npm/extenso';
             script.onload = () => {
                 const today = new Date().toISOString().split('T')[0];
+
+                if (loadFromHash()) return;
+
+                const saved = localStorage.getItem('plantaoFormData');
+                if (saved && confirm('Foram encontrados dados salvos. Deseja carregá-los?')) {
+                    populateFormFromObject(JSON.parse(saved));
+                    return;
+                }
+
                 document.getElementById('data_abertura').value = today;
                 document.getElementById('data_encerramento').value = today;
+                document.getElementById('cert_emissao_data').value = today;
+                addProcesso();
+                addProcesso();
+                toggleCertFields();
                 updatePreview();
-                addProcesso();
-                addProcesso();
             };
             document.head.appendChild(script);
         };
     </script>
 </body>
-
 </html>
