@@ -1,0 +1,1526 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Preparador de Casos — JEC Marília</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --bg: #F7F4ED;
+            --bg-card: #FFFFFF;
+            --bg-subtle: #EFEAE0;
+            --ink: #1A1A18;
+            --ink-soft: #4A4945;
+            --ink-mute: #8B8A82;
+            --line: #D9D3C5;
+            --line-soft: #E8E2D3;
+            --navy: #1B2E4B;
+            --navy-deep: #0F1E33;
+            --gold: #B08A3E;
+            --gold-soft: #D9BB78;
+            --crimson: #8B2C2C;
+            --green: #2D5F3F;
+            --serif: 'Fraunces', 'Times New Roman', Georgia, serif;
+            --sans: 'IBM Plex Sans', system-ui, -apple-system, sans-serif;
+            --mono: 'IBM Plex Mono', 'Consolas', 'Courier New', monospace;
+            --shadow-sm: 0 1px 2px rgba(26, 26, 24, .04), 0 1px 1px rgba(26, 26, 24, .03);
+            --shadow-md: 0 4px 12px rgba(26, 26, 24, .06), 0 2px 4px rgba(26, 26, 24, .04);
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            margin: 0;
+            background: var(--bg);
+            color: var(--ink);
+            font-family: var(--sans);
+            font-size: 15px;
+            line-height: 1.55;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        header {
+            border-bottom: 1px solid var(--line);
+            background: var(--bg);
+            padding: 36px 0 28px;
+            position: relative;
+        }
+
+        header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--navy) 0%, var(--navy) 60%, var(--gold) 60%, var(--gold) 100%);
+        }
+
+        .container {
+            max-width: 1080px;
+            margin: 0 auto;
+            padding: 0 28px;
+        }
+
+        .header-inner {
+            display: flex;
+            align-items: baseline;
+            justify-content: space-between;
+            gap: 24px;
+            flex-wrap: wrap;
+        }
+
+        .brand {
+            display: flex;
+            align-items: baseline;
+            gap: 14px;
+        }
+
+        .brand-mark {
+            font-family: var(--serif);
+            font-weight: 600;
+            font-size: 34px;
+            color: var(--navy);
+            letter-spacing: -0.02em;
+            line-height: 1;
+        }
+
+        .brand-mark em {
+            font-style: italic;
+            color: var(--gold);
+            font-weight: 500;
+        }
+
+        .brand-sub {
+            font-family: var(--sans);
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.18em;
+            color: var(--ink-mute);
+            font-weight: 500;
+        }
+
+        .header-meta {
+            font-family: var(--mono);
+            font-size: 11px;
+            color: var(--ink-mute);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 0;
+            border-bottom: 1px solid var(--line);
+            margin-top: 28px;
+            margin-bottom: 36px;
+        }
+
+        .tab {
+            background: none;
+            border: none;
+            padding: 14px 24px 14px 0;
+            margin-right: 32px;
+            font-family: var(--serif);
+            font-size: 19px;
+            font-weight: 500;
+            color: var(--ink-mute);
+            cursor: pointer;
+            position: relative;
+            transition: color 180ms ease;
+            letter-spacing: -0.005em;
+        }
+
+        .tab:last-child {
+            margin-right: 0;
+        }
+
+        .tab:hover {
+            color: var(--ink-soft);
+        }
+
+        .tab.active {
+            color: var(--navy);
+        }
+
+        .tab.active::after {
+            content: '';
+            position: absolute;
+            bottom: -1px;
+            left: 0;
+            right: 24px;
+            height: 2px;
+            background: var(--navy);
+        }
+
+        .tab-num {
+            font-family: var(--mono);
+            font-size: 11px;
+            color: var(--gold);
+            margin-right: 8px;
+            font-weight: 500;
+            vertical-align: middle;
+            position: relative;
+            top: -2px;
+        }
+
+        .tab-panel {
+            display: none;
+            padding-bottom: 80px;
+        }
+
+        .tab-panel.active {
+            display: block;
+        }
+
+        .panel-intro {
+            font-family: var(--serif);
+            font-size: 15px;
+            color: var(--ink-soft);
+            line-height: 1.65;
+            max-width: 720px;
+            margin-bottom: 32px;
+            font-style: italic;
+        }
+
+        .field {
+            margin-bottom: 22px;
+        }
+
+        .field-row {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr;
+            gap: 18px;
+            margin-bottom: 22px;
+        }
+
+        @media (max-width: 720px) {
+            .field-row {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .label {
+            display: block;
+            font-family: var(--sans);
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+            color: var(--navy);
+            margin-bottom: 8px;
+        }
+
+        .label-aux {
+            font-family: var(--serif);
+            font-style: italic;
+            font-weight: 400;
+            text-transform: none;
+            letter-spacing: 0;
+            color: var(--ink-mute);
+            font-size: 13px;
+            margin-left: 6px;
+        }
+
+        .hint {
+            font-family: var(--serif);
+            font-style: italic;
+            font-size: 13px;
+            color: var(--ink-mute);
+            margin: 6px 0 0;
+            line-height: 1.5;
+        }
+
+        input[type="text"],
+        select,
+        textarea {
+            width: 100%;
+            background: var(--bg-card);
+            border: 1px solid var(--line);
+            border-radius: 2px;
+            padding: 11px 14px;
+            font-family: var(--sans);
+            font-size: 14px;
+            color: var(--ink);
+            transition: border-color 160ms ease, box-shadow 160ms ease;
+            box-shadow: var(--shadow-sm);
+        }
+
+        textarea {
+            font-family: var(--mono);
+            font-size: 13px;
+            line-height: 1.6;
+            resize: vertical;
+            min-height: 140px;
+        }
+
+        textarea.large {
+            min-height: 240px;
+        }
+
+        input[type="text"]:focus,
+        select:focus,
+        textarea:focus {
+            outline: none;
+            border-color: var(--navy);
+            box-shadow: 0 0 0 3px rgba(27, 46, 75, .10);
+        }
+
+        select {
+            appearance: none;
+            background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8' fill='none'><path d='M1 1.5L6 6.5L11 1.5' stroke='%231B2E4B' stroke-width='1.5'/></svg>");
+            background-repeat: no-repeat;
+            background-position: right 14px center;
+            background-size: 11px;
+            padding-right: 36px;
+        }
+
+        details.anon-panel {
+            background: var(--bg-subtle);
+            border-left: 3px solid var(--gold);
+            padding: 0;
+            margin: 28px 0;
+            border-radius: 0;
+        }
+
+        details.anon-panel summary {
+            cursor: pointer;
+            padding: 14px 20px;
+            list-style: none;
+            font-family: var(--serif);
+            font-size: 15px;
+            font-weight: 500;
+            color: var(--navy);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            user-select: none;
+        }
+
+        details.anon-panel summary::-webkit-details-marker {
+            display: none;
+        }
+
+        details.anon-panel summary::after {
+            content: '+';
+            font-family: var(--serif);
+            font-size: 22px;
+            font-weight: 300;
+            color: var(--gold);
+            transition: transform 200ms ease;
+        }
+
+        details.anon-panel[open] summary::after {
+            content: '−';
+        }
+
+        details.anon-panel .anon-body {
+            padding: 4px 20px 20px;
+            border-top: 1px solid var(--line-soft);
+            margin-top: 0;
+        }
+
+        .anon-row {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-top: 14px;
+            align-items: center;
+        }
+
+        .anon-toggle {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            color: var(--ink-soft);
+            cursor: pointer;
+            padding: 6px 12px;
+            border: 1px solid var(--line);
+            border-radius: 2px;
+            background: var(--bg-card);
+            transition: all 160ms ease;
+        }
+
+        .anon-toggle:hover {
+            border-color: var(--navy);
+        }
+
+        .anon-toggle input {
+            margin: 0;
+            accent-color: var(--navy);
+        }
+
+        .anon-toggle.checked {
+            background: var(--navy);
+            color: #fff;
+            border-color: var(--navy);
+        }
+
+        .anon-toggle.checked input {
+            accent-color: #fff;
+        }
+
+        .anon-toggle.name-toggle.checked {
+            background: var(--green);
+            border-color: var(--green);
+        }
+
+        .name-format-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-top: 14px;
+            padding: 10px 14px;
+            background: var(--bg-card);
+            border: 1px dashed var(--line);
+            border-radius: 2px;
+            flex-wrap: wrap;
+        }
+
+        .name-format-row .nfr-label {
+            font-family: var(--sans);
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+            color: var(--green);
+        }
+
+        .name-format-row select {
+            width: auto;
+            padding: 6px 32px 6px 12px;
+            font-size: 13px;
+            background-size: 10px;
+            background-position: right 10px center;
+        }
+
+        .name-format-row .nfr-example {
+            font-family: var(--mono);
+            font-size: 12px;
+            color: var(--ink-mute);
+        }
+
+        .name-format-row .nfr-example strong {
+            color: var(--green);
+        }
+
+        .suggestions {
+            margin-top: 14px;
+            padding-top: 14px;
+            border-top: 1px dashed var(--line);
+        }
+
+        .suggestions-title {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+            color: var(--ink-mute);
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        .suggestion-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: var(--bg-card);
+            border: 1px solid var(--line);
+            color: var(--ink-soft);
+            padding: 4px 10px;
+            margin: 0 4px 4px 0;
+            border-radius: 2px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 160ms ease;
+            font-family: var(--mono);
+        }
+
+        .suggestion-chip:hover {
+            border-color: var(--gold);
+            background: #FFF9EB;
+        }
+
+        .suggestion-chip.selected {
+            background: var(--navy);
+            color: #fff;
+            border-color: var(--navy);
+        }
+
+        .suggestion-chip.selected::before {
+            content: '✓';
+            font-weight: bold;
+        }
+
+        .button-bar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin: 28px 0 24px;
+            align-items: center;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 18px;
+            font-family: var(--sans);
+            font-size: 13px;
+            font-weight: 500;
+            border: 1px solid var(--line);
+            background: var(--bg-card);
+            color: var(--ink);
+            cursor: pointer;
+            border-radius: 2px;
+            transition: all 160ms ease;
+            text-decoration: none;
+            letter-spacing: 0.01em;
+        }
+
+        .btn:hover {
+            border-color: var(--navy);
+            background: #fff;
+        }
+
+        .btn-primary {
+            background: var(--navy);
+            color: #fff;
+            border-color: var(--navy);
+        }
+
+        .btn-primary:hover {
+            background: var(--navy-deep);
+            border-color: var(--navy-deep);
+        }
+
+        .btn-accent {
+            background: var(--gold);
+            color: #fff;
+            border-color: var(--gold);
+        }
+
+        .btn-accent:hover {
+            background: #95752F;
+            border-color: #95752F;
+        }
+
+        .btn-ghost {
+            background: transparent;
+            border-color: transparent;
+            color: var(--ink-mute);
+        }
+
+        .btn-ghost:hover {
+            color: var(--crimson);
+            background: transparent;
+            border-color: transparent;
+        }
+
+        .btn-icon {
+            font-size: 14px;
+            line-height: 1;
+        }
+
+        .status {
+            min-height: 24px;
+            font-family: var(--serif);
+            font-style: italic;
+            font-size: 13px;
+            color: var(--green);
+            padding-left: 4px;
+        }
+
+        .status.error {
+            color: var(--crimson);
+        }
+
+        .status.info {
+            color: var(--ink-mute);
+        }
+
+        .preview-section {
+            margin-top: 8px;
+            border: 1px solid var(--line);
+            background: var(--bg-card);
+            border-radius: 2px;
+            overflow: hidden;
+            box-shadow: var(--shadow-md);
+        }
+
+        .preview-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 16px;
+            background: var(--navy);
+            color: #fff;
+            font-family: var(--mono);
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+        }
+
+        .preview-filename {
+            color: var(--gold-soft);
+        }
+
+        .preview-stats {
+            font-size: 10px;
+            opacity: 0.7;
+        }
+
+        .preview-body {
+            padding: 22px 24px;
+            font-family: var(--mono);
+            font-size: 12.5px;
+            line-height: 1.65;
+            white-space: pre-wrap;
+            word-break: break-word;
+            color: var(--ink);
+            max-height: 520px;
+            overflow-y: auto;
+            background:
+                linear-gradient(var(--bg-card) 30%, rgba(255, 255, 255, 0)),
+                linear-gradient(rgba(255, 255, 255, 0), var(--bg-card) 70%) 0 100%,
+                radial-gradient(farthest-side at 50% 0, rgba(0, 0, 0, .06), rgba(0, 0, 0, 0)),
+                radial-gradient(farthest-side at 50% 100%, rgba(0, 0, 0, .06), rgba(0, 0, 0, 0)) 0 100%;
+            background-repeat: no-repeat;
+            background-size: 100% 30px, 100% 30px, 100% 12px, 100% 12px;
+            background-attachment: local, local, scroll, scroll;
+        }
+
+        .preview-body:empty::before {
+            content: '— Pré-visualização vazia. Clique em "Gerar/Atualizar" após preencher os campos. —';
+            font-family: var(--serif);
+            font-style: italic;
+            color: var(--ink-mute);
+            font-size: 13px;
+        }
+
+        .preview-body mark {
+            background: #FFF1C7;
+            color: var(--navy-deep);
+            padding: 0 3px;
+            border-radius: 1px;
+            font-weight: 500;
+        }
+
+        .preview-body mark.abbrev {
+            background: #DDEBE3;
+            color: var(--green);
+            font-weight: 600;
+        }
+
+        .counter-bar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 14px;
+            margin: 14px 0 0;
+            font-family: var(--mono);
+            font-size: 11px;
+            color: var(--ink-mute);
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+        }
+
+        .counter-bar span strong {
+            color: var(--navy);
+            font-weight: 600;
+        }
+
+        .preset-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-top: 8px;
+        }
+
+        .preset-chip {
+            background: var(--bg-card);
+            border: 1px solid var(--line);
+            color: var(--ink-soft);
+            padding: 6px 12px;
+            font-size: 12px;
+            cursor: pointer;
+            border-radius: 2px;
+            font-family: var(--sans);
+            transition: all 160ms ease;
+        }
+
+        .preset-chip:hover {
+            border-color: var(--navy);
+            color: var(--navy);
+            background: #fff;
+        }
+
+        footer {
+            border-top: 1px solid var(--line);
+            margin-top: 64px;
+            padding: 28px 0 36px;
+            font-family: var(--serif);
+            font-style: italic;
+            font-size: 13px;
+            color: var(--ink-mute);
+            text-align: center;
+        }
+
+        .divider-rule {
+            border: none;
+            border-top: 1px solid var(--line-soft);
+            margin: 36px 0;
+        }
+
+        .section-title {
+            font-family: var(--serif);
+            font-size: 22px;
+            font-weight: 500;
+            color: var(--navy);
+            margin: 36px 0 4px;
+            letter-spacing: -0.01em;
+        }
+
+        .section-title-num {
+            font-family: var(--mono);
+            font-size: 12px;
+            color: var(--gold);
+            font-weight: 500;
+            margin-right: 10px;
+            vertical-align: middle;
+        }
+
+        .section-desc {
+            font-family: var(--serif);
+            font-style: italic;
+            font-size: 14px;
+            color: var(--ink-mute);
+            margin: 0 0 22px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <header>
+        <div class="container">
+            <div class="header-inner">
+                <div class="brand">
+                    <div>
+                        <div class="brand-mark">Preparador de <em>Casos</em></div>
+                        <div class="brand-sub">JEC Marília · 31ª Circunscrição</div>
+                    </div>
+                </div>
+                <div class="header-meta">v1.1 · uso interno</div>
+            </div>
+
+            <nav class="tabs" role="tablist">
+                <button class="tab active" data-tab="corpus" role="tab">
+                    <span class="tab-num">01</span>Caso para o Corpus
+                </button>
+                <button class="tab" data-tab="consulta" role="tab">
+                    <span class="tab-num">02</span>Consulta de Caso Novo
+                </button>
+            </nav>
+        </div>
+    </header>
+
+    <main class="container">
+
+        <!-- ================= ABA 1: CORPUS ================= -->
+        <section id="tab-corpus" class="tab-panel active" role="tabpanel">
+
+            <p class="panel-intro">
+                Monte um arquivo consolidado contendo petição inicial, descrição dos documentos e
+                decisão proferida. O arquivo gerado, em formato <code>.txt</code>, segue a nomenclatura padronizada
+                <code>CASO_[matéria]_[resultado]_[AAAA-MM].txt</code> — pronto para upload no Project Knowledge.
+            </p>
+
+            <h2 class="section-title"><span class="section-title-num">I.</span>Identificação</h2>
+            <p class="section-desc">Campos que compõem o nome do arquivo e o cabeçalho interno.</p>
+
+            <div class="field-row">
+                <div class="field">
+                    <label class="label" for="c-materia">Matéria <span class="label-aux">curta, em uma
+                            palavra</span></label>
+                    <input type="text" id="c-materia" placeholder="consumerista, bancaria, aerea, saude, contratual…">
+                </div>
+                <div class="field">
+                    <label class="label" for="c-resultado">Resultado</label>
+                    <select id="c-resultado">
+                        <option value="defere">defere — deferimento integral</option>
+                        <option value="defere-parcial">defere-parcial</option>
+                        <option value="indefere">indefere</option>
+                        <option value="emenda">emenda</option>
+                    </select>
+                </div>
+                <div class="field">
+                    <label class="label" for="c-data">Mês/Ano <span class="label-aux">AAAA-MM</span></label>
+                    <input type="text" id="c-data" placeholder="2026-04" pattern="\d{4}-\d{2}">
+                </div>
+            </div>
+
+            <h2 class="section-title"><span class="section-title-num">II.</span>Petição Inicial</h2>
+            <p class="section-desc">Texto integral ou trechos essenciais. Causa de pedir, pedido de tutela e valor da
+                causa, no mínimo.</p>
+            <div class="field">
+                <textarea id="c-inicial" class="large" placeholder="Cole aqui o texto da petição inicial…"></textarea>
+            </div>
+
+            <h2 class="section-title"><span class="section-title-num">III.</span>Documentos Relevantes</h2>
+            <p class="section-desc">Descrição livre, três a cinco linhas. Tipo do documento — o que demonstra.</p>
+            <div class="field">
+                <textarea id="c-docs"
+                    placeholder="- Doc. 1 — Extrato SCPC/Serasa — comprova inscrição questionada.&#10;- Doc. 2 — Notificação extrajudicial — comprova prévia tentativa de solução.&#10;- Doc. 3 — Comprovante de pagamento — demonstra quitação."></textarea>
+            </div>
+
+            <h2 class="section-title"><span class="section-title-num">IV.</span>Decisão Proferida</h2>
+            <p class="section-desc">Texto integral da decisão do magistrado sobre o pedido de tutela.</p>
+            <div class="field">
+                <textarea id="c-decisao" class="large" placeholder="Cole aqui o texto integral da decisão…"></textarea>
+            </div>
+
+            <hr class="divider-rule">
+
+            <details class="anon-panel" id="anon-corpus" open>
+                <summary>Anonimização (LGPD)</summary>
+                <div class="anon-body">
+                    <p class="hint" style="margin-top: 10px;">
+                        Anonimização automática por padrão regular (regex), detecção heurística de nomes de pessoas e,
+                        complementarmente, lista de termos.
+                        Itens substituídos são marcados na pré-visualização: <span
+                            style="background:#FFF1C7;padding:0 4px;border-radius:1px;color:var(--navy-deep);">rótulos</span>
+                        em amarelo · <span
+                            style="background:#DDEBE3;padding:0 4px;border-radius:1px;color:var(--green);font-weight:600;">nomes
+                            abreviados</span> em verde.
+                    </p>
+
+                    <div class="anon-row" id="anon-toggles-corpus"></div>
+
+                    <div class="field" style="margin-top: 18px;">
+                        <label class="label">Termos a substituir <span class="label-aux">um por linha — para casos não
+                                capturados pela detecção automática</span></label>
+                        <textarea id="c-anon-list" style="min-height: 90px;"
+                            placeholder="Empresa XYZ Ltda&#10;Apelido específico&#10;Denominação comercial"></textarea>
+                        <p class="hint">Cada termo será substituído por <code>[PARTE]</code>. Útil para denominações
+                            comerciais e apelidos que escapam à detecção automática.</p>
+                    </div>
+
+                    <div class="suggestions" id="suggestions-corpus" style="display:none;">
+                        <div class="suggestions-title">Sugestões adicionais detectadas <span
+                                style="text-transform:none;letter-spacing:0;font-style:italic;font-family:var(--serif);font-weight:400;">(clique
+                                para adicionar à lista de termos)</span></div>
+                        <div id="suggestions-list-corpus"></div>
+                    </div>
+                </div>
+            </details>
+
+            <div class="button-bar">
+                <button class="btn btn-primary" onclick="regen('corpus')">
+                    <span class="btn-icon">⟳</span> Gerar / Atualizar
+                </button>
+                <button class="btn btn-accent" onclick="downloadCorpus()">
+                    <span class="btn-icon">↓</span> Baixar arquivo
+                </button>
+                <button class="btn" onclick="copyOutput('corpus')">
+                    <span class="btn-icon">⧉</span> Copiar texto
+                </button>
+                <button class="btn btn-ghost" onclick="clearTab('corpus')">limpar campos</button>
+                <span class="status" id="status-corpus"></span>
+            </div>
+
+            <div class="preview-section">
+                <div class="preview-header">
+                    <span>Pré-visualização</span>
+                    <span class="preview-filename" id="filename-corpus">CASO_____.txt</span>
+                </div>
+                <div class="preview-body" id="preview-corpus"></div>
+            </div>
+            <div class="counter-bar" id="counter-corpus"></div>
+        </section>
+
+        <!-- ================= ABA 2: CONSULTA ================= -->
+        <section id="tab-consulta" class="tab-panel" role="tabpanel">
+
+            <p class="panel-intro">
+                Estruture uma consulta de caso novo nos três blocos esperados pelo projeto:
+                petição inicial, documentos relevantes e comando. Resultado pronto para copiar
+                e colar diretamente na conversa do Project.
+            </p>
+
+            <h2 class="section-title"><span class="section-title-num">I.</span>Petição Inicial</h2>
+            <p class="section-desc">Íntegra ou trechos essenciais.</p>
+            <div class="field">
+                <textarea id="q-inicial" class="large" placeholder="Cole aqui o texto da petição inicial…"></textarea>
+            </div>
+
+            <h2 class="section-title"><span class="section-title-num">II.</span>Documentos Relevantes</h2>
+            <p class="section-desc">Descrição livre, três a cinco linhas.</p>
+            <div class="field">
+                <textarea id="q-docs"
+                    placeholder="- Doc. 1 — Tipo — O que demonstra.&#10;- Doc. 2 — Tipo — O que demonstra.&#10;- Doc. 3 — Tipo — O que demonstra."></textarea>
+            </div>
+
+            <h2 class="section-title"><span class="section-title-num">III.</span>Comando</h2>
+            <p class="section-desc">Uma frase indicando a tarefa. Selecione um modelo ou escreva o seu.</p>
+            <div class="field">
+                <input type="text" id="q-comando" placeholder="Analise e apresente proposta de minuta."
+                    value="Analise e apresente proposta de minuta.">
+                <div class="preset-row">
+                    <button class="preset-chip"
+                        onclick="setCommand('Analise e apresente proposta de minuta.')">Padrão</button>
+                    <button class="preset-chip" onclick="setCommand('Apenas análise comparativa, sem minuta.')">Apenas
+                        análise</button>
+                    <button class="preset-chip"
+                        onclick="setCommand('Minuta no sentido de deferimento parcial.')">Deferimento parcial</button>
+                    <button class="preset-chip"
+                        onclick="setCommand('Minuta no sentido de indeferimento.')">Indeferimento</button>
+                    <button class="preset-chip"
+                        onclick="setCommand('Analise a viabilidade de emenda à inicial antes da apreciação da tutela.')">Emenda
+                        à inicial</button>
+                </div>
+            </div>
+
+            <hr class="divider-rule">
+
+            <details class="anon-panel" id="anon-consulta" open>
+                <summary>Anonimização (LGPD)</summary>
+                <div class="anon-body">
+                    <p class="hint" style="margin-top: 10px;">
+                        Mesmas opções da Aba 1. Importante para casos em curso, antes de submeter à análise.
+                    </p>
+
+                    <div class="anon-row" id="anon-toggles-consulta"></div>
+
+                    <div class="field" style="margin-top: 18px;">
+                        <label class="label">Termos a substituir <span class="label-aux">um por linha</span></label>
+                        <textarea id="q-anon-list" style="min-height: 90px;"
+                            placeholder="Empresa XYZ Ltda&#10;Apelido específico"></textarea>
+                    </div>
+
+                    <div class="suggestions" id="suggestions-consulta" style="display:none;">
+                        <div class="suggestions-title">Sugestões adicionais detectadas <span
+                                style="text-transform:none;letter-spacing:0;font-style:italic;font-family:var(--serif);font-weight:400;">(clique
+                                para adicionar à lista)</span></div>
+                        <div id="suggestions-list-consulta"></div>
+                    </div>
+                </div>
+            </details>
+
+            <div class="button-bar">
+                <button class="btn btn-primary" onclick="regen('consulta')">
+                    <span class="btn-icon">⟳</span> Gerar / Atualizar
+                </button>
+                <button class="btn btn-accent" onclick="copyOutput('consulta')">
+                    <span class="btn-icon">⧉</span> Copiar para colar no chat
+                </button>
+                <button class="btn" onclick="downloadConsulta()">
+                    <span class="btn-icon">↓</span> Baixar como .txt
+                </button>
+                <button class="btn btn-ghost" onclick="clearTab('consulta')">limpar campos</button>
+                <span class="status" id="status-consulta"></span>
+            </div>
+
+            <div class="preview-section">
+                <div class="preview-header">
+                    <span>Pré-visualização — mensagem para o Project</span>
+                    <span class="preview-filename">consulta.txt</span>
+                </div>
+                <div class="preview-body" id="preview-consulta"></div>
+            </div>
+            <div class="counter-bar" id="counter-consulta"></div>
+        </section>
+
+    </main>
+
+    <footer>
+        <div class="container">
+            Auto-salvamento local ativo · Nenhum dado sai do navegador · Os arquivos são gerados na máquina do operador
+        </div>
+    </footer>
+
+    <script>
+        // =============================================================
+        // PREPARADOR DE CASOS — JEC MARÍLIA — v1.1
+        // =============================================================
+
+        // ---------- Regex rules ----------
+        const ANON_RULES = {
+            cpf: { label: 'CPF', pattern: /\b\d{3}\.\d{3}\.\d{3}-\d{2}\b|\b\d{11}\b/g, replace: '[CPF]', default: true },
+            cnpj: { label: 'CNPJ', pattern: /\b\d{2}\.\d{3}\.\d{3}\/\d{4}-\d{2}\b|\b\d{14}\b/g, replace: '[CNPJ]', default: true },
+            rg: { label: 'RG', pattern: /\b\d{1,2}\.\d{3}\.\d{3}-?[\dXx]\b/g, replace: '[RG]', default: true },
+            cep: { label: 'CEP', pattern: /\b\d{5}-\d{3}\b/g, replace: '[CEP]', default: true },
+            email: { label: 'E-mail', pattern: /\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}\b/g, replace: '[E-MAIL]', default: true },
+            telefone: { label: 'Telefone', pattern: /(?:\+?55\s?)?\(?\d{2}\)?[\s.-]?9?\d{4}[\s.-]?\d{4}\b/g, replace: '[TELEFONE]', default: true },
+            endereco: { label: 'Endereços (Rua/Av/Travessa…)', pattern: /\b(?:Rua|Avenida|Av\.?|Travessa|Trav\.?|Alameda|Al\.?|Praça|Estrada|Rodovia|Rod\.?)\s+[A-ZÁÉÍÓÚÂÊÔÃÕÇÀ][^,;\n.]{2,80}(?:,\s*(?:n[º°.]?\s*)?\d+[A-Za-z]?)?/g, replace: '[ENDEREÇO]', default: false },
+            processo: { label: 'Nº de processo', pattern: /\b\d{7}-\d{2}\.\d{4}\.\d{1,2}\.\d{2}\.\d{4}\b/g, replace: '[PROCESSO]', default: false },
+        };
+
+        const ANON_ORDER = ['cnpj', 'cpf', 'processo', 'cep', 'rg', 'email', 'telefone', 'endereco'];
+
+        // ---------- Person-name detection ----------
+        const PREPOSITIONS_NAME = new Set(['da', 'de', 'do', 'dos', 'das', 'e', 'del', 'dell', 'von', 'van', 'la', 'le', 'di']);
+
+        // Words that should NOT start a person name (when at position 0 of the candidate)
+        const NAME_BLACKLIST_FIRST = new Set([
+            // Sentence-initial verbs / formulas
+            'Vistos', 'Decido', 'Defiro', 'Indefiro', 'Cuida', 'Trata', 'Compulsando', 'Considerando', 'Posto', 'Acolho', 'Rejeito', 'Conheço', 'Recebo', 'Atento', 'Diante', 'Ante', 'Verifico', 'Constato', 'Observo', 'Cumpra', 'Intime', 'Cite', 'Designe', 'Aguarde', 'Determino', 'Reservo', 'Conclusos', 'Conclusão', 'Homologo', 'Julgo', 'Sentencio',
+            // Places
+            'Marília', 'Garça', 'Pompéia', 'Gália', 'São', 'Santa', 'Santo', 'Paulo', 'Brasil', 'Rio', 'Janeiro', 'Belo', 'Horizonte', 'Brasília', 'Recife', 'Salvador', 'Curitiba', 'Fortaleza', 'Porto', 'Alegre', 'Manaus', 'Goiânia', 'Campinas', 'Bauru', 'Ribeirão', 'Sorocaba',
+            // Cardinal regions
+            'Norte', 'Sul', 'Leste', 'Oeste', 'Nordeste', 'Sudeste', 'Noroeste', 'Sudoeste',
+            // Institutions and forensic references
+            'Juizado', 'Juizados', 'Especial', 'Especiais', 'Cível', 'Cíveis', 'Vara', 'Varas', 'Comarca', 'Comarcas', 'Foro', 'Foros', 'Tribunal', 'Tribunais', 'Justiça', 'Conselho', 'Conselhos', 'Nacional', 'Nacionais', 'Superior', 'Superiores', 'Federal', 'Federais', 'Estadual', 'Estaduais', 'Câmara', 'Câmaras', 'Turma', 'Turmas', 'Recursal', 'Recursais', 'Plenário', 'Plenárias', 'Corregedoria', 'Procuradoria', 'Defensoria', 'Ministério', 'Secretaria', 'Cartório', 'Cartórios', 'Departamento', 'Setor', 'Seção',
+            // Forensic roles
+            'Juiz', 'Juíza', 'Juízo', 'Promotor', 'Promotora', 'Promotoria', 'Advogado', 'Advogada', 'Defensor', 'Defensora', 'Magistrado', 'Magistrada', 'Escrevente', 'Escrivã', 'Escrivão', 'Servidor', 'Servidora', 'Oficial', 'Funcionário', 'Funcionária', 'Perito', 'Perita', 'Conciliador', 'Conciliadora', 'Mediador', 'Mediadora',
+            // Procedural acts
+            'Recurso', 'Recursos', 'Habeas', 'Agravo', 'Agravos', 'Embargo', 'Embargos', 'Apelação', 'Reclamação', 'Reclamações', 'Mandado', 'Mandados', 'Ação', 'Ações', 'Processo', 'Processos', 'Carta', 'Cartas', 'Cumprimento', 'Execução', 'Execuções', 'Cautelar', 'Antecipação', 'Tutela', 'Tutelas', 'Pedido', 'Pedidos', 'Liminar', 'Liminares', 'Provimento',
+            // Norms
+            'Lei', 'Leis', 'Decreto', 'Decretos', 'Código', 'Códigos', 'Constituição', 'Súmula', 'Súmulas', 'Enunciado', 'Enunciados', 'Portaria', 'Portarias', 'Resolução', 'Resoluções', 'Norma', 'Normas', 'Medida', 'Medidas', 'Regulamento', 'Regimento', 'Estatuto', 'Estatutos', 'Convenção', 'Convenções', 'Acordo', 'Acordos', 'Convênio', 'Convênios', 'Procuração',
+            // Acronyms
+            'CPC', 'CDC', 'STJ', 'STF', 'TJSP', 'FONAJE', 'OAB', 'DPE', 'CNJ', 'TST', 'TRT', 'MP', 'DPVAT', 'SUS', 'INSS', 'ANATEL', 'ANAC', 'ANS', 'ANEEL', 'PROCON',
+            // Honorifics — when isolated, not really names
+            'Doutor', 'Doutora', 'Excelentíssimo', 'Excelentíssima', 'Meritíssimo', 'Meritíssima', 'Senhor', 'Senhora',
+            // Months & weekdays
+            'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro',
+            'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado', 'Domingo',
+            // Street-type
+            'Rua', 'Avenida', 'Travessa', 'Alameda', 'Praça', 'Estrada', 'Rodovia', 'Largo', 'Beco', 'Viela', 'Caminho', 'Ladeira',
+            // Documents / acts
+            'Anexo', 'Apenso', 'Diligência', 'Diligências', 'Audiência', 'Audiências', 'Petição', 'Petições', 'Sentença', 'Sentenças', 'Decisão', 'Decisões', 'Acórdão', 'Acórdãos', 'Despacho', 'Despachos', 'Ofício', 'Ofícios', 'Citação', 'Citações', 'Intimação', 'Intimações', 'Certidão', 'Certidões', 'Termo', 'Termos', 'Auto', 'Autos', 'Boletim', 'Inquérito', 'Contrato', 'Contratos', 'Atendimento', 'Serviço', 'Serviços', 'Protocolo', 'Procedimento',
+            // Common organization types
+            'Banco', 'Bancos', 'Empresa', 'Empresas', 'Companhia', 'Companhias', 'Sociedade', 'Sociedades', 'Hospital', 'Hospitais', 'Universidade', 'Universidades', 'Faculdade', 'Faculdades', 'Centro', 'Centros', 'Igreja', 'Igrejas', 'Federação', 'União', 'República', 'Município', 'Municípios', 'Estado', 'Estados', 'Cidade', 'Cidades', 'País', 'Países',
+            // Common Brazilian company name fragments (when standalone capitalized)
+            'Caixa', 'Bradesco', 'Itaú', 'Santander', 'Bradescard', 'Inter', 'Nubank', 'Mercado', 'Visa', 'Mastercard', 'Cielo', 'Rede', 'Pagseguro', 'Stone',
+            'Net', 'Vivo', 'Tim', 'Claro', 'Oi', 'Sky', 'Latam', 'Azul', 'Gol', 'Avianca', 'American', 'United',
+            'Telefônica', 'Telecomunicações', 'Energia', 'Eletricidade', 'Saneamento', 'Águas', 'Transporte', 'Transportes', 'Logística', 'Aviação',
+        ]);
+
+        // Words that should not appear AT THE END of a person name (probably qualifiers, places or org-types)
+        const NAME_BLACKLIST_LAST = new Set([
+            'Limitada', 'Ltda', 'S/A', 'SA', 'EPP', 'ME', 'EIRELI',
+            'Marília', 'Garça', 'Pompéia', 'Gália', 'Bauru', 'Campinas', 'Sorocaba',
+            'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro',
+            'Direito', 'Justiça', 'Trabalho', 'Família', 'Civil', 'Criminal', 'Comercial', 'Tributário', 'Administrativo', 'Penal', 'Processual', 'Constitucional', 'Empresarial', 'Imobiliário', 'Trabalhista', 'Eleitoral', 'Militar', 'Cível',
+            'SP', 'RJ', 'MG', 'RS', 'PR', 'SC', 'BA', 'PE', 'CE', 'GO', 'DF', 'MT', 'MS', 'TO', 'PA', 'MA', 'PI', 'RN', 'PB', 'AL', 'SE', 'RR', 'AP', 'AC', 'AM', 'RO', 'ES', 'SP/SP',
+            'Telecomunicações', 'Comunicações', 'Energia', 'Eletricidade', 'Saneamento', 'Saúde', 'Educação', 'Logística', 'Aviação', 'Transportes',
+            'Brasil', 'Brasileira', 'Brasileiro',
+        ]);
+
+        // If candidate is immediately preceded (within ~40 chars) by one of these tokens
+        // followed by an optional "de/do/da/dos/das", we treat it as institution/place.
+        const NEGATIVE_PREFIX_RE = /\b(Banco|Bancos|Tribunal|Tribunais|Vara|Varas|Câmara|Câmaras|Comarca|Comarcas|Cidade|Cidades|Município|Municípios|Estado|Estados|País|Rua|Avenida|Av|Travessa|Alameda|Praça|Estrada|Rodovia|Largo|Lei|Decreto|Código|Súmula|Enunciado|Constituição|Conselho|Cartório|Cartórios|Companhia|Empresa|Empresas|Sociedade|Loja|Lojas|Filial|Filiais|Hospital|Hospitais|Universidade|Universidades|Faculdade|Faculdades|Centro|Centros|Igreja|Igrejas|Ministério|Ministérios|Secretaria|Secretarias|Procuradoria|Defensoria|Corregedoria|Tema|Súmulas|Resolução|Portaria|Provimento|art\.?|artigo|artigos|inciso|incisos|alínea|parágrafo|parágrafos)\s+(?:de\s+|do\s+|da\s+|dos\s+|das\s+)?$/i;
+
+        // Candidate pattern: 2+ words, first letter capitalized, optional lowercase prepositions
+        const NAME_CANDIDATE_RE = /\b[A-ZÁÉÍÓÚÂÊÔÃÕÇÀÜ][a-záéíóúâêôãõçàü]+(?:\s+(?:da|de|do|dos|das|e)\s+|\s+)(?:(?:da|de|do|dos|das|e)\s+)?[A-ZÁÉÍÓÚÂÊÔÃÕÇÀÜ][a-záéíóúâêôãõçàü]+(?:(?:\s+(?:da|de|do|dos|das|e))?\s+[A-ZÁÉÍÓÚÂÊÔÃÕÇÀÜ][a-záéíóúâêôãõçàü]+){0,5}\b/g;
+
+        function abbreviateName(name, format) {
+            const words = name.trim().split(/\s+/);
+            return words.map((w, i) => {
+                const lower = w.toLowerCase();
+                const firstChar = w[0];
+                const isLowercasePrep = PREPOSITIONS_NAME.has(lower) && firstChar === firstChar.toLowerCase();
+                if (isLowercasePrep) return w; // keep "da", "de" lowercase as-is
+                if (i === 0 && format === 'first-plus-initials') return w; // keep first name
+                // Abbreviate: first letter uppercased + "."
+                return firstChar.toUpperCase() + '.';
+            }).join(' ');
+        }
+
+        function applyNameDetection(text, format) {
+            if (!text) return { text, count: 0 };
+            let count = 0;
+            const result = text.replace(NAME_CANDIDATE_RE, function (match, offset, fullStr) {
+                const words = match.split(/\s+/);
+                const firstWord = words[0];
+                const lastWord = words[words.length - 1];
+
+                if (NAME_BLACKLIST_FIRST.has(firstWord)) return match;
+                if (NAME_BLACKLIST_LAST.has(lastWord)) return match;
+
+                // Check preceding context
+                const ctxStart = Math.max(0, offset - 40);
+                const ctx = fullStr.substring(ctxStart, offset);
+                if (NEGATIVE_PREFIX_RE.test(ctx)) return match;
+
+                // Don't anonymize if the match is entirely within markers we already placed
+                if (match.indexOf('⟦') !== -1 || match.indexOf('⟪') !== -1) return match;
+
+                count++;
+                return `⟪${abbreviateName(match, format)}⟫`;
+            });
+            return { text: result, count };
+        }
+
+        // ---------- State ----------
+        const state = {
+            corpus: { anonActive: {}, nameAnonActive: true, nameFormat: 'first-plus-initials', replacements: 0 },
+            consulta: { anonActive: {}, nameAnonActive: true, nameFormat: 'first-plus-initials', replacements: 0 },
+        };
+        Object.keys(ANON_RULES).forEach(k => {
+            state.corpus.anonActive[k] = ANON_RULES[k].default;
+            state.consulta.anonActive[k] = ANON_RULES[k].default;
+        });
+
+        // ---------- Tab switching ----------
+        document.querySelectorAll('.tab').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+                btn.classList.add('active');
+                document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
+            });
+        });
+
+        // ---------- Build anonymization toggles ----------
+        function buildToggles(panel) {
+            const container = document.getElementById('anon-toggles-' + panel);
+            container.innerHTML = '';
+
+            // Regex toggles
+            ANON_ORDER.forEach(key => {
+                const r = ANON_RULES[key];
+                const wrapper = document.createElement('label');
+                wrapper.className = 'anon-toggle' + (state[panel].anonActive[key] ? ' checked' : '');
+                wrapper.innerHTML = `<input type="checkbox" ${state[panel].anonActive[key] ? 'checked' : ''}><span>${r.label}</span>`;
+                wrapper.querySelector('input').addEventListener('change', e => {
+                    state[panel].anonActive[key] = e.target.checked;
+                    wrapper.classList.toggle('checked', e.target.checked);
+                    regen(panel);
+                    saveDraft();
+                });
+                container.appendChild(wrapper);
+            });
+
+            // Name toggle (special, separate class)
+            const nameWrapper = document.createElement('label');
+            nameWrapper.className = 'anon-toggle name-toggle' + (state[panel].nameAnonActive ? ' checked' : '');
+            nameWrapper.innerHTML = `<input type="checkbox" ${state[panel].nameAnonActive ? 'checked' : ''}><span>Nomes de pessoas (auto)</span>`;
+            nameWrapper.querySelector('input').addEventListener('change', e => {
+                state[panel].nameAnonActive = e.target.checked;
+                nameWrapper.classList.toggle('checked', e.target.checked);
+                const fr = document.getElementById('name-format-row-' + panel);
+                if (fr) fr.style.display = e.target.checked ? '' : 'none';
+                regen(panel);
+                saveDraft();
+            });
+            container.appendChild(nameWrapper);
+
+            // Format selector row (after the toggles container)
+            let formatRow = document.getElementById('name-format-row-' + panel);
+            if (formatRow) formatRow.remove();
+
+            formatRow = document.createElement('div');
+            formatRow.id = 'name-format-row-' + panel;
+            formatRow.className = 'name-format-row';
+            formatRow.innerHTML = `
+    <span class="nfr-label">Formato dos nomes</span>
+    <select class="format-select">
+      <option value="first-plus-initials">Primeiro nome + iniciais</option>
+      <option value="initials-only">Apenas iniciais</option>
+    </select>
+    <span class="nfr-example" id="nfr-example-${panel}"></span>
+  `;
+            formatRow.style.display = state[panel].nameAnonActive ? '' : 'none';
+            const sel = formatRow.querySelector('select');
+            sel.value = state[panel].nameFormat;
+            updateFormatExample(panel, state[panel].nameFormat);
+            sel.addEventListener('change', e => {
+                state[panel].nameFormat = e.target.value;
+                updateFormatExample(panel, e.target.value);
+                regen(panel);
+                saveDraft();
+            });
+            container.parentNode.insertBefore(formatRow, container.nextSibling);
+        }
+
+        function updateFormatExample(panel, fmt) {
+            const el = document.getElementById('nfr-example-' + panel);
+            if (!el) return;
+            const example = abbreviateName('Pedro Siqueira De Pretto', fmt);
+            el.innerHTML = `exemplo: <strong>${example}</strong>`;
+        }
+
+        // ---------- Anonymization pipeline ----------
+        function anonymize(text, panel) {
+            if (!text) return { text: '', count: 0 };
+            let result = text;
+            let count = 0;
+
+            // 1. Custom term list (user override → [PARTE])
+            const listEl = document.getElementById(panel === 'corpus' ? 'c-anon-list' : 'q-anon-list');
+            const terms = (listEl.value || '')
+                .split('\n')
+                .map(t => t.trim())
+                .filter(t => t.length >= 2);
+            terms.sort((a, b) => b.length - a.length).forEach(term => {
+                const escaped = term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+                const re = new RegExp(escaped, 'gi');
+                const matches = result.match(re);
+                if (matches) {
+                    count += matches.length;
+                    result = result.replace(re, '⟦PARTE⟧');
+                }
+            });
+
+            // 2. Auto-detect person names (heuristic)
+            if (state[panel].nameAnonActive) {
+                const nameResult = applyNameDetection(result, state[panel].nameFormat);
+                result = nameResult.text;
+                count += nameResult.count;
+            }
+
+            // 3. Regex rules (CPF, CNPJ, etc.)
+            ANON_ORDER.forEach(key => {
+                if (!state[panel].anonActive[key]) return;
+                const rule = ANON_RULES[key];
+                const matches = result.match(rule.pattern);
+                if (matches) {
+                    count += matches.length;
+                    result = result.replace(rule.pattern, '⟦' + rule.replace.slice(1, -1) + '⟧');
+                }
+            });
+
+            return { text: result, count };
+        }
+
+        function renderWithMarks(text) {
+            let html = text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+            html = html.replace(/⟦([^⟧]+)⟧/g, '<mark>[$1]</mark>');
+            html = html.replace(/⟪([^⟫]+)⟫/g, '<mark class="abbrev">$1</mark>');
+            return html;
+        }
+
+        function plainOutput(text) {
+            return text
+                .replace(/⟦([^⟧]+)⟧/g, '[$1]')
+                .replace(/⟪([^⟫]+)⟫/g, '$1');
+        }
+
+        // ---------- Suggestions (for terms NOT auto-detected as names) ----------
+        const SUGGESTION_STOPWORDS = new Set([...NAME_BLACKLIST_FIRST]);
+
+        function detectSuggestions(text) {
+            if (!text) return [];
+            // Same general pattern as name detection — but used only for chip display
+            const re = /\b([A-ZÁÉÍÓÚÂÊÔÃÕÇÀ][a-záéíóúâêôãõçà]+(?:\s+(?:da|de|do|dos|das|e)\s+)?(?:\s+[A-ZÁÉÍÓÚÂÊÔÃÕÇÀ][a-záéíóúâêôãõçà]+)+)/g;
+            const found = new Map();
+            let m;
+            while ((m = re.exec(text)) !== null) {
+                const candidate = m[1].trim().replace(/\s+/g, ' ');
+                const firstWord = candidate.split(/\s+/)[0];
+                if (SUGGESTION_STOPWORDS.has(firstWord)) continue;
+                if (candidate.length < 6 || candidate.length > 80) continue;
+                found.set(candidate, (found.get(candidate) || 0) + 1);
+            }
+            return [...found.entries()]
+                .sort((a, b) => b[1] - a[1])
+                .slice(0, 15)
+                .map(([t, n]) => ({ term: t, n }));
+        }
+
+        function renderSuggestions(panel) {
+            // When auto-name-detection is ON, the suggestions are largely redundant.
+            // We only show terms that the auto-detection would NOT have caught.
+            if (state[panel].nameAnonActive) {
+                document.getElementById('suggestions-' + panel).style.display = 'none';
+                return;
+            }
+            const sourceText = panel === 'corpus'
+                ? [getVal('c-inicial'), getVal('c-docs'), getVal('c-decisao')].join('\n')
+                : [getVal('q-inicial'), getVal('q-docs')].join('\n');
+            const suggestions = detectSuggestions(sourceText);
+            const wrap = document.getElementById('suggestions-' + panel);
+            const list = document.getElementById('suggestions-list-' + panel);
+            if (!suggestions.length) { wrap.style.display = 'none'; return; }
+            wrap.style.display = 'block';
+            const listEl = document.getElementById(panel === 'corpus' ? 'c-anon-list' : 'q-anon-list');
+            const currentTerms = new Set((listEl.value || '').split('\n').map(t => t.trim()).filter(Boolean));
+            list.innerHTML = suggestions.map(s => {
+                const sel = currentTerms.has(s.term) ? ' selected' : '';
+                return `<span class="suggestion-chip${sel}" data-term="${s.term.replace(/"/g, '&quot;')}">${s.term}${s.n > 1 ? ` <small style="opacity:.6">×${s.n}</small>` : ''}</span>`;
+            }).join('');
+            list.querySelectorAll('.suggestion-chip').forEach(chip => {
+                chip.addEventListener('click', () => {
+                    const term = chip.dataset.term;
+                    const current = (listEl.value || '').split('\n').map(t => t.trim()).filter(Boolean);
+                    if (current.includes(term)) {
+                        listEl.value = current.filter(t => t !== term).join('\n');
+                        chip.classList.remove('selected');
+                    } else {
+                        current.push(term);
+                        listEl.value = current.join('\n');
+                        chip.classList.add('selected');
+                    }
+                    regen(panel);
+                    saveDraft();
+                });
+            });
+        }
+
+        // ---------- Build output ----------
+        function getVal(id) { return (document.getElementById(id).value || '').trim(); }
+        function safeMateria(s) { return (s || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9-]/g, '') || '___'; }
+        function safeData(s) { return /^\d{4}-\d{2}$/.test(s) ? s : '____-__'; }
+
+        function buildCorpus() {
+            const materia = getVal('c-materia');
+            const resultado = document.getElementById('c-resultado').value;
+            const data = getVal('c-data');
+            const inicial = anonymize(getVal('c-inicial'), 'corpus');
+            const docs = anonymize(getVal('c-docs'), 'corpus');
+            const dec = anonymize(getVal('c-decisao'), 'corpus');
+
+            const filename = `CASO_${safeMateria(materia)}_${resultado}_${safeData(data)}.txt`;
+            const sep = '='.repeat(64);
+            const line = '-'.repeat(64);
+
+            const text =
+                `${sep}
+CASO — ${materia || '[matéria]'} — ${resultado} — ${data || '[AAAA-MM]'}
+${sep}
+
+
+[1] PETIÇÃO INICIAL
+${line}
+
+${inicial.text || '(vazio)'}
+
+
+[2] DOCUMENTOS RELEVANTES
+${line}
+
+${docs.text || '(vazio)'}
+
+
+[3] DECISÃO PROFERIDA
+${line}
+
+${dec.text || '(vazio)'}
+
+${sep}
+— Fim do caso —
+${sep}
+`;
+            return { text, filename, replacements: inicial.count + docs.count + dec.count };
+        }
+
+        function buildConsulta() {
+            const inicial = anonymize(getVal('q-inicial'), 'consulta');
+            const docs = anonymize(getVal('q-docs'), 'consulta');
+            const comando = getVal('q-comando') || 'Analise e apresente proposta de minuta.';
+            const text =
+                `PETIÇÃO INICIAL
+${'─'.repeat(40)}
+
+${inicial.text || '(colar petição inicial)'}
+
+
+DOCUMENTOS RELEVANTES
+${'─'.repeat(40)}
+
+${docs.text || '(descrever documentos)'}
+
+
+COMANDO
+${'─'.repeat(40)}
+
+${comando}
+`;
+            return { text, replacements: inicial.count + docs.count };
+        }
+
+        function regen(panel) {
+            let built;
+            if (panel === 'corpus') {
+                built = buildCorpus();
+                document.getElementById('filename-corpus').textContent = built.filename;
+                document.getElementById('preview-corpus').innerHTML = renderWithMarks(built.text);
+                updateCounter('corpus', built.text, built.replacements);
+            } else {
+                built = buildConsulta();
+                document.getElementById('preview-consulta').innerHTML = renderWithMarks(built.text);
+                updateCounter('consulta', built.text, built.replacements);
+            }
+            renderSuggestions(panel);
+            saveDraft();
+            state[panel].lastOutput = plainOutput(built.text);
+            state[panel].lastFilename = built.filename || 'consulta.txt';
+        }
+
+        function updateCounter(panel, text, repl) {
+            const chars = text.length;
+            const words = (text.trim().match(/\S+/g) || []).length;
+            const lines = text.split('\n').length;
+            document.getElementById('counter-' + panel).innerHTML =
+                `<span><strong>${chars.toLocaleString('pt-BR')}</strong> caracteres</span>` +
+                `<span><strong>${words.toLocaleString('pt-BR')}</strong> palavras</span>` +
+                `<span><strong>${lines.toLocaleString('pt-BR')}</strong> linhas</span>` +
+                `<span><strong>${repl}</strong> substituiç${repl === 1 ? 'ão' : 'ões'} de anonimização</span>`;
+        }
+
+        function setStatus(panel, msg, kind = 'info') {
+            const el = document.getElementById('status-' + panel);
+            el.textContent = msg;
+            el.className = 'status ' + kind;
+            if (kind !== 'error') {
+                setTimeout(() => { if (el.textContent === msg) { el.textContent = ''; } }, 3500);
+            }
+        }
+
+        // ---------- Download / Copy ----------
+        function triggerDownload(content, filename) {
+            const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url; a.download = filename;
+            document.body.appendChild(a); a.click(); document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        function downloadCorpus() {
+            const b = buildCorpus();
+            if (!getVal('c-materia') || !getVal('c-data')) {
+                setStatus('corpus', 'Preencha matéria e data antes de baixar.', 'error');
+                return;
+            }
+            triggerDownload(plainOutput(b.text), b.filename);
+            setStatus('corpus', `Arquivo "${b.filename}" gerado.`, 'info');
+        }
+
+        function downloadConsulta() {
+            const b = buildConsulta();
+            const stamp = new Date().toISOString().slice(0, 10);
+            triggerDownload(plainOutput(b.text), `consulta_${stamp}.txt`);
+            setStatus('consulta', 'Arquivo de consulta gerado.', 'info');
+        }
+
+        async function copyOutput(panel) {
+            const built = panel === 'corpus' ? buildCorpus() : buildConsulta();
+            const text = plainOutput(built.text);
+            try {
+                await navigator.clipboard.writeText(text);
+                setStatus(panel, 'Conteúdo copiado para a área de transferência.', 'info');
+            } catch (e) {
+                const ta = document.createElement('textarea');
+                ta.value = text; document.body.appendChild(ta);
+                ta.select(); document.execCommand('copy'); document.body.removeChild(ta);
+                setStatus(panel, 'Copiado (modo legado).', 'info');
+            }
+        }
+
+        function setCommand(s) {
+            document.getElementById('q-comando').value = s;
+            regen('consulta');
+        }
+
+        function clearTab(panel) {
+            if (!confirm('Deseja apagar todos os campos desta aba?')) return;
+            const ids = panel === 'corpus'
+                ? ['c-materia', 'c-data', 'c-inicial', 'c-docs', 'c-decisao', 'c-anon-list']
+                : ['q-inicial', 'q-docs', 'q-anon-list'];
+            ids.forEach(id => document.getElementById(id).value = '');
+            if (panel === 'consulta') document.getElementById('q-comando').value = 'Analise e apresente proposta de minuta.';
+            regen(panel);
+            setStatus(panel, 'Campos limpos.', 'info');
+        }
+
+        // ---------- Auto-save (localStorage) ----------
+        const SAVE_KEY = 'prep-jec-marilia-v1';
+
+        function saveDraft() {
+            const data = {
+                corpus: {
+                    materia: getVal('c-materia'),
+                    resultado: document.getElementById('c-resultado').value,
+                    data: getVal('c-data'),
+                    inicial: getVal('c-inicial'),
+                    docs: getVal('c-docs'),
+                    decisao: getVal('c-decisao'),
+                    anonList: getVal('c-anon-list'),
+                    anonActive: state.corpus.anonActive,
+                    nameAnonActive: state.corpus.nameAnonActive,
+                    nameFormat: state.corpus.nameFormat,
+                },
+                consulta: {
+                    inicial: getVal('q-inicial'),
+                    docs: getVal('q-docs'),
+                    comando: getVal('q-comando'),
+                    anonList: getVal('q-anon-list'),
+                    anonActive: state.consulta.anonActive,
+                    nameAnonActive: state.consulta.nameAnonActive,
+                    nameFormat: state.consulta.nameFormat,
+                },
+                savedAt: new Date().toISOString(),
+            };
+            try { localStorage.setItem(SAVE_KEY, JSON.stringify(data)); } catch (e) { }
+        }
+
+        function loadDraft() {
+            try {
+                const raw = localStorage.getItem(SAVE_KEY);
+                if (!raw) return;
+                const d = JSON.parse(raw);
+                if (d.corpus) {
+                    setIf('c-materia', d.corpus.materia);
+                    if (d.corpus.resultado) document.getElementById('c-resultado').value = d.corpus.resultado;
+                    setIf('c-data', d.corpus.data);
+                    setIf('c-inicial', d.corpus.inicial);
+                    setIf('c-docs', d.corpus.docs);
+                    setIf('c-decisao', d.corpus.decisao);
+                    setIf('c-anon-list', d.corpus.anonList);
+                    if (d.corpus.anonActive) Object.assign(state.corpus.anonActive, d.corpus.anonActive);
+                    if (typeof d.corpus.nameAnonActive === 'boolean') state.corpus.nameAnonActive = d.corpus.nameAnonActive;
+                    if (d.corpus.nameFormat) state.corpus.nameFormat = d.corpus.nameFormat;
+                }
+                if (d.consulta) {
+                    setIf('q-inicial', d.consulta.inicial);
+                    setIf('q-docs', d.consulta.docs);
+                    setIf('q-comando', d.consulta.comando);
+                    setIf('q-anon-list', d.consulta.anonList);
+                    if (d.consulta.anonActive) Object.assign(state.consulta.anonActive, d.consulta.anonActive);
+                    if (typeof d.consulta.nameAnonActive === 'boolean') state.consulta.nameAnonActive = d.consulta.nameAnonActive;
+                    if (d.consulta.nameFormat) state.consulta.nameFormat = d.consulta.nameFormat;
+                }
+            } catch (e) { }
+        }
+        function setIf(id, val) { if (val != null) document.getElementById(id).value = val; }
+
+        // ---------- Bind inputs ----------
+        ['c-materia', 'c-data', 'c-inicial', 'c-docs', 'c-decisao', 'c-anon-list', 'c-resultado'].forEach(id => {
+            document.getElementById(id).addEventListener('input', () => { regen('corpus'); });
+            document.getElementById(id).addEventListener('change', () => { regen('corpus'); });
+        });
+        ['q-inicial', 'q-docs', 'q-anon-list', 'q-comando'].forEach(id => {
+            document.getElementById(id).addEventListener('input', () => { regen('consulta'); });
+        });
+
+        // ---------- Init ----------
+        loadDraft();
+        buildToggles('corpus');
+        buildToggles('consulta');
+        regen('corpus');
+        regen('consulta');
+
+        if (!getVal('c-data')) {
+            const now = new Date();
+            document.getElementById('c-data').value = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+            regen('corpus');
+        }
+    </script>
+
+</body>
+
+</html>
