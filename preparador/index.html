@@ -975,6 +975,8 @@
 
         // Words that should NOT start a person name (when at position 0 of the candidate)
         const NAME_BLACKLIST_FIRST = new Set([
+            // Conectivos 'Da', 'Do' etc. utilizados no início de tópicos
+            'Da', 'De', 'Do', 'Dos', 'Das',
             // Sentence-initial verbs / formulas
             'Vistos', 'Decido', 'Defiro', 'Indefiro', 'Cuida', 'Trata', 'Compulsando', 'Considerando', 'Posto', 'Acolho', 'Rejeito', 'Conheço', 'Recebo', 'Atento', 'Diante', 'Ante', 'Verifico', 'Constato', 'Observo', 'Cumpra', 'Intime', 'Cite', 'Designe', 'Aguarde', 'Determino', 'Reservo', 'Conclusos', 'Conclusão', 'Homologo', 'Julgo', 'Sentencio', 'Direitos', 'Deferimento', 'Indeferimento', 'Emenda', 'Pede', 'Requer', 'Requerem', 'Postulo', 'Postula', 'Sustenta', 'Sustentam', 'Alega', 'Alegam', 'Manifestam', 'Manifesto', 'Manifesta', 'Contestação', 'Contestação', 'Defesa', 'Defesas',
             // Places
