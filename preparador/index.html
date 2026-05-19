@@ -709,6 +709,200 @@
             color: var(--ink-mute);
             margin: 0 0 22px;
         }
+
+        /* === EXTRAS TAB === */
+        .extras-empty {
+            padding: 32px 24px;
+            text-align: center;
+            border: 1px dashed var(--line);
+            border-radius: 2px;
+            background: var(--bg-card);
+            color: var(--ink-mute);
+            font-family: var(--serif);
+            font-style: italic;
+            font-size: 14px;
+        }
+
+        .topic-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin: 20px 0 24px;
+        }
+
+        .topic-card {
+            background: var(--bg-card);
+            border: 1px solid var(--line);
+            border-left: 3px solid var(--navy);
+            border-radius: 2px;
+            transition: box-shadow 160ms ease, border-color 160ms ease;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .topic-card.editing {
+            border-color: var(--gold);
+            border-left-color: var(--gold);
+            box-shadow: var(--shadow-md);
+        }
+
+        .topic-card-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .topic-card-header:hover {
+            background: rgba(176, 138, 62, 0.05);
+        }
+
+        .topic-num {
+            font-family: var(--mono);
+            font-size: 11px;
+            color: var(--gold);
+            font-weight: 600;
+            flex-shrink: 0;
+            min-width: 28px;
+        }
+
+        .topic-title {
+            font-family: var(--serif);
+            font-weight: 500;
+            font-size: 15px;
+            color: var(--navy);
+            flex: 1;
+            line-height: 1.3;
+            word-break: break-word;
+        }
+
+        .topic-card-actions {
+            display: flex;
+            gap: 4px;
+            align-items: center;
+            flex-shrink: 0;
+        }
+
+        .icon-btn {
+            background: none;
+            border: 1px solid transparent;
+            color: var(--ink-mute);
+            width: 28px;
+            height: 28px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            border-radius: 2px;
+            font-family: var(--mono);
+            font-size: 14px;
+            line-height: 1;
+            transition: all 140ms ease;
+        }
+
+        .icon-btn:hover {
+            border-color: var(--line);
+            color: var(--navy);
+            background: var(--bg-subtle);
+        }
+
+        .icon-btn.danger:hover {
+            color: var(--crimson);
+            border-color: var(--crimson);
+            background: #FFF0F0;
+        }
+
+        .icon-btn:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+
+        .icon-btn:disabled:hover {
+            background: none;
+            border-color: transparent;
+            color: var(--ink-mute);
+        }
+
+        .topic-card-body {
+            display: none;
+            padding: 0 16px 14px 16px;
+            border-top: 1px solid var(--line-soft);
+            font-family: var(--mono);
+            font-size: 12.5px;
+            line-height: 1.6;
+            color: var(--ink-soft);
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+
+        .topic-card.expanded .topic-card-body {
+            display: block;
+            padding-top: 12px;
+        }
+
+        .topic-card.expanded .topic-card-header {
+            background: var(--bg-subtle);
+        }
+
+        .topic-form {
+            background: var(--bg-card);
+            border: 1px solid var(--gold);
+            border-radius: 2px;
+            padding: 20px 22px;
+            margin: 16px 0 24px;
+            box-shadow: var(--shadow-md);
+        }
+
+        .topic-form-title {
+            font-family: var(--serif);
+            font-size: 17px;
+            font-weight: 500;
+            color: var(--gold);
+            margin: 0 0 16px;
+        }
+
+        .topic-form .field {
+            margin-bottom: 16px;
+        }
+
+        .topic-form-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+            margin-top: 8px;
+        }
+
+        details.import-panel {
+            background: var(--bg-subtle);
+            border-left: 3px solid var(--ink-mute);
+            margin: 24px 0;
+        }
+
+        details.import-panel summary {
+            cursor: pointer;
+            padding: 12px 18px;
+            list-style: none;
+            font-family: var(--serif);
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--ink-soft);
+            user-select: none;
+        }
+
+        details.import-panel summary::-webkit-details-marker {
+            display: none;
+        }
+
+        details.import-panel summary::before {
+            content: '↥ ';
+            color: var(--ink-mute);
+            font-weight: 600;
+        }
+
+        details.import-panel .import-body {
+            padding: 4px 18px 18px;
+        }
     </style>
 </head>
 
@@ -723,7 +917,7 @@
                         <div class="brand-sub">JEC Marília · 31ª Circunscrição</div>
                     </div>
                 </div>
-                <div class="header-meta">v1.1 · uso interno</div>
+                <div class="header-meta">v1.2 · uso interno</div>
             </div>
 
             <nav class="tabs" role="tablist">
@@ -732,6 +926,9 @@
                 </button>
                 <button class="tab" data-tab="consulta" role="tab">
                     <span class="tab-num">02</span>Consulta de Caso Novo
+                </button>
+                <button class="tab" data-tab="extras" role="tab">
+                    <span class="tab-num">03</span>Tópicos Extras
                 </button>
             </nav>
         </div>
@@ -941,6 +1138,74 @@
                 <div class="preview-body" id="preview-consulta"></div>
             </div>
             <div class="counter-bar" id="counter-consulta"></div>
+        </section>
+
+        <!-- ================= ABA 3: EXTRAS ================= -->
+        <section id="tab-extras" class="tab-panel" role="tabpanel">
+
+            <p class="panel-intro">
+                Banco de tópicos textuais reutilizáveis — fragmentos prontos que podem ser inseridos em qualquer
+                minuta, independentemente do resultado. Útil para teses recorrentes, advertências processuais e
+                fundamentos jurídicos que se repetem entre casos. O arquivo gerado em <code>.txt</code>
+                mantém numeração sequencial e é atualizado a cada inclusão.
+            </p>
+
+            <h2 class="section-title"><span class="section-title-num">I.</span>Tópicos Cadastrados</h2>
+            <p class="section-desc">Clique no título para expandir o conteúdo. Use as setas para reordenar.</p>
+
+            <div id="topic-list-wrapper">
+                <div class="extras-empty" id="extras-empty">
+                    Nenhum tópico cadastrado. Use o botão abaixo para incluir o primeiro.
+                </div>
+                <div class="topic-list" id="topic-list"></div>
+            </div>
+
+            <div id="topic-form-wrapper"></div>
+
+            <div class="button-bar">
+                <button class="btn btn-primary" id="btn-add-topic" onclick="openTopicForm()">
+                    <span class="btn-icon">+</span> Adicionar tópico
+                </button>
+                <button class="btn btn-accent" onclick="downloadExtras()">
+                    <span class="btn-icon">↓</span> Baixar EXTRAS.txt
+                </button>
+                <button class="btn" onclick="copyOutput('extras')">
+                    <span class="btn-icon">⧉</span> Copiar texto
+                </button>
+                <button class="btn btn-ghost" onclick="clearExtras()">limpar todos</button>
+                <span class="status" id="status-extras"></span>
+            </div>
+
+            <details class="import-panel">
+                <summary>Importar de arquivo EXTRAS.txt existente</summary>
+                <div class="import-body">
+                    <p class="hint" style="margin-top: 8px;">
+                        Cole o conteúdo de um arquivo EXTRAS.txt previamente gerado para recuperar os tópicos.
+                        Os tópicos importados serão adicionados aos atuais, mantendo a ordem original.
+                    </p>
+                    <div class="field" style="margin-top: 12px;">
+                        <textarea id="extras-import" style="min-height: 140px;"
+                            placeholder="Cole aqui o conteúdo do arquivo EXTRAS.txt…"></textarea>
+                    </div>
+                    <div class="button-bar" style="margin: 8px 0 0;">
+                        <button class="btn btn-primary" onclick="importExtras()">
+                            <span class="btn-icon">↥</span> Importar tópicos
+                        </button>
+                        <button class="btn" onclick="importExtras(true)">
+                            <span class="btn-icon">⟲</span> Substituir tudo
+                        </button>
+                    </div>
+                </div>
+            </details>
+
+            <div class="preview-section">
+                <div class="preview-header">
+                    <span>Pré-visualização do arquivo</span>
+                    <span class="preview-filename">EXTRAS.txt</span>
+                </div>
+                <div class="preview-body" id="preview-extras"></div>
+            </div>
+            <div class="counter-bar" id="counter-extras"></div>
         </section>
 
     </main>
@@ -1411,8 +1676,11 @@ ${comando}
         }
 
         async function copyOutput(panel) {
-            const built = panel === 'corpus' ? buildCorpus() : buildConsulta();
-            const text = plainOutput(built.text);
+            let built;
+            if (panel === 'corpus') built = buildCorpus();
+            else if (panel === 'consulta') built = buildConsulta();
+            else if (panel === 'extras') built = buildExtras();
+            const text = panel === 'extras' ? built.text : plainOutput(built.text);
             try {
                 await navigator.clipboard.writeText(text);
                 setStatus(panel, 'Conteúdo copiado para a área de transferência.', 'info');
@@ -1466,6 +1734,9 @@ ${comando}
                     nameAnonActive: state.consulta.nameAnonActive,
                     nameFormat: state.consulta.nameFormat,
                 },
+                extras: {
+                    topics: state.extras ? state.extras.topics : [],
+                },
                 savedAt: new Date().toISOString(),
             };
             try { localStorage.setItem(SAVE_KEY, JSON.stringify(data)); } catch (e) { }
@@ -1497,9 +1768,241 @@ ${comando}
                     if (typeof d.consulta.nameAnonActive === 'boolean') state.consulta.nameAnonActive = d.consulta.nameAnonActive;
                     if (d.consulta.nameFormat) state.consulta.nameFormat = d.consulta.nameFormat;
                 }
+                if (d.extras && Array.isArray(d.extras.topics)) {
+                    state.extras.topics = d.extras.topics.map(t => ({
+                        id: t.id || genTopicId(),
+                        title: t.title || '',
+                        body: t.body || '',
+                    })).filter(t => t.title && t.body);
+                }
             } catch (e) { }
         }
         function setIf(id, val) { if (val != null) document.getElementById(id).value = val; }
+
+        // =============================================================
+        // EXTRAS — Tópicos reutilizáveis
+        // =============================================================
+
+        state.extras = { topics: [], editingId: null };
+
+        function genTopicId() {
+            return 't-' + Date.now().toString(36) + '-' + Math.random().toString(36).substr(2, 5);
+        }
+
+        function escapeHtml(s) {
+            return (s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        }
+
+        function renderTopicList() {
+            const wrap = document.getElementById('topic-list');
+            const empty = document.getElementById('extras-empty');
+            if (!state.extras.topics.length) {
+                empty.style.display = 'block';
+                wrap.innerHTML = '';
+                return;
+            }
+            empty.style.display = 'none';
+            wrap.innerHTML = state.extras.topics.map((t, idx) => {
+                const isLast = idx === state.extras.topics.length - 1;
+                const isFirst = idx === 0;
+                return `
+        <div class="topic-card" data-id="${t.id}">
+          <div class="topic-card-header" onclick="toggleTopic('${t.id}')">
+            <span class="topic-num">[${idx + 1}]</span>
+            <span class="topic-title">${escapeHtml(t.title)}</span>
+            <div class="topic-card-actions" onclick="event.stopPropagation()">
+              <button class="icon-btn" onclick="moveTopic('${t.id}', -1)" ${isFirst ? 'disabled' : ''} title="Mover para cima">↑</button>
+              <button class="icon-btn" onclick="moveTopic('${t.id}', 1)" ${isLast ? 'disabled' : ''} title="Mover para baixo">↓</button>
+              <button class="icon-btn" onclick="editTopic('${t.id}')" title="Editar">✎</button>
+              <button class="icon-btn danger" onclick="removeTopic('${t.id}')" title="Remover">✕</button>
+            </div>
+          </div>
+          <div class="topic-card-body">${escapeHtml(t.body)}</div>
+        </div>
+      `;
+            }).join('');
+        }
+
+        function toggleTopic(id) {
+            const card = document.querySelector(`.topic-card[data-id="${id}"]`);
+            if (card) card.classList.toggle('expanded');
+        }
+
+        function moveTopic(id, delta) {
+            const arr = state.extras.topics;
+            const idx = arr.findIndex(t => t.id === id);
+            if (idx < 0) return;
+            const newIdx = idx + delta;
+            if (newIdx < 0 || newIdx >= arr.length) return;
+            [arr[idx], arr[newIdx]] = [arr[newIdx], arr[idx]];
+            renderTopicList();
+            regen('extras');
+            saveDraft();
+        }
+
+        function removeTopic(id) {
+            const t = state.extras.topics.find(x => x.id === id);
+            if (!t) return;
+            if (!confirm(`Remover o tópico "${t.title}"?`)) return;
+            state.extras.topics = state.extras.topics.filter(x => x.id !== id);
+            renderTopicList();
+            regen('extras');
+            saveDraft();
+        }
+
+        function openTopicForm(editingId = null) {
+            state.extras.editingId = editingId;
+            const editing = editingId ? state.extras.topics.find(t => t.id === editingId) : null;
+            const wrap = document.getElementById('topic-form-wrapper');
+            wrap.innerHTML = `
+      <div class="topic-form">
+        <h3 class="topic-form-title">${editing ? 'Editar tópico' : 'Novo tópico'}</h3>
+        <div class="field">
+          <label class="label" for="topic-title-input">Título <span class="label-aux">curto, em caixa alta (será o cabeçalho do bloco)</span></label>
+          <input type="text" id="topic-title-input" placeholder="HONORÁRIOS ADVOCATÍCIOS SUCUMBENCIAIS INCLUÍDOS NO CÁLCULO" value="${escapeHtml(editing?.title || '')}">
+        </div>
+        <div class="field">
+          <label class="label" for="topic-body-input">Conteúdo <span class="label-aux">texto do fragmento a ser reutilizado</span></label>
+          <textarea id="topic-body-input" class="large" placeholder="A teor do que preceitua o art. 55, da Lei nº 9.099/95…">${escapeHtml(editing?.body || '')}</textarea>
+        </div>
+        <div class="topic-form-actions">
+          <button class="btn btn-ghost" onclick="closeTopicForm()">cancelar</button>
+          <button class="btn btn-primary" onclick="saveTopic()">${editing ? 'Atualizar' : 'Adicionar'}</button>
+        </div>
+      </div>
+    `;
+            setTimeout(() => {
+                const titleInput = document.getElementById('topic-title-input');
+                if (titleInput) titleInput.focus();
+                wrap.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }, 50);
+        }
+
+        function closeTopicForm() {
+            document.getElementById('topic-form-wrapper').innerHTML = '';
+            state.extras.editingId = null;
+        }
+
+        function editTopic(id) {
+            openTopicForm(id);
+        }
+
+        function saveTopic() {
+            const title = (document.getElementById('topic-title-input').value || '').trim();
+            const body = (document.getElementById('topic-body-input').value || '').trim();
+            if (!title || !body) {
+                setStatus('extras', 'Preencha título e conteúdo do tópico.', 'error');
+                return;
+            }
+            if (state.extras.editingId) {
+                const t = state.extras.topics.find(x => x.id === state.extras.editingId);
+                if (t) { t.title = title; t.body = body; }
+            } else {
+                state.extras.topics.push({ id: genTopicId(), title, body });
+            }
+            closeTopicForm();
+            renderTopicList();
+            regen('extras');
+            saveDraft();
+            setStatus('extras', state.extras.editingId ? 'Tópico atualizado.' : 'Tópico adicionado.', 'info');
+        }
+
+        function buildExtras() {
+            const HEADER_LINE = '='.repeat(73);
+            const SUB_LINE = '-'.repeat(64);
+            const header =
+                `${HEADER_LINE}
+EXTRAS - esse arquivo serve como auxílio para inclusão de tópicos extras
+${HEADER_LINE}
+`;
+            if (!state.extras.topics.length) {
+                return { text: header + '\n(nenhum tópico cadastrado)\n', filename: 'EXTRAS.txt' };
+            }
+            const blocks = state.extras.topics.map((t, idx) => {
+                const titleUpper = t.title.toUpperCase();
+                return `
+[${idx + 1}] ${titleUpper}
+${SUB_LINE}
+${SUB_LINE}
+${t.body}
+${HEADER_LINE}
+— Fim do tópico extra —
+${HEADER_LINE}
+`;
+            }).join('\n');
+            return { text: header + blocks, filename: 'EXTRAS.txt' };
+        }
+
+        function downloadExtras() {
+            const b = buildExtras();
+            if (!state.extras.topics.length) {
+                setStatus('extras', 'Adicione ao menos um tópico antes de baixar.', 'error');
+                return;
+            }
+            triggerDownload(b.text, b.filename);
+            setStatus('extras', `Arquivo "${b.filename}" gerado com ${state.extras.topics.length} tópico(s).`, 'info');
+        }
+
+        function clearExtras() {
+            if (!state.extras.topics.length) return;
+            if (!confirm(`Remover TODOS os ${state.extras.topics.length} tópicos? Esta ação não pode ser desfeita.`)) return;
+            state.extras.topics = [];
+            closeTopicForm();
+            renderTopicList();
+            regen('extras');
+            saveDraft();
+            setStatus('extras', 'Todos os tópicos foram removidos.', 'info');
+        }
+
+        function parseExtrasText(text) {
+            if (!text) return [];
+            const parsed = [];
+            const chunks = text.split(/—\s*Fim do tópico extra\s*—/);
+            for (const chunk of chunks) {
+                const m = chunk.match(/\[(\d+)\]\s+(.+?)\r?\n-{3,}\r?\n(?:-{3,}\r?\n)?([\s\S]*?)(?:\r?\n={3,}\s*)$/);
+                if (m) {
+                    const title = m[2].trim();
+                    const body = m[3].trim();
+                    if (title && body) parsed.push({ id: genTopicId(), title, body });
+                }
+            }
+            return parsed;
+        }
+
+        function importExtras(replaceAll = false) {
+            const raw = document.getElementById('extras-import').value || '';
+            const parsed = parseExtrasText(raw);
+            if (!parsed.length) {
+                setStatus('extras', 'Nenhum tópico foi reconhecido no texto. Verifique o formato.', 'error');
+                return;
+            }
+            if (replaceAll) {
+                if (state.extras.topics.length && !confirm(`Substituir os ${state.extras.topics.length} tópicos atuais pelos ${parsed.length} importados?`)) return;
+                state.extras.topics = parsed;
+            } else {
+                state.extras.topics = state.extras.topics.concat(parsed);
+            }
+            document.getElementById('extras-import').value = '';
+            renderTopicList();
+            regen('extras');
+            saveDraft();
+            setStatus('extras', `${parsed.length} tópico(s) importado(s) com sucesso.`, 'info');
+        }
+
+        // Hook extras into regen pipeline
+        const _origRegen = regen;
+        window.regen = function (panel) {
+            if (panel === 'extras') {
+                const built = buildExtras();
+                document.getElementById('preview-extras').innerHTML = escapeHtml(built.text);
+                updateCounter('extras', built.text, 0);
+                state.extras.lastOutput = built.text;
+                state.extras.lastFilename = built.filename;
+                saveDraft();
+                return;
+            }
+            return _origRegen(panel);
+        };
 
         // ---------- Bind inputs ----------
         ['c-materia', 'c-data', 'c-inicial', 'c-docs', 'c-decisao', 'c-anon-list', 'c-resultado'].forEach(id => {
@@ -1514,8 +2017,10 @@ ${comando}
         loadDraft();
         buildToggles('corpus');
         buildToggles('consulta');
+        renderTopicList();
         regen('corpus');
         regen('consulta');
+        regen('extras');
 
         if (!getVal('c-data')) {
             const now = new Date();
