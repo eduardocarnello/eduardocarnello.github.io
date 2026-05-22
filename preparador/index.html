@@ -10,6 +10,11 @@
     <link
         href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap"
         rel="stylesheet">
+    <!-- Firebase SDKs (v9 compat) -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+
     <style>
         :root {
             --bg: #F7F4ED;
@@ -903,10 +908,228 @@
         details.import-panel .import-body {
             padding: 4px 18px 18px;
         }
+
+        /* === AUTH OVERLAY === */
+        #auth-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 1000;
+            background: var(--bg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .auth-card {
+            background: var(--bg-card);
+            border: 1px solid var(--line);
+            border-top: 3px solid var(--navy);
+            border-radius: 2px;
+            padding: 48px 52px;
+            max-width: 400px;
+            width: 90%;
+            text-align: center;
+            box-shadow: var(--shadow-md);
+        }
+
+        .auth-brand {
+            font-family: var(--serif);
+            font-size: 28px;
+            font-weight: 600;
+            color: var(--navy);
+            margin-bottom: 4px;
+        }
+
+        .auth-brand em {
+            font-style: italic;
+            color: var(--gold);
+        }
+
+        .auth-sub {
+            font-family: var(--mono);
+            font-size: 11px;
+            color: var(--ink-mute);
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+            margin-bottom: 36px;
+        }
+
+        .auth-notice {
+            font-family: var(--serif);
+            font-style: italic;
+            font-size: 13px;
+            color: var(--ink-mute);
+            margin-bottom: 24px;
+            line-height: 1.6;
+        }
+
+        .btn-google {
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+            background: var(--navy);
+            color: #fff;
+            border: none;
+            border-radius: 2px;
+            padding: 12px 24px;
+            font-family: var(--sans);
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            width: 100%;
+            justify-content: center;
+            transition: background 160ms ease;
+        }
+
+        .btn-google:hover {
+            background: var(--navy-deep);
+        }
+
+        .auth-export-btn {
+            margin-top: 12px;
+            width: 100%;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            justify-content: center;
+            background: transparent;
+            border: 1px solid var(--line);
+            color: var(--ink-mute);
+            padding: 9px 16px;
+            font-size: 12px;
+            font-family: var(--sans);
+            cursor: pointer;
+            border-radius: 2px;
+            transition: all 160ms ease;
+        }
+
+        .auth-export-btn:hover {
+            border-color: var(--gold);
+            color: var(--gold);
+        }
+
+        .auth-error {
+            margin-top: 14px;
+            color: var(--crimson);
+            font-size: 13px;
+            font-family: var(--serif);
+            font-style: italic;
+        }
+
+        /* === SYNC + USER BADGE === */
+        .sync-status {
+            font-family: var(--mono);
+            font-size: 10px;
+            color: var(--ink-mute);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            letter-spacing: 0.08em;
+        }
+
+        .sync-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: var(--ink-mute);
+            flex-shrink: 0;
+        }
+
+        .sync-dot.synced {
+            background: var(--green);
+        }
+
+        .sync-dot.syncing {
+            background: var(--gold);
+            animation: pulse-dot 1s infinite;
+        }
+
+        .sync-dot.error {
+            background: var(--crimson);
+        }
+
+        @keyframes pulse-dot {
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: .3;
+            }
+        }
+
+        .user-badge {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-family: var(--mono);
+            font-size: 11px;
+            color: var(--ink-mute);
+        }
+
+        .user-badge img {
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            border: 1px solid var(--line);
+        }
+
+        .btn-logout {
+            background: none;
+            border: 1px solid var(--line);
+            color: var(--ink-mute);
+            padding: 3px 9px;
+            font-size: 11px;
+            font-family: var(--sans);
+            cursor: pointer;
+            border-radius: 2px;
+            transition: all 160ms ease;
+        }
+
+        .btn-logout:hover {
+            border-color: var(--crimson);
+            color: var(--crimson);
+        }
+
+        /* === COPY FEEDBACK === */
+        .icon-btn.copied {
+            background: var(--green) !important;
+            color: #fff !important;
+            border-color: var(--green) !important;
+        }
     </style>
 </head>
 
 <body>
+
+    <!-- ===== AUTH OVERLAY ===== -->
+    <div id="auth-overlay">
+        <div class="auth-card">
+            <div class="auth-brand">Preparador de <em>Casos</em></div>
+            <div class="auth-sub">JEC Marília · 31ª Circunscrição · Uso Interno</div>
+            <p class="auth-notice">Acesso restrito. Faça login com sua conta Google autorizada para continuar.</p>
+            <button class="btn-google" onclick="signInWithGoogle()">
+                <svg width="18" height="18" viewBox="0 0 48 48">
+                    <path fill="#EA4335"
+                        d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z" />
+                    <path fill="#4285F4"
+                        d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z" />
+                    <path fill="#FBBC05"
+                        d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z" />
+                    <path fill="#34A853"
+                        d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z" />
+                </svg>
+                Entrar com Google
+            </button>
+            <button class="auth-export-btn" onclick="exportLocalStorageBeforeLogin()" id="btn-export-local"
+                style="display:none;">
+                ↓ Exportar dados locais antes de entrar
+            </button>
+            <div class="auth-error" id="auth-error" style="display:none;"></div>
+        </div>
+    </div>
 
     <header>
         <div class="container">
@@ -917,7 +1140,18 @@
                         <div class="brand-sub">JEC Marília · 31ª Circunscrição</div>
                     </div>
                 </div>
-                <div class="header-meta">v1.2 · uso interno</div>
+                <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;">
+                    <div class="sync-status" id="sync-status" style="display:none;">
+                        <div class="sync-dot synced" id="sync-dot"></div>
+                        <span id="sync-label">sincronizado</span>
+                    </div>
+                    <div class="user-badge" id="user-badge" style="display:none;">
+                        <img id="user-photo" src="" alt="">
+                        <span id="user-name"></span>
+                        <button class="btn-logout" onclick="doSignOut()">sair</button>
+                    </div>
+                    <div class="header-meta">v1.3 · uso interno</div>
+                </div>
             </div>
 
             <nav class="tabs" role="tablist">
@@ -1274,7 +1508,7 @@
             // Common Brazilian company name fragments (when standalone capitalized)
             'Caixa', 'Bradesco', 'Itaú', 'Santander', 'Bradescard', 'Inter', 'Nubank', 'Mercado', 'Visa', 'Mastercard', 'Cielo', 'Rede', 'Pagseguro', 'Stone', 'Carteira', ' Sra', 'Sra.', 'Sr', 'Sr.', 'Whats', 'Sem', 'Print',
             'Net', 'Vivo', 'Tim', 'Claro', 'Oi', 'Sky', 'Latam', 'Azul', 'Gol', 'Avianca', 'American', 'United',
-            'Telefônica', 'Telecomunicações', 'Energia', 'Eletricidade', 'Saneamento', 'Águas', 'Transporte', 'Transportes', 'Logística', 'Aviação', 'Proposta', 'Compra', 'Venda', 'Cota', 'Quota', 'Fração', 'Regime', 'Multipropriedade', ' Notificação', 'Poder', 'Teoria', 'Data', 'Promessa', 'Notificação', 'Notificação Extrajudicial', 'Nota', 'Notas', 'Fiscal', 'Fiscais', 'Recibo', 'Recibos', 'Comprovante', 'Comprovantes', 'Declaração', 'Declarações', 'Demonstrativo', 'Demonstrativos', 'Boleto', 'Boletos', 'Fatura', 'Faturas', 'Parcela', 'Parcelas', 'Mensalidade', 'Mensalidades', 'Prestação', 'Prestações', 'Contrato', 'Contratos', 'Acordo', 'Acordos', 'Convênio', 'Convênios', 'Protocolo', 'Protocolos', 'Processo', 'Processos', 'Reclamação', 'Reclamações', 'Solução', 'Soluções', 'Proposta', 'Propostas', 'Espetáculo', 'Espectáculo', 'Evento', 'Eventos', 'Serviço', 'Serviços', 'Atendimento', 'Atendimentos', 'Consulta', 'Consultas', 'Exame', 'Exames', 'Laudo', 'Laudos', 'Parecer', 'Pareceres', 'Vistoria', 'Vistorias', 'Orçamento', 'Orçamentos', 'Avaliação', 'Avaliações', 'Laudo', 'Laudos', 'Parecer', 'Pareceres', 'Vistoria', 'Vistorias', 'Orçamento', 'Orçamentos', 'Avaliação', 'Avaliações', 'Escala', 'Nobre', 'Perigo', 'Dano', 'Danos', 'Risco', 'Riscos', 'Culpa', 'Culpas', 'Responsabilidade', 'Indenização', 'Indenizações', 'Reparação', 'Reparações', 'Compensação', 'Compensações', 'Multa', 'Multas', 'Juros', 'Correção', 'Monetária', 'Mora', 'Cláusula', 'Cláusulas', 'Parágrafo', 'Parágrafos', 'Inciso', 'Incisos', 'Alínea', 'Alíneas', 'Artigo', 'Artigos', 'Código', 'Códigos', 'Constituição', 'Súmula', 'Súmulas', 'Enunciado', 'Enunciados', 'Portaria', 'Portarias', 'Resolução', 'Resoluções', 'Norma', 'Normas', 'Medida', 'Medidas', 'Regulamento', 'Regulamentos', 'Estatuto', 'Estatutos', 'Convenção', 'Convenções', 'Acordo', 'Acordos', 'Convênio', 'Convênios', 'Procuração', 'Procurações', 'Fumus', 'Perigo da demora', 'Probabilidade de êxito', 'Relevância', 'Fundamento', 'Fundamentos', 'Motivo', 'Motivos', 'Razão', 'Razões', 'Justificativa', 'Justificativas', 'Argumento', 'Argumentos', 'Elemento', 'Elementos', 'Aspecto', 'Aspectos', 'Ponto', 'Pontos', 'Questão', 'Questões', 'Periculo', 'Dano', 'Danos', 'Risco', 'Riscos', 'Culpa', 'Culpas', 'Responsabilidade', 'Indenização', 'Indenizações', 'Reparação', 'Reparações', 'Compensação', 'Compensações', 'Multa', 'Multas', 'Juros', 'Correção Monetária', 'Mora', 'Cláusula', 'Cláusulas', 'Parágrafo', 'Parágrafos', 'Inciso', 'Incisos', 'Alínea', 'Alíneas', 'Artigo', 'Artigos', 'Código', 'Códigos', 'Constituição', 'Súmula', 'Súmulas', 'Enunciado', 'Enunciados', 'Portaria', 'Portarias', 'Resolução', 'Resoluções', 'Norma', 'Normas', 'Medida Protetiva', 'Fumus', 'Perigo da demora', 'Probabilidade de êxito', 'Relevância', 'Fundamento', 'Fundamentos', 'Motivo', 'Motivos', 'Razão', 'Razões', 'Justificativa', 'Justificativas', 'Argumento', 'Argumentos', 'Elemento', 'Elementos', 'Aspecto', 'Aspectos', 'Ponto', 'Pontos', 'Questão', 'Questões', 'Periculum in mora', 'Dano', 'Danos', 'Risco', 'Riscos', 'Culpa', 'Culpas', 'Responsabilidade', 'Indenização', 'Indenizações', 'Reparação', 'Reparações', 'Compensação', 'Compensações', 'Multa', 'Multas', 'Juros', 'Correção Monetária', 'Mora', 'Cláusula', 'Cláusulas', 'Parágrafo', 'Parágrafos', 'Inciso', 'Incisos', 'Alínea', 'Alíneas', 'Artigo', 'Artigos', 'Código', 'Códigos', 'Constituição', 'Súmula', 'Súmulas', 'Enunciado', 'Enunciados', 'Portaria', 'Portarias', 'Resolução', 'Resoluções', 'Norma', 'Normas', 'Medida Protetiva', ' Responsabilidade', 'Las Vegas', 'Paris', 'Londres', 'Nova York', 'Berlim', 'Madri', 'Roma', 'Lisboa', 'Buenos Aires', 'Montevidéu', 'Santiago', 'Bogotá', 'Caracas', 'Assunção', 'Cidade do México', 'Toronto', 'Vancouver', 'Miami', 'Los Angeles', 'Chicago', 'Caminhão', 'Carro', 'Automóvel', 'Moto', 'Motocicleta', 'Bicicleta', 'Ônibus', 'Micro-ônibus', 'Van', 'Caminhonete', 'Reboque', 'Trator', 'Máquina', 'Equipamento', 'Dispositivo', 'Aplicativo', 'Software', 'Hardware', 'Facebook', 'Instagram', 'WhatsApp', 'Twitter', 'LinkedIn', 'TikTok', 'YouTube', 'Google', 'Microsoft', 'Apple', 'Amazon', 'Netflix', 'Vossa', 'Senhoria', 'Excelência', 'Meritíssimo', 'Doutor', 'Doutora', 'Ilustríssimo', 'Ilustríssima', 'Nobre', 'Perigo', 'Dano', 'Danos', 'Risco', 'Riscos', 'Culpa', 'Culpas', 'Responsabilidade', 'Indenização', 'Indenizações', 'Reparação', 'Reparações', 'Compensação', 'Compensações', 'Multa', 'Multas', 'Juros', 'Correção Monetária', 'Mora', 'Portal', 'Processo Eletrônico', 'PJe', 'eproc', 'SAJ', 'Projudi', 'Apolo', 'Themis', 'Jurídico', 'Jurídica', 'Judiciário', 'Judiciária', 'Judicial', 'Extrajudicial', 'Fiscal', 'Fiscais', 'Recibo', 'Recibos', 'Comprovante', 'Comprovantes', 'Declaração', 'Declarações', 'Demonstrativo', 'Demonstrativos', 'Dos Fatos', 'Nobre Julgador', 'Douto Julgador', 'Meritíssimo Juiz', 'Meritíssima Juíza', 'Excelentíssimo Senhor Doutor Juiz', 'Excelentíssima Senhora Doutora Juíza', 'Ilustríssimo Senhor Doutor Juiz', 'Ilustríssima Senhora Doutora Juíza', 'Da Obrigação', 'Do Direito', 'Da Causa de Pedir', 'Do Pedido', 'Dos Documentos', 'Dos Fatos', 'Da Fundamentação', 'Da Decisão', 'Diante do exposto', 'Ante o exposto', 'Vistos etc', 'Vistos e Considerando', 'Vistos e Posto', 'Vistos e Acolho', 'Vistos e Rejeito', 'Vistos e Conheço', 'Vistos e Recebo', 'Vistos e Atento', 'Vistos e Diante', 'Vistos e Ante', 'Vistos e Verifico', 'Vistos e Constato', 'Vistos e Observo', 'Vistos e Cumpra', 'Vistos e Intime', 'Vistos e Cite', 'Vistos e Designe', 'Vistos e Aguarde', 'Vistos e Determino', 'Vistos e Reservo', 'Vistos e Conclusos', 'Vistos e Conclusão', 'Vistos e Homologo', 'Vistos e Julgo', 'Vistos e Sentencio', 'Obrigação', 'Requerente', 'Requerida', 'Autor', 'Autora', 'Réu', 'Ré', 'Parte', 'Partes', 'Interessado', 'Interessada', 'Interessados', 'Interessadas', 'Envolvido', 'Envolvida', 'Envolvidos', 'Envolvidas', 'Conta', 'Casas', 'Central', 'Galaxy', 'Danos', 'Microsoft', 'Google', 'Apple', 'Amazon', 'Facebook', 'Instagram', 'WhatsApp', 'Twitter', 'LinkedIn', 'TikTok', 'YouTube', 'Sem Parar', 'Droga Raia', 'Raia', 'Um', 'Dois', 'Três', 'Quatro', 'Cinco', 'Seis', 'Sete', 'Oito', 'Nove', 'Dez', 'Mil', 'Milhão', 'Milhões', 'Bilhão', 'Bilhões', 'Trilhão', 'Trilhões', 'Quinhentos', 'Quinhentas', 'Cento', 'Cento e', 'Duzentos', 'Duzentas', 'Trezentos', 'Trezentas', 'Quatrocentos', 'Quatrocentas', 'Quinhentos', 'Quinhentas', 'Seiscentos', 'Seiscentas', 'Setecentos', 'Setecentas', 'Oitocentos', 'Oitocentas', 'Novecentos', 'Novecentas', 'Dez', 'Onze', 'Doze', 'Treze', 'Quatorze', 'Quinze', 'Dezesseis', 'Dezessete', 'Dezoito', 'Dezenove', 'Vinte', 'Trinta', 'Quarenta', 'Cinquenta', 'Sessenta', 'Setenta', 'Oitenta', 'Noventa', 'Cem', 'Duzentos', 'Trezentos', 'Quatrocentos', 'Quinhentos', 'Seiscentos', 'Setecentos', 'Oitocentos', 'Novecentos', 'Mil']);
+            'Telefônica', 'Telecomunicações', 'Energia', 'Eletricidade', 'Saneamento', 'Águas', 'Transporte', 'Transportes', 'Logística', 'Aviação', 'Proposta', 'Compra', 'Venda', 'Cota', 'Quota', 'Fração', 'Regime', 'Multipropriedade', ' Notificação', 'Poder', 'Teoria', 'Data', 'Promessa', 'Notificação', 'Notificação Extrajudicial', 'Nota', 'Notas', 'Fiscal', 'Fiscais', 'Recibo', 'Recibos', 'Comprovante', 'Comprovantes', 'Declaração', 'Declarações', 'Demonstrativo', 'Demonstrativos', 'Boleto', 'Boletos', 'Fatura', 'Faturas', 'Parcela', 'Parcelas', 'Mensalidade', 'Mensalidades', 'Prestação', 'Prestações', 'Contrato', 'Contratos', 'Acordo', 'Acordos', 'Convênio', 'Convênios', 'Protocolo', 'Protocolos', 'Processo', 'Processos', 'Reclamação', 'Reclamações', 'Solução', 'Soluções', 'Proposta', 'Propostas', 'Espetáculo', 'Espectáculo', 'Evento', 'Eventos', 'Serviço', 'Serviços', 'Atendimento', 'Atendimentos', 'Consulta', 'Consultas', 'Exame', 'Exames', 'Laudo', 'Laudos', 'Parecer', 'Pareceres', 'Vistoria', 'Vistorias', 'Orçamento', 'Orçamentos', 'Avaliação', 'Avaliações', 'Laudo', 'Laudos', 'Parecer', 'Pareceres', 'Vistoria', 'Vistorias', 'Orçamento', 'Orçamentos', 'Avaliação', 'Avaliações', 'Escala', 'Nobre', 'Perigo', 'Dano', 'Danos', 'Risco', 'Riscos', 'Culpa', 'Culpas', 'Responsabilidade', 'Indenização', 'Indenizações', 'Reparação', 'Reparações', 'Compensação', 'Compensações', 'Multa', 'Multas', 'Juros', 'Correção', 'Monetária', 'Mora', 'Cláusula', 'Cláusulas', 'Parágrafo', 'Parágrafos', 'Inciso', 'Incisos', 'Alínea', 'Alíneas', 'Artigo', 'Artigos', 'Código', 'Códigos', 'Constituição', 'Súmula', 'Súmulas', 'Enunciado', 'Enunciados', 'Portaria', 'Portarias', 'Resolução', 'Resoluções', 'Norma', 'Normas', 'Medida', 'Medidas', 'Regulamento', 'Regulamentos', 'Estatuto', 'Estatutos', 'Convenção', 'Convenções', 'Acordo', 'Acordos', 'Convênio', 'Convênios', 'Procuração', 'Procurações', 'Fumus', 'Perigo da demora', 'Probabilidade de êxito', 'Relevância', 'Fundamento', 'Fundamentos', 'Motivo', 'Motivos', 'Razão', 'Razões', 'Justificativa', 'Justificativas', 'Argumento', 'Argumentos', 'Elemento', 'Elementos', 'Aspecto', 'Aspectos', 'Ponto', 'Pontos', 'Questão', 'Questões', 'Periculo', 'Dano', 'Danos', 'Risco', 'Riscos', 'Culpa', 'Culpas', 'Responsabilidade', 'Indenização', 'Indenizações', 'Reparação', 'Reparações', 'Compensação', 'Compensações', 'Multa', 'Multas', 'Juros', 'Correção Monetária', 'Mora', 'Cláusula', 'Cláusulas', 'Parágrafo', 'Parágrafos', 'Inciso', 'Incisos', 'Alínea', 'Alíneas', 'Artigo', 'Artigos', 'Código', 'Códigos', 'Constituição', 'Súmula', 'Súmulas', 'Enunciado', 'Enunciados', 'Portaria', 'Portarias', 'Resolução', 'Resoluções', 'Norma', 'Normas', 'Medida Protetiva', 'Fumus', 'Perigo da demora', 'Probabilidade de êxito', 'Relevância', 'Fundamento', 'Fundamentos', 'Motivo', 'Motivos', 'Razão', 'Razões', 'Justificativa', 'Justificativas', 'Argumento', 'Argumentos', 'Elemento', 'Elementos', 'Aspecto', 'Aspectos', 'Ponto', 'Pontos', 'Questão', 'Questões', 'Periculum in mora', 'Dano', 'Danos', 'Risco', 'Riscos', 'Culpa', 'Culpas', 'Responsabilidade', 'Indenização', 'Indenizações', 'Reparação', 'Reparações', 'Compensação', 'Compensações', 'Multa', 'Multas', 'Juros', 'Correção Monetária', 'Mora', 'Cláusula', 'Cláusulas', 'Parágrafo', 'Parágrafos', 'Inciso', 'Incisos', 'Alínea', 'Alíneas', 'Artigo', 'Artigos', 'Código', 'Códigos', 'Constituição', 'Súmula', 'Súmulas', 'Enunciado', 'Enunciados', 'Portaria', 'Portarias', 'Resolução', 'Resoluções', 'Norma', 'Normas', 'Medida Protetiva', ' Responsabilidade', 'Las Vegas', 'Paris', 'Londres', 'Nova York', 'Berlim', 'Madri', 'Roma', 'Lisboa', 'Buenos Aires', 'Montevidéu', 'Santiago', 'Bogotá', 'Caracas', 'Assunção', 'Cidade do México', 'Toronto', 'Vancouver', 'Miami', 'Los Angeles', 'Chicago', 'Caminhão', 'Carro', 'Automóvel', 'Moto', 'Motocicleta', 'Bicicleta', 'Ônibus', 'Micro-ônibus', 'Van', 'Caminhonete', 'Reboque', 'Trator', 'Máquina', 'Equipamento', 'Dispositivo', 'Aplicativo', 'Software', 'Hardware', 'Facebook', 'Instagram', 'WhatsApp', 'Twitter', 'LinkedIn', 'TikTok', 'YouTube', 'Google', 'Microsoft', 'Apple', 'Amazon', 'Netflix', 'Vossa', 'Senhoria', 'Excelência', 'Meritíssimo', 'Doutor', 'Doutora', 'Ilustríssimo', 'Ilustríssima', 'Nobre', 'Perigo', 'Dano', 'Danos', 'Risco', 'Riscos', 'Culpa', 'Culpas', 'Responsabilidade', 'Indenização', 'Indenizações', 'Reparação', 'Reparações', 'Compensação', 'Compensações', 'Multa', 'Multas', 'Juros', 'Correção Monetária', 'Mora', 'Portal', 'Processo Eletrônico', 'PJe', 'eproc', 'SAJ', 'Projudi', 'Apolo', 'Themis', 'Jurídico', 'Jurídica', 'Judiciário', 'Judiciária', 'Judicial', 'Extrajudicial', 'Fiscal', 'Fiscais', 'Recibo', 'Recibos', 'Comprovante', 'Comprovantes', 'Declaração', 'Declarações', 'Demonstrativo', 'Demonstrativos', 'Dos Fatos', 'Nobre Julgador', 'Douto Julgador', 'Meritíssimo Juiz', 'Meritíssima Juíza', 'Excelentíssimo Senhor Doutor Juiz', 'Excelentíssima Senhora Doutora Juíza', 'Ilustríssimo Senhor Doutor Juiz', 'Ilustríssima Senhora Doutora Juíza', 'Da Obrigação', 'Do Direito', 'Da Causa de Pedir', 'Do Pedido', 'Dos Documentos', 'Dos Fatos', 'Da Fundamentação', 'Da Decisão', 'Diante do exposto', 'Ante o exposto', 'Vistos etc', 'Vistos e Considerando', 'Vistos e Posto', 'Vistos e Acolho', 'Vistos e Rejeito', 'Vistos e Conheço', 'Vistos e Recebo', 'Vistos e Atento', 'Vistos e Diante', 'Vistos e Ante', 'Vistos e Verifico', 'Vistos e Constato', 'Vistos e Observo', 'Vistos e Cumpra', 'Vistos e Intime', 'Vistos e Cite', 'Vistos e Designe', 'Vistos e Aguarde', 'Vistos e Determino', 'Vistos e Reservo', 'Vistos e Conclusos', 'Vistos e Conclusão', 'Vistos e Homologo', 'Vistos e Julgo', 'Vistos e Sentencio', 'Obrigação', 'Requerente', 'Requerida', 'Autor', 'Autora', 'Réu', 'Ré', 'Parte', 'Partes', 'Interessado', 'Interessada', 'Interessados', 'Interessadas', 'Envolvido', 'Envolvida', 'Envolvidos', 'Envolvidas', 'Conta', 'Casas', 'Central', 'Galaxy', 'Danos', 'Microsoft', 'Google', 'Apple', 'Amazon', 'Facebook', 'Instagram', 'WhatsApp', 'Twitter', 'LinkedIn', 'TikTok', 'YouTube', 'Sem Parar', 'Droga Raia', 'Raia', 'Um', 'Dois', 'Três', 'Quatro', 'Cinco', 'Seis', 'Sete', 'Oito', 'Nove', 'Dez', 'Mil', 'Milhão', 'Milhões', 'Bilhão', 'Bilhões', 'Trilhão', 'Trilhões', 'Quinhentos', 'Quinhentas', 'Cento', 'Cento e', 'Duzentos', 'Duzentas', 'Trezentos', 'Trezentas', 'Quatrocentos', 'Quatrocentas', 'Quinhentos', 'Quinhentas', 'Seiscentos', 'Seiscentas', 'Setecentos', 'Setecentas', 'Oitocentos', 'Oitocentas', 'Novecentos', 'Novecentas', 'Dez', 'Onze', 'Doze', 'Treze', 'Quatorze', 'Quinze', 'Dezesseis', 'Dezessete', 'Dezoito', 'Dezenove', 'Vinte', 'Trinta', 'Quarenta', 'Cinquenta', 'Sessenta', 'Setenta', 'Oitenta', 'Noventa', 'Cem', 'Duzentos', 'Trezentos', 'Quatrocentos', 'Quinhentos', 'Seiscentos', 'Setecentos', 'Oitocentos', 'Novecentos', 'Mil', 'Extrato', 'Bolsa', 'Bolsa Família', 'Auxílio', 'Auxílio Emergencial', 'Benefício', 'Benefícios', 'Aposentadoria', 'Pensão', 'Indenização', 'Danos', 'Dano', 'Prejuízo', 'Perda', 'Lucro', 'Lucros',]);
 
         // Words that should not appear AT THE END of a person name (probably qualifiers, places or org-types)
         const NAME_BLACKLIST_LAST = new Set([
@@ -1813,6 +2047,7 @@ ${comando}
             <div class="topic-card-actions" onclick="event.stopPropagation()">
               <button class="icon-btn" onclick="moveTopic('${t.id}', -1)" ${isFirst ? 'disabled' : ''} title="Mover para cima">↑</button>
               <button class="icon-btn" onclick="moveTopic('${t.id}', 1)" ${isLast ? 'disabled' : ''} title="Mover para baixo">↓</button>
+              <button class="icon-btn" id="copy-btn-${t.id}" onclick="copyTopicBody('${t.id}')" title="Copiar conteúdo">⧉</button>
               <button class="icon-btn" onclick="editTopic('${t.id}')" title="Editar">✎</button>
               <button class="icon-btn danger" onclick="removeTopic('${t.id}')" title="Remover">✕</button>
             </div>
@@ -2027,6 +2262,269 @@ ${HEADER_LINE}
             document.getElementById('c-data').value = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
             regen('corpus');
         }
+
+        // =============================================================
+        // COPIAR TÓPICO — copia o corpo para a área de transferência
+        // =============================================================
+        function copyTopicBody(id) {
+            const t = state.extras.topics.find(x => x.id === id);
+            if (!t) return;
+            const copy = () => {
+                const btn = document.getElementById('copy-btn-' + id);
+                if (!btn) return;
+                btn.classList.add('copied');
+                btn.innerHTML = '✓';
+                btn.title = 'Copiado!';
+                setTimeout(() => {
+                    btn.classList.remove('copied');
+                    btn.innerHTML = '⧉';
+                    btn.title = 'Copiar conteúdo';
+                }, 1800);
+            };
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(t.body).then(copy).catch(() => fallbackCopy(t.body, copy));
+            } else {
+                fallbackCopy(t.body, copy);
+            }
+        }
+
+        function fallbackCopy(text, cb) {
+            const ta = document.createElement('textarea');
+            ta.value = text;
+            ta.style.cssText = 'position:fixed;left:-9999px;top:-9999px;opacity:0';
+            document.body.appendChild(ta);
+            ta.focus();
+            ta.select();
+            try { document.execCommand('copy'); cb && cb(); } catch (e) { }
+            document.body.removeChild(ta);
+        }
+
+        // =============================================================
+        // FIREBASE — Auth Google + Firestore
+        // =============================================================
+
+        // ⚠️  TODO PASSO 1: Cole aqui o firebaseConfig do seu projeto Firebase.
+        //     Console: https://console.firebase.google.com → Configurações do projeto → Web App
+        const firebaseConfig = {
+            apiKey: "AIzaSyCZMLBDpDSJ-kiaxTtAiV3GVMMgzzM51us",
+            authDomain: "prep-jec.firebaseapp.com",
+            projectId: "prep-jec",
+            storageBucket: "prep-jec.firebasestorage.app",
+            messagingSenderId: "741494209775",
+            appId: "1:741494209775:web:4193e6401160dd01402f1a"
+        };
+
+        // ⚠️  TODO PASSO 2: Liste os e-mails Google autorizados a acessar.
+        const ALLOWED_EMAILS = ['eduardocarnello@gmail.com'];
+
+        let currentUser = null;
+
+        function initFirebase() {
+            if (!firebaseConfig.apiKey || firebaseConfig.apiKey === 'COLE_SUA_API_KEY') {
+                // Firebase não configurado: roda sem auth (só localStorage)
+                hideAuthOverlay();
+                return;
+            }
+            try {
+                firebase.initializeApp(firebaseConfig);
+            } catch (e) { /* já inicializado */ }
+
+            const auth = firebase.auth();
+            const db = firebase.firestore();
+
+            // Mostrar botão de exportar se há dados locais
+            if (localStorage.getItem(SAVE_KEY)) {
+                document.getElementById('btn-export-local').style.display = 'flex';
+            }
+
+            auth.onAuthStateChanged(user => {
+                if (user) {
+                    if (!ALLOWED_EMAILS.includes(user.email)) {
+                        auth.signOut();
+                        showAuthError('E-mail não autorizado: ' + user.email);
+                        return;
+                    }
+                    currentUser = user;
+                    onLoginSuccess(user, db);
+                } else {
+                    currentUser = null;
+                    showAuthOverlay();
+                }
+            });
+
+            window._fbAuth = auth;
+            window._fbDb = db;
+        }
+
+        function signInWithGoogle() {
+            if (!window._fbAuth) return;
+            const provider = new firebase.auth.GoogleAuthProvider();
+            window._fbAuth.signInWithPopup(provider).catch(err => {
+                showAuthError('Erro ao autenticar: ' + err.message);
+            });
+        }
+
+        function doSignOut() {
+            if (!window._fbAuth) return;
+            window._fbAuth.signOut().then(() => {
+                currentUser = null;
+                document.getElementById('user-badge').style.display = 'none';
+                document.getElementById('sync-status').style.display = 'none';
+                showAuthOverlay();
+            });
+        }
+
+        function showAuthOverlay() { document.getElementById('auth-overlay').style.display = 'flex'; }
+        function hideAuthOverlay() { document.getElementById('auth-overlay').style.display = 'none'; }
+
+        function showAuthError(msg) {
+            const el = document.getElementById('auth-error');
+            el.textContent = msg;
+            el.style.display = 'block';
+        }
+
+        function onLoginSuccess(user, db) {
+            hideAuthOverlay();
+            document.getElementById('user-badge').style.display = 'flex';
+            document.getElementById('sync-status').style.display = 'flex';
+            document.getElementById('user-photo').src = user.photoURL || '';
+            document.getElementById('user-name').textContent = user.displayName || user.email;
+            loadFromFirestore(db);
+        }
+
+        function setSyncStatus(st) {
+            const dot = document.getElementById('sync-dot');
+            const lbl = document.getElementById('sync-label');
+            dot.className = 'sync-dot ' + st;
+            lbl.textContent = { synced: 'sincronizado', syncing: 'sincronizando…', error: 'erro ao sincronizar' }[st] || st;
+        }
+
+        function userDocRef(db) {
+            if (!currentUser || !db) return null;
+            return db.collection('users').doc(currentUser.uid).collection('app').doc('data');
+        }
+
+        async function loadFromFirestore(db) {
+            const ref = userDocRef(db);
+            if (!ref) return;
+            setSyncStatus('syncing');
+            try {
+                const snap = await ref.get();
+                if (snap.exists) {
+                    const d = snap.data();
+                    if (d.extras && Array.isArray(d.extras.topics)) {
+                        state.extras.topics = d.extras.topics;
+                        renderTopicList();
+                        regen('extras');
+                    }
+                    if (d.corpus) restoreCorpusData(d.corpus);
+                    if (d.consulta) restoreConsultaData(d.consulta);
+                    setSyncStatus('synced');
+                } else {
+                    // Sem dados no Firestore — oferecer migração do localStorage
+                    offerLocalDataUpload(db);
+                    setSyncStatus('synced');
+                }
+            } catch (e) {
+                setSyncStatus('error');
+                console.error('Firestore load error:', e);
+            }
+        }
+
+        function offerLocalDataUpload(db) {
+            const raw = localStorage.getItem(SAVE_KEY);
+            if (!raw) return;
+            let d;
+            try { d = JSON.parse(raw); } catch (e) { return; }
+            const count = d.extras?.topics?.length || 0;
+            if (!count) return;
+            if (confirm(`Encontrados ${count} tópico(s) salvos localmente. Deseja enviá-los para a nuvem agora?`)) {
+                const existing = new Set(state.extras.topics.map(t => t.id));
+                (d.extras.topics || []).filter(t => !existing.has(t.id)).forEach(t => state.extras.topics.push(t));
+                renderTopicList();
+                regen('extras');
+                syncToFirestore(db, true);
+            }
+        }
+
+        function restoreCorpusData(c) {
+            setIf('c-materia', c.materia); setIf('c-data', c.data);
+            setIf('c-inicial', c.inicial); setIf('c-docs', c.docs);
+            setIf('c-decisao', c.decisao); setIf('c-anon-list', c.anonList);
+            if (c.resultado) document.getElementById('c-resultado').value = c.resultado;
+            if (c.anonActive) Object.assign(state.corpus.anonActive, c.anonActive);
+            if (typeof c.nameAnonActive === 'boolean') state.corpus.nameAnonActive = c.nameAnonActive;
+            if (c.nameFormat) state.corpus.nameFormat = c.nameFormat;
+            regen('corpus');
+        }
+
+        function restoreConsultaData(c) {
+            setIf('q-inicial', c.inicial); setIf('q-docs', c.docs);
+            setIf('q-comando', c.comando); setIf('q-anon-list', c.anonList);
+            if (c.anonActive) Object.assign(state.consulta.anonActive, c.anonActive);
+            if (typeof c.nameAnonActive === 'boolean') state.consulta.nameAnonActive = c.nameAnonActive;
+            if (c.nameFormat) state.consulta.nameFormat = c.nameFormat;
+            regen('consulta');
+        }
+
+        let _syncTimer;
+        function scheduleSyncToFirestore() {
+            if (!currentUser || !window._fbDb) return;
+            clearTimeout(_syncTimer);
+            _syncTimer = setTimeout(() => syncToFirestore(window._fbDb), 3000);
+        }
+
+        async function syncToFirestore(db, immediate = false) {
+            const ref = userDocRef(db || window._fbDb);
+            if (!ref) return;
+            setSyncStatus('syncing');
+            try {
+                await ref.set({
+                    extras: { topics: state.extras.topics },
+                    corpus: {
+                        materia: getVal('c-materia'), resultado: document.getElementById('c-resultado').value,
+                        data: getVal('c-data'), inicial: getVal('c-inicial'),
+                        docs: getVal('c-docs'), decisao: getVal('c-decisao'),
+                        anonList: getVal('c-anon-list'),
+                        anonActive: state.corpus.anonActive,
+                        nameAnonActive: state.corpus.nameAnonActive,
+                        nameFormat: state.corpus.nameFormat,
+                    },
+                    consulta: {
+                        inicial: getVal('q-inicial'), docs: getVal('q-docs'),
+                        comando: getVal('q-comando'), anonList: getVal('q-anon-list'),
+                        anonActive: state.consulta.anonActive,
+                        nameAnonActive: state.consulta.nameAnonActive,
+                        nameFormat: state.consulta.nameFormat,
+                    },
+                    updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+                }, { merge: true });
+                setSyncStatus('synced');
+            } catch (e) {
+                setSyncStatus('error');
+                console.error('Firestore sync error:', e);
+            }
+        }
+
+        // Gancho: depois de cada saveDraft, também sincroniza com Firestore
+        const _origSaveDraft = saveDraft;
+        saveDraft = function () { _origSaveDraft(); scheduleSyncToFirestore(); };
+
+        // Exportar localStorage antes de fazer login
+        function exportLocalStorageBeforeLogin() {
+            const raw = localStorage.getItem(SAVE_KEY);
+            if (!raw) return;
+            const blob = new Blob([raw], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'prep-jec-backup-' + new Date().toISOString().slice(0, 10) + '.json';
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        // Inicializar Firebase
+        initFirebase();
     </script>
 
 </body>
