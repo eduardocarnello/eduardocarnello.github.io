@@ -1528,6 +1528,18 @@
         // Candidate pattern: 2+ words, first letter capitalized, optional lowercase prepositions
         const NAME_CANDIDATE_RE = /\b[A-ZÁÉÍÓÚÂÊÔÃÕÇÀÜ][a-záéíóúâêôãõçàü]+(?:\s+(?:da|de|do|dos|das|e)\s+|\s+)(?:(?:da|de|do|dos|das|e)\s+)?[A-ZÁÉÍÓÚÂÊÔÃÕÇÀÜ][a-záéíóúâêôãõçàü]+(?:(?:\s+(?:da|de|do|dos|das|e))?\s+[A-ZÁÉÍÓÚÂÊÔÃÕÇÀÜ][a-záéíóúâêôãõçàü]+){0,5}\b/g;
 
+        // ALL-CAPS names: 2+ words of 2+ uppercase letters each, with optional ALL-CAPS prepositions
+        const ALL_CAPS_NAME_RE = /\b[A-ZÁÉÍÓÚÂÊÔÃÕÇÀÜ]{2,}(?:\s+(?:DA|DE|DO|DOS|DAS|E)\s+|\s+)(?:(?:DA|DE|DO|DOS|DAS|E)\s+)?[A-ZÁÉÍÓÚÂÊÔÃÕÇÀÜ]{2,}(?:(?:\s+(?:DA|DE|DO|DOS|DAS|E))?\s+[A-ZÁÉÍÓÚÂÊÔÃÕÇÀÜ]{2,}){0,5}\b/g;
+
+        function toTitleCaseName(name) {
+            const preps = new Set(['da', 'de', 'do', 'dos', 'das', 'e']);
+            return name.trim().split(/\s+/).map((w, i) => {
+                const lower = w.toLowerCase();
+                if (i > 0 && preps.has(lower)) return lower;
+                return w.charAt(0).toUpperCase() + w.slice(1).toLowerCase();
+            }).join(' ');
+        }
+
         function abbreviateName(name, format) {
             const words = name.trim().split(/\s+/);
             return words.map((w, i) => {
@@ -1544,7 +1556,9 @@
         function applyNameDetection(text, format) {
             if (!text) return { text, count: 0 };
             let count = 0;
-            const result = text.replace(NAME_CANDIDATE_RE, function (match, offset, fullStr) {
+
+            // Pass 1: Title Case names
+            let result = text.replace(NAME_CANDIDATE_RE, function (match, offset, fullStr) {
                 const words = match.split(/\s+/);
                 const firstWord = words[0];
                 const lastWord = words[words.length - 1];
@@ -1552,17 +1566,38 @@
                 if (NAME_BLACKLIST_FIRST.has(firstWord)) return match;
                 if (NAME_BLACKLIST_LAST.has(lastWord)) return match;
 
-                // Check preceding context
                 const ctxStart = Math.max(0, offset - 40);
                 const ctx = fullStr.substring(ctxStart, offset);
                 if (NEGATIVE_PREFIX_RE.test(ctx)) return match;
 
-                // Don't anonymize if the match is entirely within markers we already placed
                 if (match.indexOf('⟦') !== -1 || match.indexOf('⟪') !== -1) return match;
 
                 count++;
                 return `⟪${abbreviateName(match, format)}⟫`;
             });
+
+            // Pass 2: ALL-CAPS names (e.g. JOÃO DA SILVA)
+            result = result.replace(ALL_CAPS_NAME_RE, function (match, offset, fullStr) {
+                if (match.indexOf('⟦') !== -1 || match.indexOf('⟪') !== -1) return match;
+
+                const words = match.split(/\s+/);
+                const firstWord = words[0];
+                const lastWord = words[words.length - 1];
+
+                // Convert to Title Case for blacklist lookup
+                const titleFirst = firstWord.charAt(0).toUpperCase() + firstWord.slice(1).toLowerCase();
+                const titleLast = lastWord.charAt(0).toUpperCase() + lastWord.slice(1).toLowerCase();
+                if (NAME_BLACKLIST_FIRST.has(titleFirst)) return match;
+                if (NAME_BLACKLIST_LAST.has(titleLast)) return match;
+
+                const ctxStart = Math.max(0, offset - 40);
+                const ctx = fullStr.substring(ctxStart, offset);
+                if (NEGATIVE_PREFIX_RE.test(ctx)) return match;
+
+                count++;
+                return `⟪${abbreviateName(toTitleCaseName(match), format)}⟫`;
+            });
+
             return { text: result, count };
         }
 
@@ -2303,8 +2338,7 @@ ${HEADER_LINE}
         // FIREBASE — Auth Google + Firestore
         // =============================================================
 
-        // ⚠️  TODO PASSO 1: Cole aqui o firebaseConfig do seu projeto Firebase.
-        //     Console: https://console.firebase.google.com → Configurações do projeto → Web App
+
         const firebaseConfig = {
             apiKey: "AIzaSyCZMLBDpDSJ-kiaxTtAiV3GVMMgzzM51us",
             authDomain: "prep-jec.firebaseapp.com",
@@ -2314,7 +2348,7 @@ ${HEADER_LINE}
             appId: "1:741494209775:web:4193e6401160dd01402f1a"
         };
 
-        // ⚠️  TODO PASSO 2: Liste os e-mails Google autorizados a acessar.
+
         const ALLOWED_EMAILS = ['eduardocarnello@gmail.com'];
 
         let currentUser = null;
