@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Plantão Judiciário</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         body { font-family: 'Inter', sans-serif; }
@@ -47,6 +48,25 @@
         .tab-btn.active { background-color: #1f2937; color: white; }
         .tab-btn:hover:not(.active) { background-color: #d1d5db; }
 
+        /* Controle table */
+        .ctrl-row { transition: background-color 0.2s; }
+        .ctrl-row.ok { background-color: #d1fae5; }
+        .ctrl-row.ok td { border-color: #6ee7b7 !important; }
+        .ctrl-new-badge { display: inline-block; background-color: #fef3c7; color: #92400e; font-size: 0.65rem; padding: 1px 6px; border-radius: 9999px; font-weight: 700; vertical-align: middle; margin-left: 4px; }
+        .ctrl-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+        .ctrl-table th { background-color: #f3f4f6; padding: 6px 8px; text-align: left; border: 1px solid #d1d5db; font-weight: 600; font-size: 0.75rem; text-transform: uppercase; }
+        .ctrl-table td { padding: 6px 8px; border: 1px solid #e5e7eb; vertical-align: top; }
+        .ctrl-table select, .ctrl-table input, .ctrl-table textarea { width: 100%; border: 1px solid #d1d5db; border-radius: 4px; padding: 3px 6px; font-size: 0.8rem; background: white; }
+        .ctrl-table textarea { resize: vertical; min-height: 72px; font-family: inherit; line-height: 1.35; }
+        .ctrl-obs-wrap { display: flex; flex-direction: column; gap: 3px; }
+        .ctrl-obs-expand { align-self: flex-end; background: #eef2ff; border: 1px solid #c7d2fe; border-radius: 4px; padding: 2px 8px; font-size: 0.7rem; cursor: pointer; color: #4338ca; line-height: 1.2; transition: background 0.15s; }
+        .ctrl-obs-expand:hover { background: #c7d2fe; color: #1e1b4b; }
+        #obs-modal { backdrop-filter: blur(2px); }
+        .ctrl-table .col-num { white-space: nowrap; font-family: monospace; font-size: 0.78rem; }
+        .ctrl-table .col-ok { text-align: center; width: 36px; }
+        .ctrl-table .col-ok input { width: 18px; height: 18px; cursor: pointer; }
+        .ctrl-table .col-tipo { font-size: 0.75rem; color: #4b5563; }
+
         /* Toast */
         #toast { position: fixed; bottom: 1.5rem; right: 1.5rem; z-index: 9999; transition: opacity 0.3s; }
 
@@ -79,22 +99,48 @@
         <div id="toast-content" class="bg-gray-800 text-white px-4 py-2 rounded-lg shadow-lg text-sm"></div>
     </div>
 
+    <!-- Modal de Observações -->
+    <div id="obs-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4 no-print" onclick="if(event.target===this)closeObsModal()">
+        <div class="bg-white rounded-lg shadow-2xl max-w-3xl w-full p-6">
+            <div class="flex items-start justify-between mb-3">
+                <div>
+                    <h3 class="text-lg font-bold text-gray-800">Observações do processo</h3>
+                    <p class="text-xs text-gray-500 font-mono" id="obs-modal-num"></p>
+                </div>
+                <button type="button" onclick="closeObsModal()" class="text-gray-400 hover:text-gray-700 text-2xl leading-none">×</button>
+            </div>
+            <textarea id="obs-modal-text" class="w-full p-3 border border-gray-300 rounded-md text-sm font-mono" rows="14" placeholder="Anotações internas sobre o processo (pendências, retornos, BNMP, alvarás, mandados etc.)"></textarea>
+            <div class="flex justify-end gap-2 mt-4">
+                <button type="button" onclick="closeObsModal()" class="px-4 py-2 rounded-md bg-gray-200 hover:bg-gray-300 text-sm text-gray-700">Cancelar</button>
+                <button type="button" onclick="saveObsModal()" class="px-4 py-2 rounded-md bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium">Salvar observações</button>
+            </div>
+        </div>
+    </div>
+
     <div class="container mx-auto p-4 md:p-8">
         <div class="bg-white rounded-2xl shadow-2xl overflow-hidden">
 
             <!-- Header -->
-            <div class="p-5 bg-gray-800 text-white flex items-center justify-between">
+            <div class="p-5 bg-gray-800 text-white flex items-center justify-between flex-wrap gap-3 no-print">
                 <div>
                     <h1 class="text-2xl md:text-3xl font-bold">Plantão Judiciário</h1>
-                    <p class="text-gray-300 mt-1 text-sm">Termo de Plantão e Certidões</p>
+                    <p class="text-gray-300 mt-1 text-sm">Termo, Certidões e Controle</p>
                 </div>
-                <span id="autosave-indicator" class="text-xs text-gray-400">Salvamento automático ativo</span>
+                <div class="flex items-center gap-2 flex-wrap">
+                    <label for="day-selector" class="text-xs text-gray-300">Dia:</label>
+                    <select id="day-selector" onchange="switchDay(parseInt(this.value))" class="rounded-md text-xs text-gray-800 px-2 py-1 border border-gray-600"></select>
+                    <button onclick="newDay()" title="Novo dia (até 5)" class="px-2 py-1 rounded-md text-xs bg-blue-600 hover:bg-blue-700">+ Novo</button>
+                    <button onclick="renameDay()" title="Renomear dia" class="px-2 py-1 rounded-md text-xs bg-gray-600 hover:bg-gray-700">✏️</button>
+                    <button onclick="deleteDay()" title="Excluir dia" class="px-2 py-1 rounded-md text-xs bg-red-600 hover:bg-red-700">🗑️</button>
+                    <span id="autosave-indicator" class="text-xs text-gray-400 ml-2">Salvamento automático ativo</span>
+                </div>
             </div>
 
             <!-- Tabs -->
-            <div class="px-6 pt-4 bg-gray-50 border-b border-gray-200 no-print flex gap-1">
+            <div class="px-6 pt-4 bg-gray-50 border-b border-gray-200 no-print flex gap-1 flex-wrap">
                 <button class="tab-btn active" id="tab-termo" onclick="switchTab('termo')">Termo de Plantão</button>
                 <button class="tab-btn" id="tab-certidao" onclick="switchTab('certidao')">Certidões</button>
+                <button class="tab-btn" id="tab-controle" onclick="switchTab('controle')">Controle de Distribuição</button>
             </div>
 
             <!-- ===== TAB TERMO ===== -->
@@ -269,9 +315,13 @@
 
                     <!-- Processos -->
                     <div class="space-y-4 bg-gray-50 p-4 rounded-lg mb-6">
-                        <h3 class="font-semibold text-lg text-gray-600">Tabela de Processos</h3>
+                        <div class="flex items-center justify-between">
+                            <h3 class="font-semibold text-lg text-gray-600">Tabela de Processos</h3>
+                            <button onclick="document.getElementById('xlsx-import-file').click()" type="button" class="py-1 px-3 rounded-md text-xs font-medium text-white bg-teal-600 hover:bg-teal-700 no-print">📊 Importar XLSX</button>
+                            <input type="file" id="xlsx-import-file" onchange="importXLSX(event)" accept=".xlsx,.xls,.html,.htm" class="hidden">
+                        </div>
                         <div id="processos-container" class="space-y-3"></div>
-                        <button onclick="addProcesso()" class="mt-2 w-full py-2 px-4 rounded-md text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 no-print">
+                        <button onclick="addProcesso()" type="button" class="mt-2 w-full py-2 px-4 rounded-md text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 no-print">
                             + Adicionar Processo
                         </button>
                     </div>
@@ -504,6 +554,32 @@
                 </div>
             </div>
 
+            <!-- ===== TAB CONTROLE ===== -->
+            <div id="content-controle" class="hidden p-6 md:p-8">
+                <div class="flex flex-wrap items-center gap-2 mb-4 no-print">
+                    <h2 class="text-xl font-bold text-gray-700 mr-auto">Controle de Distribuição</h2>
+                    <button onclick="autoDistribute()" type="button" class="py-2 px-3 rounded-md text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700">⚖️ Distribuir automaticamente</button>
+                    <button onclick="resetIsNewFlags()" type="button" class="py-2 px-3 rounded-md text-sm font-medium text-white bg-gray-600 hover:bg-gray-700" title="Marcar todos como antigos (não-negrito no Teams)">🏷️ Limpar “novos”</button>
+                    <button onclick="copyTeamsList()" type="button" class="py-2 px-3 rounded-md text-sm font-medium text-white bg-purple-600 hover:bg-purple-700">📋 Copiar lista para Teams</button>
+                </div>
+
+                <div class="mb-3 text-xs text-gray-500">
+                    Processos abaixo refletem a tabela do termo do dia atual. Atribua um escrevente (obrigatório para auto-distribuição) e, se cabível, um Oficial de Justiça. Use <b>Obs</b> para anotar pendências internas — esse campo não vai para o Teams. Marque <b>OK</b> quando tudo estiver concluído.
+                </div>
+
+                <div id="controle-table-container" class="overflow-x-auto"></div>
+
+                <div class="mt-6 p-4 bg-gray-50 rounded-lg text-xs text-gray-600 no-print">
+                    <p class="font-semibold mb-2">Como funciona a distribuição automática:</p>
+                    <ul class="list-disc list-inside space-y-1">
+                        <li>Distribui apenas processos <b>ainda sem escrevente</b>.</li>
+                        <li>Equilibra por tipo de processo (cada escrevente fica com aproximadamente o mesmo número de cada classe).</li>
+                        <li>Processos do tipo <b>Comunicado de Mandado de Prisão</b> não recebem OJ.</li>
+                        <li>Após cada distribuição, os processos atribuídos ficam marcados como “novos” (vão em negrito no Teams). Ao clicar em <i>Limpar “novos”</i>, todos viram regulares.</li>
+                    </ul>
+                </div>
+            </div>
+
         </div>
     </div>
 
@@ -512,11 +588,15 @@
         function switchTab(tab) {
             document.getElementById('content-termo').classList.toggle('hidden', tab !== 'termo');
             document.getElementById('content-certidao').classList.toggle('hidden', tab !== 'certidao');
+            document.getElementById('content-controle').classList.toggle('hidden', tab !== 'controle');
             document.getElementById('tab-termo').classList.toggle('active', tab === 'termo');
             document.getElementById('tab-certidao').classList.toggle('active', tab === 'certidao');
+            document.getElementById('tab-controle').classList.toggle('active', tab === 'controle');
             if (tab === 'certidao') {
                 refreshEscreventePicker();
                 if (!document.getElementById('cert_participante_nome').value.trim()) loadFromTermo();
+            } else if (tab === 'controle') {
+                renderControle();
             }
         }
 
@@ -742,17 +822,18 @@
                     <th class="border border-gray-300 p-2">AUTOR</th>
                     <th class="border border-gray-300 p-2">RÉU</th>
                 </tr></thead><tbody>`;
+            const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
             processos.forEach(proc => {
                 let data = proc.querySelector('.processo-input-data').value;
                 if (data) { const [y,m,d] = data.split('-'); data = `${d}/${m}/${y}`; }
                 const sel = proc.querySelector('.processo-input-natureza-select');
                 const natureza = sel.value === 'Outro' ? proc.querySelector('.processo-input-natureza-outro').value : sel.value;
                 html += `<tr>
-                    <td class="border border-gray-300 p-2">${proc.querySelector('.processo-input-processo').value}</td>
-                    <td class="border border-gray-300 p-2">${data}</td>
-                    <td class="border border-gray-300 p-2">${natureza}</td>
-                    <td class="border border-gray-300 p-2">${proc.querySelector('.processo-input-autor').value}</td>
-                    <td class="border border-gray-300 p-2">${proc.querySelector('.processo-input-reu').value}</td>
+                    <td class="border border-gray-300 p-2">${esc(proc.querySelector('.processo-input-processo').value)}</td>
+                    <td class="border border-gray-300 p-2">${esc(data)}</td>
+                    <td class="border border-gray-300 p-2">${esc(natureza)}</td>
+                    <td class="border border-gray-300 p-2">${esc(proc.querySelector('.processo-input-autor').value)}</td>
+                    <td class="border border-gray-300 p-2">${esc(proc.querySelector('.processo-input-reu').value)}</td>
                 </tr>`;
             });
             container.innerHTML = html + '</tbody></table>';
@@ -839,37 +920,38 @@
         }
 
         function updateCertPreview() {
+            const e = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
             const type = document.getElementById('tipo_certidao').value;
-            const nome = document.getElementById('cert_participante_nome').value.toUpperCase() || 'FULANO(A) DE TAL';
+            const nome = e(document.getElementById('cert_participante_nome').value.toUpperCase() || 'FULANO(A) DE TAL');
             const genero = document.getElementById('cert_participante_genero').value;
-            const trat = document.getElementById('cert_participante_tratamento').value;
-            const datas = document.getElementById('cert_plantao_datas').value || '[data(s) do plantão]';
-            const circ = document.getElementById('cert_circunscricao').value;
-            const prep = datas.toLowerCase().includes(' e ') ? 'nos dias' : 'no dia';
+            const trat = e(document.getElementById('cert_participante_tratamento').value);
+            const datas = e(document.getElementById('cert_plantao_datas').value || '[data(s) do plantão]');
+            const circ = e(document.getElementById('cert_circunscricao').value);
+            const prep = document.getElementById('cert_plantao_datas').value.toLowerCase().includes(' e ') ? 'nos dias' : 'no dia';
             const senhor = genero === 'f' ? 'a Senhora' : 'o Senhor';
             const excel = genero === 'f' ? 'a Excelentíssima Senhora' : 'o Excelentíssimo Senhor';
             const art = genero === 'f' ? 'a' : 'o';
 
             let body = '';
             if (type === 'juiz') {
-                const vara = document.getElementById('cert_juiz_vara_comarca').value;
+                const vara = e(document.getElementById('cert_juiz_vara_comarca').value);
                 const juizTit = genero === 'f' ? 'Juíza de Direito' : 'Juiz de Direito';
                 body = `${prep} <b>${datas}</b>, ${excel} <b>${trat} ${nome}</b>, MM. ${juizTit} do ${vara}, participou do <b>PLANTÃO JUDICIÁRIO ORDINÁRIO</b> desta ${circ}, realizado de maneira remota conforme disciplinado no Comunicado Conjunto nº 249/2020`;
             } else if (type === 'promotor') {
-                const num = document.getElementById('cert_promotor_numero').value;
-                const com = document.getElementById('cert_promotor_comarca').value;
+                const num = e(document.getElementById('cert_promotor_numero').value);
+                const com = e(document.getElementById('cert_promotor_comarca').value);
                 const promTit = genero === 'f' ? 'Promotora de Justiça' : 'Promotor de Justiça';
                 body = `${prep} <b>${datas}</b>, ${excel} <b>${trat} ${nome}</b>, ${num}º ${promTit} da Comarca de ${com}, participou do <b>PLANTÃO JUDICIÁRIO ORDINÁRIO</b> desta ${circ}, realizado de maneira remota conforme disciplinado no Comunicado Conjunto nº 249/2020`;
             } else if (type === 'defensor') {
-                const com = document.getElementById('cert_defensor_comarca').value;
+                const com = e(document.getElementById('cert_defensor_comarca').value);
                 const defTit = genero === 'f' ? 'Defensora Pública' : 'Defensor Público';
                 body = `${prep} <b>${datas}</b>, ${senhor} <b>${trat} ${nome}</b>, ${defTit} desta Comarca de ${com}, participou do <b>PLANTÃO JUDICIÁRIO ORDINÁRIO</b> desta ${circ}, realizado de maneira remota conforme disciplinado no Provimento Conjunto nº 54/2022`;
             } else if (type === 'analista_mp') {
-                const cg = document.getElementById('cert_analista_cargo').value;
-                const com = document.getElementById('cert_analista_comarca').value;
+                const cg = e(document.getElementById('cert_analista_cargo').value);
+                const com = e(document.getElementById('cert_analista_comarca').value);
                 body = `${prep} <b>${datas}</b>, ${art} ${cg} do Ministério Público da Comarca de ${com}, <b>${trat} ${nome}</b>, participou do <b>PLANTÃO JUDICIÁRIO</b> desta ${circ}, realizado de maneira remota conforme disciplinado no Provimento Conjunto nº 54/2022`;
             } else if (type === 'escrevente') {
-                const cg = document.getElementById('cert_escrevente_cargo').value;
+                const cg = e(document.getElementById('cert_escrevente_cargo').value);
                 body = `${prep} <b>${datas}</b>, ${art} ${cg} <b>${trat} ${nome}</b>, participou do <b>PLANTÃO JUDICIÁRIO</b> desta ${circ}, realizado de maneira remota conforme disciplinado no Provimento Conjunto nº 54/2022`;
             }
             document.getElementById('cert-preview-body').innerHTML = body;
@@ -911,7 +993,11 @@
             document.getElementById('cert-preview-emissao_ano_num').textContent = '0000';
         }
 
-        // ===== DATA PERSISTENCE =====
+        // ===== DATA PERSISTENCE (MULTI-DIA) =====
+        const STORE_KEY = 'plantaoMultiDay';
+        const MAX_DAYS = 5;
+        let STORE = { currentDayIndex: 0, days: [{ label: 'Dia 1', formData: null, assignments: {} }] };
+
         function getFormDataAsObject() {
             const data = {};
             document.querySelectorAll('#form-container input[id], #form-container select[id]').forEach(el => {
@@ -985,37 +1071,113 @@
             updatePreview();
         }
 
+        function currentDay() { return STORE.days[STORE.currentDayIndex]; }
+        function currentAssignments() { return currentDay().assignments || (currentDay().assignments = {}); }
+
+        function persistStore() {
+            currentDay().formData = getFormDataAsObject();
+            localStorage.setItem(STORE_KEY, JSON.stringify(STORE));
+            const now = new Date();
+            const ind = document.getElementById('autosave-indicator');
+            if (ind) ind.textContent = `Salvo às ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+        }
+
         let autoSaveTimer;
         function scheduleAutoSave() {
             clearTimeout(autoSaveTimer);
-            autoSaveTimer = setTimeout(() => {
-                localStorage.setItem('plantaoFormData', JSON.stringify(getFormDataAsObject()));
-                const now = new Date();
-                document.getElementById('autosave-indicator').textContent =
-                    `Salvo às ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
-            }, 2500);
+            autoSaveTimer = setTimeout(persistStore, 2500);
         }
 
-        function saveData() {
-            localStorage.setItem('plantaoFormData', JSON.stringify(getFormDataAsObject()));
-            showToast('Progresso salvo no navegador!');
+        function refreshDaySelector() {
+            const sel = document.getElementById('day-selector');
+            sel.innerHTML = '';
+            STORE.days.forEach((d, i) => sel.add(new Option(d.label, i)));
+            sel.value = STORE.currentDayIndex;
         }
 
+        function switchDay(idx) {
+            if (idx === STORE.currentDayIndex) return;
+            persistStore();
+            STORE.currentDayIndex = idx;
+            populateFormFromObject(currentDay().formData);
+            refreshDaySelector();
+            if (!document.getElementById('content-controle').classList.contains('hidden')) renderControle();
+            persistStore();
+            showToast(`Carregado: ${currentDay().label}`);
+        }
+
+        function newDay() {
+            if (STORE.days.length >= MAX_DAYS) {
+                showToast(`Limite de ${MAX_DAYS} dias atingido. Exclua um dia primeiro.`, 'error');
+                return;
+            }
+            persistStore();
+            // Inherit people fields but clear processos / dates / observações
+            const cur = currentDay().formData || getFormDataAsObject();
+            const inherited = JSON.parse(JSON.stringify(cur));
+            inherited.processos = [];
+            inherited.data_abertura = '';
+            inherited.data_encerramento = '';
+            const today = new Date();
+            const defaultLabel = `Dia ${STORE.days.length + 1} – ${String(today.getDate()).padStart(2,'0')}/${String(today.getMonth()+1).padStart(2,'0')}`;
+            STORE.days.push({ label: defaultLabel, formData: inherited, assignments: {} });
+            STORE.currentDayIndex = STORE.days.length - 1;
+            populateFormFromObject(inherited);
+            // Seed empty default
+            const isoToday = today.toISOString().split('T')[0];
+            document.getElementById('data_abertura').value = isoToday;
+            document.getElementById('data_encerramento').value = isoToday;
+            updatePreview();
+            refreshDaySelector();
+            persistStore();
+            showToast(`Novo dia criado: ${currentDay().label}`);
+        }
+
+        function renameDay() {
+            const novo = prompt('Novo nome para este dia:', currentDay().label);
+            if (!novo) return;
+            currentDay().label = novo.trim().slice(0, 40) || currentDay().label;
+            refreshDaySelector();
+            persistStore();
+        }
+
+        function deleteDay() {
+            if (STORE.days.length <= 1) {
+                showToast('Não é possível excluir o único dia. Use o botão Limpar para zerar.', 'error');
+                return;
+            }
+            if (!confirm(`Excluir “${currentDay().label}”? Esta ação não pode ser desfeita.`)) return;
+            STORE.days.splice(STORE.currentDayIndex, 1);
+            STORE.currentDayIndex = Math.max(0, STORE.currentDayIndex - 1);
+            populateFormFromObject(currentDay().formData);
+            refreshDaySelector();
+            if (!document.getElementById('content-controle').classList.contains('hidden')) renderControle();
+            persistStore();
+            showToast('Dia excluído.');
+        }
+
+        function saveData() { persistStore(); showToast('Progresso salvo no navegador!'); }
         function loadData() {
-            const saved = localStorage.getItem('plantaoFormData');
-            if (!saved) { showToast('Nenhum dado salvo encontrado.', 'error'); return; }
-            populateFormFromObject(JSON.parse(saved));
+            const raw = localStorage.getItem(STORE_KEY);
+            if (!raw) { showToast('Nenhum dado salvo encontrado.', 'error'); return; }
+            STORE = JSON.parse(raw);
+            if (!STORE.days || !STORE.days.length) STORE = { currentDayIndex: 0, days: [{ label: 'Dia 1', formData: null, assignments: {} }] };
+            STORE.currentDayIndex = Math.min(STORE.currentDayIndex || 0, STORE.days.length - 1);
+            populateFormFromObject(currentDay().formData);
+            refreshDaySelector();
             showToast('Dados carregados com sucesso!');
         }
 
         function clearData() {
-            if (!confirm('Limpar todos os dados salvos? Esta ação não pode ser desfeita.')) return;
+            if (!confirm('Limpar TODOS os dados salvos (todos os dias)? Esta ação não pode ser desfeita.')) return;
+            localStorage.removeItem(STORE_KEY);
             localStorage.removeItem('plantaoFormData');
             window.location.reload();
         }
 
         function exportData() {
-            const blob = new Blob([JSON.stringify(getFormDataAsObject(), null, 2)], { type: 'application/json' });
+            persistStore();
+            const blob = new Blob([JSON.stringify(STORE, null, 2)], { type: 'application/json' });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
@@ -1031,7 +1193,17 @@
             const reader = new FileReader();
             reader.onload = ev => {
                 try {
-                    populateFormFromObject(JSON.parse(ev.target.result));
+                    const parsed = JSON.parse(ev.target.result);
+                    // Two formats: STORE (multi-day) or legacy single-form
+                    if (parsed && parsed.days && Array.isArray(parsed.days)) {
+                        STORE = parsed;
+                        STORE.currentDayIndex = Math.min(STORE.currentDayIndex || 0, STORE.days.length - 1);
+                    } else {
+                        STORE = { currentDayIndex: 0, days: [{ label: 'Dia 1', formData: parsed, assignments: {} }] };
+                    }
+                    populateFormFromObject(currentDay().formData);
+                    refreshDaySelector();
+                    persistStore();
                     showToast('Dados importados com sucesso!');
                 } catch {
                     showToast('Erro ao ler arquivo JSON.', 'error');
@@ -1043,7 +1215,8 @@
 
         function generateShareLink() {
             try {
-                const encoded = btoa(encodeURIComponent(JSON.stringify(getFormDataAsObject())));
+                persistStore();
+                const encoded = btoa(encodeURIComponent(JSON.stringify(STORE)));
                 const url = window.location.href.split('#')[0] + '#data=' + encoded;
                 if (navigator.clipboard) {
                     navigator.clipboard.writeText(url).then(() => showToast('Link copiado! Cole em outro navegador para carregar os dados.', 'info'));
@@ -1059,8 +1232,13 @@
             const hash = window.location.hash;
             if (!hash.startsWith('#data=')) return false;
             try {
-                const data = JSON.parse(decodeURIComponent(atob(hash.slice(6))));
-                populateFormFromObject(data);
+                const parsed = JSON.parse(decodeURIComponent(atob(hash.slice(6))));
+                if (parsed && parsed.days) STORE = parsed;
+                else STORE = { currentDayIndex: 0, days: [{ label: 'Dia 1', formData: parsed, assignments: {} }] };
+                STORE.currentDayIndex = Math.min(STORE.currentDayIndex || 0, STORE.days.length - 1);
+                populateFormFromObject(currentDay().formData);
+                refreshDaySelector();
+                persistStore();
                 history.replaceState(null, '', window.location.pathname);
                 showToast('Dados carregados do link compartilhado!', 'info');
                 return true;
@@ -1068,6 +1246,395 @@
                 showToast('Erro ao carregar dados do link.', 'error');
                 return false;
             }
+        }
+
+        // ===== CONTROLE DE DISTRIBUIÇÃO =====
+        function abbreviateNatureza(natureza) {
+            if (!natureza) return '—';
+            const n = natureza.toLowerCase();
+            if (n.includes('comunicado de mandado')) return 'Comunicado';
+            if (n.includes('auto de prisão em flagrante')) return 'APF';
+            if (n.includes('auto de apreensão em flagrante')) return 'AAF';
+            if (n.includes('medidas protetivas')) return 'MPU';
+            if (n.includes('petição') && n.includes('cível')) return 'Pet Cível';
+            if (n.includes('petição') && n.includes('criminal')) return 'Pet Criminal';
+            if (n.includes('petição')) return 'Petição';
+            if (n.includes('alvará')) return 'Alvará';
+            if (n.includes('habeas corpus')) return 'HC';
+            if (n.includes('busca e apreensão')) return 'Busca e Apreensão';
+            if (n.includes('tutela')) return 'Tutela';
+            return natureza.length > 28 ? natureza.slice(0, 28) + '…' : natureza;
+        }
+
+        function isComunicadoType(natureza) {
+            return natureza && natureza.toLowerCase().includes('comunicado de mandado');
+        }
+
+        function firstNameTitleCase(fullName) {
+            if (!fullName) return '';
+            const first = fullName.trim().split(/\s+/)[0] || '';
+            return first.charAt(0).toUpperCase() + first.slice(1).toLowerCase();
+        }
+
+        function getProcessosForControle() {
+            // Read live from DOM so changes in termo reflect immediately
+            const list = [];
+            document.querySelectorAll('#processos-container > div').forEach(proc => {
+                const sel = proc.querySelector('.processo-input-natureza-select');
+                const numero = proc.querySelector('.processo-input-processo').value.trim();
+                const natureza = sel.value === 'Outro'
+                    ? proc.querySelector('.processo-input-natureza-outro').value.trim()
+                    : sel.value;
+                if (!numero) return; // skip rows with empty number
+                list.push({ numero, natureza });
+            });
+            return list;
+        }
+
+        function getEscreventeList() {
+            return [...document.querySelectorAll('#escreventes-container .escrevente-input')]
+                .map(i => i.value.trim()).filter(Boolean);
+        }
+
+        function getOJList() {
+            return [...document.querySelectorAll('#oficiais-container .oficial-input')]
+                .map(i => i.value.trim()).filter(Boolean);
+        }
+
+        function renderControle() {
+            const container = document.getElementById('controle-table-container');
+            const procs = getProcessosForControle();
+            const escreventes = getEscreventeList();
+            const ojs = getOJList();
+            const assigns = currentAssignments();
+
+            if (!procs.length) {
+                container.innerHTML = '<div class="p-6 text-center text-gray-500 bg-gray-50 rounded-lg">Nenhum processo cadastrado no termo deste dia. Adicione processos na aba <b>Termo</b> ou importe um XLSX.</div>';
+                return;
+            }
+
+            const escOpts = ['<option value="">— sem atribuição —</option>']
+                .concat(escreventes.map(e => `<option value="${escapeHtml(e)}">${escapeHtml(e)}</option>`)).join('');
+            const ojOpts = ['<option value="">— sem OJ —</option>']
+                .concat(ojs.map(o => `<option value="${escapeHtml(o)}">${escapeHtml(o)}</option>`)).join('');
+
+            let html = `<table class="ctrl-table">
+                <thead><tr>
+                    <th style="width:20%">Processo</th>
+                    <th style="width:11%">Tipo</th>
+                    <th style="width:18%">Escrevente</th>
+                    <th style="width:16%">Oficial de Justiça</th>
+                    <th>Obs. (não vai p/ Teams)</th>
+                    <th class="col-ok">OK</th>
+                </tr></thead><tbody>`;
+
+            procs.forEach(p => {
+                const a = assigns[p.numero] || {};
+                const comunicado = isComunicadoType(p.natureza);
+                const escVal = a.escrevente || '';
+                const ojVal = comunicado ? '' : (a.oj || '');
+                const obs = a.obs || '';
+                const ok = !!a.ok;
+                const isNew = !!a.isNew;
+
+                const escSelect = `<select onchange="setAssignment('${escapeAttr(p.numero)}','escrevente',this.value)">
+                    ${escOpts.replace(`value="${escapeHtml(escVal)}"`, `value="${escapeHtml(escVal)}" selected`)}
+                </select>`;
+                const ojSelect = comunicado
+                    ? `<span class="text-gray-400 text-xs italic">(não aplicável)</span>`
+                    : `<select onchange="setAssignment('${escapeAttr(p.numero)}','oj',this.value)">
+                        ${ojOpts.replace(`value="${escapeHtml(ojVal)}"`, `value="${escapeHtml(ojVal)}" selected`)}
+                       </select>`;
+
+                html += `<tr class="ctrl-row ${ok ? 'ok' : ''}" data-num="${escapeAttr(p.numero)}">
+                    <td class="col-num">${escapeHtml(p.numero)}${isNew ? '<span class="ctrl-new-badge">NOVO</span>' : ''}</td>
+                    <td class="col-tipo">${escapeHtml(abbreviateNatureza(p.natureza))}</td>
+                    <td>${escSelect}</td>
+                    <td>${ojSelect}</td>
+                    <td><div class="ctrl-obs-wrap">
+                        <textarea rows="3" oninput="setAssignment('${escapeAttr(p.numero)}','obs',this.value)" placeholder="anotações internas (pendências, retornos etc.)">${escapeHtml(obs)}</textarea>
+                        <button type="button" class="ctrl-obs-expand" title="Abrir em janela maior" onclick="openObsModal('${escapeAttr(p.numero)}')">⛶ expandir</button>
+                    </div></td>
+                    <td class="col-ok"><input type="checkbox" ${ok ? 'checked' : ''} onchange="setAssignment('${escapeAttr(p.numero)}','ok',this.checked)"></td>
+                </tr>`;
+            });
+
+            html += '</tbody></table>';
+            container.innerHTML = html;
+        }
+
+        function escapeHtml(s) {
+            return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+        }
+        function escapeAttr(s) { return escapeHtml(s).replace(/`/g, '&#96;'); }
+
+        function setAssignment(numero, field, value) {
+            const assigns = currentAssignments();
+            if (!assigns[numero]) assigns[numero] = { escrevente: '', oj: '', obs: '', ok: false, isNew: false };
+            assigns[numero][field] = value;
+            if (field === 'ok') {
+                const row = document.querySelector(`#controle-table-container tr[data-num="${CSS.escape(numero)}"]`);
+                if (row) row.classList.toggle('ok', !!value);
+            }
+            scheduleAutoSave();
+        }
+
+        // ===== MODAL DE OBSERVAÇÕES =====
+        let currentObsNum = null;
+        function openObsModal(numero) {
+            currentObsNum = numero;
+            const a = currentAssignments()[numero] || {};
+            document.getElementById('obs-modal-num').textContent = numero;
+            document.getElementById('obs-modal-text').value = a.obs || '';
+            document.getElementById('obs-modal').classList.remove('hidden');
+            setTimeout(() => document.getElementById('obs-modal-text').focus(), 50);
+        }
+        function closeObsModal() {
+            document.getElementById('obs-modal').classList.add('hidden');
+            currentObsNum = null;
+        }
+        function saveObsModal() {
+            if (!currentObsNum) { closeObsModal(); return; }
+            const val = document.getElementById('obs-modal-text').value;
+            setAssignment(currentObsNum, 'obs', val);
+            // Sync textarea da linha
+            const row = document.querySelector(`#controle-table-container tr[data-num="${CSS.escape(currentObsNum)}"]`);
+            if (row) {
+                const ta = row.querySelector('textarea');
+                if (ta) ta.value = val;
+            }
+            closeObsModal();
+            showToast('Observações salvas.');
+        }
+        document.addEventListener('keydown', e => {
+            if (e.key === 'Escape' && !document.getElementById('obs-modal').classList.contains('hidden')) closeObsModal();
+            if (e.key === 'Enter' && (e.ctrlKey || e.metaKey) && !document.getElementById('obs-modal').classList.contains('hidden')) saveObsModal();
+        });
+
+        function autoDistribute() {
+            const procs = getProcessosForControle();
+            const escreventes = getEscreventeList();
+            if (!escreventes.length) {
+                showToast('Cadastre pelo menos um escrevente no termo antes de distribuir.', 'error');
+                return;
+            }
+            const assigns = currentAssignments();
+
+            // Detectar se já havia distribuição anterior: se sim, os recém-distribuídos vão como "novos"
+            const hadExistingAssignments = procs.some(p => {
+                const a = assigns[p.numero];
+                return a && a.escrevente && escreventes.includes(a.escrevente);
+            });
+
+            // Reset "isNew" flags on all existing
+            Object.values(assigns).forEach(a => { if (a) a.isNew = false; });
+
+            // Build load counters from already-assigned procs
+            const loadByType = {};
+            const loadTotal = {};
+            escreventes.forEach(e => { loadTotal[e] = 0; });
+            procs.forEach(p => {
+                const a = assigns[p.numero];
+                if (!a || !a.escrevente || !escreventes.includes(a.escrevente)) return;
+                loadTotal[a.escrevente] = (loadTotal[a.escrevente] || 0) + 1;
+                loadByType[p.natureza] = loadByType[p.natureza] || {};
+                loadByType[p.natureza][a.escrevente] = (loadByType[p.natureza][a.escrevente] || 0) + 1;
+            });
+
+            // Find unassigned
+            const unassigned = procs.filter(p => {
+                const a = assigns[p.numero];
+                return !a || !a.escrevente || !escreventes.includes(a.escrevente);
+            });
+
+            if (!unassigned.length) {
+                showToast('Não há processos pendentes para distribuir.', 'info');
+                renderControle();
+                persistStore();
+                return;
+            }
+
+            // Greedy: for each unassigned, pick escrevente with least load for that type (tiebreak: least total)
+            unassigned.forEach(p => {
+                loadByType[p.natureza] = loadByType[p.natureza] || {};
+                escreventes.forEach(e => {
+                    if (loadByType[p.natureza][e] === undefined) loadByType[p.natureza][e] = 0;
+                });
+                let best = escreventes[0];
+                for (const e of escreventes) {
+                    const bestType = loadByType[p.natureza][best];
+                    const eType = loadByType[p.natureza][e];
+                    if (eType < bestType || (eType === bestType && loadTotal[e] < loadTotal[best])) best = e;
+                }
+                if (!assigns[p.numero]) assigns[p.numero] = { escrevente: '', oj: '', obs: '', ok: false, isNew: false };
+                assigns[p.numero].escrevente = best;
+                assigns[p.numero].isNew = hadExistingAssignments; // primeira geração: false; incrementais: true
+                loadByType[p.natureza][best] = (loadByType[p.natureza][best] || 0) + 1;
+                loadTotal[best] = (loadTotal[best] || 0) + 1;
+            });
+
+            renderControle();
+            persistStore();
+            showToast(`${unassigned.length} processo(s) distribuído(s).`);
+        }
+
+        function resetIsNewFlags() {
+            const assigns = currentAssignments();
+            Object.values(assigns).forEach(a => { if (a) a.isNew = false; });
+            renderControle();
+            persistStore();
+            showToast('Marcadores “novo” removidos.');
+        }
+
+        function buildTeamsContent() {
+            const procs = getProcessosForControle();
+            const escreventes = getEscreventeList();
+            const assigns = currentAssignments();
+
+            const groups = new Map();
+            escreventes.forEach(e => groups.set(e, []));
+            const unassignedGroup = [];
+
+            procs.forEach(p => {
+                const a = assigns[p.numero] || {};
+                const escrevente = a.escrevente && escreventes.includes(a.escrevente) ? a.escrevente : '';
+                const abbrev = abbreviateNatureza(p.natureza);
+                let line = `${p.numero} (${abbrev})`;
+                if (a.oj && !isComunicadoType(p.natureza)) line += ` (mdds p/ ${firstNameTitleCase(a.oj)})`;
+                const entry = { line, isNew: !!a.isNew };
+                if (escrevente) {
+                    if (!groups.has(escrevente)) groups.set(escrevente, []);
+                    groups.get(escrevente).push(entry);
+                } else {
+                    unassignedGroup.push(entry);
+                }
+            });
+
+            const headerLine = 'Pessoal, segue a lista com divisão dos trabalhos:';
+
+            // Plain text (linha em branco entre header e conteúdo)
+            const txtLines = [headerLine, '', ''];
+            const htmlBlocks = [`<p>${escapeHtml(headerLine)}</p>`, '<p>&nbsp;</p>'];
+
+            groups.forEach((entries, name) => {
+                if (!entries.length) return;
+                const titleName = name.split(/\s+/).map(w => firstNameTitleCase(w)).join(' ');
+                txtLines.push(titleName);
+                htmlBlocks.push(`<p><b>${escapeHtml(titleName)}</b></p>`);
+                entries.forEach(en => {
+                    txtLines.push(en.isNew ? `**${en.line}**` : en.line);
+                    htmlBlocks.push(`<p>${en.isNew ? '<b>' + escapeHtml(en.line) + '</b>' : escapeHtml(en.line)}</p>`);
+                });
+                txtLines.push('');
+                htmlBlocks.push('<p>&nbsp;</p>');
+            });
+
+            if (unassignedGroup.length) {
+                txtLines.push('Sem escrevente atribuído');
+                htmlBlocks.push('<p><b>Sem escrevente atribuído</b></p>');
+                unassignedGroup.forEach(en => {
+                    txtLines.push(en.isNew ? `**${en.line}**` : en.line);
+                    htmlBlocks.push(`<p>${en.isNew ? '<b>' + escapeHtml(en.line) + '</b>' : escapeHtml(en.line)}</p>`);
+                });
+            }
+
+            return { text: txtLines.join('\n').replace(/\n{3,}/g, '\n\n'), html: htmlBlocks.join('') };
+        }
+
+        async function copyTeamsList() {
+            const { text, html } = buildTeamsContent();
+            try {
+                if (navigator.clipboard && window.ClipboardItem) {
+                    const item = new ClipboardItem({
+                        'text/html': new Blob([html], { type: 'text/html' }),
+                        'text/plain': new Blob([text], { type: 'text/plain' })
+                    });
+                    await navigator.clipboard.write([item]);
+                    showToast('Lista copiada (com negrito) – cole no Teams.', 'info');
+                } else {
+                    await navigator.clipboard.writeText(text);
+                    showToast('Lista copiada (texto simples).', 'info');
+                }
+            } catch (err) {
+                // Fallback prompt
+                prompt('Copie manualmente a lista abaixo:', text);
+            }
+        }
+
+        // ===== IMPORT XLSX =====
+        function importXLSX(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            if (typeof XLSX === 'undefined') {
+                showToast('Biblioteca XLSX não carregou. Recarregue a página.', 'error');
+                return;
+            }
+            const reader = new FileReader();
+            reader.onload = ev => {
+                try {
+                    const wb = XLSX.read(ev.target.result, { type: 'array' });
+                    const sheet = wb.Sheets[wb.SheetNames[0]];
+                    const rows = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: '' });
+                    if (!rows.length) { showToast('Planilha vazia.', 'error'); return; }
+
+                    // Detect header row: row with "Processo" cell
+                    let headerIdx = rows.findIndex(r => r.some(c => String(c).toLowerCase().trim() === 'processo'));
+                    if (headerIdx === -1) headerIdx = 0;
+                    const header = rows[headerIdx].map(c => String(c).toLowerCase().trim());
+                    const colProc = header.findIndex(c => c === 'processo' || c.includes('processo'));
+                    const colClasse = header.findIndex(c => c === 'classe' || c.includes('classe'));
+                    const colParte = header.findIndex(c => c.includes('parte passiva') || c.includes('réu') || c.includes('reu'));
+
+                    if (colProc === -1) { showToast('Coluna "Processo" não encontrada.', 'error'); return; }
+
+                    const today = new Date().toISOString().split('T')[0];
+                    const naturezaOpts = ['Comunicado de Mandado de Prisão','Auto de Prisão em Flagrante','Auto de Apreensão em Flagrante','Medidas Protetivas de Urgência','Petição Cível','Alvará de Soltura','Habeas Corpus'];
+                    let added = 0;
+
+                    for (let i = headerIdx + 1; i < rows.length; i++) {
+                        const r = rows[i];
+                        const numero = String(r[colProc] || '').trim();
+                        if (!numero) continue;
+                        const classe = colClasse !== -1 ? String(r[colClasse] || '').trim() : '';
+                        const reu = colParte !== -1 ? String(r[colParte] || '').trim() : '';
+
+                        addProcesso();
+                        const div = document.getElementById(`processo-${processoCount}`);
+                        if (!div) continue;
+                        div.querySelector('.processo-input-processo').value = numero;
+                        div.querySelector('.processo-input-data').value = today;
+                        const sel = div.querySelector('.processo-input-natureza-select');
+                        const outro = div.querySelector('.processo-input-natureza-outro');
+                        // Match by inclusion (e.g. "Medidas Protetivas (Lei Maria...)" → "Medidas Protetivas de Urgência")
+                        const lower = classe.toLowerCase();
+                        const matched = naturezaOpts.find(opt =>
+                            lower.includes(opt.toLowerCase()) ||
+                            (opt === 'Medidas Protetivas de Urgência' && lower.includes('medidas protetivas')) ||
+                            (opt === 'Petição Cível' && lower.includes('petição') && lower.includes('cível'))
+                        );
+                        if (matched) {
+                            sel.value = matched;
+                            outro.classList.add('hidden');
+                            outro.value = '';
+                        } else if (classe) {
+                            sel.value = 'Outro';
+                            outro.value = classe;
+                            outro.classList.remove('hidden');
+                        }
+                        div.querySelector('.processo-input-reu').value = reu;
+                        added++;
+                    }
+
+                    debouncedPreview();
+                    if (!document.getElementById('content-controle').classList.contains('hidden')) renderControle();
+                    showToast(`${added} processo(s) importado(s) da planilha.`);
+                } catch (err) {
+                    console.error(err);
+                    showToast('Erro ao processar o arquivo: ' + err.message, 'error');
+                }
+            };
+            reader.readAsArrayBuffer(file);
+            e.target.value = '';
         }
 
         // ===== INIT =====
@@ -1079,22 +1646,45 @@
 
                 if (loadFromHash()) return;
 
-                const saved = localStorage.getItem('plantaoFormData');
-                if (saved && confirm('Foram encontrados dados salvos. Deseja carregá-los?')) {
-                    populateFormFromObject(JSON.parse(saved));
+                // Try multi-day store first
+                const rawMulti = localStorage.getItem(STORE_KEY);
+                if (rawMulti) {
+                    try {
+                        STORE = JSON.parse(rawMulti);
+                        if (!STORE.days || !STORE.days.length) throw new Error('empty');
+                        STORE.currentDayIndex = Math.min(STORE.currentDayIndex || 0, STORE.days.length - 1);
+                        if (currentDay().formData) populateFormFromObject(currentDay().formData);
+                        else { initEmpty(today); }
+                        refreshDaySelector();
+                        return;
+                    } catch (e) { console.warn('Falha ao carregar STORE, iniciando vazio', e); }
+                }
+
+                // Legacy migration
+                const legacy = localStorage.getItem('plantaoFormData');
+                if (legacy && confirm('Foram encontrados dados do formato antigo. Deseja migrar para o sistema multi-dia?')) {
+                    STORE = { currentDayIndex: 0, days: [{ label: 'Dia 1', formData: JSON.parse(legacy), assignments: {} }] };
+                    populateFormFromObject(currentDay().formData);
+                    refreshDaySelector();
+                    persistStore();
                     return;
                 }
 
-                document.getElementById('data_abertura').value = today;
-                document.getElementById('data_encerramento').value = today;
-                document.getElementById('cert_emissao_data').value = today;
-                addProcesso();
-                addProcesso();
-                toggleCertFields();
-                updatePreview();
+                initEmpty(today);
+                refreshDaySelector();
             };
             document.head.appendChild(script);
         };
+
+        function initEmpty(today) {
+            document.getElementById('data_abertura').value = today;
+            document.getElementById('data_encerramento').value = today;
+            document.getElementById('cert_emissao_data').value = today;
+            addProcesso();
+            addProcesso();
+            toggleCertFields();
+            updatePreview();
+        }
     </script>
 </body>
 </html>
