@@ -25,17 +25,22 @@
         .watermark { position: absolute; top: 444px; left: 50%; transform: translate(-50%, -50%); z-index: -1; opacity: 0.1; width: 550px; pointer-events: none; }
         .watermark img { width: 100%; height: auto; }
 
-        /* Certidão document styles — mesmos do plantao-cert original */
-        .cert-document-preview { font-family: 'Times New Roman', Times, serif; line-height: 1.6; font-size: 12pt; color: #000; background: white; padding: 2.5cm 2cm; max-width: 21cm; min-height: 29.7cm; margin: auto; display: flex; flex-direction: column; }
-        .cert-document-preview .header-logo { display: block; margin: 0 auto 1.5rem auto; width: 80px; }
-        .cert-document-preview .header-text { text-align: center; text-indent: 0; margin-bottom: 0.25rem; line-height: 1.2; font-weight: bold; font-size: 11pt; }
-        .cert-document-preview .cert-title { text-align: center; font-weight: bold; text-transform: uppercase; margin-top: 3rem; margin-bottom: 3rem; letter-spacing: 0.2em; }
-        .body-container::after { content: ""; display: table; clear: both; }
-        .certifier-info-float { float: left; width: 38%; margin-right: 1.5em; text-align: justify; line-height: 1.4; }
-        .cert-document-preview p { text-align: justify; margin-bottom: 1.5rem; text-indent: 0; }
-        .final-paragraph { text-indent: 4em !important; }
-        .cert-document-preview .cert-signature { text-align: center; margin-top: 4rem; line-height: 1.4; }
-        .cert-document-preview .cert-footer { margin-top: auto; text-align: center; font-size: 9pt; border-top: 1px solid #ccc; padding-top: 0.5rem; }
+        /* Certidão document styles — espelhando o modelo dos PDFs */
+        .cert-document-preview { font-family: 'Times New Roman', Times, serif; line-height: 1.5; font-size: 12pt; color: #000; background: white; padding: 2cm 2cm 1.2cm 2cm; max-width: 21cm; min-height: 29.7cm; margin: auto; display: flex; flex-direction: column; box-sizing: border-box; }
+        .cert-header-table { width: 100%; border-collapse: collapse; border: 1px solid #000; margin-bottom: 1.2rem; }
+        .cert-header-table td { padding: 6px 10px; vertical-align: middle; }
+        .cert-header-brasao-cell { width: 100px; text-align: center; border-right: 1px solid #000; padding: 4px; }
+        .cert-header-brasao-cell img { width: 70px; height: auto; display: block; margin: 0 auto; }
+        .cert-header-text-cell { text-align: center; }
+        .cert-header-text-cell .pj-line { font-weight: bold; font-size: 13pt; letter-spacing: 0.15em; line-height: 1.2; }
+        .cert-header-text-cell .sp-line { font-weight: bold; font-size: 12pt; line-height: 1.2; }
+        .cert-header-text-cell .vara-line { font-size: 10pt; text-decoration: underline; line-height: 1.3; margin-top: 2px; }
+        .cert-title { text-align: center; font-weight: bold; text-decoration: underline; margin: 2rem 0 2.5rem 0; font-size: 13pt; }
+        .cert-certifier { margin-left: 42%; margin-bottom: 2.5rem; line-height: 1.45; text-align: justify; }
+        .cert-body { text-align: justify; text-indent: 7em; line-height: 1.55; margin: 0 0 1.5rem 0; }
+        .cert-letter-spaced { font-weight: bold; }
+        .cert-document-preview .cert-footer { margin-top: auto; text-align: center; font-size: 9pt; padding-top: 0.4rem; line-height: 1.3; }
+        .cert-document-preview .cert-footer-rule { border-top: 1px solid #000; padding-top: 0.4rem; }
 
         /* Tabs */
         .tab-btn { padding: 0.5rem 1.5rem; border-radius: 0.375rem 0.375rem 0 0; font-weight: 600; font-size: 0.875rem; cursor: pointer; background-color: #e5e7eb; color: #374151; transition: all 0.2s; }
@@ -58,12 +63,12 @@
             body.print-termo .document-preview h2,
             body.print-termo .document-preview table { font-size: 12pt; }
 
-            /* Certidão — mesmo estilo do plantao-cert original */
+            /* Certidão — espelha o layout do PDF modelo */
             body.print-certidao * { visibility: hidden; }
             body.print-certidao #cert-document-container,
             body.print-certidao #cert-document-container * { visibility: visible !important; }
             body.print-certidao #cert-document-container { position: absolute; left: 0; top: 0; width: 100%; }
-            body.print-certidao .cert-document-preview { max-width: 100%; min-height: 0; padding: 0; box-shadow: none; border: none; }
+            body.print-certidao .cert-document-preview { max-width: 100%; min-height: 0; box-shadow: none; border: none; padding: 0.5cm 1cm; }
         }
     </style>
 </head>
@@ -340,13 +345,14 @@
 
                         <div class="mb-5">
                             <label for="tipo_certidao" class="block text-sm font-medium text-gray-700 font-bold">1. Tipo de Certidão</label>
-                            <select id="tipo_certidao" onchange="toggleCertFields()" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm sm:text-sm bg-indigo-50 text-indigo-800 font-semibold">
+                            <select id="tipo_certidao" onchange="toggleCertFields(true)" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm sm:text-sm bg-indigo-50 text-indigo-800 font-semibold">
                                 <option value="juiz">Juiz(a)</option>
                                 <option value="promotor">Promotor(a) de Justiça</option>
                                 <option value="defensor">Defensor(a) Público(a)</option>
                                 <option value="analista_mp">Analista/Oficial do MP</option>
                                 <option value="escrevente">Escrevente / Oficial de Justiça</option>
                             </select>
+                            <button onclick="loadFromTermo()" type="button" class="mt-2 w-full py-2 px-3 rounded-md text-xs font-medium text-white bg-indigo-600 hover:bg-indigo-700 no-print">🔄 Recarregar dados do Termo</button>
                         </div>
 
                         <div class="space-y-4 bg-gray-50 p-4 rounded-lg mb-5">
@@ -401,14 +407,18 @@
                             <div id="cert_field_analista_mp" class="cert-conditional hidden">
                                 <label for="cert_analista_cargo" class="block text-sm font-medium text-gray-700">Cargo</label>
                                 <select id="cert_analista_cargo" onchange="updateCertPreview()" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm sm:text-sm">
-                                    <option>Analista de Promotoria/Assistente Jurídico</option>
+                                    <option>Analista de Promotoria</option>
                                     <option>Oficial de Promotoria</option>
                                 </select>
                                 <label for="cert_analista_comarca" class="block text-sm font-medium text-gray-700 mt-2">Comarca</label>
                                 <input type="text" id="cert_analista_comarca" oninput="updateCertPreview()" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm sm:text-sm" value="Marília">
                             </div>
                             <div id="cert_field_escrevente" class="cert-conditional hidden">
-                                <label for="cert_escrevente_cargo" class="block text-sm font-medium text-gray-700">Cargo</label>
+                                <label for="cert_escrevente_picker" class="block text-sm font-medium text-gray-700">Selecionar do Termo</label>
+                                <select id="cert_escrevente_picker" onchange="pickEscreventeFromTermo()" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm sm:text-sm">
+                                    <option value="">-- escolha uma pessoa do termo --</option>
+                                </select>
+                                <label for="cert_escrevente_cargo" class="block text-sm font-medium text-gray-700 mt-2">Cargo</label>
                                 <select id="cert_escrevente_cargo" onchange="updateCertPreview()" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm sm:text-sm">
                                     <option>Escrevente Técnico Judiciário</option>
                                     <option>Oficial de Justiça</option>
@@ -466,33 +476,28 @@
                             </button>
                         </div>
                         <div id="cert-document-container" class="cert-document-preview">
-                            <header>
-                                <img src="https://www.cnj.jus.br/wp-content/uploads/2011/02/brasao_pjud.png" alt="Brasão do Poder Judiciário" class="header-logo">
-                                <p class="header-text">PODER JUDICIÁRIO</p>
-                                <p class="header-text">SÃO PAULO</p>
-                                <p class="header-text" id="cert-preview-header-vara">VARA DO JUIZADO ESPECIAL CÍVEL DA COMARCA DE MARÍLIA</p>
-                            </header>
+                            <table class="cert-header-table">
+                                <tr>
+                                    <td class="cert-header-brasao-cell">
+                                        <img src="tj.jpg" alt="Brasão TJSP">
+                                    </td>
+                                    <td class="cert-header-text-cell">
+                                        <div class="pj-line">PODER JUDICIÁRIO</div>
+                                        <div class="sp-line">SÃO PAULO</div>
+                                        <div class="vara-line" id="cert-preview-header-vara">JUIZADO ESPECIAL CÍVEL DA COMARCA DE MARÍLIA/SP</div>
+                                    </td>
+                                </tr>
+                            </table>
                             <h2 class="cert-title">C E R T I D Ã O</h2>
-                            <main>
-                                <div class="body-container">
-                                    <div class="certifier-info-float">
-                                        <span id="cert-preview-certificante_nome" class="font-bold"></span>, <span id="cert-preview-certificante_cargo"></span>, <span id="cert-preview-certificante_oficio"></span>, na forma da lei, etc.
-                                    </div>
-                                    <p>
-                                        <span class="font-bold">CERTIFICA</span> que, atendendo a pedido formulado por pessoa interessada, revendo o Livro de Registro de Feitos destinado ao <span class="font-bold">PLANTÃO JUDICIÁRIO</span>, dele verificou-se que <span id="cert-preview-body"></span>. <span class="font-bold">NADA MAIS</span>. O referido é verdade e dou fé.
-                                    </p>
-                                </div>
-                                <p class="final-paragraph">
-                                    Dado e passado nesta cidade e Comarca de <span id="cert-preview-emissao_comarca" class="font-bold"></span>, aos <span id="cert-preview-emissao_dia_extenso" class="font-bold"></span> (<span id="cert-preview-emissao_dia_num" class="font-bold"></span>) dias do mês de <span id="cert-preview-emissao_mes_extenso" class="font-bold"></span> (<span id="cert-preview-emissao_mes_num" class="font-bold"></span>) do ano de <span id="cert-preview-emissao_ano_extenso" class="font-bold"></span> (<span id="cert-preview-emissao_ano_num" class="font-bold"></span>). Eu, <span id="cert-preview-certificante_nome_final" class="font-bold"></span>, <span id="cert-preview-certificante_cargo_final" class="font-bold"></span>, digitei, conferi e assinei digitalmente.
-                                </p>
-                            </main>
-                            <div class="cert-signature">
-                                <span id="cert-preview-assinatura" class="font-bold"></span><br>
-                                <span id="cert-preview-assinatura_cargo"></span>
+                            <div class="cert-certifier">
+                                <span id="cert-preview-certificante_nome" class="font-bold"></span>, <span id="cert-preview-certificante_cargo"></span> <span id="cert-preview-certificante_oficio"></span>, na forma da lei, etc.
                             </div>
+                            <p class="cert-body">
+                                <span class="cert-letter-spaced">C E R T I F I C A</span> que, atendendo a pedido formulado por pessoa interessada, revendo o Livro de Registro de Feitos destinado ao <span class="font-bold">PLANTÃO JUDICIÁRIO</span>, dele verificou-se que <span id="cert-preview-body"></span>. <span class="font-bold">NADA MAIS</span>. O referido é verdade e dou fé. Dado e passado nesta cidade e Comarca de <span id="cert-preview-emissao_comarca"></span>, aos <span id="cert-preview-emissao_dia_extenso"></span> (<span id="cert-preview-emissao_dia_num"></span>) dias do mês de <span id="cert-preview-emissao_mes_extenso"></span> (<span id="cert-preview-emissao_mes_num"></span>) do ano de <span id="cert-preview-emissao_ano_extenso"></span> (<span id="cert-preview-emissao_ano_num"></span>). Eu, <span id="cert-preview-certificante_nome_final"></span>, <span id="cert-preview-certificante_cargo_final"></span>, digitei, conferi e assinei digitalmente.
+                            </p>
                             <footer class="cert-footer">
-                                <span id="cert-preview-footer-endereco"></span><br>
-                                <span id="cert-preview-footer-contato"></span>
+                                <div class="cert-footer-rule" id="cert-preview-footer-endereco"></div>
+                                <div id="cert-preview-footer-contato"></div>
                             </footer>
                         </div>
                     </div>
@@ -509,6 +514,10 @@
             document.getElementById('content-certidao').classList.toggle('hidden', tab !== 'certidao');
             document.getElementById('tab-termo').classList.toggle('active', tab === 'termo');
             document.getElementById('tab-certidao').classList.toggle('active', tab === 'certidao');
+            if (tab === 'certidao') {
+                refreshEscreventePicker();
+                if (!document.getElementById('cert_participante_nome').value.trim()) loadFromTermo();
+            }
         }
 
         // ===== PRINT =====
@@ -718,6 +727,7 @@
                 : 'sem ocorrência';
 
             updateProcessosTable();
+            refreshEscreventePicker();
         }
 
         function updateProcessosTable() {
@@ -749,7 +759,16 @@
         }
 
         // ===== CERTIDÃO =====
-        function toggleCertFields() {
+        const NAME_LOWERS = new Set(['de','da','do','das','dos','e']);
+        function toTitleCase(str) {
+            if (!str) return '';
+            return str.toLowerCase().split(/\s+/).map((w, i) => {
+                if (i > 0 && NAME_LOWERS.has(w)) return w;
+                return w.charAt(0).toUpperCase() + w.slice(1);
+            }).join(' ');
+        }
+
+        function toggleCertFields(autoLoad = false) {
             const type = document.getElementById('tipo_certidao').value;
             document.querySelectorAll('.cert-conditional').forEach(el => el.classList.add('hidden'));
             document.getElementById(`cert_field_${type}`)?.classList.remove('hidden');
@@ -758,6 +777,64 @@
             trat.value = (type === 'analista_mp' || type === 'escrevente')
                 ? (genero === 'f' ? 'Sra.' : 'Sr.')
                 : (genero === 'f' ? 'Dra.' : 'Dr.');
+            if (type === 'escrevente') refreshEscreventePicker();
+            if (autoLoad) loadFromTermo();
+            else updateCertPreview();
+        }
+
+        // ===== AUTO-CARREGAR DADOS DO TERMO =====
+        function loadFromTermo() {
+            const type = document.getElementById('tipo_certidao').value;
+            let nome = '', tratamento = '';
+
+            if (type === 'juiz') {
+                nome = document.getElementById('juiz').value.trim();
+                tratamento = document.getElementById('juiz_pronome').value;
+                const vara = document.getElementById('comarca_juiz').value.trim();
+                if (vara) document.getElementById('cert_juiz_vara_comarca').value = vara;
+            } else if (type === 'promotor') {
+                nome = document.getElementById('promotor').value.trim();
+                tratamento = document.getElementById('promotor_pronome').value;
+            } else if (type === 'defensor') {
+                nome = document.getElementById('defensor').value.trim();
+                tratamento = document.getElementById('defensor_pronome').value;
+            } else if (type === 'analista_mp') {
+                nome = document.getElementById('oficial_promotoria_nome').value.trim();
+                const cargoTermo = document.getElementById('oficial_promotoria_cargo').value;
+                const sel = document.getElementById('cert_analista_cargo');
+                if ([...sel.options].some(o => o.value === cargoTermo)) sel.value = cargoTermo;
+            } else if (type === 'escrevente') {
+                refreshEscreventePicker();
+            }
+
+            if (nome) document.getElementById('cert_participante_nome').value = nome.toUpperCase();
+            if (tratamento) {
+                document.getElementById('cert_participante_tratamento').value = tratamento;
+                document.getElementById('cert_participante_genero').value = (tratamento === 'Dra.' || tratamento === 'Sra.') ? 'f' : 'm';
+            }
+            updateCertPreview();
+        }
+
+        function refreshEscreventePicker() {
+            const picker = document.getElementById('cert_escrevente_picker');
+            if (!picker) return;
+            const prev = picker.value;
+            picker.innerHTML = '<option value="">-- escolha uma pessoa do termo --</option>';
+            const escreventes = [...document.querySelectorAll('#escreventes-container .escrevente-input')].map(i => i.value.trim()).filter(Boolean);
+            const oficiais = [...document.querySelectorAll('#oficiais-container .oficial-input')].map(i => i.value.trim()).filter(Boolean);
+            const assistente = document.getElementById('assistente_judiciario').value.trim();
+            escreventes.forEach(n => picker.add(new Option(`Escrevente – ${n}`, `Escrevente Técnico Judiciário|${n}`)));
+            oficiais.forEach(n => picker.add(new Option(`Oficial de Justiça – ${n}`, `Oficial de Justiça|${n}`)));
+            if (assistente) picker.add(new Option(`Assistente Judiciário – ${assistente}`, `Assistente Judiciário|${assistente}`));
+            if (prev && [...picker.options].some(o => o.value === prev)) picker.value = prev;
+        }
+
+        function pickEscreventeFromTermo() {
+            const v = document.getElementById('cert_escrevente_picker').value;
+            if (!v) return;
+            const [cargo, nome] = v.split('|');
+            document.getElementById('cert_escrevente_cargo').value = cargo;
+            document.getElementById('cert_participante_nome').value = nome.toUpperCase();
             updateCertPreview();
         }
 
@@ -766,53 +843,51 @@
             const nome = document.getElementById('cert_participante_nome').value.toUpperCase() || 'FULANO(A) DE TAL';
             const genero = document.getElementById('cert_participante_genero').value;
             const trat = document.getElementById('cert_participante_tratamento').value;
-            const datas = document.getElementById('cert_plantao_datas').value;
+            const datas = document.getElementById('cert_plantao_datas').value || '[data(s) do plantão]';
             const circ = document.getElementById('cert_circunscricao').value;
             const prep = datas.toLowerCase().includes(' e ') ? 'nos dias' : 'no dia';
-            const artigo = genero === 'f' ? 'a Senhora' : 'o Senhor';
+            const senhor = genero === 'f' ? 'a Senhora' : 'o Senhor';
             const excel = genero === 'f' ? 'a Excelentíssima Senhora' : 'o Excelentíssimo Senhor';
             const art = genero === 'f' ? 'a' : 'o';
 
             let body = '';
             if (type === 'juiz') {
                 const vara = document.getElementById('cert_juiz_vara_comarca').value;
-                body = `${prep} <b>${datas}</b>, ${excel} <b>${trat} ${nome}</b>, MM. Juiz(a) de Direito do(a) <b>${vara}</b>, participou do <b>PLANTÃO JUDICIÁRIO ORDINÁRIO</b> desta <b>${circ}</b>, realizado de maneira remota conforme disciplinado no Comunicado Conjunto nº 249/2020`;
+                const juizTit = genero === 'f' ? 'Juíza de Direito' : 'Juiz de Direito';
+                body = `${prep} <b>${datas}</b>, ${excel} <b>${trat} ${nome}</b>, MM. ${juizTit} do ${vara}, participou do <b>PLANTÃO JUDICIÁRIO ORDINÁRIO</b> desta ${circ}, realizado de maneira remota conforme disciplinado no Comunicado Conjunto nº 249/2020`;
             } else if (type === 'promotor') {
                 const num = document.getElementById('cert_promotor_numero').value;
                 const com = document.getElementById('cert_promotor_comarca').value;
-                body = `${prep} <b>${datas}</b>, ${excel} <b>${trat} ${nome}</b>, <b>${num}º Promotor de Justiça da Comarca de ${com}</b>, participou do <b>PLANTÃO JUDICIÁRIO ORDINÁRIO</b> desta <b>${circ}</b>, realizado de maneira remota conforme disciplinado no Comunicado Conjunto nº 249/2020`;
+                const promTit = genero === 'f' ? 'Promotora de Justiça' : 'Promotor de Justiça';
+                body = `${prep} <b>${datas}</b>, ${excel} <b>${trat} ${nome}</b>, ${num}º ${promTit} da Comarca de ${com}, participou do <b>PLANTÃO JUDICIÁRIO ORDINÁRIO</b> desta ${circ}, realizado de maneira remota conforme disciplinado no Comunicado Conjunto nº 249/2020`;
             } else if (type === 'defensor') {
                 const com = document.getElementById('cert_defensor_comarca').value;
-                body = `${prep} <b>${datas}</b>, ${artigo} <b>${trat} ${nome}</b>, Defensor(a) Público(a) desta <b>Comarca de ${com}</b>, participou do <b>PLANTÃO JUDICIÁRIO ORDINÁRIO</b> desta <b>${circ}</b>, realizado de maneira remota conforme disciplinado no Provimento Conjunto nº 54/2022`;
+                const defTit = genero === 'f' ? 'Defensora Pública' : 'Defensor Público';
+                body = `${prep} <b>${datas}</b>, ${senhor} <b>${trat} ${nome}</b>, ${defTit} desta Comarca de ${com}, participou do <b>PLANTÃO JUDICIÁRIO ORDINÁRIO</b> desta ${circ}, realizado de maneira remota conforme disciplinado no Provimento Conjunto nº 54/2022`;
             } else if (type === 'analista_mp') {
                 const cg = document.getElementById('cert_analista_cargo').value;
                 const com = document.getElementById('cert_analista_comarca').value;
-                body = `${prep} <b>${datas}</b>, ${art} <b>${cg} do Ministério Público da Comarca de ${com}</b>, <b>${trat} ${nome}</b>, participou do <b>PLANTÃO JUDICIÁRIO</b> desta <b>${circ}</b>, realizado de maneira remota conforme disciplinado no Provimento Conjunto nº 54/2022`;
+                body = `${prep} <b>${datas}</b>, ${art} ${cg} do Ministério Público da Comarca de ${com}, <b>${trat} ${nome}</b>, participou do <b>PLANTÃO JUDICIÁRIO</b> desta ${circ}, realizado de maneira remota conforme disciplinado no Provimento Conjunto nº 54/2022`;
             } else if (type === 'escrevente') {
                 const cg = document.getElementById('cert_escrevente_cargo').value;
-                body = `${prep} <b>${datas}</b>, ${art} <b>${cg}</b> <b>${trat} ${nome}</b>, participou do <b>PLANTÃO JUDICIÁRIO</b> desta <b>${circ}</b>, realizado de maneira remota conforme disciplinado no Provimento Conjunto nº 54/2022`;
+                body = `${prep} <b>${datas}</b>, ${art} ${cg} <b>${trat} ${nome}</b>, participou do <b>PLANTÃO JUDICIÁRIO</b> desta ${circ}, realizado de maneira remota conforme disciplinado no Provimento Conjunto nº 54/2022`;
             }
             document.getElementById('cert-preview-body').innerHTML = body;
 
-            const certNome = document.getElementById('cert_certificante_nome').value;
+            const certNomeRaw = document.getElementById('cert_certificante_nome').value;
             const certCargo = document.getElementById('cert_certificante_cargo').value;
             const certOficio = document.getElementById('cert_certificante_oficio').value;
-            document.getElementById('cert-preview-certificante_nome').textContent = certNome.toUpperCase();
-            document.getElementById('cert-preview-certificante_nome_final').textContent = certNome;
+            document.getElementById('cert-preview-certificante_nome').textContent = certNomeRaw.toUpperCase();
+            document.getElementById('cert-preview-certificante_nome_final').textContent = toTitleCase(certNomeRaw);
             document.getElementById('cert-preview-certificante_cargo').textContent = certCargo;
             document.getElementById('cert-preview-certificante_cargo_final').textContent = certCargo;
             document.getElementById('cert-preview-certificante_oficio').textContent = certOficio;
-            document.getElementById('cert-preview-assinatura').textContent = certNome.toUpperCase();
-            document.getElementById('cert-preview-assinatura_cargo').textContent = certCargo;
             document.getElementById('cert-preview-emissao_comarca').textContent = document.getElementById('cert_emissao_comarca').value;
             document.getElementById('cert-preview-footer-endereco').textContent = document.getElementById('cert_footer_endereco').value;
             document.getElementById('cert-preview-footer-contato').textContent = document.getElementById('cert_footer_contato').value;
 
-            // Header vara
-            let hdrVara = '';
-            if (type === 'juiz') hdrVara = document.getElementById('cert_juiz_vara_comarca').value.toUpperCase();
-            else hdrVara = certOficio.toUpperCase().replace(/^DO OFÍCIO D[AO] /i,'').replace(/^DO /i,'');
-            document.getElementById('cert-preview-header-vara').textContent = hdrVara || 'VARA DO JUIZADO ESPECIAL CÍVEL DA COMARCA DE MARÍLIA';
+            // Header vara — fixo para todos os tipos
+            document.getElementById('cert-preview-header-vara').textContent = 'JUIZADO ESPECIAL CÍVEL DA COMARCA DE MARÍLIA/SP';
 
             // Date
             const dataIn = document.getElementById('cert_emissao_data').value;
@@ -820,7 +895,7 @@
                 const d = new Date(dataIn + 'T12:00:00');
                 if (!isNaN(d.getTime())) {
                     document.getElementById('cert-preview-emissao_dia_extenso').textContent = window.extenso(d.getDate(), { number: { gender: 'm' } });
-                    document.getElementById('cert-preview-emissao_dia_num').textContent = String(d.getDate()).padStart(2,'0');
+                    document.getElementById('cert-preview-emissao_dia_num').textContent = String(d.getDate());
                     document.getElementById('cert-preview-emissao_mes_extenso').textContent = MESES[d.getMonth()];
                     document.getElementById('cert-preview-emissao_mes_num').textContent = String(d.getMonth()+1).padStart(2,'0');
                     document.getElementById('cert-preview-emissao_ano_extenso').textContent = window.extenso(d.getFullYear());
