@@ -70,29 +70,111 @@
         /* Toast */
         #toast { position: fixed; bottom: 1.5rem; right: 1.5rem; z-index: 9999; transition: opacity 0.3s; }
 
+        /* Marca d'água só para impressão */
+        #print-watermark { display: none; }
+
         /* Print */
         @media print {
             .no-print { display: none !important; }
+            @page { margin: 1.5cm 1.4cm; }
 
-            /* Termo */
-            body.print-termo * { visibility: hidden; }
-            body.print-termo #document-container,
-            body.print-termo #document-container * { visibility: visible !important; }
-            body.print-termo #document-container { position: absolute; left: 0; top: 0; width: 100%; }
+            /* Reset wrappers para impressão (background transparente para a marca d'água aparecer) */
+            body.print-termo, body.print-certidao { background: transparent !important; }
+            body.print-termo .container, body.print-certidao .container,
+            body.print-termo .container > div, body.print-certidao .container > div {
+                padding: 0 !important; margin: 0 !important;
+                box-shadow: none !important; border: none !important;
+                border-radius: 0 !important; background: transparent !important;
+                max-width: 100% !important;
+            }
+            body.print-termo #obs-modal, body.print-certidao #obs-modal,
+            body.print-termo #toast, body.print-certidao #toast { display: none !important; }
+
+            /* === TERMO === */
+            body.print-termo #content-certidao,
+            body.print-termo #content-controle,
+            body.print-termo #form-container { display: none !important; }
+            body.print-termo #content-termo {
+                display: block !important; padding: 0 !important; gap: 0 !important;
+            }
+            body.print-termo #content-termo > div:last-child {
+                border: none !important; padding: 0 !important;
+                min-height: 0 !important; height: auto !important;
+            }
+            body.print-termo #document-container {
+                position: static !important; width: 100% !important;
+                padding: 0 !important; box-shadow: none !important; border: none !important;
+                background: transparent !important;
+            }
             body.print-termo .document-preview p,
-            body.print-termo .document-preview h2,
-            body.print-termo .document-preview table { font-size: 12pt; }
+            body.print-termo .document-preview h2 { font-size: 11.5pt; }
+            body.print-termo .document-preview table { font-size: 10pt; }
+            body.print-termo .text-center.mb-12 { margin-bottom: 6pt !important; }
+            body.print-termo .document-preview p { margin-bottom: 10pt !important; }
+            /* Tabela: volta para largura/margem normais (a regra da tela usava 105% que estourava o papel) */
+            body.print-termo #preview-processos-table-container {
+                width: 100% !important; margin-left: 0 !important; margin: 0 !important;
+            }
+            body.print-termo #preview-processos-table-container table {
+                table-layout: auto !important;
+            }
+            body.print-termo #preview-processos-table-container th,
+            body.print-termo #preview-processos-table-container td {
+                padding: 0.18rem 0.28rem !important;
+                font-size: 9.5pt !important;
+            }
+            /* Coluna do número do processo: sem quebra, mesma fonte (Times) */
+            body.print-termo #preview-processos-table-container td:first-child,
+            body.print-termo #preview-processos-table-container th:first-child {
+                white-space: nowrap !important;
+                font-size: 9pt !important;
+                letter-spacing: -0.02em;
+            }
+            body.print-termo #preview-processos-table-container th:nth-child(2),
+            body.print-termo #preview-processos-table-container td:nth-child(2) {
+                white-space: nowrap !important;
+            }
+            /* Marca d'água em todas as páginas — usa <img> fixed (Chrome/Edge repete em cada página impressa) */
+            body.print-termo .watermark { display: none !important; }
+            body.print-termo #print-watermark {
+                display: block !important;
+                position: fixed;
+                top: 50%; left: 50%;
+                transform: translate(-50%, -50%);
+                width: 380px; height: auto;
+                opacity: 0.10;
+                z-index: 0;
+                pointer-events: none;
+            }
+            body.print-termo #content-termo { position: relative; z-index: 1; }
 
-            /* Certidão — espelha o layout do PDF modelo */
-            body.print-certidao * { visibility: hidden; }
-            body.print-certidao #cert-document-container,
-            body.print-certidao #cert-document-container * { visibility: visible !important; }
-            body.print-certidao #cert-document-container { position: absolute; left: 0; top: 0; width: 100%; }
-            body.print-certidao .cert-document-preview { max-width: 100%; min-height: 0; box-shadow: none; border: none; padding: 0.5cm 1cm; }
+            /* === CERTIDÃO === */
+            body.print-certidao #content-termo,
+            body.print-certidao #content-controle,
+            body.print-certidao #cert-form-container { display: none !important; }
+            body.print-certidao #content-certidao {
+                display: block !important; padding: 0 !important;
+            }
+            body.print-certidao #content-certidao > div {
+                display: block !important; padding: 0 !important; gap: 0 !important;
+            }
+            body.print-certidao #content-certidao > div > div:last-child {
+                border: none !important; padding: 0 !important; min-height: 0 !important;
+            }
+            body.print-certidao #cert-document-container {
+                position: static !important; width: 100% !important;
+            }
+            body.print-certidao .cert-document-preview {
+                max-width: 100%; min-height: 0; box-shadow: none; border: none;
+                padding: 0 !important;
+            }
         }
     </style>
 </head>
 <body class="bg-gray-100 text-gray-800">
+
+    <!-- Marca d'água para impressão (fica fixa e se repete em cada página no Chrome) -->
+    <img id="print-watermark" src="tj.jpg" alt="" aria-hidden="true">
 
     <!-- Toast -->
     <div id="toast" class="hidden">
@@ -1572,9 +1654,9 @@
             const reader = new FileReader();
             reader.onload = ev => {
                 try {
-                    const wb = XLSX.read(ev.target.result, { type: 'array' });
+                    const wb = XLSX.read(ev.target.result, { type: 'array', cellDates: true });
                     const sheet = wb.Sheets[wb.SheetNames[0]];
-                    const rows = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: '' });
+                    const rows = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: '', raw: false, dateNF: 'dd/mm/yyyy' });
                     if (!rows.length) { showToast('Planilha vazia.', 'error'); return; }
 
                     // Detect header row: row with "Processo" cell
@@ -1584,6 +1666,7 @@
                     const colProc = header.findIndex(c => c === 'processo' || c.includes('processo'));
                     const colClasse = header.findIndex(c => c === 'classe' || c.includes('classe'));
                     const colParte = header.findIndex(c => c.includes('parte passiva') || c.includes('réu') || c.includes('reu'));
+                    const colEntrada = header.findIndex(c => c === 'entrada' || c.includes('entrada') || c.includes('data'));
 
                     if (colProc === -1) { showToast('Coluna "Processo" não encontrada.', 'error'); return; }
 
@@ -1597,12 +1680,14 @@
                         if (!numero) continue;
                         const classe = colClasse !== -1 ? String(r[colClasse] || '').trim() : '';
                         const reu = colParte !== -1 ? String(r[colParte] || '').trim() : '';
+                        const entradaRaw = colEntrada !== -1 ? r[colEntrada] : '';
+                        const dataISO = parseEntradaToISO(entradaRaw) || today;
 
                         addProcesso();
                         const div = document.getElementById(`processo-${processoCount}`);
                         if (!div) continue;
                         div.querySelector('.processo-input-processo').value = numero;
-                        div.querySelector('.processo-input-data').value = today;
+                        div.querySelector('.processo-input-data').value = dataISO;
                         const sel = div.querySelector('.processo-input-natureza-select');
                         const outro = div.querySelector('.processo-input-natureza-outro');
                         // Match by inclusion (e.g. "Medidas Protetivas (Lei Maria...)" → "Medidas Protetivas de Urgência")
@@ -1635,6 +1720,35 @@
             };
             reader.readAsArrayBuffer(file);
             e.target.value = '';
+        }
+
+        // Converte um valor de data da planilha (string "30/05/2026 12:49:07", Date, ou serial Excel) para ISO yyyy-MM-dd
+        function parseEntradaToISO(val) {
+            if (val === null || val === undefined || val === '') return '';
+            if (val instanceof Date && !isNaN(val.getTime())) {
+                const y = val.getFullYear();
+                const m = String(val.getMonth() + 1).padStart(2, '0');
+                const d = String(val.getDate()).padStart(2, '0');
+                return `${y}-${m}-${d}`;
+            }
+            if (typeof val === 'number' && isFinite(val)) {
+                // Excel serial: dias desde 1899-12-30 (com correção do bug do ano 1900)
+                const ms = Math.round((val - 25569) * 86400 * 1000);
+                const d = new Date(ms);
+                if (!isNaN(d.getTime())) {
+                    const y = d.getUTCFullYear();
+                    const mo = String(d.getUTCMonth() + 1).padStart(2, '0');
+                    const da = String(d.getUTCDate()).padStart(2, '0');
+                    return `${y}-${mo}-${da}`;
+                }
+            }
+            const s = String(val).trim();
+            const m = s.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})/);
+            if (m) {
+                const [, d, mo, y] = m;
+                return `${y}-${mo.padStart(2,'0')}-${d.padStart(2,'0')}`;
+            }
+            return '';
         }
 
         // ===== INIT =====
