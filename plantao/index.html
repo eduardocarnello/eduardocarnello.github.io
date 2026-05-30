@@ -1194,21 +1194,28 @@
                 return;
             }
             persistStore();
-            // Inherit people fields but clear processos / dates / observações
+            // Inherit people fields but clear processos / observações
             const cur = currentDay().formData || getFormDataAsObject();
             const inherited = JSON.parse(JSON.stringify(cur));
             inherited.processos = [];
-            inherited.data_abertura = '';
-            inherited.data_encerramento = '';
-            const today = new Date();
-            const defaultLabel = `Dia ${STORE.days.length + 1} – ${String(today.getDate()).padStart(2,'0')}/${String(today.getMonth()+1).padStart(2,'0')}`;
+
+            // Próximo dia = data_abertura (ou _encerramento) do dia anterior + 1; fallback: hoje
+            const prevDateStr = cur.data_abertura || cur.data_encerramento || '';
+            let nextDate = null;
+            if (prevDateStr) {
+                const d = new Date(prevDateStr + 'T12:00:00');
+                if (!isNaN(d.getTime())) { d.setDate(d.getDate() + 1); nextDate = d; }
+            }
+            if (!nextDate) nextDate = new Date();
+            const nextISO = `${nextDate.getFullYear()}-${String(nextDate.getMonth()+1).padStart(2,'0')}-${String(nextDate.getDate()).padStart(2,'0')}`;
+            inherited.data_abertura = nextISO;
+            inherited.data_encerramento = nextISO;
+            inherited.hora_encerramento = '13:00'; // reset, não repete do dia anterior
+
+            const defaultLabel = `Dia ${STORE.days.length + 1} – ${String(nextDate.getDate()).padStart(2,'0')}/${String(nextDate.getMonth()+1).padStart(2,'0')}`;
             STORE.days.push({ label: defaultLabel, formData: inherited, assignments: {} });
             STORE.currentDayIndex = STORE.days.length - 1;
             populateFormFromObject(inherited);
-            // Seed empty default
-            const isoToday = today.toISOString().split('T')[0];
-            document.getElementById('data_abertura').value = isoToday;
-            document.getElementById('data_encerramento').value = isoToday;
             updatePreview();
             refreshDaySelector();
             persistStore();
