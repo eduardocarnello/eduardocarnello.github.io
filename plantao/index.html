@@ -73,6 +73,13 @@
         /* Marca d'água só para impressão */
         #print-watermark { display: none; }
 
+        /* Click-to-copy do número do processo */
+        .num-copy { cursor: pointer; padding: 2px 4px; border-radius: 3px; transition: background 0.15s, color 0.15s; }
+        .num-copy:hover { background: #e0e7ff; }
+        .num-copy.copied { background: #d1fae5; color: #065f46; }
+        .num-copy.copied::after { content: ' ✓'; font-weight: bold; }
+        @media print { .num-copy { padding: 0 !important; background: transparent !important; cursor: auto; } .num-copy.copied::after { content: none !important; } }
+
         /* Print */
         @media print {
             .no-print { display: none !important; }
@@ -762,7 +769,10 @@
             div.className = 'p-3 border rounded-md bg-white grid grid-cols-1 sm:grid-cols-2 gap-3 relative';
             div.innerHTML = `
                 <button onclick="document.getElementById('processo-${id}').remove();debouncedPreview()" class="absolute top-2 right-2 text-red-500 hover:text-red-700 font-bold no-print">×</button>
-                <input type="text" placeholder="Nº do Processo" class="processo-input-processo sm:col-span-2 w-full rounded-md border-gray-300 shadow-sm sm:text-sm" oninput="debouncedPreview()">
+                <div class="sm:col-span-2 flex gap-1">
+                    <input type="text" placeholder="Nº do Processo" class="processo-input-processo flex-1 rounded-md border-gray-300 shadow-sm sm:text-sm" oninput="debouncedPreview()">
+                    <button type="button" onclick="copyProcFromInput(this)" class="px-2 rounded-md text-sm bg-gray-100 hover:bg-indigo-100 border border-gray-300 no-print" title="Copiar número do processo">📋</button>
+                </div>
                 <input type="date" class="processo-input-data w-full rounded-md border-gray-300 shadow-sm sm:text-sm" value="${today}" oninput="debouncedPreview()">
                 <div>
                     <select class="processo-input-natureza-select w-full rounded-md border-gray-300 shadow-sm sm:text-sm" onchange="toggleNaturezaInput(this,${id});debouncedPreview()">
@@ -910,8 +920,12 @@
                 if (data) { const [y,m,d] = data.split('-'); data = `${d}/${m}/${y}`; }
                 const sel = proc.querySelector('.processo-input-natureza-select');
                 const natureza = sel.value === 'Outro' ? proc.querySelector('.processo-input-natureza-outro').value : sel.value;
+                const numProc = proc.querySelector('.processo-input-processo').value;
+                const numCell = numProc
+                    ? `<span class="num-copy" title="Clique para copiar" onclick="copyProcNumber('${esc(numProc).replace(/'/g, '&#39;')}', this)">${esc(numProc)}</span>`
+                    : '';
                 html += `<tr>
-                    <td class="border border-gray-300 p-2">${esc(proc.querySelector('.processo-input-processo').value)}</td>
+                    <td class="border border-gray-300 p-2">${numCell}</td>
                     <td class="border border-gray-300 p-2">${esc(data)}</td>
                     <td class="border border-gray-300 p-2">${esc(natureza)}</td>
                     <td class="border border-gray-300 p-2">${esc(proc.querySelector('.processo-input-autor').value)}</td>
@@ -1436,7 +1450,7 @@
                        </select>`;
 
                 html += `<tr class="ctrl-row ${ok ? 'ok' : ''}" data-num="${escapeAttr(p.numero)}">
-                    <td class="col-num">${escapeHtml(p.numero)}${isNew ? '<span class="ctrl-new-badge">NOVO</span>' : ''}</td>
+                    <td class="col-num"><span class="num-copy" title="Clique para copiar" onclick="copyProcNumber('${escapeAttr(p.numero)}', this)">${escapeHtml(p.numero)}</span>${isNew ? '<span class="ctrl-new-badge">NOVO</span>' : ''}</td>
                     <td class="col-tipo">${escapeHtml(abbreviateNatureza(p.natureza))}</td>
                     <td>${escSelect}</td>
                     <td>${ojSelect}</td>
@@ -1466,6 +1480,34 @@
                 if (row) row.classList.toggle('ok', !!value);
             }
             scheduleAutoSave();
+        }
+
+        // ===== COPY PROCESSO =====
+        function copyProcNumber(num, el) {
+            if (!num) return;
+            const done = () => {
+                if (el) {
+                    el.classList.add('copied');
+                    setTimeout(() => el.classList.remove('copied'), 900);
+                }
+                showToast(`Copiado: ${num}`, 'info');
+            };
+            if (navigator.clipboard) {
+                navigator.clipboard.writeText(num).then(done).catch(() => fallbackCopy(num, done));
+            } else fallbackCopy(num, done);
+        }
+        function fallbackCopy(text, cb) {
+            const ta = document.createElement('textarea');
+            ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+            document.body.appendChild(ta); ta.select();
+            try { document.execCommand('copy'); cb && cb(); }
+            catch { showToast('Não foi possível copiar.', 'error'); }
+            finally { ta.remove(); }
+        }
+        function copyProcFromInput(btn) {
+            const input = btn.parentElement.querySelector('.processo-input-processo');
+            if (!input) return;
+            copyProcNumber(input.value.trim(), btn);
         }
 
         // ===== MODAL DE OBSERVAÇÕES =====
