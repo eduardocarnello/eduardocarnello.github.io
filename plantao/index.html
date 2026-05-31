@@ -118,6 +118,19 @@
             body.print-termo .document-preview table { font-size: 10pt; }
             body.print-termo .text-center.mb-12 { margin-bottom: 6pt !important; }
             body.print-termo .document-preview p { margin-bottom: 10pt !important; }
+            /* Evita órfãs/viúvas e mantém a assinatura junto com seu parágrafo */
+            body.print-termo .document-preview p { orphans: 3; widows: 3; }
+            body.print-termo .signature {
+                break-inside: avoid !important; page-break-inside: avoid !important;
+                break-before: avoid !important; page-break-before: avoid !important;
+            }
+            body.print-termo .document-preview h2 {
+                break-after: avoid !important; page-break-after: avoid !important;
+            }
+            /* Bloco do Encerramento (h2 + parágrafo + assinatura) tenta caber junto na mesma página */
+            body.print-termo .termo-bloco-encerramento {
+                break-inside: avoid !important; page-break-inside: avoid !important;
+            }
             /* Tabela: volta para largura/margem normais (a regra da tela usava 105% que estourava o papel) */
             body.print-termo #preview-processos-table-container {
                 width: 100% !important; margin-left: 0 !important; margin: 0 !important;
@@ -463,22 +476,26 @@
                             <p></p>
                             <p class="text-sm leading-tight">PLANTÃO JUDICIÁRIO - <span id="preview-circunscricao_comarca">[Circunscrição]</span></p>
                         </div>
-                        <h2 style="text-decoration:underline;">Termo de Abertura</h2>
-                        <p>
-                            Às <span id="preview-hora_abertura" class="font-bold">[hora]</span> horas do dia <span id="preview-dia_extenso_abertura" class="font-bold">[dia por extenso]</span> (<span id="preview-dia_num_abertura" class="font-bold">[dia]</span>) de <span id="preview-mes_extenso_abertura" class="font-bold">[mês por extenso]</span> (<span id="preview-mes_num_abertura" class="font-bold">[mês]</span>) do ano de <span id="preview-ano_extenso_abertura" class="font-bold">[ano por extenso]</span> (<span id="preview-ano_num_abertura" class="font-bold">[ano]</span>), de forma remota nos termos do Provimento Conjunto nº 54/2022, foi realizado o Plantão Judiciário da <span id="preview-circunscricao_abertura" class="font-bold">[Circunscrição Judiciária]</span>, nos termos do art. 1.130, inciso I, Capítulo X, das NSCGJ. Foi procedida a abertura do Plantão Judiciário pelo(a) <span id="preview-juiz" class="font-bold">[Juiz(a) de Direito]</span>, MM. Juiz(a) de Direito do(a) <span id="preview-comarca_juiz" class="font-bold">[Vara e Comarca do Juiz(a)]</span>, do qual fizeram parte o representante do Ministério Público, <span id="preview-promotor" class="font-bold">[Representante do Ministério Público]</span>, <span id="preview-oficial_promotoria_completo" class="font-bold">[Info Oficial Promotoria]</span>, o(a) Defensor(a) Público(a), <span id="preview-defensor" class="font-bold">[Defensor(a) Público(a)]</span>, o(a) <span id="preview-oficial_maior_cargo">Oficial Maior</span> <span id="preview-oficial_maior_nome" class="font-bold">[Nome do Digitador]</span>, os Oficiais de Justiça <span id="preview-oficiais_justica" class="font-bold">[Oficiais de Justiça]</span>, os Escreventes Técnicos Judiciário <span id="preview-escreventes" class="font-bold">[Escreventes]</span>, o(a) assistente judiciário <span id="preview-assistente_judiciario" class="font-bold">[Assistente Judiciário]</span>, <span id="preview-distribuidor_completo" class="font-bold">[Info Distribuidor]</span>. Para Constar, lavrei o presente termo que lido e achado conforme, vai devidamente assinado. Eu, <span id="preview-oficial_maior_digitador" class="font-bold">[Nome do Digitador]</span>, digitei e subscrevi digitalmente.
-                        </p>
-                        <div class="signature">
-                            <span id="preview-juiz_assinatura_abertura" class="font-bold">[Juiz(a) de Direito]</span>
-                            <p class="text-sm" style="text-align:center;text-indent:0;">Juiz(a) de Direito</p>
+                        <div class="termo-bloco-abertura">
+                            <h2 style="text-decoration:underline;">Termo de Abertura</h2>
+                            <p>
+                                Às <span id="preview-hora_abertura" class="font-bold">[hora]</span> horas do dia <span id="preview-dia_extenso_abertura" class="font-bold">[dia por extenso]</span> (<span id="preview-dia_num_abertura" class="font-bold">[dia]</span>) de <span id="preview-mes_extenso_abertura" class="font-bold">[mês por extenso]</span> (<span id="preview-mes_num_abertura" class="font-bold">[mês]</span>) do ano de <span id="preview-ano_extenso_abertura" class="font-bold">[ano por extenso]</span> (<span id="preview-ano_num_abertura" class="font-bold">[ano]</span>), de forma remota nos termos do Provimento Conjunto nº 54/2022, foi realizado o Plantão Judiciário da <span id="preview-circunscricao_abertura" class="font-bold">[Circunscrição Judiciária]</span>, nos termos do art. 1.130, inciso I, Capítulo X, das NSCGJ. Foi procedida a abertura do Plantão Judiciário pelo(a) <span id="preview-juiz" class="font-bold">[Juiz(a) de Direito]</span>, MM. Juiz(a) de Direito do(a) <span id="preview-comarca_juiz" class="font-bold">[Vara e Comarca do Juiz(a)]</span>, do qual fizeram parte o representante do Ministério Público, <span id="preview-promotor" class="font-bold">[Representante do Ministério Público]</span>, <span id="preview-oficial_promotoria_completo" class="font-bold">[Info Oficial Promotoria]</span>, o(a) Defensor(a) Público(a), <span id="preview-defensor" class="font-bold">[Defensor(a) Público(a)]</span>, o(a) <span id="preview-oficial_maior_cargo">Oficial Maior</span> <span id="preview-oficial_maior_nome" class="font-bold">[Nome do Digitador]</span>, os Oficiais de Justiça <span id="preview-oficiais_justica" class="font-bold">[Oficiais de Justiça]</span>, os Escreventes Técnicos Judiciário <span id="preview-escreventes" class="font-bold">[Escreventes]</span>, o(a) assistente judiciário <span id="preview-assistente_judiciario" class="font-bold">[Assistente Judiciário]</span>, <span id="preview-distribuidor_completo" class="font-bold">[Info Distribuidor]</span>. Para Constar, lavrei o presente termo que lido e achado conforme, vai devidamente assinado. Eu, <span id="preview-oficial_maior_digitador" class="font-bold">[Nome do Digitador]</span>, digitei e subscrevi digitalmente.
+                            </p>
+                            <div class="signature">
+                                <span id="preview-juiz_assinatura_abertura" class="font-bold">[Juiz(a) de Direito]</span>
+                                <p class="text-sm" style="text-align:center;text-indent:0;">Juiz(a) de Direito</p>
+                            </div>
                         </div>
                         <div id="preview-processos-table-container" class="my-8"></div>
-                        <h2>Termo de Encerramento</h2>
-                        <p>
-                            Às <span id="preview-hora_encerramento" class="font-bold">[hora]</span> horas do dia <span id="preview-dia_extenso_encerramento" class="font-bold">[dia por extenso]</span> (<span id="preview-dia_num_encerramento" class="font-bold">[dia]</span>) de <span id="preview-mes_extenso_encerramento" class="font-bold">[mês por extenso]</span> (<span id="preview-mes_num_encerramento" class="font-bold">[mês]</span>) do ano de <span id="preview-ano_extenso_encerramento" class="font-bold">[ano por extenso]</span> (<span id="preview-ano_num_encerramento" class="font-bold">[ano]</span>), foi procedido pelo(a) <span id="preview-juiz_encerramento" class="font-bold">[Juiz(a) de Direito]</span>, MM. Juiz(a) de Direito do(a) <span id="preview-comarca_juiz_encerramento" class="font-bold">[Vara e Comarca do Juiz(a)]</span>, o encerramento do Plantão Judiciário da <span id="preview-circunscricao_encerramento" class="font-bold">[Circunscrição Judiciária]</span>, <span id="preview-ocorrencia">[situação]</span>. Para Constar, lavrei o presente termo que lido e achado conforme, vai devidamente assinado. Eu, <span id="preview-oficial_maior_encerramento" class="font-bold">[Nome do Digitador]</span>, <span id="preview-oficial_maior_cargo_encerramento">Oficial Maior</span>, digitei e subscrevi digitalmente.
-                        </p>
-                        <div class="signature">
-                            <span id="preview-juiz_assinatura_encerramento" class="font-bold">[Juiz(a) de Direito]</span>
-                            <p class="text-sm" style="text-align:center;text-indent:0;">Juiz(a) de Direito</p>
+                        <div class="termo-bloco-encerramento">
+                            <h2>Termo de Encerramento</h2>
+                            <p>
+                                Às <span id="preview-hora_encerramento" class="font-bold">[hora]</span> horas do dia <span id="preview-dia_extenso_encerramento" class="font-bold">[dia por extenso]</span> (<span id="preview-dia_num_encerramento" class="font-bold">[dia]</span>) de <span id="preview-mes_extenso_encerramento" class="font-bold">[mês por extenso]</span> (<span id="preview-mes_num_encerramento" class="font-bold">[mês]</span>) do ano de <span id="preview-ano_extenso_encerramento" class="font-bold">[ano por extenso]</span> (<span id="preview-ano_num_encerramento" class="font-bold">[ano]</span>), foi procedido pelo(a) <span id="preview-juiz_encerramento" class="font-bold">[Juiz(a) de Direito]</span>, MM. Juiz(a) de Direito do(a) <span id="preview-comarca_juiz_encerramento" class="font-bold">[Vara e Comarca do Juiz(a)]</span>, o encerramento do Plantão Judiciário da <span id="preview-circunscricao_encerramento" class="font-bold">[Circunscrição Judiciária]</span>, <span id="preview-ocorrencia">[situação]</span>. Para Constar, lavrei o presente termo que lido e achado conforme, vai devidamente assinado. Eu, <span id="preview-oficial_maior_encerramento" class="font-bold">[Nome do Digitador]</span>, <span id="preview-oficial_maior_cargo_encerramento">Oficial Maior</span>, digitei e subscrevi digitalmente.
+                            </p>
+                            <div class="signature">
+                                <span id="preview-juiz_assinatura_encerramento" class="font-bold">[Juiz(a) de Direito]</span>
+                                <p class="text-sm" style="text-align:center;text-indent:0;">Juiz(a) de Direito</p>
+                            </div>
                         </div>
                     </div>
                 </div>
