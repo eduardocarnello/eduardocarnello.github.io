@@ -1677,14 +1677,22 @@
 
                     if (colProc === -1) { showToast('Coluna "Processo" não encontrada.', 'error'); return; }
 
+                    // Conjunto de processos já existentes na tabela (para evitar duplicatas)
+                    const existing = new Set(
+                        [...document.querySelectorAll('#processos-container .processo-input-processo')]
+                            .map(i => i.value.trim()).filter(Boolean)
+                    );
+
                     const today = new Date().toISOString().split('T')[0];
                     const naturezaOpts = ['Comunicado de Mandado de Prisão','Auto de Prisão em Flagrante','Auto de Apreensão em Flagrante','Medidas Protetivas de Urgência','Petição Cível','Alvará de Soltura','Habeas Corpus'];
-                    let added = 0;
+                    let added = 0, skipped = 0;
 
                     for (let i = headerIdx + 1; i < rows.length; i++) {
                         const r = rows[i];
                         const numero = String(r[colProc] || '').trim();
                         if (!numero) continue;
+                        if (existing.has(numero)) { skipped++; continue; }
+                        existing.add(numero); // evita duplicata também dentro do próprio arquivo
                         const classe = colClasse !== -1 ? String(r[colClasse] || '').trim() : '';
                         const reu = colParte !== -1 ? String(r[colParte] || '').trim() : '';
                         const entradaRaw = colEntrada !== -1 ? r[colEntrada] : '';
@@ -1719,7 +1727,12 @@
 
                     debouncedPreview();
                     if (!document.getElementById('content-controle').classList.contains('hidden')) renderControle();
-                    showToast(`${added} processo(s) importado(s) da planilha.`);
+                    let msg;
+                    if (added && skipped) msg = `${added} processo(s) novo(s) importado(s). ${skipped} já existia(m) e foram ignorado(s).`;
+                    else if (added) msg = `${added} processo(s) importado(s) da planilha.`;
+                    else if (skipped) msg = `Nenhum processo novo. Os ${skipped} da planilha já estavam na tabela.`;
+                    else msg = 'Nenhum processo encontrado na planilha.';
+                    showToast(msg, added ? 'success' : 'info');
                 } catch (err) {
                     console.error(err);
                     showToast('Erro ao processar o arquivo: ' + err.message, 'error');
