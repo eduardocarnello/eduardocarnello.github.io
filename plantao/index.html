@@ -172,9 +172,19 @@
                 position: static !important; width: 100% !important;
             }
             body.print-certidao .cert-document-preview {
-                max-width: 100%; min-height: 0; box-shadow: none; border: none;
-                padding: 0 !important;
+                max-width: 100% !important;
+                min-height: 100vh !important; /* preenche a página inteira */
+                box-shadow: none !important; border: none !important;
+                padding: 0.6cm 0.9cm 0.4cm 0.9cm !important; /* + @page 1.5cm 1.4cm = ~2cm 2.3cm efetivo */
+                display: flex !important;
+                flex-direction: column !important;
+                box-sizing: border-box !important;
+                margin: 0 !important;
             }
+            /* Empurra o footer para o final da página, deixando espaço para assinatura */
+            body.print-certidao .cert-footer { margin-top: auto !important; padding-top: 0.6rem !important; }
+            /* Reduz a margem inferior do parágrafo corpo para não ficar grudado, mas sem comer espaço útil */
+            body.print-certidao .cert-body { margin-bottom: 0 !important; }
         }
     </style>
 </head>
