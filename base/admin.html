@@ -276,7 +276,17 @@
 
                             <!-- Editor de Conteúdo -->
                             <div>
-                                <label class="block text-sm font-medium text-slate-700 mb-1">Conteúdo Completo</label>
+                                <div class="flex items-center justify-between mb-1 gap-2 flex-wrap">
+                                    <label class="block text-sm font-medium text-slate-700">Conteúdo Completo</label>
+                                    <button type="button" id="suggest-meta-btn"
+                                        class="inline-flex items-center gap-1 text-xs font-semibold text-blue-600 hover:text-blue-800 bg-blue-50 hover:bg-blue-100 px-2.5 py-1 rounded-full focus-ring-visible">
+                                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                            <path
+                                                d="M5 2l1.2 2.8L9 6l-2.8 1.2L5 10 3.8 7.2 1 6l2.8-1.2L5 2zm9 1l.9 2.1L17 6l-2.1.9L14 9l-.9-2.1L11 6l2.1-.9L14 3zm-2.5 8l.9 2.1 2.1.9-2.1.9-.9 2.1-.9-2.1L7.5 14l2.1-.9.9-2.1z" />
+                                        </svg>
+                                        Sugerir resumo, tags e categoria
+                                    </button>
+                                </div>
                                 <div id="editor-container"></div>
                                 <p class="text-xs text-slate-500 mt-2">
                                     <b>Para adicionar imagens:</b> Publique a imagem em um site (como
@@ -1607,6 +1617,119 @@
             showArticleFormBtnContainer.style.display = 'none'; // Esconde o botão
             window.scrollTo({ top: articleFormSection.offsetTop - 100, behavior: 'smooth' }); // Rola para o formulário
         });
+
+        // ============================================================
+        //  SUGESTÃO AUTOMÁTICA DE METADADOS (heurística, sem custo/IA)
+        //  Preenche resumo, tags e categoria a partir do conteúdo.
+        // ============================================================
+        const suggestMetaBtn = document.getElementById('suggest-meta-btn');
+
+        const KB_STOPWORDS = new Set(('a o e de da do das dos que em para com por no na nos nas um uma uns umas se ao aos os as ser sua seu suas seus este esta esse essa isso isto como mais menos sobre entre ou nao sim foi sera pelo pela pelos pelas quando onde qual quais artigo inciso caput etc ainda tambem ja ate deve devem pode podem ter tem todo toda todos todas qualquer cada bem mesmo apos sao seja sendo havera deverao').split(' '));
+
+        const KB_CAT_SYNONYMS = {
+            'jurispr': ['acordao', 'ementa', 'recurso', 'relator', 'sumula', 'julgado', 'turma', 'apelacao', 'enunciado', 'precedente', 'voto', 'desembargador', 'agravo', 'embargos'],
+            'provimento': ['provimento', 'cgj', 'corregedoria', 'normativa'],
+            'comunicad': ['comunicado', 'aviso'],
+            'orient': ['orientacao', 'procedimento', 'passo', 'tutorial', 'rotina', 'fluxo', 'como'],
+            'manual': ['manual', 'sistema', 'saj', 'login', 'senha', 'cadastro', 'tela'],
+            'prazo': ['prazo', 'intimacao', 'suspensao', 'feriado', 'expediente', 'audiencia'],
+            'oficio': ['oficio', 'memorando'],
+            'lei': ['lei', 'codigo', 'decreto', 'resolucao', 'portaria']
+        };
+
+        function kbTitleCase(s) {
+            return s.split(' ').map(w => (w.length > 3 ? (w.charAt(0).toUpperCase() + w.slice(1)) : w)).join(' ');
+        }
+
+        function suggestMetadata(title, text, categories) {
+            const full = ((title || '') + '\n' + (text || ''));
+            const lower = full.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+
+            // ----- RESUMO -----
+            let summary = '';
+            const clean = (text || '').replace(/\s+/g, ' ').trim();
+            if (clean) {
+                const sentences = clean.match(/[^.!?]+[.!?]+/g) || [clean];
+                for (const s of sentences) {
+                    if ((summary + s).length > 240) { if (!summary) summary = s.trim(); break; }
+                    summary += s;
+                    if (summary.length >= 120) break;
+                }
+                summary = summary.trim();
+                if (summary.length > 247) summary = summary.slice(0, 247).replace(/\s+\S*$/, '') + '...';
+            }
+
+            // ----- TAGS -----
+            const tags = [];
+            const pushTag = (t) => {
+                const c = t.replace(/\s+/g, ' ').trim();
+                if (c && !tags.some(y => y.toLowerCase() === c.toLowerCase())) tags.push(c);
+            };
+            const refPatterns = [
+                /\bprovimento\s+(?:n[º°.ª]*\s*)?[\d.\/-]+/gi,
+                /\bcomunicado\s+(?:conjunto\s+)?(?:n[º°.ª]*\s*)?[\w\d.\/-]+/gi,
+                /\blei\s+(?:n[º°.ª]*\s*)?[\d.\/-]+/gi,
+                /\bs[úu]mula\s+\d+/gi,
+                /\benunciado\s+\d+/gi,
+                /\btema\s+\d+/gi,
+                /\bresolu[çc][aã]o\s+(?:n[º°.ª]*\s*)?[\d.\/-]+/gi,
+                /\bart(?:igo)?\.?\s*\d+/gi
+            ];
+            refPatterns.forEach(re => {
+                const m = full.match(re);
+                if (m) m.slice(0, 2).forEach(x => pushTag(kbTitleCase(x.toLowerCase())));
+            });
+            ['FONAJE', 'STJ', 'STF', 'TJSP', 'CNJ', 'CGJ', 'CPC', 'CDC', 'CLT', 'JEC', 'PJe', 'SAJ'].forEach(sig => {
+                if (new RegExp('\\b' + sig + '\\b').test(full)) pushTag(sig);
+            });
+            const freq = {};
+            (lower.match(/[a-z]{4,}/g) || []).forEach(w => {
+                if (KB_STOPWORDS.has(w)) return;
+                freq[w] = (freq[w] || 0) + 1;
+            });
+            Object.keys(freq).sort((a, b) => freq[b] - freq[a]).slice(0, 6).forEach(w => {
+                if (freq[w] < 2 && tags.length >= 4) return;
+                pushTag(kbTitleCase(w));
+            });
+            const finalTags = tags.slice(0, 8);
+
+            // ----- CATEGORIA -----
+            let categoryId = '';
+            let bestScore = 0;
+            (categories || []).forEach(cat => {
+                let score = 0;
+                const nameNorm = slugify(cat.name);
+                nameNorm.split('-').forEach(word => {
+                    if (word.length >= 4 && lower.includes(word)) score += 3;
+                });
+                Object.keys(KB_CAT_SYNONYMS).forEach(key => {
+                    if (nameNorm.includes(key)) {
+                        KB_CAT_SYNONYMS[key].forEach(syn => { if (lower.includes(syn)) score += 1; });
+                    }
+                });
+                if (score > bestScore) { bestScore = score; categoryId = cat.id; }
+            });
+
+            return { summary, tags: finalTags, categoryId };
+        }
+
+        if (suggestMetaBtn) {
+            suggestMetaBtn.addEventListener('click', () => {
+                const text = quill ? (quill.getText() || '').trim() : '';
+                const title = articleTitle.value || '';
+                if (!text && !title.trim()) {
+                    showStatusMessage('Escreva o conteúdo (ou o título) antes de sugerir.', true);
+                    return;
+                }
+                const categories = Array.from(allCategoriesMap.values());
+                const s = suggestMetadata(title, text, categories);
+                let filled = [];
+                if (!articleSummary.value.trim() && s.summary) { articleSummary.value = s.summary; filled.push('resumo'); }
+                if (!articleTags.value.trim() && s.tags.length) { articleTags.value = s.tags.join(', '); filled.push('tags'); }
+                if (!articleCategory.value && s.categoryId) { articleCategory.value = s.categoryId; filled.push('categoria'); }
+                showStatusMessage(filled.length ? ('Preenchido: ' + filled.join(', ') + '. Revise antes de salvar. ✨') : 'Nada a sugerir (campos já preenchidos).');
+            });
+        }
 
     </script>
 

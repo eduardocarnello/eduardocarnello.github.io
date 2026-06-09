@@ -235,6 +235,156 @@
                 overflow: visible !important;
             }
         }
+
+        /* ===== MELHORIAS DE USABILIDADE (cópia, toast, destaque, acesso rápido) ===== */
+
+        /* Botões de cópia por trecho (foco em jurisprudência) */
+        .copy-block {
+            position: relative;
+        }
+
+        .copy-block>.block-copy-btn {
+            position: absolute;
+            top: 2px;
+            right: 2px;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 11px;
+            font-weight: 600;
+            line-height: 1;
+            padding: 4px 8px;
+            border-radius: 6px;
+            background: #fff;
+            color: #2563eb;
+            border: 1px solid #bfdbfe;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, .08);
+            opacity: 0;
+            transition: opacity .12s ease;
+            cursor: pointer;
+        }
+
+        .copy-block:hover>.block-copy-btn,
+        .copy-block:focus-within>.block-copy-btn {
+            opacity: 1;
+        }
+
+        .block-copy-btn:hover {
+            background: #eff6ff;
+        }
+
+        .block-copy-btn.copied {
+            color: #16a34a;
+            border-color: #bbf7d0;
+            background: #f0fdf4;
+        }
+
+        /* Destaque do termo buscado */
+        mark.kb-hl {
+            background: #fef08a;
+            color: inherit;
+            padding: 0 1px;
+            border-radius: 2px;
+        }
+
+        /* Toast (notificação flutuante) */
+        #toast-container {
+            position: fixed;
+            bottom: 1.5rem;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 100;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            pointer-events: none;
+        }
+
+        #toast-container>.kb-toast {
+            pointer-events: auto;
+            background: #1e293b;
+            color: #fff;
+            padding: 10px 18px;
+            border-radius: 9999px;
+            font-size: 14px;
+            font-weight: 500;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, .25);
+            animation: kb-toast-in .18s ease, kb-toast-out .3s ease 2.3s forwards;
+        }
+
+        .kb-toast.kb-toast-error {
+            background: #b91c1c;
+        }
+
+        @keyframes kb-toast-in {
+            from {
+                opacity: 0;
+                transform: translateY(12px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes kb-toast-out {
+            to {
+                opacity: 0;
+                transform: translateY(12px);
+            }
+        }
+
+        /* Chips de acesso rápido (favoritos / recentes) */
+        .kb-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            max-width: 300px;
+            padding: 6px 12px;
+            border-radius: 9999px;
+            background: #fff;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, .05);
+            font-size: 13px;
+            font-weight: 500;
+            color: #334155;
+            cursor: pointer;
+            transition: all .12s ease;
+        }
+
+        .kb-chip:hover {
+            border-color: #93c5fd;
+            color: #1d4ed8;
+            box-shadow: 0 2px 6px rgba(37, 99, 235, .15);
+        }
+
+        .kb-chip .kb-chip-label {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .kb-chip .kb-chip-x {
+            color: #cbd5e1;
+            font-weight: 700;
+            line-height: 1;
+        }
+
+        .kb-chip .kb-chip-x:hover {
+            color: #ef4444;
+        }
+
+        @media print {
+
+            .block-copy-btn,
+            #toast-container,
+            #quick-add-fab,
+            #quick-access {
+                display: none !important;
+            }
+        }
     </style>
 </head>
 
@@ -383,6 +533,10 @@
 
                 <!-- Grid de Documentos (Principal) -->
                 <section class="w-full lg:w-3/4 xl:w-4/5">
+
+                    <!-- Acesso rápido (Favoritos / Recentes) — preenchido via JS -->
+                    <div id="quick-access" class="mb-8 hidden"></div>
+
                     <h2 id="articles-title" class="text-2xl font-bold text-slate-800 mb-6">
                         Documentos Recentes
                     </h2>
@@ -436,6 +590,33 @@
 
                 <!-- NOVO: Wrapper para botões -->
                 <div class="flex items-center gap-2 flex-shrink-0">
+                    <!-- Favoritar -->
+                    <button id="modal-fav-btn" title="Favoritar (salvar no acesso rápido)"
+                        class="p-2 -m-2 rounded-full text-slate-400 hover:text-amber-500 hover:bg-slate-100 transition-colors focus-ring-visible">
+                        <span class="sr-only">Favoritar</span>
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M11.48 3.5l2.2 4.46 4.92.72-3.56 3.47.84 4.9-4.4-2.31-4.4 2.31.84-4.9L4.4 8.68l4.92-.72 2.16-4.46z" />
+                        </svg>
+                    </button>
+                    <!-- Copiar link -->
+                    <button id="modal-copy-link-btn" title="Copiar link deste documento"
+                        class="p-2 -m-2 rounded-full text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors focus-ring-visible">
+                        <span class="sr-only">Copiar link</span>
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M13.19 8.688a4.5 4.5 0 011.242 7.244l-4.5 4.5a4.5 4.5 0 01-6.364-6.364l1.757-1.757m13.35-.622l1.757-1.757a4.5 4.5 0 00-6.364-6.364l-4.5 4.5a4.5 4.5 0 001.242 7.244" />
+                        </svg>
+                    </button>
+                    <!-- Copiar texto completo -->
+                    <button id="modal-copy-text-btn" title="Copiar todo o texto do documento"
+                        class="p-2 -m-2 rounded-full text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors focus-ring-visible">
+                        <span class="sr-only">Copiar texto completo</span>
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M15.75 17.25v3.375c0 .621-.504 1.125-1.125 1.125h-9.75a1.125 1.125 0 01-1.125-1.125V7.875c0-.621.504-1.125 1.125-1.125H6.75a9.06 9.06 0 011.5.124m7.5 10.376h3.375c.621 0 1.125-.504 1.125-1.125V11.25c0-4.46-3.243-8.161-7.5-8.876a9.06 9.06 0 00-1.5-.124H9.375c-.621 0-1.125.504-1.125 1.125v3.5m7.5 10.375H9.375a1.125 1.125 0 01-1.125-1.125v-9.25m12 6.625v-1.875a3.375 3.375 0 00-3.375-3.375h-1.5a1.125 1.125 0 01-1.125-1.125v-1.5a3.375 3.375 0 00-3.375-3.375H9.75" />
+                        </svg>
+                    </button>
                     <!-- NOVO: Botão de Impressão -->
                     <button id="modal-print-btn"
                         class="p-2 -m-2 rounded-full text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors focus-ring-visible">
@@ -610,6 +791,122 @@
     </div>
 
 
+    <!-- Container de Toast (notificações) -->
+    <div id="toast-container"></div>
+
+    <!-- Botão Flutuante: Criação Rápida (somente Redator/Editor/Admin) -->
+    <button id="quick-add-fab" type="button" style="display:none;"
+        class="fixed bottom-6 right-6 z-[55] items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold pl-4 pr-5 py-3 rounded-full shadow-xl transition-transform transform hover:scale-105 focus-ring-visible">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
+        </svg>
+        <span class="hidden sm:inline">Novo documento</span>
+    </button>
+
+    <!-- Modal: Criação Rápida de Documento -->
+    <div id="quick-add-modal" class="fixed inset-0 z-[80] hidden items-center justify-center p-4" style="display:none;"
+        role="dialog" aria-modal="true" aria-labelledby="qa-heading">
+        <div id="qa-backdrop" class="fixed inset-0 bg-slate-900 bg-opacity-70 transition-opacity duration-200"
+            style="opacity:0;"></div>
+        <div id="qa-panel"
+            class="relative bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[92vh] flex flex-col transform transition-all duration-200 scale-95 opacity-0">
+            <header class="flex items-center justify-between p-5 border-b border-slate-200">
+                <div class="flex items-center gap-2">
+                    <span class="inline-flex items-center justify-center w-9 h-9 rounded-lg bg-blue-100 text-blue-600">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
+                        </svg>
+                    </span>
+                    <h3 id="qa-heading" class="text-xl font-bold text-slate-800">Novo documento rápido</h3>
+                </div>
+                <button id="qa-close-btn" type="button"
+                    class="p-2 -m-2 rounded-full text-slate-400 hover:text-slate-700 hover:bg-slate-100 focus-ring-visible">
+                    <span class="sr-only">Fechar</span>
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </header>
+
+            <div class="overflow-y-auto p-5 space-y-4 flex-1">
+                <div>
+                    <label for="qa-title" class="block text-sm font-medium text-slate-700 mb-1">Título *</label>
+                    <input id="qa-title" type="text"
+                        class="w-full p-3 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        placeholder="Ex.: Provimento CGJ nº 10/2025 — novo prazo para...">
+                </div>
+
+                <div>
+                    <div class="flex items-center justify-between mb-1 gap-2 flex-wrap">
+                        <label for="qa-content" class="block text-sm font-medium text-slate-700">Conteúdo *</label>
+                        <button id="qa-suggest-btn" type="button"
+                            class="inline-flex items-center gap-1 text-xs font-semibold text-blue-600 hover:text-blue-800 bg-blue-50 hover:bg-blue-100 px-2.5 py-1 rounded-full focus-ring-visible">
+                            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                <path
+                                    d="M5 2l1.2 2.8L9 6l-2.8 1.2L5 10 3.8 7.2 1 6l2.8-1.2L5 2zm9 1l.9 2.1L17 6l-2.1.9L14 9l-.9-2.1L11 6l2.1-.9L14 3zm-2.5 8l.9 2.1 2.1.9-2.1.9-.9 2.1-.9-2.1L7.5 14l2.1-.9.9-2.1z" />
+                            </svg>
+                            Sugerir resumo, tags e categoria
+                        </button>
+                    </div>
+                    <textarea id="qa-content" rows="8"
+                        class="w-full p-3 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        placeholder="Cole ou digite o texto do documento, jurisprudência, comunicado, orientação..."></textarea>
+                    <p class="text-xs text-slate-500 mt-1">Linhas em branco viram parágrafos automaticamente. Para
+                        formatação avançada (imagens, listas), use o Painel Admin.</p>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label for="qa-category" class="block text-sm font-medium text-slate-700 mb-1">Categoria</label>
+                        <select id="qa-category"
+                            class="w-full p-3 border border-slate-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"></select>
+                    </div>
+                    <div>
+                        <label for="qa-tags" class="block text-sm font-medium text-slate-700 mb-1">Tags
+                            (vírgula)</label>
+                        <input id="qa-tags" type="text"
+                            class="w-full p-3 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            placeholder="provimento, prazo, jec">
+                    </div>
+                </div>
+
+                <div>
+                    <label for="qa-summary" class="block text-sm font-medium text-slate-700 mb-1">Resumo</label>
+                    <textarea id="qa-summary" rows="2" maxlength="250"
+                        class="w-full p-3 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        placeholder="Frase curta que aparece no card (gerada automaticamente se ficar vazia)."></textarea>
+                </div>
+
+                <div>
+                    <label for="qa-link" class="block text-sm font-medium text-slate-700 mb-1">Link de referência
+                        (opcional)</label>
+                    <input id="qa-link" type="url"
+                        class="w-full p-3 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        placeholder="https://...">
+                </div>
+
+                <div id="qa-science-wrap" style="display:none;">
+                    <label class="flex items-center gap-2 text-sm text-slate-700">
+                        <input id="qa-science" type="checkbox"
+                            class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                        Exigir leitura obrigatória (ciência) deste documento
+                    </label>
+                </div>
+
+                <div id="qa-status" class="text-sm text-red-600 font-medium"></div>
+            </div>
+
+            <footer
+                class="flex items-center justify-end gap-3 p-5 border-t border-slate-200 bg-slate-50 rounded-b-2xl">
+                <button id="qa-cancel-btn" type="button"
+                    class="px-4 py-2.5 text-sm font-medium text-slate-700 bg-white border border-slate-300 rounded-lg hover:bg-slate-100 focus-ring-visible">Cancelar</button>
+                <button id="qa-save-btn" type="button"
+                    class="px-5 py-2.5 text-sm font-semibold text-white bg-blue-600 rounded-lg hover:bg-blue-700 focus-ring-visible">Salvar
+                    documento</button>
+            </footer>
+        </div>
+    </div>
+
     <!-- Firebase SDKs -->
     <script type="module">
         // Importações do Firebase (APENAS AUTH)
@@ -714,6 +1011,10 @@
         let isSearchActive = false;
         let artigosParaCiencia = [];
         let cienciaArtigoIndex = 0;
+        // Estado das melhorias de usabilidade
+        let currentSearchTerm = '';
+        let currentOpenArticle = null;
+        let hashOpenDone = false;
 
         // --- FUNÇÃO WRAPPER DE FETCH (COM TOKEN) ---
         async function fetchWithToken(action, payload = {}) {
@@ -796,6 +1097,9 @@
                         adminBtn.classList.add('hidden');
                     }
 
+                    // Habilita o botão de criação rápida conforme o cargo
+                    setupQuickAdd(role);
+
                     // Verifica documentos de ciência ANTES de carregar o resto
                     await verificarArtigosParaCiencia();
 
@@ -824,6 +1128,7 @@
                 contentSection.style.display = 'none';
                 adminBtn.classList.add('hidden');
                 userInfo.classList.add('hidden');
+                setupQuickAdd('Leitor');
                 resetContent();
             }
         });
@@ -892,6 +1197,8 @@
                     await loadCategories();
                 }
                 await executeSearchOrFilter();
+                renderQuickAccess();
+                maybeOpenFromHash();
             } catch (error) {
                 console.error("Falha ao carregar dados iniciais:", error);
                 articlesStatus.textContent = `Erro ao carregar dados: ${error.message}`;
@@ -998,16 +1305,25 @@
                 const card = document.createElement('div');
                 card.className = `article-card bg-white rounded-2xl shadow-lg overflow-hidden transition-transform transform hover:-translate-y-1 hover:shadow-xl cursor-pointer flex flex-col ${colors.border} border-t-4`;
                 card.dataset.id = id;
+                const fav = isFav(id);
                 card.innerHTML = `
                     <div class="p-6 flex-grow">
-                        <span class="text-sm font-semibold ${colors.text}">${categoryName.toUpperCase()}</span>
-                        <h3 class="mt-2 text-xl font-bold text-slate-800">${title}</h3>
-                        <p class="mt-3 text-base text-slate-600 line-clamp-3">${summary}</p>
+                        <span class="text-sm font-semibold ${colors.text}">${kbEscapeHtml(categoryName.toUpperCase())}</span>
+                        <h3 class="mt-2 text-xl font-bold text-slate-800">${kbHighlight(title, currentSearchTerm)}</h3>
+                        <p class="mt-3 text-base text-slate-600 line-clamp-3">${kbHighlight(summary, currentSearchTerm)}</p>
                     </div>
-                    <footer class="bg-slate-50 px-6 py-4">
+                    <footer class="bg-slate-50 px-6 py-4 flex items-center justify-between">
                         <span class="text-sm font-medium text-blue-600 hover:text-blue-700">Ver documento completo &rarr;</span>
+                        <button type="button" data-fav-id="${id}" title="Favoritar"
+                            class="card-fav-btn p-1 -m-1 rounded-full ${fav ? 'text-amber-400' : 'text-slate-300 hover:text-amber-400'}">
+                            <svg class="w-5 h-5" viewBox="0 0 20 20" fill="${fav ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="1.5">
+                                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.196-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118L2.05 9.801c-.783-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/>
+                            </svg>
+                        </button>
                     </footer>
                 `;
+                const cardFavBtn = card.querySelector('.card-fav-btn');
+                if (cardFavBtn) cardFavBtn.dataset.title = title;
                 fragment.appendChild(card);
             });
             articlesGrid.appendChild(fragment);
@@ -1048,6 +1364,7 @@
         async function executeSearchOrFilter() {
             const searchTerm = searchInput.value.trim();
             const searchScope = searchField.value;
+            currentSearchTerm = searchTerm;
 
             articlesGrid.innerHTML = '';
             articlesStatus.classList.remove('hidden');
@@ -1083,11 +1400,25 @@
 
         // --- MODAL (Janela do Documento) ---
         articlesGrid.addEventListener('click', (e) => {
+            // Clique no botão de favoritar não deve abrir o documento
+            if (e.target.closest('.card-fav-btn')) return;
             const card = e.target.closest('.article-card');
             if (card) {
                 const articleId = card.dataset.id;
                 openModal(articleId);
             }
+        });
+
+        // Favoritar a partir do card (delegação)
+        articlesGrid.addEventListener('click', (e) => {
+            const favBtn = e.target.closest('.card-fav-btn');
+            if (!favBtn) return;
+            e.stopPropagation();
+            const now = toggleFav(favBtn.dataset.favId, favBtn.dataset.title || '');
+            favBtn.classList.toggle('text-amber-400', now);
+            favBtn.classList.toggle('text-slate-300', !now);
+            const svg = favBtn.querySelector('svg');
+            if (svg) svg.setAttribute('fill', now ? 'currentColor' : 'none');
         });
 
         async function openModal(id) {
@@ -1164,6 +1495,13 @@
                 modalMetadata.classList.remove('hidden');
                 modalLoadingSpinner.classList.add('hidden');
 
+                // Melhorias: cópia por trecho, favoritos, recentes e deep-link
+                currentOpenArticle = { id: id, title: article.title };
+                enhanceModalCopyBlocks();
+                updateModalFavState(id);
+                pushRecent(currentOpenArticle);
+                setModalHash(id);
+
             } catch (error) {
                 console.error("Erro ao abrir modal (fetchWithToken):", error);
                 modalTitle.textContent = 'Erro ao Carregar';
@@ -1179,6 +1517,8 @@
                 modalBackdrop.style.display = 'none';
                 modalContainer.style.display = 'none';
             }, 300);
+            currentOpenArticle = null;
+            clearModalHash();
         }
         modalCloseBtn.addEventListener('click', closeModal);
         modalBackdrop.addEventListener('click', closeModal);
@@ -1442,6 +1782,490 @@
                 default:
                     return { text: 'text-slate-700', bg: 'bg-slate-200', iconText: 'text-slate-600', bgHover: 'hover:bg-slate-100', border: 'border-slate-400' };
             }
+        }
+
+        // ============================================================
+        //  MELHORIAS DE USABILIDADE
+        //  (cópia de jurisprudência, favoritos, recentes, atalhos,
+        //   deep-link e criação rápida de documentos)
+        //  Tudo client-side — não altera a API/back-end.
+        // ============================================================
+
+        // ---------- Utilitários ----------
+        function kbEscapeHtml(s) {
+            return String(s ?? '')
+                .replace(/&/g, '&amp;').replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+        }
+
+        function kbEscapeRegExp(s) {
+            return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        }
+
+        // Destaca o termo buscado num texto puro (escapa antes para evitar HTML)
+        function kbHighlight(text, term) {
+            const safe = kbEscapeHtml(text);
+            if (!term || term.length < 2) return safe;
+            try {
+                const re = new RegExp('(' + kbEscapeRegExp(term) + ')', 'gi');
+                return safe.replace(re, '<mark class="kb-hl">$1</mark>');
+            } catch (e) { return safe; }
+        }
+
+        function kbSlugify(text) {
+            return String(text).toLowerCase().trim()
+                .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+                .replace(/\s+/g, '-').replace(/[^\w-]+/g, '').replace(/--+/g, '-');
+        }
+
+        // Converte texto puro em HTML simples (parágrafos + quebras)
+        function plainTextToHtml(text) {
+            return String(text).split(/\n{2,}/).map(block => {
+                const inner = kbEscapeHtml(block.trim()).replace(/\n/g, '<br>');
+                return '<p>' + inner + '</p>';
+            }).join('');
+        }
+
+        // ---------- Toast ----------
+        const kbToastContainer = document.getElementById('toast-container');
+        function showToast(msg, isError = false) {
+            if (!kbToastContainer) return;
+            const t = document.createElement('div');
+            t.className = 'kb-toast' + (isError ? ' kb-toast-error' : '');
+            t.textContent = msg;
+            kbToastContainer.appendChild(t);
+            setTimeout(() => t.remove(), 2700);
+        }
+
+        // ---------- Cópia robusta ----------
+        async function copyText(text) {
+            try {
+                await navigator.clipboard.writeText(text);
+                return true;
+            } catch (e) {
+                try {
+                    const ta = document.createElement('textarea');
+                    ta.value = text;
+                    ta.style.position = 'fixed';
+                    ta.style.opacity = '0';
+                    document.body.appendChild(ta);
+                    ta.focus();
+                    ta.select();
+                    const ok = document.execCommand('copy');
+                    ta.remove();
+                    return ok;
+                } catch (e2) { return false; }
+            }
+        }
+
+        // ---------- Favoritos & Recentes (localStorage) ----------
+        const FAV_KEY = 'kb_favoritos';
+        const RECENT_KEY = 'kb_recentes';
+
+        function loadStore(key) {
+            try { return JSON.parse(localStorage.getItem(key)) || []; }
+            catch (e) { return []; }
+        }
+        function saveStore(key, arr) {
+            try { localStorage.setItem(key, JSON.stringify(arr)); } catch (e) { }
+        }
+        function isFav(id) {
+            return loadStore(FAV_KEY).some(x => x.id === id);
+        }
+        function toggleFav(id, title) {
+            let favs = loadStore(FAV_KEY);
+            if (favs.some(x => x.id === id)) {
+                favs = favs.filter(x => x.id !== id);
+            } else {
+                favs.unshift({ id, title });
+            }
+            saveStore(FAV_KEY, favs.slice(0, 50));
+            renderQuickAccess();
+            return isFav(id);
+        }
+        function pushRecent(article) {
+            if (!article || !article.id) return;
+            let rec = loadStore(RECENT_KEY).filter(x => x.id !== article.id);
+            rec.unshift({ id: article.id, title: article.title });
+            saveStore(RECENT_KEY, rec.slice(0, 12));
+            renderQuickAccess();
+        }
+
+        // ---------- Barra de acesso rápido ----------
+        const quickAccessEl = document.getElementById('quick-access');
+
+        function kbChip(item, isFavChip) {
+            const safeTitle = kbEscapeHtml(item.title || '(sem título)');
+            const x = isFavChip
+                ? `<span class="kb-chip-x" data-unfav="${kbEscapeHtml(item.id)}" title="Remover dos favoritos">&times;</span>`
+                : '';
+            return `<button type="button" class="kb-chip" data-open="${kbEscapeHtml(item.id)}">
+                        <span class="kb-chip-label">${safeTitle}</span>${x}
+                    </button>`;
+        }
+
+        function kbSection(titleHtml, items, isFavChip) {
+            return `<div class="mb-4">
+                        <h3 class="text-sm font-semibold text-slate-500 mb-2">${titleHtml}</h3>
+                        <div class="flex flex-wrap gap-2">${items.map(i => kbChip(i, isFavChip)).join('')}</div>
+                    </div>`;
+        }
+
+        function renderQuickAccess() {
+            if (!quickAccessEl) return;
+            const favs = loadStore(FAV_KEY);
+            const recents = loadStore(RECENT_KEY);
+            if (favs.length === 0 && recents.length === 0) {
+                quickAccessEl.classList.add('hidden');
+                quickAccessEl.innerHTML = '';
+                return;
+            }
+            let html = '';
+            if (favs.length) html += kbSection('★ Favoritos', favs, true);
+            if (recents.length) html += kbSection('🕘 Vistos recentemente', recents.slice(0, 8), false);
+            quickAccessEl.innerHTML = html;
+            quickAccessEl.classList.remove('hidden');
+        }
+
+        if (quickAccessEl) {
+            quickAccessEl.addEventListener('click', (e) => {
+                const unfav = e.target.closest('[data-unfav]');
+                if (unfav) {
+                    e.stopPropagation();
+                    toggleFav(unfav.dataset.unfav, '');
+                    return;
+                }
+                const chip = e.target.closest('[data-open]');
+                if (chip) openModal(chip.dataset.open);
+            });
+        }
+
+        // ---------- Deep-link (compartilhar documento via URL) ----------
+        function setModalHash(id) {
+            try { history.replaceState(null, '', '#a=' + encodeURIComponent(id)); } catch (e) { }
+        }
+        function clearModalHash() {
+            try { history.replaceState(null, '', location.pathname + location.search); } catch (e) { }
+        }
+        function maybeOpenFromHash() {
+            if (hashOpenDone) return;
+            const m = location.hash.match(/^#a=(.+)$/);
+            if (m) {
+                hashOpenDone = true;
+                openModal(decodeURIComponent(m[1]));
+            }
+        }
+
+        // ---------- Cópia por trecho dentro do documento ----------
+        const COPY_ICON = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>';
+        const COPY_BLOCK_SELECTOR = 'p, blockquote, pre, ul, ol, h1, h2, h3, h4, table';
+
+        function enhanceModalCopyBlocks() {
+            if (!modalContent) return;
+            const blocks = modalContent.querySelectorAll(COPY_BLOCK_SELECTOR);
+            blocks.forEach(el => {
+                if (el.closest('.copy-block')) return; // evita aninhamento duplicado
+                const text = (el.innerText || '').trim();
+                if (!text) return;
+                const wrapper = document.createElement('div');
+                wrapper.className = 'copy-block';
+                el.parentNode.insertBefore(wrapper, el);
+                wrapper.appendChild(el);
+
+                const btn = document.createElement('button');
+                btn.type = 'button';
+                btn.className = 'block-copy-btn';
+                btn.innerHTML = COPY_ICON + '<span>Copiar</span>';
+                btn.addEventListener('click', async (ev) => {
+                    ev.stopPropagation();
+                    const ok = await copyText((el.innerText || '').trim());
+                    if (ok) {
+                        btn.classList.add('copied');
+                        btn.querySelector('span').textContent = 'Copiado!';
+                        showToast('Trecho copiado');
+                        setTimeout(() => {
+                            btn.classList.remove('copied');
+                            btn.querySelector('span').textContent = 'Copiar';
+                        }, 1500);
+                    } else {
+                        showToast('Não foi possível copiar', true);
+                    }
+                });
+                wrapper.appendChild(btn);
+            });
+        }
+
+        // ---------- Botões do cabeçalho do modal ----------
+        const modalCopyTextBtn = document.getElementById('modal-copy-text-btn');
+        const modalCopyLinkBtn = document.getElementById('modal-copy-link-btn');
+        const modalFavBtn = document.getElementById('modal-fav-btn');
+
+        if (modalCopyTextBtn) {
+            modalCopyTextBtn.addEventListener('click', async () => {
+                const title = (modalTitle.textContent || '').trim();
+                // Oculta os botões "Copiar" dos trechos para não poluir o texto extraído
+                const btns = modalContent.querySelectorAll('.block-copy-btn');
+                btns.forEach(b => b.style.display = 'none');
+                const body = (modalContent.innerText || '').trim();
+                btns.forEach(b => b.style.removeProperty('display'));
+                const ok = await copyText((title ? title + '\n\n' : '') + body);
+                showToast(ok ? 'Texto completo copiado' : 'Falha ao copiar', !ok);
+            });
+        }
+        if (modalCopyLinkBtn) {
+            modalCopyLinkBtn.addEventListener('click', async () => {
+                if (!currentOpenArticle) return;
+                const url = location.origin + location.pathname + '#a=' + encodeURIComponent(currentOpenArticle.id);
+                const ok = await copyText(url);
+                showToast(ok ? 'Link copiado' : 'Falha ao copiar', !ok);
+            });
+        }
+        function updateFavBtnUI(active) {
+            if (!modalFavBtn) return;
+            modalFavBtn.classList.toggle('text-amber-500', active);
+            modalFavBtn.classList.toggle('text-slate-400', !active);
+            const svg = modalFavBtn.querySelector('svg');
+            if (svg) svg.setAttribute('fill', active ? 'currentColor' : 'none');
+        }
+        function updateModalFavState(id) { updateFavBtnUI(isFav(id)); }
+        if (modalFavBtn) {
+            modalFavBtn.addEventListener('click', () => {
+                if (!currentOpenArticle) return;
+                const now = toggleFav(currentOpenArticle.id, currentOpenArticle.title);
+                updateFavBtnUI(now);
+                showToast(now ? 'Adicionado aos favoritos' : 'Removido dos favoritos');
+            });
+        }
+
+        // ---------- Atalhos de teclado ----------
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                if (quickAddModal && quickAddModal.style.display === 'flex') { closeQuickAdd(); return; }
+                if (modalContainer.style.display === 'flex') { closeModal(); return; }
+            }
+            const tag = (e.target.tagName || '').toLowerCase();
+            const typing = tag === 'input' || tag === 'textarea' || tag === 'select' || e.target.isContentEditable;
+            if (typing) return;
+            if (e.key === '/' || ((e.key === 'k' || e.key === 'K') && (e.ctrlKey || e.metaKey))) {
+                e.preventDefault();
+                searchInput.focus();
+                searchInput.select();
+            }
+        });
+
+        // ============================================================
+        //  CRIAÇÃO RÁPIDA DE DOCUMENTO (no front-end)
+        // ============================================================
+        const quickAddFab = document.getElementById('quick-add-fab');
+        const quickAddModal = document.getElementById('quick-add-modal');
+        const qaBackdrop = document.getElementById('qa-backdrop');
+        const qaPanel = document.getElementById('qa-panel');
+        const qaTitle = document.getElementById('qa-title');
+        const qaCategory = document.getElementById('qa-category');
+        const qaSummary = document.getElementById('qa-summary');
+        const qaTags = document.getElementById('qa-tags');
+        const qaContent = document.getElementById('qa-content');
+        const qaLink = document.getElementById('qa-link');
+        const qaScienceWrap = document.getElementById('qa-science-wrap');
+        const qaScience = document.getElementById('qa-science');
+        const qaSuggestBtn = document.getElementById('qa-suggest-btn');
+        const qaSaveBtn = document.getElementById('qa-save-btn');
+        const qaCancelBtn = document.getElementById('qa-cancel-btn');
+        const qaCloseBtn = document.getElementById('qa-close-btn');
+        const qaStatus = document.getElementById('qa-status');
+
+        function setupQuickAdd(role) {
+            const canCreate = ['Redator', 'Editor', 'Admin'].includes(role);
+            if (quickAddFab) quickAddFab.style.display = canCreate ? 'flex' : 'none';
+        }
+
+        function openQuickAdd() {
+            if (!quickAddModal) return;
+            qaCategory.innerHTML = '<option value="">— Selecione (ou use Sugerir) —</option>' +
+                allCategories.map(c => `<option value="${kbEscapeHtml(c.id)}">${kbEscapeHtml(c.name)}</option>`).join('');
+            if (qaScienceWrap) qaScienceWrap.style.display = (currentUserRole === 'Admin') ? 'block' : 'none';
+            quickAddModal.style.display = 'flex';
+            requestAnimationFrame(() => {
+                qaPanel.classList.remove('scale-95', 'opacity-0');
+                if (qaBackdrop) qaBackdrop.style.opacity = '1';
+            });
+            setTimeout(() => qaTitle.focus(), 90);
+        }
+        function closeQuickAdd() {
+            if (!quickAddModal) return;
+            qaPanel.classList.add('scale-95', 'opacity-0');
+            if (qaBackdrop) qaBackdrop.style.opacity = '0';
+            setTimeout(() => { quickAddModal.style.display = 'none'; }, 200);
+        }
+        function resetQuickAdd() {
+            [qaTitle, qaSummary, qaTags, qaContent, qaLink].forEach(el => { if (el) el.value = ''; });
+            if (qaCategory) qaCategory.value = '';
+            if (qaScience) qaScience.checked = false;
+            if (qaStatus) qaStatus.textContent = '';
+        }
+
+        if (quickAddFab) quickAddFab.addEventListener('click', () => { resetQuickAdd(); openQuickAdd(); });
+        if (qaCancelBtn) qaCancelBtn.addEventListener('click', closeQuickAdd);
+        if (qaCloseBtn) qaCloseBtn.addEventListener('click', closeQuickAdd);
+        if (qaBackdrop) qaBackdrop.addEventListener('click', closeQuickAdd);
+
+        if (qaSuggestBtn) {
+            qaSuggestBtn.addEventListener('click', () => {
+                const text = qaContent.value.trim();
+                if (!text && !qaTitle.value.trim()) {
+                    showToast('Escreva o conteúdo primeiro', true);
+                    return;
+                }
+                const s = suggestMetadata(qaTitle.value, text, allCategories);
+                if (!qaSummary.value.trim() && s.summary) qaSummary.value = s.summary;
+                if (!qaTags.value.trim() && s.tags.length) qaTags.value = s.tags.join(', ');
+                if (!qaCategory.value && s.categoryId) qaCategory.value = s.categoryId;
+                showToast('Sugestões preenchidas ✨');
+            });
+        }
+
+        if (qaSaveBtn) {
+            qaSaveBtn.addEventListener('click', async () => {
+                const title = qaTitle.value.trim();
+                const contentRaw = qaContent.value.trim();
+                if (!title) { qaStatus.textContent = 'Informe um título.'; qaTitle.focus(); return; }
+                if (!contentRaw) { qaStatus.textContent = 'Informe o conteúdo.'; qaContent.focus(); return; }
+
+                qaSaveBtn.disabled = true;
+                const orig = qaSaveBtn.textContent;
+                qaSaveBtn.textContent = 'Salvando...';
+                qaStatus.textContent = '';
+
+                const tags = qaTags.value.split(',').map(t => t.trim()).filter(Boolean);
+                const links = qaLink.value.trim() ? [qaLink.value.trim()] : [];
+                const summary = (qaSummary.value.trim() || contentRaw.replace(/\s+/g, ' ').slice(0, 200));
+
+                const payload = {
+                    title,
+                    categoryId: qaCategory.value || '',
+                    summary,
+                    content: plainTextToHtml(contentRaw),
+                    tags,
+                    links,
+                    slug: kbSlugify(title),
+                    requiresScience: !!(qaScience && qaScience.checked && currentUserRole === 'Admin'),
+                    isScienceReset: false
+                };
+
+                try {
+                    await fetchWithToken('admin/salvarArtigo', payload);
+                    showToast('Documento criado com sucesso ✅');
+                    closeQuickAdd();
+                    currentArticles = [];
+                    currentArticleCount = 0;
+                    await executeSearchOrFilter();
+                } catch (err) {
+                    console.error('Erro ao criar documento (quick-add):', err);
+                    qaStatus.textContent = err.message || 'Erro ao salvar.';
+                } finally {
+                    qaSaveBtn.disabled = false;
+                    qaSaveBtn.textContent = orig;
+                }
+            });
+        }
+
+        // ============================================================
+        //  MOTOR DE SUGESTÃO (heurístico, sem custo / sem IA)
+        //  Gera resumo, tags e categoria a partir do texto.
+        // ============================================================
+        const KB_STOPWORDS = new Set(('a o e de da do das dos que em para com por no na nos nas um uma uns umas se ao aos os as ser sua seu suas seus este esta esse essa isso isto como mais menos sobre entre ou nao sim foi sera pelo pela pelos pelas quando onde qual quais artigo inciso caput etc ainda tambem ja ate deve devem pode podem ter tem todo toda todos todas qualquer cada bem mesmo apos sao seja sendo havera deverao').split(' '));
+
+        const KB_CAT_SYNONYMS = {
+            'jurispr': ['acordao', 'ementa', 'recurso', 'relator', 'sumula', 'julgado', 'turma', 'apelacao', 'enunciado', 'precedente', 'voto', 'desembargador', 'agravo', 'embargos'],
+            'provimento': ['provimento', 'cgj', 'corregedoria', 'normativa'],
+            'comunicad': ['comunicado', 'aviso'],
+            'orient': ['orientacao', 'procedimento', 'passo', 'tutorial', 'rotina', 'fluxo', 'como'],
+            'manual': ['manual', 'sistema', 'saj', 'login', 'senha', 'cadastro', 'tela'],
+            'prazo': ['prazo', 'intimacao', 'suspensao', 'feriado', 'expediente', 'audiencia'],
+            'oficio': ['oficio', 'memorando'],
+            'lei': ['lei', 'codigo', 'decreto', 'resolucao', 'portaria']
+        };
+
+        function kbTitleCase(s) {
+            return s.split(' ').map(w => (w.length > 3 ? (w.charAt(0).toUpperCase() + w.slice(1)) : w)).join(' ');
+        }
+
+        function suggestMetadata(title, text, categories) {
+            const full = ((title || '') + '\n' + (text || ''));
+            const lower = full.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+
+            // ----- RESUMO -----
+            let summary = '';
+            const clean = (text || '').replace(/\s+/g, ' ').trim();
+            if (clean) {
+                const sentences = clean.match(/[^.!?]+[.!?]+/g) || [clean];
+                for (const s of sentences) {
+                    if ((summary + s).length > 240) { if (!summary) summary = s.trim(); break; }
+                    summary += s;
+                    if (summary.length >= 120) break;
+                }
+                summary = summary.trim();
+                if (summary.length > 247) summary = summary.slice(0, 247).replace(/\s+\S*$/, '') + '...';
+            }
+
+            // ----- TAGS -----
+            const tags = [];
+            const pushTag = (t) => {
+                const clean = t.replace(/\s+/g, ' ').trim();
+                if (clean && !tags.some(y => y.toLowerCase() === clean.toLowerCase())) tags.push(clean);
+            };
+
+            const refPatterns = [
+                /\bprovimento\s+(?:n[º°.ª]*\s*)?[\d.\/-]+/gi,
+                /\bcomunicado\s+(?:conjunto\s+)?(?:n[º°.ª]*\s*)?[\w\d.\/-]+/gi,
+                /\blei\s+(?:n[º°.ª]*\s*)?[\d.\/-]+/gi,
+                /\bs[úu]mula\s+\d+/gi,
+                /\benunciado\s+\d+/gi,
+                /\btema\s+\d+/gi,
+                /\bresolu[çc][aã]o\s+(?:n[º°.ª]*\s*)?[\d.\/-]+/gi,
+                /\bart(?:igo)?\.?\s*\d+/gi
+            ];
+            refPatterns.forEach(re => {
+                const m = full.match(re);
+                if (m) m.slice(0, 2).forEach(x => pushTag(kbTitleCase(x.toLowerCase())));
+            });
+
+            // Siglas relevantes do contexto
+            ['FONAJE', 'STJ', 'STF', 'TJSP', 'CNJ', 'CGJ', 'CPC', 'CDC', 'CLT', 'JEC', 'PJe', 'SAJ'].forEach(sig => {
+                if (new RegExp('\\b' + sig + '\\b').test(full)) pushTag(sig);
+            });
+
+            // Palavras-chave por frequência
+            const freq = {};
+            (lower.match(/[a-z]{4,}/g) || []).forEach(w => {
+                if (KB_STOPWORDS.has(w)) return;
+                freq[w] = (freq[w] || 0) + 1;
+            });
+            Object.keys(freq).sort((a, b) => freq[b] - freq[a]).slice(0, 6).forEach(w => {
+                if (freq[w] < 2 && tags.length >= 4) return;
+                pushTag(kbTitleCase(w));
+            });
+
+            const finalTags = tags.slice(0, 8);
+
+            // ----- CATEGORIA -----
+            let categoryId = '';
+            let bestScore = 0;
+            (categories || []).forEach(cat => {
+                let score = 0;
+                const nameNorm = kbSlugify(cat.name);
+                nameNorm.split('-').forEach(word => {
+                    if (word.length >= 4 && lower.includes(word)) score += 3;
+                });
+                Object.keys(KB_CAT_SYNONYMS).forEach(key => {
+                    if (nameNorm.includes(key)) {
+                        KB_CAT_SYNONYMS[key].forEach(syn => { if (lower.includes(syn)) score += 1; });
+                    }
+                });
+                if (score > bestScore) { bestScore = score; categoryId = cat.id; }
+            });
+
+            return { summary, tags: finalTags, categoryId };
         }
 
     </script>
