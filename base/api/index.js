@@ -281,6 +281,17 @@ async function handleGetCategorias(res) {
     snapshot.forEach(doc => {
         categories.push({ id: doc.id, ...doc.data() });
     });
+
+    // Conta documentos por categoria via agregação (count) — barato e rápido.
+    await Promise.all(categories.map(async (cat) => {
+        try {
+            const agg = await db.collection('artigos').where('categoryId', '==', cat.id).count().get();
+            cat.count = agg.data().count;
+        } catch (e) {
+            cat.count = null; // se a agregação falhar, apenas não mostra o número
+        }
+    }));
+
     categories.sort((a, b) => a.name.localeCompare(b.name));
     return res.status(200).json(categories);
 }
