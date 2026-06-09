@@ -460,6 +460,43 @@
                         </div>
                     </div>
 
+                    <!-- Pendências de Ciência (Editor/Admin) -->
+                    <div id="ciencia-pendencias-section" class="bg-white p-6 sm:p-8 rounded-2xl shadow-lg"
+                        style="display: none;">
+                        <div class="flex items-center justify-between mb-2 flex-wrap gap-2">
+                            <h2 class="text-2xl font-bold text-slate-800">Pendências de Ciência</h2>
+                            <button id="pendencias-refresh-btn" type="button"
+                                class="inline-flex items-center gap-1 text-sm font-medium text-blue-600 hover:text-blue-800 bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded-lg focus-ring-visible">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2"
+                                    viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                        d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                                </svg>
+                                Atualizar
+                            </button>
+                        </div>
+                        <p class="text-sm text-slate-500 mb-4">Quem ainda não declarou ciência dos documentos
+                            obrigatórios.</p>
+                        <div id="pendencias-content" class="text-slate-500">Clique em "Atualizar" para carregar.</div>
+                    </div>
+
+                    <!-- Lista de Acesso / Whitelist (Admin) -->
+                    <div id="whitelist-admin-section" class="bg-white p-6 sm:p-8 rounded-2xl shadow-lg"
+                        style="display: none;">
+                        <h2 class="text-2xl font-bold text-slate-800 mb-2">Lista de Acesso</h2>
+                        <p class="text-sm text-slate-500 mb-4">E-mails autorizados a acessar a Base. Os e-mails fixos do
+                            sistema são sempre permitidos.</p>
+                        <form id="whitelist-form" class="flex gap-2 mb-4 flex-wrap">
+                            <input type="email" id="whitelist-email" placeholder="email@exemplo.com" required
+                                class="flex-1 min-w-[200px] p-3 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <button type="submit"
+                                class="px-5 py-2.5 text-sm font-semibold text-white bg-blue-600 rounded-lg hover:bg-blue-700 focus-ring-visible">Adicionar</button>
+                        </form>
+                        <div id="whitelist-list" class="space-y-2">
+                            <p id="whitelist-loading-msg" class="text-slate-500">Carregando...</p>
+                        </div>
+                    </div>
+
                 </div>
             </div>
         </main>
@@ -697,16 +734,23 @@
                 throw new Error("Usuário não autenticado.");
             }
             try {
-                const token = await getIdToken(auth.currentUser, /* forceRefresh */ true);
+                // Usa o token em cache (forceRefresh=false); só força e repete se vier 401.
+                const sendRequest = async (forceRefresh) => {
+                    const token = await getIdToken(auth.currentUser, forceRefresh);
+                    return fetch('api', { // Sempre chama a API raiz
+                        method: 'POST',
+                        headers: {
+                            'Authorization': `Bearer ${token}`,
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ action, payload }) // Envia a ação e o payload
+                    });
+                };
 
-                const response = await fetch('api', { // Sempre chama a API raiz
-                    method: 'POST',
-                    headers: {
-                        'Authorization': `Bearer ${token}`,
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ action, payload }) // Envia a ação e o payload
-                });
+                let response = await sendRequest(false);
+                if (response.status === 401) {
+                    response = await sendRequest(true);
+                }
 
                 const responseText = await response.text();
                 if (!response.ok) {
@@ -770,6 +814,7 @@
 
                     if (role === 'Admin') {
                         loadUsers();
+                        loadWhitelist();
                     }
 
                 } catch (error) {
@@ -863,6 +908,8 @@
             // O restante das permissões
             categoryAdminSection.style.display = (role === 'Admin') ? 'block' : 'none';
             userAdminSection.style.display = (role === 'Admin') ? 'block' : 'none';
+            document.getElementById('whitelist-admin-section').style.display = (role === 'Admin') ? 'block' : 'none';
+            document.getElementById('ciencia-pendencias-section').style.display = (role === 'Editor' || role === 'Admin') ? 'block' : 'none';
             document.getElementById('science-filter-container').style.display = (role === 'Editor' || role === 'Admin') ? 'flex' : 'none';
 
             const categorySelectDiv = articleCategory.closest('div');
@@ -1730,6 +1777,140 @@
                 showStatusMessage(filled.length ? ('Preenchido: ' + filled.join(', ') + '. Revise antes de salvar. ✨') : 'Nada a sugerir (campos já preenchidos).');
             });
         }
+
+        // ============================================================
+        //  LISTA DE ACESSO (WHITELIST) — Admin
+        // ============================================================
+        const whitelistForm = document.getElementById('whitelist-form');
+        const whitelistEmailInput = document.getElementById('whitelist-email');
+        const whitelistList = document.getElementById('whitelist-list');
+
+        function escapeHtmlAdmin(s) {
+            return String(s == null ? '' : s)
+                .replace(/&/g, '&amp;').replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+        }
+
+        async function loadWhitelist() {
+            if (!whitelistList) return;
+            whitelistList.innerHTML = '<p class="text-slate-500">Carregando...</p>';
+            try {
+                const data = await fetchWithToken('admin/getWhitelist');
+                renderWhitelist(data);
+            } catch (e) {
+                whitelistList.innerHTML = `<p class="text-red-500">${escapeHtmlAdmin(e.message || 'Erro ao carregar.')}</p>`;
+            }
+        }
+
+        function renderWhitelist(data) {
+            const emails = data.emails || [];
+            const bootstrap = data.bootstrap || [];
+            let html = '';
+            bootstrap.forEach(em => {
+                html += `<div class="flex justify-between items-center p-3 bg-slate-50 rounded-lg">
+                            <span class="font-medium text-slate-700">${escapeHtmlAdmin(em)}</span>
+                            <span class="text-xs text-slate-400">fixo do sistema</span>
+                        </div>`;
+            });
+            emails.filter(em => !bootstrap.includes(em)).forEach(em => {
+                html += `<div class="flex justify-between items-center p-3 bg-slate-50 rounded-lg">
+                            <span class="font-medium text-slate-700">${escapeHtmlAdmin(em)}</span>
+                            <button data-email="${escapeHtmlAdmin(em)}" class="remove-whitelist-btn text-red-600 hover:text-red-800 text-sm font-medium focus-ring-visible rounded-md p-1">Remover</button>
+                        </div>`;
+            });
+            if (!html) html = '<p class="text-slate-500">Nenhum e-mail cadastrado.</p>';
+            whitelistList.innerHTML = html;
+        }
+
+        if (whitelistForm) {
+            whitelistForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const email = whitelistEmailInput.value.trim();
+                if (!email) return;
+                try {
+                    await fetchWithToken('admin/addWhitelist', { email });
+                    showStatusMessage('E-mail autorizado.');
+                    whitelistEmailInput.value = '';
+                    loadWhitelist();
+                } catch (err) {
+                    showStatusMessage(err.message || 'Erro ao adicionar.', true);
+                }
+            });
+        }
+        if (whitelistList) {
+            whitelistList.addEventListener('click', (e) => {
+                const btn = e.target.closest('.remove-whitelist-btn');
+                if (!btn) return;
+                const email = btn.dataset.email;
+                showConfirmModal('Remover acesso', `Remover ${email} da lista de acesso?`, async () => {
+                    try {
+                        await fetchWithToken('admin/removeWhitelist', { email });
+                        showStatusMessage('E-mail removido.');
+                        loadWhitelist();
+                    } catch (err) {
+                        showStatusMessage(err.message || 'Erro ao remover.', true);
+                    }
+                }, 'Remover');
+            });
+        }
+
+        // ============================================================
+        //  PENDÊNCIAS DE CIÊNCIA (Editor/Admin)
+        // ============================================================
+        const pendenciasRefreshBtn = document.getElementById('pendencias-refresh-btn');
+        const pendenciasContent = document.getElementById('pendencias-content');
+
+        async function loadPendencias() {
+            if (!pendenciasContent) return;
+            pendenciasContent.innerHTML = '<p class="text-slate-500">Carregando...</p>';
+            try {
+                const data = await fetchWithToken('admin/getCienciaPendencias');
+                renderPendencias(data);
+            } catch (e) {
+                pendenciasContent.innerHTML = `<p class="text-red-500">${escapeHtmlAdmin(e.message || 'Erro ao carregar.')}</p>`;
+            }
+        }
+
+        function renderPendencias(data) {
+            const { totalReaders = 0, docs = [], byUser = [] } = data || {};
+            if (docs.length === 0) {
+                pendenciasContent.innerHTML = '<p class="text-slate-500">Nenhum documento exige ciência no momento.</p>';
+                return;
+            }
+            let html = '<h3 class="text-lg font-bold text-slate-800 mb-3">Por documento</h3><div class="space-y-3">';
+            docs.forEach(d => {
+                const pct = totalReaders > 0 ? Math.round((d.readCount / totalReaders) * 100) : 100;
+                const barColor = d.pendingCount === 0 ? 'bg-green-500' : 'bg-amber-500';
+                const pendingHtml = d.pendingCount > 0
+                    ? `<details class="mt-2"><summary class="text-sm text-amber-700 cursor-pointer">Faltam ${d.pendingCount} — ver quem</summary>
+                           <div class="mt-1 text-sm text-slate-600">${d.pendingEmails.map(escapeHtmlAdmin).join(', ')}</div></details>`
+                    : '<p class="text-sm text-green-600 mt-1">Todos leram ✔</p>';
+                html += `<div class="p-4 bg-slate-50 rounded-lg">
+                            <div class="flex justify-between items-center gap-2 flex-wrap">
+                                <span class="font-medium text-slate-800">${escapeHtmlAdmin(d.title)}</span>
+                                <span class="text-sm text-slate-500">${d.readCount}/${totalReaders} leram</span>
+                            </div>
+                            <div class="w-full bg-slate-200 rounded-full h-2 mt-2"><div class="${barColor} h-2 rounded-full" style="width:${pct}%"></div></div>
+                            ${pendingHtml}
+                        </div>`;
+            });
+            html += '</div>';
+
+            if (byUser.length) {
+                html += '<h3 class="text-lg font-bold text-slate-800 mt-6 mb-3">Por pessoa (quem está devendo)</h3><div class="space-y-2">';
+                byUser.forEach(u => {
+                    html += `<div class="p-3 bg-slate-50 rounded-lg">
+                                <span class="font-medium text-slate-700">${escapeHtmlAdmin(u.email)}</span>
+                                <span class="text-sm text-amber-700">— falta(m) ${u.pending.length}</span>
+                                <div class="text-sm text-slate-600 mt-1">${u.pending.map(escapeHtmlAdmin).join(', ')}</div>
+                            </div>`;
+                });
+                html += '</div>';
+            }
+            pendenciasContent.innerHTML = html;
+        }
+
+        if (pendenciasRefreshBtn) pendenciasRefreshBtn.addEventListener('click', loadPendencias);
 
     </script>
 

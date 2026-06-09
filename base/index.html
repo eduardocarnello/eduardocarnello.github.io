@@ -1022,16 +1022,24 @@
                 throw new Error("Usuário não autenticado.");
             }
             try {
-                const token = await getIdToken(currentUser, /* forceRefresh */ true);
+                // Usa o token em cache (forceRefresh=false) — o SDK renova sozinho se expirado.
+                // Só força a renovação e repete a chamada se a 1ª resposta vier 401.
+                const sendRequest = async (forceRefresh) => {
+                    const token = await getIdToken(currentUser, forceRefresh);
+                    return fetch('api', {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': `Bearer ${token}`,
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ action, payload })
+                    });
+                };
 
-                const response = await fetch('api', {
-                    method: 'POST',
-                    headers: {
-                        'Authorization': `Bearer ${token}`,
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ action, payload })
-                });
+                let response = await sendRequest(false);
+                if (response.status === 401) {
+                    response = await sendRequest(true);
+                }
 
                 const responseText = await response.text();
 
@@ -1467,7 +1475,7 @@
 
                 if (article.tags && article.tags.length > 0) {
                     modalTagsList.innerHTML = article.tags.map(tag =>
-                        `<span class="inline-block bg-slate-200 text-slate-700 px-2 py-0.5 rounded-md">${tag}</span>`
+                        `<button type="button" class="modal-tag-btn inline-block bg-slate-200 hover:bg-blue-100 hover:text-blue-700 text-slate-700 px-2 py-0.5 rounded-md transition-colors cursor-pointer" data-tag="${kbEscapeHtml(tag)}" title="Filtrar por esta tag">${kbEscapeHtml(tag)}</button>`
                     ).join(' ');
                     modalTagsContainer.classList.remove('hidden');
                 } else {
@@ -2034,6 +2042,20 @@
                 const now = toggleFav(currentOpenArticle.id, currentOpenArticle.title);
                 updateFavBtnUI(now);
                 showToast(now ? 'Adicionado aos favoritos' : 'Removido dos favoritos');
+            });
+        }
+
+        // ---------- Tags clicáveis (filtro por tag) ----------
+        if (modalTagsList) {
+            modalTagsList.addEventListener('click', (e) => {
+                const btn = e.target.closest('.modal-tag-btn');
+                if (!btn) return;
+                const tag = btn.dataset.tag || '';
+                closeModal();
+                searchInput.value = tag;
+                searchField.value = 'tags';
+                executeSearchOrFilter();
+                window.scrollTo({ top: 0, behavior: 'smooth' });
             });
         }
 
