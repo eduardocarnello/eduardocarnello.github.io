@@ -1099,6 +1099,50 @@
             color: #fff !important;
             border-color: var(--green) !important;
         }
+
+        /* === MODE SWITCH (Tutelas | SISBAJUD) === */
+        .mode-switch {
+            display: inline-flex;
+            margin-top: 22px;
+            border: 1px solid var(--line);
+            border-radius: 2px;
+            overflow: hidden;
+            background: var(--bg-card);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .mode-btn {
+            background: none;
+            border: none;
+            padding: 9px 22px;
+            font-family: var(--sans);
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+            color: var(--ink-mute);
+            cursor: pointer;
+            transition: all 160ms ease;
+        }
+
+        .mode-btn + .mode-btn {
+            border-left: 1px solid var(--line);
+        }
+
+        .mode-btn.active {
+            background: var(--navy);
+            color: #fff;
+        }
+
+        .mode-btn:not(.active):hover {
+            color: var(--navy);
+            background: var(--bg-subtle);
+        }
+
+        /* SISBAJUD accent: gold left-border on its corpus identity block */
+        body[data-mode="sisbajud"] .mode-btn.active {
+            background: var(--gold);
+        }
     </style>
 </head>
 
@@ -1150,8 +1194,13 @@
                         <span id="user-name"></span>
                         <button class="btn-logout" onclick="doSignOut()">sair</button>
                     </div>
-                    <div class="header-meta">v1.3 · uso interno</div>
+                    <div class="header-meta">v1.4 · uso interno</div>
                 </div>
+            </div>
+
+            <div class="mode-switch" role="tablist" aria-label="Selecionar modo de trabalho">
+                <button class="mode-btn active" data-mode="tutelas" type="button">Tutelas</button>
+                <button class="mode-btn" data-mode="sisbajud" type="button">SISBAJUD</button>
             </div>
 
             <nav class="tabs" role="tablist">
@@ -1442,6 +1491,273 @@
             <div class="counter-bar" id="counter-extras"></div>
         </section>
 
+        <!-- ============ ABA 1 — SISBAJUD: CORPUS ============ -->
+        <section id="tab-sb-corpus" class="tab-panel" role="tabpanel">
+
+            <p class="panel-intro">
+                Monte o arquivo de corpus de uma decisão sobre impugnação/desbloqueio <strong>SISBAJUD</strong>.
+                O arquivo gerado, em <code>.txt</code>, segue a nomenclatura padronizada
+                <code>SISBA_[resultado]_[tese-slug]_[AAAA-MM].txt</code> — pronto para upload no Project Knowledge.
+            </p>
+
+            <h2 class="section-title"><span class="section-title-num">I.</span>Identificação</h2>
+            <p class="section-desc">Campos que compõem o nome do arquivo e o cabeçalho da ficha.</p>
+
+            <div class="field-row">
+                <div class="field">
+                    <label class="label" for="sb-tese">Tese principal <span class="label-aux">curta — vira o slug do
+                            arquivo</span></label>
+                    <input type="text" id="sb-tese"
+                        placeholder="coincidencia conta e data do credito, renda modica, excesso de penhora…">
+                </div>
+                <div class="field">
+                    <label class="label" for="sb-resultado">Resultado</label>
+                    <select id="sb-resultado">
+                        <option value="defere">defere — deferido o desbloqueio</option>
+                        <option value="defere-parcial">defere-parcial</option>
+                        <option value="indefere">indefere</option>
+                        <option value="misto">misto</option>
+                    </select>
+                </div>
+                <div class="field">
+                    <label class="label" for="sb-data">Mês/Ano <span class="label-aux">AAAA-MM</span></label>
+                    <input type="text" id="sb-data" placeholder="2026-06" pattern="\d{4}-\d{2}">
+                </div>
+            </div>
+
+            <div class="field">
+                <label class="label" for="sb-tipo">Tipo de ação</label>
+                <select id="sb-tipo">
+                    <option value="execução de título extrajudicial">execução de título extrajudicial</option>
+                    <option value="cumprimento de sentença">cumprimento de sentença</option>
+                </select>
+            </div>
+
+            <div class="field">
+                <label class="label">Verbas analisadas <span class="label-aux">clique para marcar (multisseleção)</span></label>
+                <div class="preset-row" id="sb-verbas"></div>
+            </div>
+
+            <div class="field">
+                <label class="label">Teses / fundamentos-chave <span class="label-aux">clique para marcar
+                        (multisseleção)</span></label>
+                <div class="preset-row" id="sb-teses"></div>
+            </div>
+
+            <div class="field">
+                <label class="label" for="sb-juris">Jurisprudência citada <span class="label-aux">texto livre</span></label>
+                <textarea id="sb-juris" style="min-height: 90px;"
+                    placeholder="EREsp 1.582.475/MG; EREsp 1.874.222/DF; Enunciado 42 do Conselho Supervisor; Tema…"></textarea>
+            </div>
+
+            <h2 class="section-title"><span class="section-title-num">II.</span>Inteiro Teor da Decisão</h2>
+            <p class="section-desc">Cole o inteiro teor da decisão. Será anonimizado entre os marcadores da ficha.</p>
+            <div class="field">
+                <textarea id="sb-teor" class="large"
+                    placeholder="Cole aqui o inteiro teor da decisão sobre a impugnação/desbloqueio SISBAJUD…"></textarea>
+            </div>
+
+            <h2 class="section-title"><span class="section-title-num">III.</span>Deliberação e Observações</h2>
+            <p class="section-desc">Marcação opcional da deliberação e anotações livres — compõem a linha OBSERVAÇÕES da
+                ficha (anonimizadas).</p>
+            <div class="field">
+                <label class="label">Categorias de deliberação <span class="label-aux">opcional (multisseleção)</span></label>
+                <div class="preset-row" id="sb-delib"></div>
+            </div>
+            <div class="field">
+                <label class="label" for="sb-obs">Observações <span class="label-aux">texto livre</span></label>
+                <textarea id="sb-obs" style="min-height: 90px;"
+                    placeholder="Notas sobre o caso, particularidades da movimentação, excedente apurado…"></textarea>
+            </div>
+
+            <hr class="divider-rule">
+
+            <details class="anon-panel" id="anon-sbcorpus" open>
+                <summary>Anonimização (LGPD) — SISBAJUD</summary>
+                <div class="anon-body">
+                    <p class="hint" style="margin-top: 10px;">
+                        Nomes de pessoas → iniciais; máscara de CPF, CNPJ, agência e conta. Preserva
+                        <strong>valores (R$), datas e rubricas de extrato</strong> (REMUNERAÇÃO/SALÁRIO, Crédito
+                        Automático CDC, PIX/TED…) — úteis ao corpus. Não altera fundamentos, artigos ou ementas.
+                    </p>
+
+                    <div class="anon-row" id="anon-toggles-sbcorpus"></div>
+
+                    <div class="field" style="margin-top: 18px;">
+                        <label class="label">Termos a substituir <span class="label-aux">um por linha — para casos não
+                                capturados pela detecção automática</span></label>
+                        <textarea id="sb-anon-list" style="min-height: 90px;"
+                            placeholder="Banco XYZ S/A&#10;Apelido específico&#10;Denominação comercial"></textarea>
+                        <p class="hint">Cada termo será substituído por <code>[PARTE]</code>.</p>
+                    </div>
+                </div>
+            </details>
+
+            <div class="button-bar">
+                <button class="btn btn-primary" onclick="regen('sbcorpus')">
+                    <span class="btn-icon">⟳</span> Gerar / Atualizar
+                </button>
+                <button class="btn btn-accent" onclick="downloadSbCorpus()">
+                    <span class="btn-icon">↓</span> Baixar arquivo
+                </button>
+                <button class="btn" onclick="copySbOutput('sbcorpus')">
+                    <span class="btn-icon">⧉</span> Copiar texto
+                </button>
+                <button class="btn btn-ghost" onclick="clearSbTab('sbcorpus')">limpar campos</button>
+                <span class="status" id="status-sbcorpus"></span>
+            </div>
+
+            <div class="preview-section">
+                <div class="preview-header">
+                    <span>Pré-visualização</span>
+                    <span class="preview-filename" id="filename-sbcorpus">SISBA_____.txt</span>
+                </div>
+                <div class="preview-body" id="preview-sbcorpus"></div>
+            </div>
+            <div class="counter-bar" id="counter-sbcorpus"></div>
+        </section>
+
+        <!-- ============ ABA 2 — SISBAJUD: CONSULTA ============ -->
+        <section id="tab-sb-consulta" class="tab-panel" role="tabpanel">
+
+            <p class="panel-intro">
+                Estruture a consulta do caso novo para o projeto <strong>SISBAJUD</strong>: petição/impugnação,
+                documentos relevantes e o comando. O comando já vem preenchido com o texto-modelo do projeto —
+                pronto para copiar e colar na conversa do Project.
+            </p>
+
+            <h2 class="section-title"><span class="section-title-num">I.</span>Petição / Impugnação</h2>
+            <p class="section-desc">Íntegra ou trechos essenciais da petição de impugnação/desbloqueio.</p>
+            <div class="field">
+                <textarea id="sb-q-inicial" class="large"
+                    placeholder="Cole aqui o texto da impugnação/petição de desbloqueio…"></textarea>
+            </div>
+
+            <h2 class="section-title"><span class="section-title-num">II.</span>Documentos Relevantes</h2>
+            <p class="section-desc">Descrição livre — detalhamento SISBAJUD, extratos, holerites, planilha do débito…</p>
+            <div class="field">
+                <textarea id="sb-q-docs"
+                    placeholder="- Doc. 1 — Detalhamento da ordem SISBAJUD — bloqueios por banco/data/valor.&#10;- Doc. 2 — Extrato bancário — origem dos créditos.&#10;- Doc. 3 — Holerite/benefício — comprova natureza da verba.&#10;- Doc. 4 — Planilha do débito atualizado."></textarea>
+            </div>
+
+            <h2 class="section-title"><span class="section-title-num">III.</span>Comando</h2>
+            <p class="section-desc">Texto-modelo do projeto SISBAJUD. Edite se necessário ou restaure o padrão.</p>
+            <div class="field">
+                <textarea id="sb-q-comando" style="min-height: 160px;"></textarea>
+                <div class="preset-row">
+                    <button class="preset-chip" onclick="setSbCommand()">Restaurar texto-modelo SISBAJUD</button>
+                </div>
+            </div>
+
+            <hr class="divider-rule">
+
+            <details class="anon-panel" id="anon-sbconsulta" open>
+                <summary>Anonimização (LGPD) — SISBAJUD</summary>
+                <div class="anon-body">
+                    <p class="hint" style="margin-top: 10px;">
+                        Mesmas regras da Aba 1. Importante para casos em curso, antes de submeter à análise.
+                    </p>
+
+                    <div class="anon-row" id="anon-toggles-sbconsulta"></div>
+
+                    <div class="field" style="margin-top: 18px;">
+                        <label class="label">Termos a substituir <span class="label-aux">um por linha</span></label>
+                        <textarea id="sb-q-anon-list" style="min-height: 90px;"
+                            placeholder="Banco XYZ S/A&#10;Apelido específico"></textarea>
+                    </div>
+                </div>
+            </details>
+
+            <div class="button-bar">
+                <button class="btn btn-primary" onclick="regen('sbconsulta')">
+                    <span class="btn-icon">⟳</span> Gerar / Atualizar
+                </button>
+                <button class="btn btn-accent" onclick="copySbOutput('sbconsulta')">
+                    <span class="btn-icon">⧉</span> Copiar para colar no chat
+                </button>
+                <button class="btn" onclick="downloadSbConsulta()">
+                    <span class="btn-icon">↓</span> Baixar como .txt
+                </button>
+                <button class="btn btn-ghost" onclick="clearSbTab('sbconsulta')">limpar campos</button>
+                <span class="status" id="status-sbconsulta"></span>
+            </div>
+
+            <div class="preview-section">
+                <div class="preview-header">
+                    <span>Pré-visualização — mensagem para o Project</span>
+                    <span class="preview-filename">consulta_sisbajud.txt</span>
+                </div>
+                <div class="preview-body" id="preview-sbconsulta"></div>
+            </div>
+            <div class="counter-bar" id="counter-sbconsulta"></div>
+        </section>
+
+        <!-- ============ ABA 3 — SISBAJUD: EXTRAS ============ -->
+        <section id="tab-sb-extras" class="tab-panel" role="tabpanel">
+
+            <p class="panel-intro">
+                Banco de tópicos textuais reutilizáveis para minutas de desbloqueio/impugnação <strong>SISBAJUD</strong>
+                — fragmentos prontos (teses recorrentes, advertências, fundamentos). Armazenamento independente do
+                modo Tutelas. O arquivo gerado em <code>.txt</code> mantém numeração sequencial.
+            </p>
+
+            <h2 class="section-title"><span class="section-title-num">I.</span>Tópicos Cadastrados</h2>
+            <p class="section-desc">Clique no título para expandir o conteúdo. Use as setas para reordenar.</p>
+
+            <div id="topic-list-wrapper-sb">
+                <div class="extras-empty" id="extras-empty-sb">
+                    Nenhum tópico cadastrado. Use o botão abaixo para incluir o primeiro.
+                </div>
+                <div class="topic-list" id="topic-list-sb"></div>
+            </div>
+
+            <div id="topic-form-wrapper-sb"></div>
+
+            <div class="button-bar">
+                <button class="btn btn-primary" id="btn-add-topic-sb" onclick="openSbTopicForm()">
+                    <span class="btn-icon">+</span> Adicionar tópico
+                </button>
+                <button class="btn btn-accent" onclick="downloadSbExtras()">
+                    <span class="btn-icon">↓</span> Baixar EXTRAS_SISBAJUD.txt
+                </button>
+                <button class="btn" onclick="copySbOutput('sbextras')">
+                    <span class="btn-icon">⧉</span> Copiar texto
+                </button>
+                <button class="btn btn-ghost" onclick="clearSbExtras()">limpar todos</button>
+                <span class="status" id="status-sbextras"></span>
+            </div>
+
+            <details class="import-panel">
+                <summary>Importar de arquivo EXTRAS_SISBAJUD.txt existente</summary>
+                <div class="import-body">
+                    <p class="hint" style="margin-top: 8px;">
+                        Cole o conteúdo de um arquivo de extras previamente gerado para recuperar os tópicos.
+                    </p>
+                    <div class="field" style="margin-top: 12px;">
+                        <textarea id="sb-extras-import" style="min-height: 140px;"
+                            placeholder="Cole aqui o conteúdo do arquivo EXTRAS_SISBAJUD.txt…"></textarea>
+                    </div>
+                    <div class="button-bar" style="margin: 8px 0 0;">
+                        <button class="btn btn-primary" onclick="importSbExtras()">
+                            <span class="btn-icon">↥</span> Importar tópicos
+                        </button>
+                        <button class="btn" onclick="importSbExtras(true)">
+                            <span class="btn-icon">⟲</span> Substituir tudo
+                        </button>
+                    </div>
+                </div>
+            </details>
+
+            <div class="preview-section">
+                <div class="preview-header">
+                    <span>Pré-visualização do arquivo</span>
+                    <span class="preview-filename">EXTRAS_SISBAJUD.txt</span>
+                </div>
+                <div class="preview-body" id="preview-sbextras"></div>
+            </div>
+            <div class="counter-bar" id="counter-sbextras"></div>
+        </section>
+
     </main>
 
     <footer>
@@ -1555,7 +1871,7 @@
             }).join(' ');
         }
 
-        function applyNameDetection(text, format) {
+        function applyNameDetection(text, format, extraBL) {
             if (!text) return { text, count: 0 };
             let count = 0;
 
@@ -1567,6 +1883,7 @@
 
                 if (NAME_BLACKLIST_FIRST.has(firstWord)) return match;
                 if (NAME_BLACKLIST_LAST.has(lastWord)) return match;
+                if (extraBL && (extraBL.has(firstWord) || extraBL.has(lastWord))) return match;
 
                 const ctxStart = Math.max(0, offset - 40);
                 const ctx = fullStr.substring(ctxStart, offset);
@@ -1591,6 +1908,7 @@
                 const titleLast = lastWord.charAt(0).toUpperCase() + lastWord.slice(1).toLowerCase();
                 if (NAME_BLACKLIST_FIRST.has(titleFirst)) return match;
                 if (NAME_BLACKLIST_LAST.has(titleLast)) return match;
+                if (extraBL && (extraBL.has(titleFirst) || extraBL.has(titleLast))) return match;
 
                 const ctxStart = Math.max(0, offset - 40);
                 const ctx = fullStr.substring(ctxStart, offset);
@@ -1613,24 +1931,46 @@
             state.consulta.anonActive[k] = ANON_RULES[k].default;
         });
 
-        // ---------- Tab switching ----------
+        // ---------- Mode + Tab switching ----------
+        let currentMode = 'tutelas';
+        let currentTab = 'corpus';
+
+        function showActivePanel() {
+            document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+            const prefix = currentMode === 'sisbajud' ? 'sb-' : '';
+            const panel = document.getElementById('tab-' + prefix + currentTab);
+            if (panel) panel.classList.add('active');
+        }
+
+        function setMode(mode) {
+            currentMode = (mode === 'sisbajud') ? 'sisbajud' : 'tutelas';
+            document.querySelectorAll('.mode-btn').forEach(b => b.classList.toggle('active', b.dataset.mode === currentMode));
+            if (document.body) document.body.dataset.mode = currentMode;
+            showActivePanel();
+            try { localStorage.setItem('prep-jec-mode', currentMode); } catch (e) { }
+        }
+
         document.querySelectorAll('.tab').forEach(btn => {
             btn.addEventListener('click', () => {
                 document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-                document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
                 btn.classList.add('active');
-                document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
+                currentTab = btn.dataset.tab;
+                showActivePanel();
             });
         });
 
+        document.querySelectorAll('.mode-btn').forEach(btn => {
+            btn.addEventListener('click', () => setMode(btn.dataset.mode));
+        });
+
         // ---------- Build anonymization toggles ----------
-        function buildToggles(panel) {
+        function buildToggles(panel, rules = ANON_RULES, order = ANON_ORDER, save = () => saveDraft()) {
             const container = document.getElementById('anon-toggles-' + panel);
             container.innerHTML = '';
 
             // Regex toggles
-            ANON_ORDER.forEach(key => {
-                const r = ANON_RULES[key];
+            order.forEach(key => {
+                const r = rules[key];
                 const wrapper = document.createElement('label');
                 wrapper.className = 'anon-toggle' + (state[panel].anonActive[key] ? ' checked' : '');
                 wrapper.innerHTML = `<input type="checkbox" ${state[panel].anonActive[key] ? 'checked' : ''}><span>${r.label}</span>`;
@@ -1638,7 +1978,7 @@
                     state[panel].anonActive[key] = e.target.checked;
                     wrapper.classList.toggle('checked', e.target.checked);
                     regen(panel);
-                    saveDraft();
+                    save();
                 });
                 container.appendChild(wrapper);
             });
@@ -1653,7 +1993,7 @@
                 const fr = document.getElementById('name-format-row-' + panel);
                 if (fr) fr.style.display = e.target.checked ? '' : 'none';
                 regen(panel);
-                saveDraft();
+                save();
             });
             container.appendChild(nameWrapper);
 
@@ -1680,7 +2020,7 @@
                 state[panel].nameFormat = e.target.value;
                 updateFormatExample(panel, e.target.value);
                 regen(panel);
-                saveDraft();
+                save();
             });
             container.parentNode.insertBefore(formatRow, container.nextSibling);
         }
@@ -2558,6 +2898,685 @@ ${HEADER_LINE}
             a.click();
             URL.revokeObjectURL(url);
         }
+
+        // =============================================================
+        // MODO SISBAJUD — espelha as capacidades do modo Tutelas
+        // (gerador de corpus, construtor de consulta e EXTRAS), com
+        // nomenclatura, ficha, listas e anonimização próprias.
+        // Persistência em namespace separado (extras_sisbajud + campos sb*).
+        // =============================================================
+
+        // ---------- Listas (verbatim) ----------
+        const SB_VERBAS = [
+            'Benefício assistencial (Bolsa Família / BPC-LOAS)',
+            'Salário/proventos — renda módica (<3 SM)',
+            'Salário/proventos — renda substancial (>3 SM)',
+            'Aposentadoria/pensão',
+            'Poupança (até 40 SM)',
+            'Verbas rescisórias/FGTS',
+            'Ganhos de autônomo',
+            'Empréstimo/CDC',
+            'Origem diversa/terceiros (PIX/TED/depósito em espécie)',
+            'Movimentação heterogênea/mista',
+            'Faturamento de empresa/MEI',
+        ];
+
+        const SB_TESES = [
+            'Ônus da prova (art. 373, I e 854, §3º, CPC)',
+            'Fungibilidade do dinheiro',
+            'Coincidência conta/data do crédito',
+            'Conta de livre movimentação (afasta art. 833, X)',
+            'Desvio de finalidade (apostas/jogos)',
+            'Impenhorabilidade absoluta de benefício social',
+            'Renda módica sem mitigação',
+            'Mitigação por renda substancial (EREsp 1.582.475/MG; EREsp 1.874.222/DF; Enunciado 42 do Conselho Supervisor)',
+            'Mínimo existencial/dignidade',
+            'Menor onerosidade (art. 805, § único)',
+            'Excesso de penhora',
+            'Empréstimo CDC penhorável',
+        ];
+
+        const SB_DELIB = [
+            'Desbloqueio (via SISBAJUD)',
+            'Transferência p/ conta judicial',
+            'Tratamento do excedente',
+            'Extinção pela satisfação (art. 924, II, CPC)',
+            'Prosseguimento + intimação do exequente (no JEC NÃO se aplica a suspensão do art. 921 CPC; havendo inércia, extinção pelo art. 53, §4º, Lei 9.099/95)',
+            'Levantamento só após preclusão/trânsito (MLE — Comunicado CG 12/2024)',
+        ];
+
+        const SB_RESULT_LABEL = {
+            'defere': 'deferido o desbloqueio',
+            'defere-parcial': 'deferimento parcial',
+            'indefere': 'indeferido',
+            'misto': 'misto',
+        };
+
+        const SB_QUERY_MODEL = 'Analise os documentos anexos (detalhamento da ordem SISBAJUD, extratos bancários, holerites/comprovantes de rendimento, demonstrativos de benefício, petição de impugnação/desbloqueio e planilha do débito). Faça OCR/extração dos bloqueios (executado/banco/data/valor/rubrica), discrimine-os e coteje com o débito atualizado, apontando eventual excesso. Em seguida, proponha a minuta de decisão sobre a impugnação/desbloqueio SISBAJUD, conforme o método e a estrutura do projeto. [Lembrete: anexar os documentos do caso a esta consulta.]';
+
+        // ---------- Regras de anonimização SISBAJUD ----------
+        // Mascara identificadores (CPF, CNPJ, agência, conta). NÃO mascara
+        // valores (R$), datas nem rubricas de extrato — preservadas para o corpus.
+        const SB_ANON_RULES = {
+            cpf: { label: 'CPF', pattern: ANON_RULES.cpf.pattern, replace: '[CPF]', default: true },
+            cnpj: { label: 'CNPJ', pattern: ANON_RULES.cnpj.pattern, replace: '[CNPJ]', default: true },
+            agencia: { label: 'Agência', pattern: /\b(?:ag[êe]ncia|ag\.?|ag)\s*:?\s*n?[º°.]?\s*\d{3,6}(?:-?[\dxX])?\b/gi, replace: '[AGÊNCIA]', default: true },
+            conta: { label: 'Conta', pattern: /\b(?:conta(?:\s+corrente)?|c\/c|c\.c\.?|cc)\s*:?\s*n?[º°.]?\s*\d{3,12}(?:-?[\dxX])?\b/gi, replace: '[CONTA]', default: true },
+        };
+        const SB_ANON_ORDER = ['cnpj', 'cpf', 'agencia', 'conta'];
+
+        // Termos de extrato/rubrica que NÃO devem ser tratados como nomes de pessoas.
+        const SB_NAME_BLACKLIST_EXTRA = new Set([
+            'Crédito', 'Créditos', 'Débito', 'Débitos', 'Automático', 'Automática', 'Remuneração', 'Salário',
+            'Salários', 'Provento', 'Proventos', 'Pix', 'PIX', 'Ted', 'TED', 'Doc', 'DOC', 'Transferência',
+            'Transferências', 'Pagamento', 'Pagamentos', 'Recebimento', 'Recebimentos', 'Depósito', 'Depósitos',
+            'Saque', 'Saques', 'Tarifa', 'Tarifas', 'Rendimento', 'Rendimentos', 'Aplicação', 'Aplicações',
+            'Resgate', 'Resgates', 'Estorno', 'Estornos', 'Compensação', 'Bolsa', 'Família', 'Auxílio',
+            'Benefício', 'Benefícios', 'Aposentadoria', 'Pensão', 'Pensionista', 'Segurado', 'Segurada',
+            'CDC', 'FGTS', 'INSS', 'LOAS', 'BPC', 'Boleto', 'Boletos', 'Fatura', 'Faturas', 'Convênio',
+            'Empréstimo', 'Empréstimos', 'Financiamento', 'Cartão', 'Limite', 'Cheque', 'Especial', 'Poupança',
+            'Investimento', 'Juros', 'Saldo', 'Extrato', 'Lançamento', 'Lançamentos', 'Folha', 'Holerite',
+        ]);
+
+        // ---------- Estado SISBAJUD ----------
+        state.sbcorpus = { anonActive: {}, nameAnonActive: true, nameFormat: 'initials-only', replacements: 0 };
+        state.sbconsulta = { anonActive: {}, nameAnonActive: true, nameFormat: 'initials-only', replacements: 0 };
+        state.sbExtras = { topics: [], editingId: null };
+        Object.keys(SB_ANON_RULES).forEach(k => {
+            state.sbcorpus.anonActive[k] = SB_ANON_RULES[k].default;
+            state.sbconsulta.anonActive[k] = SB_ANON_RULES[k].default;
+        });
+
+        // ---------- Helpers ----------
+        function slugify(s) {
+            return (s || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '')
+                .replace(/[^a-z0-9\s-]/g, '').trim().replace(/[\s_]+/g, '-').replace(/-+/g, '-')
+                .replace(/^-|-$/g, '') || '___';
+        }
+
+        function getSelectedChips(containerId) {
+            return [...document.querySelectorAll('#' + containerId + ' .suggestion-chip.selected')].map(c => c.dataset.val);
+        }
+
+        function setChipsSelected(containerId, values) {
+            const set = new Set(values || []);
+            document.querySelectorAll('#' + containerId + ' .suggestion-chip').forEach(ch => {
+                ch.classList.toggle('selected', set.has(ch.dataset.val));
+            });
+        }
+
+        function initChips(containerId, items, panel) {
+            const c = document.getElementById(containerId);
+            if (!c) return;
+            c.innerHTML = items.map(v => {
+                const safe = escapeHtml(v).replace(/"/g, '&quot;');
+                return `<span class="suggestion-chip" data-val="${safe}">${escapeHtml(v)}</span>`;
+            }).join('');
+            c.querySelectorAll('.suggestion-chip').forEach(ch => {
+                ch.addEventListener('click', () => {
+                    ch.classList.toggle('selected');
+                    regen(panel);
+                    saveSbDraft();
+                });
+            });
+        }
+
+        // ---------- Anonimização SISBAJUD ----------
+        function anonymizeSisbajud(text, panel) {
+            if (!text) return { text: '', count: 0 };
+            let result = text;
+            let count = 0;
+
+            // 1. Lista de termos do usuário → [PARTE]
+            const listEl = document.getElementById(panel === 'sbcorpus' ? 'sb-anon-list' : 'sb-q-anon-list');
+            const terms = (listEl && listEl.value || '')
+                .split('\n').map(t => t.trim()).filter(t => t.length >= 2);
+            terms.sort((a, b) => b.length - a.length).forEach(term => {
+                const escaped = term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+                const re = new RegExp(escaped, 'gi');
+                const matches = result.match(re);
+                if (matches) { count += matches.length; result = result.replace(re, '⟦PARTE⟧'); }
+            });
+
+            // 2. Nomes de pessoas → iniciais (protege rubricas de extrato)
+            if (state[panel].nameAnonActive) {
+                const nameResult = applyNameDetection(result, state[panel].nameFormat, SB_NAME_BLACKLIST_EXTRA);
+                result = nameResult.text;
+                count += nameResult.count;
+            }
+
+            // 3. Identificadores: CPF, CNPJ, agência, conta (preserva R$, datas e rubricas)
+            SB_ANON_ORDER.forEach(key => {
+                if (!state[panel].anonActive[key]) return;
+                const rule = SB_ANON_RULES[key];
+                const matches = result.match(rule.pattern);
+                if (matches) {
+                    count += matches.length;
+                    result = result.replace(rule.pattern, '⟦' + rule.replace.slice(1, -1) + '⟧');
+                }
+            });
+
+            return { text: result, count };
+        }
+
+        // ---------- Construtor de corpus SISBAJUD ----------
+        function buildSbCorpus() {
+            const resultado = document.getElementById('sb-resultado').value;
+            const tese = getVal('sb-tese');
+            const data = getVal('sb-data');
+            const tipo = document.getElementById('sb-tipo').value;
+            const verbas = getSelectedChips('sb-verbas');
+            const teses = getSelectedChips('sb-teses');
+            const delib = getSelectedChips('sb-delib');
+            const juris = getVal('sb-juris');
+            const teor = anonymizeSisbajud(getVal('sb-teor'), 'sbcorpus');
+            const obs = anonymizeSisbajud(getVal('sb-obs'), 'sbcorpus');
+
+            const slug = slugify(tese);
+            const filename = `SISBA_${resultado}_${slug}_${safeData(data)}.txt`;
+            const idNoExt = filename.replace(/\.txt$/, '');
+
+            let obsLine = obs.text || '';
+            if (delib.length) obsLine = (obsLine ? obsLine + ' — ' : '') + 'Deliberação: ' + delib.join('; ');
+            if (!obsLine) obsLine = 'anonimizado';
+
+            const resLabel = SB_RESULT_LABEL[resultado] ? ' — ' + SB_RESULT_LABEL[resultado] : '';
+
+            const text =
+                `================ FICHA DO CASO (CORPUS SISBAJUD) ================
+ID: ${idNoExt}
+TIPO DE AÇÃO: ${tipo}
+RESULTADO(S): ${resultado}${resLabel}
+VERBAS ANALISADAS: ${verbas.join('; ') || '—'}
+TESES/FUNDAMENTOS-CHAVE: ${teses.join('; ') || '—'}
+JURISPRUDÊNCIA CITADA: ${juris || '—'}
+OBSERVAÇÕES: ${obsLine}
+================ INÍCIO DA DECISÃO ================
+${teor.text || '(colar inteiro teor da decisão)'}
+================ FIM DA DECISÃO ================
+`;
+            return { text, filename, replacements: teor.count + obs.count };
+        }
+
+        // ---------- Construtor de consulta SISBAJUD ----------
+        function buildSbConsulta() {
+            const peticao = anonymizeSisbajud(getVal('sb-q-inicial'), 'sbconsulta');
+            const docs = anonymizeSisbajud(getVal('sb-q-docs'), 'sbconsulta');
+            const comando = getVal('sb-q-comando') || SB_QUERY_MODEL;
+            const text =
+                `PETIÇÃO / IMPUGNAÇÃO
+${'─'.repeat(40)}
+
+${peticao.text || '(colar petição de impugnação/desbloqueio)'}
+
+
+DOCUMENTOS RELEVANTES
+${'─'.repeat(40)}
+
+${docs.text || '(descrever documentos: detalhamento SISBAJUD, extratos, holerites, planilha do débito…)'}
+
+
+COMANDO
+${'─'.repeat(40)}
+
+${comando}
+`;
+            return { text, replacements: peticao.count + docs.count };
+        }
+
+        function setSbCommand() {
+            document.getElementById('sb-q-comando').value = SB_QUERY_MODEL;
+            regen('sbconsulta');
+        }
+
+        // ---------- Download / Copy SISBAJUD ----------
+        function downloadSbCorpus() {
+            const b = buildSbCorpus();
+            if (!getVal('sb-tese') || !getVal('sb-data')) {
+                setStatus('sbcorpus', 'Preencha a tese principal e a data antes de baixar.', 'error');
+                return;
+            }
+            triggerDownload(plainOutput(b.text), b.filename);
+            setStatus('sbcorpus', `Arquivo "${b.filename}" gerado.`, 'info');
+        }
+
+        function downloadSbConsulta() {
+            const b = buildSbConsulta();
+            const stamp = new Date().toISOString().slice(0, 10);
+            triggerDownload(plainOutput(b.text), `consulta_sisbajud_${stamp}.txt`);
+            setStatus('sbconsulta', 'Arquivo de consulta gerado.', 'info');
+        }
+
+        async function copySbOutput(panel) {
+            let text;
+            if (panel === 'sbcorpus') text = plainOutput(buildSbCorpus().text);
+            else if (panel === 'sbconsulta') text = plainOutput(buildSbConsulta().text);
+            else if (panel === 'sbextras') text = buildSbExtras().text;
+            try {
+                await navigator.clipboard.writeText(text);
+                setStatus(panel, 'Conteúdo copiado para a área de transferência.', 'info');
+            } catch (e) {
+                const ta = document.createElement('textarea');
+                ta.value = text; document.body.appendChild(ta);
+                ta.select(); document.execCommand('copy'); document.body.removeChild(ta);
+                setStatus(panel, 'Copiado (modo legado).', 'info');
+            }
+        }
+
+        function clearSbTab(panel) {
+            if (!confirm('Deseja apagar todos os campos desta aba?')) return;
+            if (panel === 'sbcorpus') {
+                ['sb-tese', 'sb-data', 'sb-juris', 'sb-obs', 'sb-teor', 'sb-anon-list'].forEach(id => document.getElementById(id).value = '');
+                setChipsSelected('sb-verbas', []); setChipsSelected('sb-teses', []); setChipsSelected('sb-delib', []);
+            } else {
+                ['sb-q-inicial', 'sb-q-docs', 'sb-q-anon-list'].forEach(id => document.getElementById(id).value = '');
+                document.getElementById('sb-q-comando').value = SB_QUERY_MODEL;
+            }
+            regen(panel);
+            setStatus(panel, 'Campos limpos.', 'info');
+        }
+
+        // =============================================================
+        // EXTRAS SISBAJUD — tópicos reutilizáveis (storage: extras_sisbajud)
+        // =============================================================
+        function renderSbTopicList() {
+            const wrap = document.getElementById('topic-list-sb');
+            const empty = document.getElementById('extras-empty-sb');
+            if (!state.sbExtras.topics.length) {
+                empty.style.display = 'block';
+                wrap.innerHTML = '';
+                return;
+            }
+            empty.style.display = 'none';
+            wrap.innerHTML = state.sbExtras.topics.map((t, idx) => {
+                const isLast = idx === state.sbExtras.topics.length - 1;
+                const isFirst = idx === 0;
+                return `
+        <div class="topic-card" data-id="${t.id}">
+          <div class="topic-card-header" onclick="toggleSbTopic('${t.id}')">
+            <span class="topic-num">[${idx + 1}]</span>
+            <span class="topic-title">${escapeHtml(t.title)}</span>
+            <div class="topic-card-actions" onclick="event.stopPropagation()">
+              <button class="icon-btn" onclick="moveSbTopic('${t.id}', -1)" ${isFirst ? 'disabled' : ''} title="Mover para cima">↑</button>
+              <button class="icon-btn" onclick="moveSbTopic('${t.id}', 1)" ${isLast ? 'disabled' : ''} title="Mover para baixo">↓</button>
+              <button class="icon-btn" id="copy-btn-sb-${t.id}" onclick="copySbTopicBody('${t.id}')" title="Copiar conteúdo">⧉</button>
+              <button class="icon-btn" onclick="editSbTopic('${t.id}')" title="Editar">✎</button>
+              <button class="icon-btn danger" onclick="removeSbTopic('${t.id}')" title="Remover">✕</button>
+            </div>
+          </div>
+          <div class="topic-card-body">${escapeHtml(t.body)}</div>
+        </div>
+      `;
+            }).join('');
+        }
+
+        function toggleSbTopic(id) {
+            const card = document.querySelector(`#topic-list-sb .topic-card[data-id="${id}"]`);
+            if (card) card.classList.toggle('expanded');
+        }
+
+        function moveSbTopic(id, delta) {
+            const arr = state.sbExtras.topics;
+            const idx = arr.findIndex(t => t.id === id);
+            if (idx < 0) return;
+            const newIdx = idx + delta;
+            if (newIdx < 0 || newIdx >= arr.length) return;
+            [arr[idx], arr[newIdx]] = [arr[newIdx], arr[idx]];
+            renderSbTopicList();
+            regen('sbextras');
+            saveSbDraft();
+        }
+
+        function removeSbTopic(id) {
+            const t = state.sbExtras.topics.find(x => x.id === id);
+            if (!t) return;
+            if (!confirm(`Remover o tópico "${t.title}"?`)) return;
+            state.sbExtras.topics = state.sbExtras.topics.filter(x => x.id !== id);
+            renderSbTopicList();
+            regen('sbextras');
+            saveSbDraft();
+        }
+
+        function openSbTopicForm(editingId = null) {
+            state.sbExtras.editingId = editingId;
+            const editing = editingId ? state.sbExtras.topics.find(t => t.id === editingId) : null;
+            const wrap = document.getElementById('topic-form-wrapper-sb');
+            wrap.innerHTML = `
+      <div class="topic-form">
+        <h3 class="topic-form-title">${editing ? 'Editar tópico' : 'Novo tópico'}</h3>
+        <div class="field">
+          <label class="label" for="sb-topic-title-input">Título <span class="label-aux">curto, em caixa alta (será o cabeçalho do bloco)</span></label>
+          <input type="text" id="sb-topic-title-input" placeholder="IMPENHORABILIDADE DE BENEFÍCIO SOCIAL" value="${escapeHtml(editing?.title || '')}">
+        </div>
+        <div class="field">
+          <label class="label" for="sb-topic-body-input">Conteúdo <span class="label-aux">texto do fragmento a ser reutilizado</span></label>
+          <textarea id="sb-topic-body-input" class="large" placeholder="Tratando-se de verba de natureza alimentar (art. 833, IV, do CPC)…">${escapeHtml(editing?.body || '')}</textarea>
+        </div>
+        <div class="topic-form-actions">
+          <button class="btn btn-ghost" onclick="closeSbTopicForm()">cancelar</button>
+          <button class="btn btn-primary" onclick="saveSbTopic()">${editing ? 'Atualizar' : 'Adicionar'}</button>
+        </div>
+      </div>
+    `;
+            setTimeout(() => {
+                const titleInput = document.getElementById('sb-topic-title-input');
+                if (titleInput) titleInput.focus();
+                wrap.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }, 50);
+        }
+
+        function closeSbTopicForm() {
+            document.getElementById('topic-form-wrapper-sb').innerHTML = '';
+            state.sbExtras.editingId = null;
+        }
+
+        function editSbTopic(id) { openSbTopicForm(id); }
+
+        function saveSbTopic() {
+            const title = (document.getElementById('sb-topic-title-input').value || '').trim();
+            const body = (document.getElementById('sb-topic-body-input').value || '').trim();
+            if (!title || !body) {
+                setStatus('sbextras', 'Preencha título e conteúdo do tópico.', 'error');
+                return;
+            }
+            const wasEditing = state.sbExtras.editingId;
+            if (wasEditing) {
+                const t = state.sbExtras.topics.find(x => x.id === wasEditing);
+                if (t) { t.title = title; t.body = body; }
+            } else {
+                state.sbExtras.topics.push({ id: genTopicId(), title, body });
+            }
+            closeSbTopicForm();
+            renderSbTopicList();
+            regen('sbextras');
+            saveSbDraft();
+            setStatus('sbextras', wasEditing ? 'Tópico atualizado.' : 'Tópico adicionado.', 'info');
+        }
+
+        function buildSbExtras() {
+            const HEADER_LINE = '='.repeat(73);
+            const SUB_LINE = '-'.repeat(64);
+            const header =
+                `${HEADER_LINE}
+EXTRAS SISBAJUD - tópicos extras reutilizáveis para minutas de desbloqueio/impugnação
+${HEADER_LINE}
+`;
+            if (!state.sbExtras.topics.length) {
+                return { text: header + '\n(nenhum tópico cadastrado)\n', filename: 'EXTRAS_SISBAJUD.txt' };
+            }
+            const blocks = state.sbExtras.topics.map((t, idx) => {
+                const titleUpper = t.title.toUpperCase();
+                return `
+[${idx + 1}] ${titleUpper}
+${SUB_LINE}
+${SUB_LINE}
+${t.body}
+${HEADER_LINE}
+— Fim do tópico extra —
+${HEADER_LINE}
+`;
+            }).join('\n');
+            return { text: header + blocks, filename: 'EXTRAS_SISBAJUD.txt' };
+        }
+
+        function downloadSbExtras() {
+            const b = buildSbExtras();
+            if (!state.sbExtras.topics.length) {
+                setStatus('sbextras', 'Adicione ao menos um tópico antes de baixar.', 'error');
+                return;
+            }
+            triggerDownload(b.text, b.filename);
+            setStatus('sbextras', `Arquivo "${b.filename}" gerado com ${state.sbExtras.topics.length} tópico(s).`, 'info');
+        }
+
+        function clearSbExtras() {
+            if (!state.sbExtras.topics.length) return;
+            if (!confirm(`Remover TODOS os ${state.sbExtras.topics.length} tópicos SISBAJUD? Esta ação não pode ser desfeita.`)) return;
+            state.sbExtras.topics = [];
+            closeSbTopicForm();
+            renderSbTopicList();
+            regen('sbextras');
+            saveSbDraft();
+            setStatus('sbextras', 'Todos os tópicos foram removidos.', 'info');
+        }
+
+        function importSbExtras(replaceAll = false) {
+            const raw = document.getElementById('sb-extras-import').value || '';
+            const parsed = parseExtrasText(raw);
+            if (!parsed.length) {
+                setStatus('sbextras', 'Nenhum tópico foi reconhecido no texto. Verifique o formato.', 'error');
+                return;
+            }
+            if (replaceAll) {
+                if (state.sbExtras.topics.length && !confirm(`Substituir os ${state.sbExtras.topics.length} tópicos atuais pelos ${parsed.length} importados?`)) return;
+                state.sbExtras.topics = parsed;
+            } else {
+                state.sbExtras.topics = state.sbExtras.topics.concat(parsed);
+            }
+            document.getElementById('sb-extras-import').value = '';
+            renderSbTopicList();
+            regen('sbextras');
+            saveSbDraft();
+            setStatus('sbextras', `${parsed.length} tópico(s) importado(s) com sucesso.`, 'info');
+        }
+
+        function copySbTopicBody(id) {
+            const t = state.sbExtras.topics.find(x => x.id === id);
+            if (!t) return;
+            const done = () => {
+                const btn = document.getElementById('copy-btn-sb-' + id);
+                if (!btn) return;
+                btn.classList.add('copied');
+                btn.innerHTML = '✓';
+                btn.title = 'Copiado!';
+                setTimeout(() => {
+                    btn.classList.remove('copied');
+                    btn.innerHTML = '⧉';
+                    btn.title = 'Copiar conteúdo';
+                }, 1800);
+            };
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(t.body).then(done).catch(() => fallbackCopy(t.body, done));
+            } else {
+                fallbackCopy(t.body, done);
+            }
+        }
+
+        // =============================================================
+        // Persistência SISBAJUD — localStorage (extras_sisbajud) + Firestore (campos sb*)
+        // =============================================================
+        const SB_SAVE_KEY = 'extras_sisbajud';
+
+        function sbDraftObject() {
+            return {
+                corpus: {
+                    resultado: document.getElementById('sb-resultado').value,
+                    tese: getVal('sb-tese'), data: getVal('sb-data'),
+                    tipo: document.getElementById('sb-tipo').value,
+                    verbas: getSelectedChips('sb-verbas'),
+                    teses: getSelectedChips('sb-teses'),
+                    delib: getSelectedChips('sb-delib'),
+                    juris: getVal('sb-juris'), obs: getVal('sb-obs'),
+                    teor: getVal('sb-teor'), anonList: getVal('sb-anon-list'),
+                    anonActive: state.sbcorpus.anonActive,
+                    nameAnonActive: state.sbcorpus.nameAnonActive,
+                    nameFormat: state.sbcorpus.nameFormat,
+                },
+                consulta: {
+                    inicial: getVal('sb-q-inicial'), docs: getVal('sb-q-docs'),
+                    comando: getVal('sb-q-comando'), anonList: getVal('sb-q-anon-list'),
+                    anonActive: state.sbconsulta.anonActive,
+                    nameAnonActive: state.sbconsulta.nameAnonActive,
+                    nameFormat: state.sbconsulta.nameFormat,
+                },
+                extras: { topics: state.sbExtras.topics },
+            };
+        }
+
+        function saveSbDraft() {
+            const data = sbDraftObject();
+            data.savedAt = new Date().toISOString();
+            try { localStorage.setItem(SB_SAVE_KEY, JSON.stringify(data)); } catch (e) { }
+            scheduleSyncSbToFirestore();
+        }
+
+        function applySbDraft(d) {
+            if (!d) return;
+            if (d.corpus) {
+                const c = d.corpus;
+                if (c.resultado) document.getElementById('sb-resultado').value = c.resultado;
+                setIf('sb-tese', c.tese); setIf('sb-data', c.data);
+                if (c.tipo) document.getElementById('sb-tipo').value = c.tipo;
+                setIf('sb-juris', c.juris); setIf('sb-obs', c.obs); setIf('sb-teor', c.teor);
+                setIf('sb-anon-list', c.anonList);
+                setChipsSelected('sb-verbas', c.verbas);
+                setChipsSelected('sb-teses', c.teses);
+                setChipsSelected('sb-delib', c.delib);
+                if (c.anonActive) Object.assign(state.sbcorpus.anonActive, c.anonActive);
+                if (typeof c.nameAnonActive === 'boolean') state.sbcorpus.nameAnonActive = c.nameAnonActive;
+                if (c.nameFormat) state.sbcorpus.nameFormat = c.nameFormat;
+            }
+            if (d.consulta) {
+                const c = d.consulta;
+                setIf('sb-q-inicial', c.inicial); setIf('sb-q-docs', c.docs);
+                setIf('sb-q-comando', c.comando); setIf('sb-q-anon-list', c.anonList);
+                if (c.anonActive) Object.assign(state.sbconsulta.anonActive, c.anonActive);
+                if (typeof c.nameAnonActive === 'boolean') state.sbconsulta.nameAnonActive = c.nameAnonActive;
+                if (c.nameFormat) state.sbconsulta.nameFormat = c.nameFormat;
+            }
+            if (d.extras && Array.isArray(d.extras.topics)) {
+                state.sbExtras.topics = d.extras.topics.map(t => ({
+                    id: t.id || genTopicId(), title: t.title || '', body: t.body || '',
+                })).filter(t => t.title && t.body);
+            }
+        }
+
+        function loadSbDraft() {
+            try {
+                const raw = localStorage.getItem(SB_SAVE_KEY);
+                if (!raw) return;
+                applySbDraft(JSON.parse(raw));
+            } catch (e) { }
+        }
+
+        let _sbSyncTimer;
+        function scheduleSyncSbToFirestore() {
+            if (!currentUser || !window._fbDb) return;
+            clearTimeout(_sbSyncTimer);
+            _sbSyncTimer = setTimeout(() => syncSbToFirestore(window._fbDb), 3000);
+        }
+
+        async function syncSbToFirestore(db) {
+            const ref = userDocRef(db || window._fbDb);
+            if (!ref) return;
+            const o = sbDraftObject();
+            try {
+                await ref.set({
+                    sbCorpus: o.corpus,
+                    sbConsulta: o.consulta,
+                    sbExtras: o.extras,
+                    sbUpdatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+                }, { merge: true });
+            } catch (e) {
+                console.error('SISBAJUD Firestore sync error:', e);
+            }
+        }
+
+        async function loadSbFromFirestore(db) {
+            const ref = userDocRef(db);
+            if (!ref) return;
+            try {
+                const snap = await ref.get();
+                if (!snap.exists) return;
+                const d = snap.data();
+                if (d.sbCorpus || d.sbConsulta || d.sbExtras) {
+                    applySbDraft({ corpus: d.sbCorpus, consulta: d.sbConsulta, extras: d.sbExtras });
+                    buildToggles('sbcorpus', SB_ANON_RULES, SB_ANON_ORDER, saveSbDraft);
+                    buildToggles('sbconsulta', SB_ANON_RULES, SB_ANON_ORDER, saveSbDraft);
+                    renderSbTopicList();
+                    regen('sbcorpus'); regen('sbconsulta'); regen('sbextras');
+                }
+            } catch (e) {
+                console.error('SISBAJUD Firestore load error:', e);
+            }
+        }
+
+        // Gancho: ao carregar dados do Firestore (pós-login), também carrega o SISBAJUD.
+        const _origLoadFromFirestore = loadFromFirestore;
+        loadFromFirestore = function (db) {
+            _origLoadFromFirestore(db);
+            loadSbFromFirestore(db);
+        };
+
+        // ---------- Encaixe do SISBAJUD no pipeline de regen ----------
+        const _regenBase = window.regen;
+        window.regen = function (panel) {
+            if (panel === 'sbcorpus') {
+                const built = buildSbCorpus();
+                document.getElementById('filename-sbcorpus').textContent = built.filename;
+                document.getElementById('preview-sbcorpus').innerHTML = renderWithMarks(built.text);
+                updateCounter('sbcorpus', built.text, built.replacements);
+                state.sbcorpus.lastOutput = plainOutput(built.text);
+                state.sbcorpus.lastFilename = built.filename;
+                saveSbDraft();
+                return;
+            }
+            if (panel === 'sbconsulta') {
+                const built = buildSbConsulta();
+                document.getElementById('preview-sbconsulta').innerHTML = renderWithMarks(built.text);
+                updateCounter('sbconsulta', built.text, built.replacements);
+                state.sbconsulta.lastOutput = plainOutput(built.text);
+                saveSbDraft();
+                return;
+            }
+            if (panel === 'sbextras') {
+                const built = buildSbExtras();
+                document.getElementById('preview-sbextras').innerHTML = escapeHtml(built.text);
+                updateCounter('sbextras', built.text, 0);
+                state.sbExtras.lastOutput = built.text;
+                state.sbExtras.lastFilename = built.filename;
+                saveSbDraft();
+                return;
+            }
+            return _regenBase(panel);
+        };
+
+        // ---------- Bind inputs SISBAJUD ----------
+        ['sb-resultado', 'sb-tese', 'sb-data', 'sb-tipo', 'sb-juris', 'sb-obs', 'sb-teor', 'sb-anon-list'].forEach(id => {
+            const el = document.getElementById(id);
+            if (!el) return;
+            el.addEventListener('input', () => regen('sbcorpus'));
+            el.addEventListener('change', () => regen('sbcorpus'));
+        });
+        ['sb-q-inicial', 'sb-q-docs', 'sb-q-comando', 'sb-q-anon-list'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.addEventListener('input', () => regen('sbconsulta'));
+        });
+
+        // ---------- Init SISBAJUD ----------
+        initChips('sb-verbas', SB_VERBAS, 'sbcorpus');
+        initChips('sb-teses', SB_TESES, 'sbcorpus');
+        initChips('sb-delib', SB_DELIB, 'sbcorpus');
+        loadSbDraft();
+        buildToggles('sbcorpus', SB_ANON_RULES, SB_ANON_ORDER, saveSbDraft);
+        buildToggles('sbconsulta', SB_ANON_RULES, SB_ANON_ORDER, saveSbDraft);
+        if (!getVal('sb-q-comando')) document.getElementById('sb-q-comando').value = SB_QUERY_MODEL;
+        renderSbTopicList();
+        regen('sbcorpus');
+        regen('sbconsulta');
+        regen('sbextras');
+        if (!getVal('sb-data')) {
+            const now = new Date();
+            document.getElementById('sb-data').value = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+            regen('sbcorpus');
+        }
+
+        // Restaurar último modo selecionado
+        (function () {
+            let savedMode = 'tutelas';
+            try { savedMode = localStorage.getItem('prep-jec-mode') || 'tutelas'; } catch (e) { }
+            setMode(savedMode);
+        })();
 
         // Inicializar Firebase
         initFirebase();
