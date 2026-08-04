@@ -541,6 +541,20 @@
             flex-wrap: wrap
         }
 
+        .petition-row {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 6px 14px;
+            margin: 12px 0 2px;
+            font-size: 13px
+        }
+
+        .petition-row-label {
+            font-weight: 500;
+            color: var(--ink-2)
+        }
+
         .email-output {
             background: #fff;
             border: 1px solid var(--line);
@@ -1591,41 +1605,57 @@
            GERAÇÃO DE MINUTA DE RESPOSTA
            ========================================================= */
 
+        // Link do manual de cadastro do jus postulandi (eproc)
+        const JUS_POSTULANDI_URL = 'https://www.tjsp.jus.br/download/EPROC/ManuaisPublicoExterno/1.1-EPROC_CIDADAO-Cadastro_Jus_postulandi_04.04.25.pdf';
+
+        // Blocos comuns às minutas. As minutas são HTML: <b> para negrito e <a> para
+        // link — a cópia preserva a formatação ao colar no Outlook.
+        const EMAIL_INTRO = `Prezado(a),
+
+Recebemos sua mensagem. Para distribuição de ação por e-mail, é indispensável o envio da petição inicial e documentos em conformidade com as orientações da Secretaria de Primeira Instância deste Tribunal e também atendendo aos requisitos/limitações do sistema.
+
+Para tanto, envie novo e-mail, contendo nos anexos:`;
+
+        const EMAIL_NAME_RULES = `Cada documento deve estar anexado no e-mail e seus nomes devem conter apenas letras, números, espaços, hífen e underline; <b>NÃO</b> use parênteses, chaves, colchetes ou outros caracteres especiais. Não comprima os documentos em formatos .rar ou semelhantes (os computadores do fórum não estão autorizados a ter instalados softwares para descompressão).`;
+
+        const EMAIL_CLOSING = `Caso prefira, compareça pessoalmente ao balcão deste Juizado, com cópias impressas, de segunda a sexta-feira, em dias de expediente forense, das 13h às 16h, ou realize o peticionamento pelo <a href="${JUS_POSTULANDI_URL}" target="_blank" rel="noopener">jus postulandi</a> (necessário certificado digital).
+
+Atenciosamente,
+Secretaria do Juizado Especial Cível de Marília/SP`;
+
+        // Variantes do item "petição inicial" — escolhidas nos radios da minuta
+        const PETITION_BULLETS = {
+            full: '- a <b>PETIÇÃO INICIAL ASSINADA</b> em formato .pdf, observados os requisitos do art. 319, incisos I a VII, do CPC, em especial a qualificação e endereço completo de todas as partes. A assinatura deve ser à caneta ou por meio eletrônico válido (por exemplo, o assinador do site gov.br);',
+            art319: '- a <b>PETIÇÃO INICIAL</b> em formato .pdf, observados os requisitos do art. 319, incisos I a VII, do CPC, em especial a qualificação e endereço completo de todas as partes;',
+            sig: '- a <b>PETIÇÃO INICIAL ASSINADA</b> em formato .pdf — a assinatura deve ser à caneta ou por meio eletrônico válido (por exemplo, o assinador do site gov.br);',
+            none: ''
+        };
+
+        // Opção atual (persiste entre re-renderizações e sub-abas)
+        let petitionOption = 'full';
+
+        function petitionBulletLine() {
+            const b = PETITION_BULLETS[petitionOption];
+            return b ? b + '\n' : '';
+        }
+
         function buildGenericEmail(results) {
             const formatLines = Object.entries(RULES.formats)
                 .map(([cat, fmts]) => `   • ${cat}: ${fmts.map(f => f.toUpperCase()).join(', ')}`)
                 .join('\n');
 
-            const hasUnsigned = results.some(r =>
-                r.signature.applies && r.signature.status === 'none'
-            );
+            return `${EMAIL_INTRO}
 
-            let body =
-                `Prezado(a),
-
-Recebemos sua mensagem, porém os arquivos enviados não atendem aos requisitos para tramitação por este canal.
-
-Para que o pedido seja processado, reenvie observando:
-
-1. Os arquivos devem ser anexados diretamente à mensagem (não por link), nos seguintes formatos:
+${petitionBulletLine()}- os <b>DOCUMENTOS</b> nos formatos aceitos pelo sistema, cada um com no máximo 10 MB:
 ${formatLines}
 
-2. Cada arquivo com no máximo 10 MB.
+${EMAIL_NAME_RULES}
 
-3. Nome do arquivo apenas com letras, números, espaços, hífen (-) e underline (_).
+Arquivos acima de 10 MB ou em formatos diferentes dos listados devem ser enviados por meio de Google Drive, OneDrive ou Dropbox, em pasta única, com link de acesso livre (sem senha).
 
-4. Arquivos acima de 10 MB ou em formatos diferentes dos listados devem ser enviados por meio de Google Drive, OneDrive ou Dropbox, em pasta única, com link de acesso livre (sem senha).`;
+Aguardamos o reenvio em conformidade com as observações acima.
 
-            if (hasUnsigned) {
-                body += `\n\n5. A petição inicial deve estar assinada — eletronicamente (com certificado digital) ou à mão, com a rubrica visível na cópia digitalizada.`;
-            }
-
-            body += `\n\nCaso prefira, compareça pessoalmente ao balcão deste Juizado, com cópias impressas, de segunda a sexta-feira, em dias de expediente forense, das 13h às 16h.
-
-Atenciosamente,
-Secretaria do Juizado Especial Cível de Marília/SP`;
-
-            return body;
+${EMAIL_CLOSING}`;
         }
 
         function buildDetailedEmail(results) {
@@ -1643,27 +1673,54 @@ Secretaria do Juizado Especial Cível de Marília/SP`;
             }
 
             const lines = problematic.map(({ r, issues }, i) => {
-                const issuesText = issues.map(s => `   • ${s}`).join('\n');
-                return `${i + 1}. "${r.name}"\n${issuesText}`;
+                const issuesText = issues.map(s => `   • ${escapeHtml(s)}`).join('\n');
+                return `${i + 1}. "${escapeHtml(r.name)}"\n${issuesText}`;
             }).join('\n\n');
 
-            return `Prezado(a),
+            return `${EMAIL_INTRO}
 
-Recebemos sua mensagem, porém os seguintes arquivos não atendem aos requisitos para tramitação por este canal:
+${petitionBulletLine()}- os <b>DOCUMENTOS</b> com as correções abaixo listadas:
 
 ${lines}
 
+${EMAIL_NAME_RULES}
+
 Aguardamos o reenvio em conformidade com as observações acima.
 
-Caso prefira, compareça pessoalmente ao balcão deste Juizado, com cópias impressas, de segunda a sexta-feira, em dias de expediente forense, das 13h às 16h.
-
-Atenciosamente,
-Secretaria do Juizado Especial Cível de Marília/SP`;
+${EMAIL_CLOSING}`;
         }
 
         // Memoriza qual tipo de minuta foi gerada, por container, para regenerar
         // automaticamente após mudanças nos radios de assinatura.
         const emailKindByContainer = new WeakMap();
+
+        // Copia a minuta com formatação (negrito/link) + versão em texto puro
+        async function copyEmailBody(bodyEl, btn) {
+            const plain = bodyEl.textContent;
+            const html = '<div style="font-family:Calibri, Arial, sans-serif; font-size:11pt;">'
+                + bodyEl.innerHTML.replace(/ (?= )/g, '&nbsp;').replace(/\n/g, '<br>')
+                + '</div>';
+            try {
+                if (navigator.clipboard && window.ClipboardItem) {
+                    await navigator.clipboard.write([new ClipboardItem({
+                        'text/html': new Blob([html], { type: 'text/html' }),
+                        'text/plain': new Blob([plain], { type: 'text/plain' })
+                    })]);
+                } else {
+                    await navigator.clipboard.writeText(plain);
+                }
+                const orig = btn.textContent;
+                btn.textContent = 'Copiado ✓';
+                setTimeout(() => { btn.textContent = orig; }, 1500);
+            } catch {
+                const range = document.createRange();
+                range.selectNode(bodyEl);
+                window.getSelection().removeAllRanges();
+                window.getSelection().addRange(range);
+            }
+        }
+
+        let petRadioSeq = 0;
 
         function renderEmailSection(results, container) {
             const section = document.createElement('div');
@@ -1679,6 +1736,29 @@ Secretaria do Juizado Especial Cível de Marília/SP`;
     </div>
   `;
             section.appendChild(head);
+
+            // Como orientar sobre a petição inicial no corpo da minuta
+            const petName = 'pet-opt-' + (petRadioSeq++);
+            const petRow = document.createElement('div');
+            petRow.className = 'petition-row';
+            const petOpts = [
+                { v: 'full', l: 'Art. 319 + assinatura' },
+                { v: 'art319', l: 'Só art. 319' },
+                { v: 'sig', l: 'Só assinatura' },
+                { v: 'none', l: 'Não mencionar' }
+            ];
+            petRow.innerHTML = `
+    <span class="petition-row-label">Petição inicial:</span>
+    <div class="sig-radios" style="margin-top:0">
+      ${petOpts.map(o => `
+        <label>
+          <input type="radio" name="${petName}" value="${o.v}" ${petitionOption === o.v ? 'checked' : ''}>
+          ${o.l}
+        </label>
+      `).join('')}
+    </div>
+  `;
+            section.appendChild(petRow);
 
             const output = document.createElement('div');
             output.className = 'email-output hidden';
@@ -1696,7 +1776,7 @@ Secretaria do Juizado Especial Cível de Marília/SP`;
                 const body = kind === 'detailed'
                     ? buildDetailedEmail(results)
                     : buildGenericEmail(results);
-                output.querySelector('.email-body').textContent = body;
+                output.querySelector('.email-body').innerHTML = body;
                 output.querySelector('.email-output-title').textContent =
                     kind === 'detailed' ? 'Minuta — modelo discriminado' : 'Minuta — modelo enxuto';
                 output.classList.remove('hidden');
@@ -1706,24 +1786,20 @@ Secretaria do Juizado Especial Cível de Marília/SP`;
                 emailKindByContainer.set(container, kind);
             };
 
+            petRow.querySelectorAll('input[type="radio"]').forEach(r => {
+                r.addEventListener('change', () => {
+                    petitionOption = r.value;
+                    const kind = emailKindByContainer.get(container);
+                    if (kind) setKind(kind);
+                });
+            });
+
             section.querySelectorAll('.email-actions .btn').forEach(b => {
                 b.addEventListener('click', () => setKind(b.dataset.kind));
             });
 
-            output.querySelector('[data-action="copy"]').addEventListener('click', async () => {
-                const text = output.querySelector('.email-body').textContent;
-                const btn = output.querySelector('[data-action="copy"]');
-                try {
-                    await navigator.clipboard.writeText(text);
-                    const orig = btn.textContent;
-                    btn.textContent = 'Copiado ✓';
-                    setTimeout(() => { btn.textContent = orig; }, 1500);
-                } catch {
-                    const range = document.createRange();
-                    range.selectNode(output.querySelector('.email-body'));
-                    window.getSelection().removeAllRanges();
-                    window.getSelection().addRange(range);
-                }
+            output.querySelector('[data-action="copy"]').addEventListener('click', () => {
+                copyEmailBody(output.querySelector('.email-body'), output.querySelector('[data-action="copy"]'));
             });
 
             // Se já havia uma minuta gerada antes, regenera com o mesmo tipo
@@ -2223,7 +2299,7 @@ Secretaria do Juizado Especial Cível de Marília/SP`;
             'missing-docs': (state) => {
                 const docs = (state['missing-docs-detail'] || '').trim();
                 return docs
-                    ? `A petição apresentada não veio acompanhada de documentos essenciais à ação, especificamente: ${docs}. É necessário providenciá-los e juntá-los para o regular processamento.`
+                    ? `A petição apresentada não veio acompanhada de documentos essenciais à ação, especificamente: ${escapeHtml(docs)}. É necessário providenciá-los e juntá-los para o regular processamento.`
                     : 'A petição apresentada não veio acompanhada de documentos essenciais à ação. É necessário providenciá-los e juntá-los para o regular processamento.';
             },
             'no-id': () =>
@@ -2233,12 +2309,12 @@ Secretaria do Juizado Especial Cível de Marília/SP`;
             'illegible': (state) => {
                 const docs = (state['illegible-detail'] || '').trim();
                 return docs
-                    ? `Os seguintes documentos enviados estão ilegíveis: ${docs}. É necessário reenviá-los com qualidade que permita leitura integral.`
+                    ? `Os seguintes documentos enviados estão ilegíveis: ${escapeHtml(docs)}. É necessário reenviá-los com qualidade que permita leitura integral.`
                     : 'Há documentos enviados em qualidade insuficiente, ilegíveis. É necessário reenviá-los com qualidade que permita leitura integral.';
             },
             'custom': (state) => {
                 const txt = (state['custom-detail'] || '').trim();
-                return txt || null;
+                return txt ? escapeHtml(txt) : null;
             }
         };
 
@@ -2282,10 +2358,7 @@ ${numbered}
 
 Aguardamos a regularização para que a pretensão possa ser processada.
 
-Caso prefira, compareça pessoalmente ao balcão deste Juizado, com cópias impressas, de segunda a sexta-feira, em dias de expediente forense, das 13h às 16h.
-
-Atenciosamente,
-Secretaria do Juizado Especial Cível de Marília/SP`;
+${EMAIL_CLOSING}`;
         }
 
         // Mostra/oculta o sub-bloco de detalhe conforme o checkbox correspondente
@@ -2302,7 +2375,7 @@ Secretaria do Juizado Especial Cível de Marília/SP`;
             if (!casesEmailGenerated) return;
             const out = $('#cases-email-output');
             if (out.classList.contains('hidden')) return;
-            $('#cases-email-body').textContent = buildCasesEmail(readCasesState());
+            $('#cases-email-body').innerHTML = buildCasesEmail(readCasesState());
         }
 
         document.querySelector('#sub-cases').addEventListener('change', e => {
@@ -2320,25 +2393,13 @@ Secretaria do Juizado Especial Cível de Marília/SP`;
 
         $('#btn-cases-generate').addEventListener('click', () => {
             const body = buildCasesEmail(readCasesState());
-            $('#cases-email-body').textContent = body;
+            $('#cases-email-body').innerHTML = body;
             $('#cases-email-output').classList.remove('hidden');
             casesEmailGenerated = true;
         });
 
-        $('#btn-cases-copy').addEventListener('click', async () => {
-            const text = $('#cases-email-body').textContent;
-            const btn = $('#btn-cases-copy');
-            try {
-                await navigator.clipboard.writeText(text);
-                const orig = btn.textContent;
-                btn.textContent = 'Copiado ✓';
-                setTimeout(() => { btn.textContent = orig; }, 1500);
-            } catch {
-                const range = document.createRange();
-                range.selectNode($('#cases-email-body'));
-                window.getSelection().removeAllRanges();
-                window.getSelection().addRange(range);
-            }
+        $('#btn-cases-copy').addEventListener('click', () => {
+            copyEmailBody($('#cases-email-body'), $('#btn-cases-copy'));
         });
 
         // Inicializa visibilidade
