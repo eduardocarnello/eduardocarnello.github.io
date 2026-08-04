@@ -711,53 +711,6 @@
             border-color: var(--ink)
         }
 
-        .modal {
-            position: fixed;
-            inset: 0;
-            background: rgba(15, 27, 45, .5);
-            display: none;
-            place-items: center;
-            z-index: 100;
-            padding: 24px
-        }
-
-        .modal.show {
-            display: grid
-        }
-
-        .modal-card {
-            background: #fff;
-            border-radius: var(--r);
-            padding: 28px;
-            max-width: 500px;
-            width: 100%;
-            box-shadow: var(--shadow-lg)
-        }
-
-        .modal-card h3 {
-            font-size: 20px;
-            margin-bottom: 6px
-        }
-
-        .modal-card p {
-            font-size: 14px;
-            color: var(--ink-2);
-            margin-bottom: 16px
-        }
-
-        .hash-out {
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 12px;
-            background: var(--paper-2);
-            padding: 12px;
-            border-radius: 6px;
-            word-break: break-all;
-            border: 1px solid var(--line);
-            margin-top: 8px;
-            color: var(--ink-2);
-            user-select: all
-        }
-
         .hidden {
             display: none !important
         }
@@ -1002,7 +955,6 @@
                 <div id="gate-error" class="notice hidden">Senha incorreta.</div>
                 <div class="gate-actions">
                     <button class="btn" id="gate-submit">Entrar</button>
-                    <button class="btn link" id="gate-show-hash">Gerar hash de nova senha</button>
                 </div>
             </div>
 
@@ -1167,23 +1119,6 @@
             </div>
         </section>
 
-        <div class="modal" id="hash-modal">
-            <div class="modal-card">
-                <h3>Gerar hash de nova senha</h3>
-                <p>Digite a senha desejada. O hash SHA-256 será gerado abaixo. Copie o valor e substitua a constante
-                    <code>PASSWORD_HASH</code> no código-fonte do arquivo.
-                </p>
-                <div class="field">
-                    <label for="hash-pw">Nova senha</label>
-                    <input type="text" id="hash-pw">
-                </div>
-                <div class="hash-out" id="hash-out">—</div>
-                <div style="display:flex;gap:8px;margin-top:16px;justify-content:flex-end">
-                    <button class="btn ghost" id="hash-close">Fechar</button>
-                </div>
-            </div>
-        </div>
-
         <footer>
             <span>JEC Marília · 31ª Circunscrição Judiciária</span>
             <span>Validação 100% client-side · Nenhum arquivo é enviado a servidor</span>
@@ -1198,7 +1133,9 @@
 
         // Hash SHA-256 da senha de acesso à aba privada.
         // Default: "admin"
-        // Para trocar: clique em "Gerar hash de nova senha", copie e substitua aqui.
+        // Para trocar: com esta página aberta, rode no console do navegador (F12):
+        //   await sha256('nova-senha')
+        // e substitua o valor abaixo pelo hash gerado.
         const PASSWORD_HASH = '8c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918';
 
         const RULES = {
@@ -1325,13 +1262,93 @@
         }
 
         /* =========================================================
+           NOMES AMIGÁVEIS PARA CARACTERES INVÁLIDOS
+           ========================================================= */
+
+        // Nome popular de cada caractere/grupo, para explicar o erro em linguagem
+        // simples ("parênteses ( )" em vez de '"(", ")"').
+        const CHAR_GROUPS = [
+            { chars: '()', name: 'parênteses', label: 'parênteses ( )' },
+            { chars: '[]', name: 'colchetes', label: 'colchetes [ ]' },
+            { chars: '{}', name: 'chaves', label: 'chaves { }' },
+            { chars: '.', name: 'ponto', label: 'ponto (.)' },
+            { chars: ',', name: 'vírgula', label: 'vírgula (,)' },
+            { chars: ';', name: 'ponto e vírgula', label: 'ponto e vírgula (;)' },
+            { chars: ':', name: 'dois-pontos', label: 'dois-pontos (:)' },
+            { chars: '!¡', name: 'ponto de exclamação', label: 'ponto de exclamação (!)' },
+            { chars: '?¿', name: 'ponto de interrogação', label: 'ponto de interrogação (?)' },
+            { chars: '@', name: 'arroba', label: 'arroba (@)' },
+            { chars: '#', name: 'cerquilha', label: 'cerquilha (#)' },
+            { chars: '$', name: 'cifrão', label: 'cifrão ($)' },
+            { chars: '%', name: 'símbolo de porcentagem', label: 'símbolo de porcentagem (%)' },
+            { chars: '&', name: '"e" comercial', label: '"e" comercial (&)' },
+            { chars: '*', name: 'asterisco', label: 'asterisco (*)' },
+            { chars: '+', name: 'sinal de mais', label: 'sinal de mais (+)' },
+            { chars: '=', name: 'sinal de igual', label: 'sinal de igual (=)' },
+            { chars: '/', name: 'barra', label: 'barra (/)' },
+            { chars: '\\', name: 'barra invertida', label: 'barra invertida (\\)' },
+            { chars: '|', name: 'barra vertical', label: 'barra vertical (|)' },
+            { chars: '<>', name: 'sinais de "menor" e "maior"', label: 'sinais de "menor" e "maior" (< >)' },
+            { chars: '"“”«»', name: 'aspas', label: 'aspas (")' },
+            { chars: "'‘’", name: 'apóstrofo', label: "apóstrofo (')" },
+            { chars: '–—', name: 'travessão', label: 'travessão (–)' },
+            { chars: '~', name: 'til isolado', label: 'til isolado (~)' },
+            { chars: '^', name: 'acento circunflexo isolado', label: 'acento circunflexo isolado (^)' },
+            { chars: '´`¨', name: 'acento isolado', label: 'acento isolado (´)' },
+            { chars: '°', name: 'símbolo de grau', label: 'símbolo de grau (°)' },
+            { chars: '§', name: 'símbolo de parágrafo', label: 'símbolo de parágrafo (§)' },
+            { chars: '©®™', name: 'símbolo de marca', label: 'símbolo de marca (©)' }
+        ];
+
+        function describeInvalidChar(c) {
+            const g = CHAR_GROUPS.find(g => g.chars.includes(c));
+            if (g) return { label: g.label, sem: 'o uso de ' + g.name };
+            if (/\p{Extended_Pictographic}/u.test(c)) return { label: 'emoji', sem: 'o uso de emoji' };
+            if (/[\p{C}\p{M}\p{Z}]/u.test(c)) return { label: 'caractere invisível', sem: 'esse caractere' };
+            return { label: `o símbolo "${c}"`, sem: `o uso do símbolo "${c}"` };
+        }
+
+        // Sugere um nome válido a partir do original: travessões e símbolos viram
+        // hífen, aspas/acentos soltos são removidos e sobras são limpas.
+        function suggestFileName(base, ext) {
+            const s = base
+                .replace(/[–—]/g, '-')
+                .replace(/[\p{Z}\t]/gu, ' ')
+                .replace(/["“”«»'‘’´`¨~^\p{M}\p{C}]/gu, '')
+                .replace(/[^\p{L}\p{N} _\-]/gu, '-')
+                .replace(/ {2,}/g, ' ')
+                .replace(/\s*-[\s\-]*/g, '-')
+                .replace(/^[\s\-_]+|[\s\-_]+$/g, '')
+                .trim();
+            return s ? s + (ext ? '.' + ext : '') : '';
+        }
+
+        function buildNameIssue(invalidChars, base, ext) {
+            const groups = [];
+            invalidChars.forEach(c => {
+                const d = describeInvalidChar(c);
+                if (!groups.some(x => x.label === d.label)) groups.push(d);
+            });
+            const labels = groups.map(g => g.label);
+            const listed = labels.length === 1
+                ? labels[0]
+                : labels.slice(0, -1).join(', ') + ' e ' + labels[labels.length - 1];
+            const sem = groups.length === 1 ? groups[0].sem : 'esses caracteres';
+            const suggestion = suggestFileName(base, ext);
+            return suggestion
+                ? `Caracteres não permitidos no nome: ${listed}. Renomeie para algo sem ${sem} — por exemplo: "${suggestion}".`
+                : `Caracteres não permitidos no nome: ${listed}. Renomeie usando apenas letras, números, espaços, hífen (-) e underline (_).`;
+        }
+
+        /* =========================================================
            VALIDAÇÃO DE ARQUIVO INDIVIDUAL
            ========================================================= */
 
         function validateFile({ name, size, type, signatureAuto }) {
             const dot = name.lastIndexOf('.');
             const ext = dot > -1 ? name.substring(dot + 1).toLowerCase() : '';
-            const base = dot > -1 ? name.substring(0, dot) : name;
+            // NFC evita falso erro com acentos decompostos (comum em arquivos vindos de Mac/celular)
+            const base = (dot > -1 ? name.substring(0, dot) : name).normalize('NFC');
 
             // Formato
             const formatPass = ALLOWED_FORMATS.includes(ext);
@@ -1357,13 +1374,9 @@
                 issues.push(`Arquivo de ${formatBytes(size)} excede o limite de 10 MB. Envie via link de nuvem (Google Drive, OneDrive ou Dropbox), em pasta única e sem senha.`);
             }
             if (!namePass) {
-                const invalid = [...base].filter(c => !/[\p{L}\p{N} _\-]/u.test(c));
-                const unique = [...new Set(invalid)];
+                const unique = [...new Set([...base].filter(c => !/[\p{L}\p{N} _\-]/u.test(c)))];
                 if (unique.length) {
-                    issues.push(
-                        `Caracteres não permitidos no nome: ${unique.map(c => '"' + c + '"').join(', ')}. ` +
-                        `Renomeie usando apenas letras, números, espaços, hífen (-) e underline (_).`
-                    );
+                    issues.push(buildNameIssue(unique, base, ext));
                 } else if (!baseValid) {
                     issues.push('Nome do arquivo inválido (vazio ou apenas com caracteres não permitidos).');
                 }
@@ -1780,16 +1793,6 @@ Secretaria do Juizado Especial Cível de Marília/SP`;
         }
         $('#gate-submit').addEventListener('click', tryAuth);
         $('#gate-pw').addEventListener('keydown', e => { if (e.key === 'Enter') tryAuth(); });
-
-        $('#gate-show-hash').addEventListener('click', () => $('#hash-modal').classList.add('show'));
-        $('#hash-close').addEventListener('click', () => $('#hash-modal').classList.remove('show'));
-        $('#hash-modal').addEventListener('click', e => {
-            if (e.target.id === 'hash-modal') $('#hash-modal').classList.remove('show');
-        });
-        $('#hash-pw').addEventListener('input', async e => {
-            const v = e.target.value;
-            $('#hash-out').textContent = v ? await sha256(v) : '—';
-        });
 
         /* =========================================================
            ABA PRIVADA — Anexos
