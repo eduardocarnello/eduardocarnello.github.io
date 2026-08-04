@@ -1625,9 +1625,9 @@ Secretaria do Juizado Especial Cível de Marília/SP`;
 
         // Variantes do item "petição inicial" — escolhidas nos radios da minuta
         const PETITION_BULLETS = {
-            full: '- a <b>PETIÇÃO INICIAL ASSINADA</b> em formato .pdf, observados os requisitos do art. 319, incisos I a VII, do CPC, em especial a qualificação e endereço completo de todas as partes. A assinatura deve ser à caneta ou por meio eletrônico válido (por exemplo, o assinador do site gov.br);',
-            art319: '- a <b>PETIÇÃO INICIAL</b> em formato .pdf, observados os requisitos do art. 319, incisos I a VII, do CPC, em especial a qualificação e endereço completo de todas as partes;',
-            sig: '- a <b>PETIÇÃO INICIAL ASSINADA</b> em formato .pdf — a assinatura deve ser à caneta ou por meio eletrônico válido (por exemplo, o assinador do site gov.br);',
+            full: '- a <b>PETIÇÃO INICIAL ASSINADA</b> em formato .pdf (máximo de 10 MB), observados os requisitos do art. 319, incisos I a VII, do CPC, em especial a qualificação e endereço completo de todas as partes. A assinatura deve ser à caneta ou por meio eletrônico válido (por exemplo, o assinador do site gov.br);',
+            art319: '- a <b>PETIÇÃO INICIAL</b> em formato .pdf (máximo de 10 MB), observados os requisitos do art. 319, incisos I a VII, do CPC, em especial a qualificação e endereço completo de todas as partes;',
+            sig: '- a <b>PETIÇÃO INICIAL ASSINADA</b> em formato .pdf (máximo de 10 MB) — a assinatura deve ser à caneta ou por meio eletrônico válido (por exemplo, o assinador do site gov.br);',
             none: ''
         };
 
@@ -1646,7 +1646,7 @@ Secretaria do Juizado Especial Cível de Marília/SP`;
 
             return `${EMAIL_INTRO}
 
-${petitionBulletLine()}- os <b>DOCUMENTOS</b> nos formatos aceitos pelo sistema, cada um com no máximo 10 MB:
+${petitionBulletLine()}- os <b>DOCUMENTOS</b> nos formatos aceitos pelo sistema (máximo de 10 MB cada):
 ${formatLines}
 
 ${EMAIL_NAME_RULES}
@@ -1679,7 +1679,7 @@ Secretaria do Juizado Especial Cível de Marília/SP`;
 
             return `${EMAIL_INTRO}
 
-${petitionBulletLine()}- os <b>DOCUMENTOS</b> com as correções abaixo listadas:
+${petitionBulletLine()}- TODOS os <b>DOCUMENTOS</b> novamente (máximo de 10 MB cada), devendo, ainda, providenciar as correções abaixo listadas:
 
 ${lines}
 
