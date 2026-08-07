@@ -802,7 +802,12 @@
                 const minEntrada = valorAtualizado * 0.3;
                 dom.cpc916MinEntradaHelper.textContent = `Valor mínimo: ${formatCurrency(minEntrada)}`;
 
-                dom.cpc916ValorEntrada.value = formatCurrency(minEntrada).replace('R$', '').trim();
+                // Só volta ao mínimo se o campo estiver vazio ou abaixo de 30% do valor
+                // atualizado — valores digitados acima do mínimo são preservados.
+                const entradaAtual = parseCurrency(dom.cpc916ValorEntrada.value);
+                if (entradaAtual < parseFloat(minEntrada.toFixed(2))) {
+                    dom.cpc916ValorEntrada.value = formatCurrency(minEntrada).replace('R$', '').trim();
+                }
 
                 const valorEntradaFinal = parseCurrency(dom.cpc916ValorEntrada.value);
                 const valorRestante = valorAtualizado - valorEntradaFinal;
