@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pausas Visuais</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='44' fill='%232f6f5e'/><circle cx='50' cy='50' r='16' fill='white'/></svg>">
+<style>
+  :root {
+    --bg: #f4f5f2; --card: #ffffff; --ink: #1f2a26; --muted: #66736e;
+    --line: #dde2dd; --accent: #2f6f5e; --accent-soft: #e3efe9; --warn: #9a5b12;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #151a18; --card: #1e2522; --ink: #e4ebe7; --muted: #95a39d;
+      --line: #2e3833; --accent: #6fb8a0; --accent-soft: #23332d; --warn: #e0a55a;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--ink);
+    font: 15px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  }
+  main { max-width: 640px; margin: 0 auto; padding: 28px 16px 48px; }
+  h1 { font-size: 1.35rem; margin: 0 0 4px; }
+  .sub { color: var(--muted); margin: 0 0 20px; font-size: .92rem; }
+  .card {
+    background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+    padding: 16px; margin-bottom: 14px;
+  }
+  .controls { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+  button {
+    font: inherit; border: 1px solid var(--line); background: var(--card); color: var(--ink);
+    padding: 7px 14px; border-radius: 8px; cursor: pointer;
+  }
+  button:hover { border-color: var(--accent); }
+  button.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .status { margin-left: auto; font-size: .88rem; color: var(--muted); }
+  .rem { display: grid; grid-template-columns: auto 1fr auto; gap: 4px 12px; align-items: center;
+         padding: 12px 0; border-top: 1px solid var(--line); }
+  .rem:first-of-type { border-top: 0; padding-top: 0; }
+  .rem .name { font-weight: 600; }
+  .rem .desc { grid-column: 2 / 4; color: var(--muted); font-size: .86rem; }
+  .rem .next { font-variant-numeric: tabular-nums; font-size: 1.05rem; color: var(--accent); text-align: right; }
+  .rem .cfg { grid-column: 2 / 4; display: flex; gap: 14px; flex-wrap: wrap; font-size: .85rem; color: var(--muted); }
+  .rem input[type=number] { width: 58px; font: inherit; padding: 2px 6px; border: 1px solid var(--line);
+         border-radius: 6px; background: var(--bg); color: var(--ink); }
+  .rem.off .name, .rem.off .next { opacity: .45; }
+  label.row { display: flex; align-items: center; gap: 10px; margin: 8px 0; font-size: .92rem; }
+  input[type=range] { flex: 1; accent-color: var(--accent); }
+  input[type=checkbox] { accent-color: var(--accent); width: 16px; height: 16px; }
+  .note { font-size: .82rem; color: var(--muted); margin: 8px 0 0; }
+  .note.warn { color: var(--warn); }
+
+  /* Aviso de pausa */
+  #overlay {
+    position: fixed; inset: 0; background: rgba(15, 22, 19, .55); display: none;
+    align-items: center; justify-content: center; padding: 16px; z-index: 10;
+  }
+  #overlay.show { display: flex; }
+  .modal {
+    background: var(--card); border-radius: 14px; padding: 26px 24px; max-width: 420px; width: 100%;
+    text-align: center; border: 1px solid var(--line);
+  }
+  .modal h2 { margin: 0 0 6px; font-size: 1.2rem; }
+  .modal p { margin: 0 0 16px; color: var(--muted); }
+  .count { font-size: 3rem; font-variant-numeric: tabular-nums; color: var(--accent); margin: 4px 0 16px; }
+  .modal .controls { justify-content: center; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Pausas Visuais</h1>
+  <p class="sub">Lembretes discretos para a regra 20-20-20 e outros hábitos. Deixe esta aba aberta (pode ficar em segundo plano).</p>
+
+  <div class="card">
+    <div class="controls">
+      <button id="btnStart" class="primary">Iniciar</button>
+      <button id="btnReset">Reiniciar contagens</button>
+      <button id="btnTest">Testar som</button>
+      <span class="status" id="status">Parado</span>
+    </div>
+    <p class="note" id="audioNote">Clique em "Iniciar" para liberar o som no navegador.</p>
+  </div>
+
+  <div class="card" id="list"></div>
+
+  <div class="card">
+    <label class="row">Volume <input type="range" id="vol" min="0" max="100"> <span id="volVal"></span></label>
+    <label class="row"><input type="checkbox" id="notif"> Mostrar também notificação do sistema</label>
+    <label class="row"><input type="checkbox" id="auto"> Encerrar a pausa automaticamente (sem precisar clicar)</label>
+    <p class="note">As configurações ficam salvas neste navegador.</p>
+  </div>
+</main>
+
+<div id="overlay" role="dialog" aria-modal="true">
+  <div class="modal">
+    <h2 id="mTitle"></h2>
+    <p id="mText"></p>
+    <div class="count" id="mCount"></div>
+    <div class="controls">
+      <button class="primary" id="mDone">Feito</button>
+      <button id="mSnooze">Adiar 5 min</button>
+      <button id="mSkip">Pular</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(() => {
+  'use strict';
+
+  // ---------- Lembretes padrão ----------
+  const DEFAULTS = [
+    { id: 'r20', name: 'Regra 20-20-20', every: 20, dur: 20, on: true,
+      text: 'Olhe para algo a cerca de 6 metros de distância, relaxando o foco. Pisque devagar algumas vezes.' },
+    { id: 'blink', name: 'Piscar e lubrificar', every: 30, dur: 0, on: false,
+      text: 'Feche os olhos por 2 segundos e pisque completamente 10 vezes.' },
+    { id: 'post', name: 'Postura e distância', every: 45, dur: 0, on: true,
+      text: 'Ombros relaxados, costas apoiadas, tela a um braço de distância e borda superior na altura dos olhos.' },
+    { id: 'long', name: 'Pausa maior', every: 60, dur: 300, on: true,
+      text: 'Levante-se, alongue pescoço e ombros, caminhe um pouco. Afaste-se da tela.' },
+    { id: 'water', name: 'Água', every: 90, dur: 0, on: true,
+      text: 'Beba um copo de água.' },
+  ];
+  const DESC = {
+    r20: 'A cada N min, olhar ao longe pelo tempo indicado.',
+    blink: 'Combate o ressecamento causado pela redução do piscar.',
+    post: 'Conferência rápida de ergonomia.',
+    long: 'Intervalo com afastamento efetivo da tela.',
+    water: 'Hidratação ajuda também a superfície ocular.',
+  };
+
+  const KEY = 'pausasVisuais.v1';
+  const load = () => { try { return JSON.parse(localStorage.getItem(KEY)) || {}; } catch { return {}; } };
+  const saved = load();
+  const state = {
+    rems: DEFAULTS.map(d => ({ ...d, ...(saved.rems || []).find(s => s.id === d.id) })),
+    vol: saved.vol ?? 35,
+    notif: saved.notif ?? false,
+    auto: saved.auto ?? true,
+  };
+  const save = () => {
+    try {
+      localStorage.setItem(KEY, JSON.stringify({
+        rems: state.rems.map(({ id, every, dur, on }) => ({ id, every, dur, on })),
+        vol: state.vol, notif: state.notif, auto: state.auto,
+      }));
+    } catch {}
+  };
+
+  // ---------- Som (Web Audio, sem arquivos externos) ----------
+  let ctx = null;
+  const ensureAudio = () => {
+    if (!ctx) ctx = new (window.AudioContext || window.webkitAudioContext)();
+    if (ctx.state === 'suspended') ctx.resume();
+    return ctx;
+  };
+  // Nota suave tipo "sino de madeira": seno com ataque curto e decaimento longo.
+  const tone = (freq, start, len, gain) => {
+    const c = ensureAudio();
+    const o = c.createOscillator(), g = c.createGain();
+    o.type = 'sine'; o.frequency.value = freq;
+    const t = c.currentTime + start, peak = gain * (state.vol / 100) * 0.25;
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.exponentialRampToValueAtTime(Math.max(peak, 0.0002), t + 0.03);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + len);
+    o.connect(g).connect(c.destination);
+    o.start(t); o.stop(t + len + 0.05);
+  };
+  const chimeStart = () => { tone(660, 0, 1.6, 1); tone(880, 0.22, 1.8, 0.7); };   // início
+  const chimeEnd   = () => { tone(880, 0, 1.2, 0.6); tone(660, 0.18, 1.6, 0.5); };  // fim da pausa
+
+  // ---------- Relógio em Worker (menos sujeito à limitação de abas em segundo plano) ----------
+  const worker = new Worker(URL.createObjectURL(new Blob(
+    ['setInterval(() => postMessage(0), 1000);'], { type: 'text/javascript' })));
+
+  let running = false;
+  let active = null;      // lembrete em exibição
+  let breakEnd = 0;       // fim da contagem da pausa
+  const queue = [];
+
+  const now = () => Date.now();
+  const resetAll = () => state.rems.forEach(r => { r.due = now() + r.every * 60000; });
+  resetAll();
+
+  const fmt = ms => {
+    const s = Math.max(0, Math.ceil(ms / 1000));
+    const m = Math.floor(s / 60), ss = String(s % 60).padStart(2, '0');
+    return m >= 60 ? `${Math.floor(m / 60)}h${String(m % 60).padStart(2, '0')}` : `${m}:${ss}`;
+  };
+
+  // ---------- Interface ----------
+  const $ = id => document.getElementById(id);
+  const list = $('list');
+
+  const render = () => {
+    list.innerHTML = '';
+    state.rems.forEach(r => {
+      const el = document.createElement('div');
+      el.className = 'rem' + (r.on ? '' : ' off');
+      el.innerHTML = `
+        <input type="checkbox" ${r.on ? 'checked' : ''} aria-label="Ativar ${r.name}">
+        <span class="name">${r.name}</span>
+        <span class="next" data-id="${r.id}">-</span>
+        <span class="desc">${DESC[r.id]}</span>
+        <span class="cfg">
+          <label>a cada <input type="number" min="1" max="480" value="${r.every}" data-k="every"> min</label>
+          <label>duração <input type="number" min="0" max="900" value="${r.dur}" data-k="dur"> s</label>
+        </span>`;
+      el.querySelector('input[type=checkbox]').onchange = e => {
+        r.on = e.target.checked; r.due = now() + r.every * 60000; save(); render(); tick();
+      };
+      el.querySelectorAll('input[type=number]').forEach(inp => inp.onchange = () => {
+        const v = Math.max(+inp.min, Math.min(+inp.max, parseInt(inp.value, 10) || 0));
+        r[inp.dataset.k] = v; inp.value = v;
+        if (inp.dataset.k === 'every') r.due = now() + v * 60000;
+        save(); tick();
+      });
+      list.appendChild(el);
+    });
+  };
+
+  const updateView = () => {
+    let soonest = null;
+    state.rems.forEach(r => {
+      const span = list.querySelector(`.next[data-id="${r.id}"]`);
+      if (!span) return;
+      if (!r.on) { span.textContent = 'desligado'; return; }
+      span.textContent = running ? fmt(r.due - now()) : fmt(r.every * 60000);
+      if (running && (!soonest || r.due < soonest.due)) soonest = r;
+    });
+    if (active) {
+      document.title = '● Pausa - ' + active.name;
+    } else if (running && soonest) {
+      document.title = `${fmt(soonest.due - now())} · ${soonest.name}`;
+    } else {
+      document.title = 'Pausas Visuais';
+    }
+    $('status').textContent = running ? 'Em execução' : 'Parado';
+    $('btnStart').textContent = running ? 'Pausar' : 'Iniciar';
+  };
+
+  // ---------- Disparo dos lembretes ----------
+  const notify = r => {
+    if (!state.notif || !('Notification' in window) || Notification.permission !== 'granted') return;
+    try {
+      const n = new Notification(r.name, { body: r.text, silent: true, tag: 'pausas-visuais' });
+      n.onclick = () => { window.focus(); n.close(); };
+    } catch {}
+  };
+
+  const show = r => {
+    active = r;
+    chimeStart();
+    notify(r);
+    $('mTitle').textContent = r.name;
+    $('mText').textContent = r.text;
+    breakEnd = r.dur > 0 ? now() + r.dur * 1000 : 0;
+    $('mCount').style.display = r.dur > 0 ? '' : 'none';
+    $('mCount').textContent = fmt(r.dur * 1000);
+    $('overlay').classList.add('show');
+    updateView();
+  };
+
+  const close = (snoozeMin, skipped) => {
+    if (!active) return;
+    const r = active;
+    r.due = now() + (snoozeMin ? snoozeMin : r.every) * 60000;
+    // A pausa maior também reinicia a 20-20-20, para não disparar logo em seguida.
+    if (!snoozeMin && !skipped && r.id === 'long') {
+      state.rems.forEach(x => { if (x.id === 'r20') x.due = now() + x.every * 60000; });
+    }
+    active = null; breakEnd = 0;
+    $('overlay').classList.remove('show');
+    if (queue.length) show(queue.shift()); else updateView();
+  };
+
+  const tick = () => {
+    if (running && !active) {
+      const due = state.rems.filter(r => r.on && r.due <= now()).sort((a, b) => a.due - b.due);
+      due.forEach(r => { if (!queue.includes(r)) queue.push(r); });
+      if (queue.length) show(queue.shift());
+    }
+    if (active && breakEnd) {
+      const left = breakEnd - now();
+      $('mCount').textContent = fmt(left);
+      if (left <= 0) {
+        breakEnd = 0;
+        chimeEnd();
+        $('mCount').textContent = 'Pode voltar';
+        if (state.auto) close();
+      }
+    }
+    updateView();
+  };
+  worker.onmessage = tick;
+
+  // ---------- Controles ----------
+  $('btnStart').onclick = () => {
+    ensureAudio();
+    $('audioNote').style.display = 'none';
+    if (!running) {
+      // Retoma sem perder o tempo corrido se já havia contagem; senão, começa do zero.
+      if (!state.pausedAt) resetAll();
+      else state.rems.forEach(r => { r.due += now() - state.pausedAt; });
+      state.pausedAt = 0;
+      running = true;
+    } else {
+      running = false;
+      state.pausedAt = now();
+    }
+    tick();
+  };
+  $('btnReset').onclick = () => { resetAll(); queue.length = 0; state.pausedAt = 0; tick(); };
+  $('btnTest').onclick = () => { ensureAudio(); chimeStart(); setTimeout(chimeEnd, 1800); };
+  $('mDone').onclick = () => close();
+  $('mSnooze').onclick = () => close(5);
+  $('mSkip').onclick = () => close(0, true);
+
+  const vol = $('vol');
+  vol.value = state.vol; $('volVal').textContent = state.vol + '%';
+  vol.oninput = () => { state.vol = +vol.value; $('volVal').textContent = state.vol + '%'; save(); };
+
+  const notif = $('notif');
+  notif.checked = state.notif;
+  notif.onchange = async () => {
+    state.notif = notif.checked;
+    if (state.notif && 'Notification' in window && Notification.permission === 'default') {
+      const p = await Notification.requestPermission();
+      if (p !== 'granted') { state.notif = false; notif.checked = false; }
+    }
+    save();
+  };
+  const auto = $('auto');
+  auto.checked = state.auto;
+  auto.onchange = () => { state.auto = auto.checked; save(); };
+
+  window.addEventListener('beforeunload', e => { if (running) { e.preventDefault(); e.returnValue = ''; } });
+
+  render();
+  updateView();
+})();
+</script>
+</body>
+</html>
