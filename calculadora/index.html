@@ -199,9 +199,15 @@
                             <input type="text"
                                 class="other-description-input w-full mt-2 p-2 border border-gray-300 rounded-lg shadow-sm hidden"
                                 placeholder="Digite a descrição">
+                            <div class="percent-wrapper hidden mt-2">
+                                <label class="block text-xs font-medium text-gray-600">Percentual (%)</label>
+                                <input type="text" inputmode="decimal"
+                                    class="percent-input w-full mt-1 p-2 border border-gray-300 rounded-lg shadow-sm"
+                                    placeholder="100 (integral)" title="Ex.: 15 ou 12,5. Vazio = restituição integral">
+                            </div>
                         </div>
                         <div class="md:col-span-2">
-                            <label class="block text-sm font-medium text-gray-700">Valor (R$)</label>
+                            <label class="value-label block text-sm font-medium text-gray-700">Valor (R$)</label>
                             <input type="text"
                                 class="value-input w-full mt-1 p-2 border border-gray-300 rounded-lg shadow-sm"
                                 placeholder="1.000,00">
@@ -562,8 +568,24 @@
             <button id="close-batch-modal"
                 class="absolute top-3 right-3 text-2xl font-bold text-gray-400 hover:text-gray-700 leading-none">&times;</button>
             <h2 class="text-xl font-bold text-gray-800 mb-1">Gerar Parcelas em Lote</h2>
-            <p class="text-sm text-gray-500 mb-5">Preencha os períodos abaixo e o sistema criará uma linha para cada mês
-                automaticamente.</p>
+            <p class="text-sm text-gray-500 mb-4">Informe períodos mensais ou cole a lista de pagamentos, e o sistema
+                criará uma linha de cálculo para cada um.</p>
+
+            <!-- Forma de entrada -->
+            <div class="grid grid-cols-2 gap-1 p-1 mb-5 bg-gray-100 rounded-lg text-sm font-semibold" role="tablist">
+                <label class="cursor-pointer">
+                    <input type="radio" name="batch-mode" value="periods" class="peer sr-only" checked>
+                    <span
+                        class="block text-center py-2 rounded-md text-gray-600 peer-checked:bg-white peer-checked:text-emerald-700 peer-checked:shadow">Por
+                        períodos</span>
+                </label>
+                <label class="cursor-pointer">
+                    <input type="radio" name="batch-mode" value="paste" class="peer sr-only">
+                    <span
+                        class="block text-center py-2 rounded-md text-gray-600 peer-checked:bg-white peer-checked:text-emerald-700 peer-checked:shadow">Colar
+                        lista de pagamentos</span>
+                </label>
+            </div>
 
             <!-- Campos comuns -->
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-5">
@@ -581,7 +603,14 @@
                         class="hidden w-full mt-2 p-2 border border-gray-300 rounded-lg shadow-sm"
                         placeholder="Digite a descrição">
                 </div>
-                <div>
+                <div id="batch-percent-wrapper">
+                    <label for="batch-percent" class="block text-sm font-medium text-gray-700 mb-1">Percentual
+                        (%)</label>
+                    <input type="text" id="batch-percent" inputmode="decimal"
+                        class="w-full p-2 border border-gray-300 rounded-lg shadow-sm" placeholder="100 (integral)"
+                        title="Ex.: 15 ou 12,5. Aplicado a todas as linhas geradas">
+                </div>
+                <div id="batch-due-day-wrapper">
                     <label class="block text-sm font-medium text-gray-700 mb-1">Dia do vencimento</label>
                     <input type="number" id="batch-due-day"
                         class="w-full p-2 border border-gray-300 rounded-lg shadow-sm" value="1" min="1" max="31">
@@ -608,6 +637,7 @@
             </div>
 
             <!-- Períodos -->
+            <div id="batch-periods-panel">
             <div id="batch-periods" class="space-y-3 mb-4">
                 <div class="batch-period-row grid grid-cols-12 gap-2 items-end">
                     <div class="col-span-4">
@@ -638,10 +668,36 @@
 
             <button id="batch-add-period" class="text-sm text-emerald-700 font-semibold hover:underline mb-4">+
                 Adicionar outro período</button>
+            </div>
+
+            <!-- Colar lista de pagamentos -->
+            <div id="batch-paste-panel" class="hidden mb-4">
+                <label for="batch-paste" class="block text-sm font-medium text-gray-700 mb-1">Pagamentos (um por
+                    linha)</label>
+                <textarea id="batch-paste" rows="7" spellcheck="false"
+                    class="w-full p-2 border border-gray-300 rounded-lg shadow-sm font-mono text-sm"
+                    placeholder="10/12/2025;700,00&#10;10/01/2026;716,60&#10;10/02/2026;716,60"></textarea>
+                <p class="text-xs text-gray-500 mt-1">Formato <strong>DD/MM/AAAA;valor</strong>. Também aceita
+                    tabulação (colar de planilha) e valores como 1.234,56 ou 1234,56. Linhas vazias são ignoradas.</p>
+            </div>
+
+            <!-- Valor nominal fixado na sentença -->
+            <div class="mb-4">
+                <label for="batch-nominal" class="block text-sm font-medium text-gray-700 mb-1">Valor nominal fixado na
+                    sentença (R$) <span class="font-normal text-gray-400">— opcional</span></label>
+                <input type="text" id="batch-nominal"
+                    class="value-input w-full p-2 border border-gray-300 rounded-lg shadow-sm" placeholder="3.055,22">
+                <label id="batch-prorate-wrapper" class="hidden mt-2 flex items-start gap-2 cursor-pointer text-sm">
+                    <input type="checkbox" id="batch-prorate" class="h-4 w-4 mt-0.5 text-emerald-600 border-gray-300 rounded">
+                    <span class="text-gray-700">Ratear proporcionalmente para fechar o valor da sentença</span>
+                </label>
+            </div>
 
             <!-- Prévia -->
             <div id="batch-preview" class="text-sm text-gray-600 bg-gray-50 rounded-lg p-3 mb-5 hidden">
                 <span id="batch-preview-text"></span>
+                <div id="batch-preview-sums" class="hidden mt-1 space-y-0.5"></div>
+                <div id="batch-preview-errors" class="hidden mt-2 text-red-700"></div>
             </div>
 
             <!-- Ações -->
@@ -688,6 +744,16 @@
                     <li>Clique em <strong>"Gerar Linhas"</strong>. O sistema cria automaticamente uma linha de cálculo
                         para cada mês do período.</li>
                 </ol>
+                <p><strong>Pagamentos com datas e valores variados:</strong> use a aba <strong>"Colar lista de
+                        pagamentos"</strong> e cole uma linha por pagamento, no formato
+                    <code>DD/MM/AAAA;valor</code> (ou duas colunas copiadas de uma planilha). Cada pagamento vira uma
+                    linha corrigida desde a própria data.</p>
+                <p><strong>Restituição parcial</strong> (ex.: "15% dos aluguéis pagos"): escolha
+                    <strong>Restituição</strong> e informe o <strong>Percentual</strong>. Lance os valores
+                    <em>pagos</em>; o percentual é aplicado a cada linha antes da correção e dos juros.</p>
+                <p><strong>Valor nominal da sentença:</strong> se a sentença fixou o total (ex.: R$ 3.055,22) e a soma
+                    das linhas der diferente, a prévia mostra a diferença e permite <strong>ratear</strong>
+                    proporcionalmente, com os centavos de arredondamento na última linha.</p>
                 <p class="bg-blue-50 border border-blue-200 rounded-lg p-3">💡 <strong>Dica:</strong> Após gerar, você
                     pode editar qualquer linha individualmente, caso algum mês específico tenha valor diferente.</p>
             </div>
@@ -697,7 +763,7 @@
     <!-- Modal: Novidades / Changelog -->
     <div id="update-modal-overlay"
         class="modal-overlay hidden fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center p-4 z-50">
-        <div class="bg-white rounded-2xl shadow-2xl max-w-sm w-full p-0 relative overflow-hidden">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-sm w-full max-h-[90vh] p-0 relative overflow-y-auto">
             <div class="flex items-center gap-3 px-5 pt-5 pb-3">
                 <span class="update-icon-box">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
@@ -706,13 +772,46 @@
                 </span>
                 <div>
                     <p class="font-semibold text-gray-800 leading-tight">Novidades</p>
-                    <p class="text-xs text-gray-500">06 mar 2026</p>
+                    <p class="text-xs text-gray-500">22 out 2026</p>
                 </div>
             </div>
             <div class="px-5 pb-5">
                 <div class="update-highlight mb-4">
                     <p class="font-semibold text-sm text-gray-800 mb-2">O que mudou</p>
                     <ul class="text-sm space-y-2 text-gray-700">
+                        <li class="flex items-start gap-2">
+                            <span class="font-semibold text-xs text-gray-400 mt-0.5 shrink-0">22 out</span>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <svg class="w-4 h-4 text-emerald-500 mt-0.5 shrink-0" fill="currentColor"
+                                viewBox="0 0 20 20">
+                                <path fill-rule="evenodd"
+                                    d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                                    clip-rule="evenodd" />
+                            </svg>
+                            <span><strong>Restituição com percentual</strong> — ex.: "15% dos aluguéis pagos". Informe o
+                                valor pago e o percentual; correção e juros incidem sobre a parcela a restituir.</span>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <svg class="w-4 h-4 text-emerald-500 mt-0.5 shrink-0" fill="currentColor"
+                                viewBox="0 0 20 20">
+                                <path fill-rule="evenodd"
+                                    d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                                    clip-rule="evenodd" />
+                            </svg>
+                            <span><strong>Colar lista de pagamentos</strong> no Gerador em Lote (DD/MM/AAAA;valor),
+                                com soma, percentual e rateio para fechar o valor fixado na sentença.</span>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <svg class="w-4 h-4 text-emerald-500 mt-0.5 shrink-0" fill="currentColor"
+                                viewBox="0 0 20 20">
+                                <path fill-rule="evenodd"
+                                    d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                                    clip-rule="evenodd" />
+                            </svg>
+                            <span><strong>Taxa Legal corrigida</strong> — a partir de 30/08/2024, juros pela SELIC
+                                deduzida do IPCA-15 (série oficial do BCB), sem contar a inflação duas vezes.</span>
+                        </li>
                         <li class="flex items-start gap-2">
                             <span class="font-semibold text-xs text-gray-400 mt-0.5 shrink-0">06 mar</span>
                         </li>
@@ -786,9 +885,12 @@
             let ipcaData = {};
             let ipca15Data = {};
             let monthlySelicData = {};
+            let taxaLegalMap = {};
             let tabelaTJSP = { ...TJSPIndices.baseTabela };
             let lastCalculationData = null;
-            const jurosNote = 'Juros de mora calculados pela Taxa Legal (Lei 14.905/2024), aplicável a partir de 28/08/2024.';
+            const jurosNote = 'Juros de mora simples: 1% a.m. até 29/08/2024 e, a partir de 30/08/2024, Taxa Legal do art. 406 do CC (Lei 14.905/2024) = SELIC deduzida do IPCA-15, com piso zero (Res. CMN 5.171/2024; série BCB/SGS 29543). Contagem mensal desde a data inicial dos juros, com o último mês proporcional aos dias, sobre o valor corrigido até a data inicial dos juros.';
+            // Texto anterior, mantido no modo acordo (que não calcula juros) para não alterar sua saída
+            const jurosNoteAcordo = 'Juros de mora calculados pela Taxa Legal (Lei 14.905/2024), aplicável a partir de 28/08/2024.';
             const processarIPCA15 = () => { };
             const recomputarIpcaDeTabela = () => { };
 
@@ -843,6 +945,26 @@
                 applyEconomicData(ipca15Json, selicJson);
             };
 
+            // Taxa Legal (SGS 29543): proxy com uma nova tentativa (o proxy às vezes responde 502/vazio) e depois cache local
+            const parseTaxaLegal = async (response) => {
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                const json = await response.json();
+                if (!Array.isArray(json) || json.length === 0) throw new Error('Taxa Legal vazia ou inválida.');
+                const map = TJSPIndices.computeTaxaLegalMap(json);
+                if (Object.keys(map).length === 0) throw new Error('Taxa Legal sem valores utilizáveis.');
+                return map;
+            };
+            const fetchTaxaLegal = async (url) => {
+                for (let attempt = 1; attempt <= 2; attempt++) {
+                    try {
+                        return { map: await parseTaxaLegal(await fetch(url)), source: 'online' };
+                    } catch (error) {
+                        console.warn(`Falha ao buscar a Taxa Legal (tentativa ${attempt}).`, error);
+                    }
+                }
+                return { map: await parseTaxaLegal(await fetch('./data/taxalegal.json', { cache: 'no-store' })), source: 'cache' };
+            };
+
             const fetchEconomicData = async () => {
                 setIndicesStatus('loading');
                 const today = new Date();
@@ -854,10 +976,13 @@
                 // Séries oficiais BCB (SGS)
                 const IPCA15_CODE = 7478; // IPCA-15
                 const SELIC_DAILY_CODE = 11; // SELIC diária
+                const TAXA_LEGAL_CODE = 29543; // Taxa Legal (Res. CMN 5.171/2024); a série começa em 08/2024
                 const proxyBase = 'https://falling-morning-2baa.eduardocarnello.workers.dev';
 
                 const ipca15Url = `${proxyBase}/?serie=${IPCA15_CODE}&de=${startDate}&ate=${endDate}`;
                 const selicUrl = `${proxyBase}/?serie=${SELIC_DAILY_CODE}&de=${startDate}&ate=${endDate}`;
+                const taxaLegalPromise = fetchTaxaLegal(`${proxyBase}/?serie=${TAXA_LEGAL_CODE}&de=01/08/2024&ate=${endDate}`);
+                taxaLegalPromise.catch(() => { }); // tratado abaixo, depois dos demais índices
 
                 try {
                     const [ipca15Response, selicResponse] = await Promise.all([fetch(ipca15Url), fetch(selicUrl)]);
@@ -883,6 +1008,17 @@
                         alert('Não foi possível carregar os índices econômicos. Por favor, tente recarregar a página.');
                         return;
                     }
+                }
+
+                // Sem Taxa Legal só o cálculo da condenação fica bloqueado (o modo acordo não usa juros)
+                try {
+                    const { map, source } = await taxaLegalPromise;
+                    taxaLegalMap = map;
+                    if (source === 'cache') setIndicesStatus('cache');
+                } catch (error) {
+                    console.error('Erro ao carregar a Taxa Legal:', error);
+                    taxaLegalMap = null;
+                    setIndicesStatus('offline');
                 }
 
                 calculateBtn.disabled = false;
@@ -912,6 +1048,33 @@
 
             const formatCurrency = (value) => value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 
+            // Arredonda para centavos (evita 89,574999... virar 89,57)
+            const roundCents = (value) => Math.round((value + Number.EPSILON) * 100) / 100;
+
+            // Percentual da restituição: vazio = 100 (integral); aceita "15", "12,5" ou "12.5".
+            // Retorna NaN se o texto não for um número positivo.
+            const parsePercent = (raw) => {
+                const text = String(raw || '').replace(/%/g, '').trim();
+                if (!text) return 100;
+                if (!/^\d+(?:[.,]\d+)?$/.test(text)) return NaN;
+                const value = parseFloat(text.replace(',', '.'));
+                return value > 0 ? value : NaN;
+            };
+            const formatPercent = (value) => value.toLocaleString('pt-BR', { maximumFractionDigits: 4, useGrouping: false });
+
+            // Mostra o campo de percentual nas linhas de "Restituição" e ajusta o rótulo do valor
+            const updateRestitutionUI = (row) => {
+                const isRestitution = row.querySelector('.description-select').value === 'Restituição';
+                const percentInput = row.querySelector('.percent-input');
+                row.querySelector('.percent-wrapper').classList.toggle('hidden', !isRestitution);
+                if (!isRestitution) {
+                    percentInput.value = '';
+                    return;
+                }
+                const percentage = parsePercent(percentInput.value);
+                row.querySelector('.value-label').textContent = percentage === 100 ? 'Valor (R$)' : 'Valor pago (R$)';
+            };
+
             const monthKey = (date) => `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
             const formatMonthKey = (key) => {
                 const [y, m] = key.split('-');
@@ -936,12 +1099,13 @@
                 const select = newRow.querySelector('.description-select');
                 select.selectedIndex = 0;
                 newRow.querySelector('.other-description-input').classList.add('hidden');
+                newRow.querySelector('.percent-wrapper').classList.add('hidden');
 
                 // Resetar estado visual da linha e rótulo
                 const interestDateInput = newRow.querySelector('.interest-date-input');
                 const correctionDateInput = newRow.querySelector('.correction-date-input');
                 const valueInput = newRow.querySelector('.value-input');
-                const valueLabel = newRow.querySelectorAll('label')[1];
+                const valueLabel = newRow.querySelector('.value-label');
 
                 valueLabel.textContent = 'Valor (R$)';
                 interestDateInput.disabled = false;
@@ -1047,6 +1211,10 @@
             };
 
             const performCondemnationCalculation = () => {
+                if (!taxaLegalMap) {
+                    alert('Não foi possível carregar a Taxa Legal (BCB), necessária para os juros. Por favor, tente recarregar a página.');
+                    return null;
+                }
                 const finalCalcDate = getFinalCalcDate();
                 const calculationResult = {
                     type: 'condemnation',
@@ -1059,13 +1227,30 @@
                 let positiveRows = [];
                 let deductionRows = [];
                 let percentageFineRows = [];
+                const invalidPercentRows = [];
+                const estimatedTaxaLegalMonths = new Set(); // meses sem Taxa Legal publicada (usada a última disponível)
 
                 // Primeira passada: Calcular linhas padrão e deduções
-                document.querySelectorAll('.calculation-row').forEach(row => {
+                document.querySelectorAll('.calculation-row').forEach((row, rowIndex) => {
                     const descriptionSelect = row.querySelector('.description-select');
                     let description = descriptionSelect.value;
                     const rawValue = row.querySelector('.value-input').value;
-                    const originalValue = parseFloat(rawValue.replace(/\./g, '').replace(',', '.')) || 0;
+                    const baseValue = parseFloat(rawValue.replace(/\./g, '').replace(',', '.')) || 0;
+                    let originalValue = baseValue;
+                    let percentage = 100;
+
+                    if (description === 'Restituição') {
+                        percentage = parsePercent(row.querySelector('.percent-input').value);
+                        if (isNaN(percentage)) {
+                            invalidPercentRows.push(rowIndex + 1);
+                            return;
+                        }
+                        if (percentage !== 100) {
+                            // Correção e juros incidem sobre a parcela a restituir, não sobre o valor pago
+                            originalValue = roundCents(baseValue * percentage / 100);
+                            description = `Restituição (${formatPercent(percentage)}% de ${formatCurrency(baseValue)})`;
+                        }
+                    }
 
                     if (description === 'Multa (%)') {
                         // Guardar para segunda passada
@@ -1100,7 +1285,17 @@
 
                         for (let d = new Date(interestDate); d < finalCalcDate; d.setMonth(d.getMonth() + 1)) {
                             const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
-                            let monthlyRate = TJSPIndices.getTaxaLegalMensal(key, monthlySelicData) / 100;
+                            if (key >= '2024-08' && taxaLegalMap[key] === undefined) estimatedTaxaLegalMonths.add(key);
+                            // Em 08/2024, a parte do período (que começa no dia d) anterior a 30/08/2024 fica a 1% a.m.
+                            let fracaoAntesDoCorte;
+                            if (key === '2024-08') {
+                                const next = new Date(d);
+                                next.setMonth(next.getMonth() + 1);
+                                const periodDays = Math.round((next - d) / 86400000);
+                                const daysBefore = Math.round((Date.UTC(2024, 7, 30, 12) - d) / 86400000);
+                                fracaoAntesDoCorte = Math.min(1, Math.max(0, daysBefore / periodDays));
+                            }
+                            let monthlyRate = (TJSPIndices.getTaxaLegalMensalDeduzida(key, taxaLegalMap, fracaoAntesDoCorte) ?? 0) / 100;
                             if (d.getFullYear() === finalCalcDate.getFullYear() && d.getMonth() === finalCalcDate.getMonth()) {
                                 monthlyRate *= finalCalcDate.getDate() / new Date(d.getFullYear(), d.getMonth() + 1, 0).getDate();
                             }
@@ -1112,6 +1307,8 @@
                     const rowData = {
                         description,
                         originalValue,
+                        baseValue,
+                        percentage,
                         totalCorrection,
                         totalInterest,
                         finalValueForRow,
@@ -1127,6 +1324,11 @@
                         positiveRows.push(rowData);
                     }
                 });
+
+                if (invalidPercentRows.length > 0) {
+                    alert(`Percentual inválido na(s) linha(s) ${invalidPercentRows.join(', ')}. Use um número positivo, como 15 ou 12,5 (vazio = restituição integral).`);
+                    return null;
+                }
 
                 // Calcular Subtotal Atual
                 const currentPosSubtotal = positiveRows.reduce((acc, row) => acc + row.finalValueForRow, 0);
@@ -1168,7 +1370,8 @@
                     fineValue,
                     grandTotal,
                     totalDeductions: currentDedTotal,
-                    positiveSubtotal: finalPositiveSubtotal
+                    positiveSubtotal: finalPositiveSubtotal,
+                    estimatedTaxaLegalMonths: [...estimatedTaxaLegalMonths].sort().map(formatMonthKey)
                 };
 
                 return (calculationResult.rows.length === 0) ? null : calculationResult;
@@ -1430,6 +1633,24 @@
             };
 
 
+            const getTaxaLegalWarning = (data) => {
+                const months = data.summary.estimatedTaxaLegalMonths || [];
+                return months.length > 0
+                    ? `Taxa Legal ainda não publicada pelo BCB para ${months.join(', ')}: usada a última taxa disponível.`
+                    : '';
+            };
+
+            // Nota de rodapé do PDF com quebra de linha; retorna o Y seguinte
+            const addPdfFootnote = (pdf, text, y) => {
+                const lines = pdf.splitTextToSize(text, pdf.internal.pageSize.getWidth() - 30);
+                if (y + lines.length * 3.5 > pdf.internal.pageSize.getHeight() - 10) {
+                    pdf.addPage();
+                    y = 20;
+                }
+                pdf.text(lines, 15, y);
+                return y + lines.length * 3.5;
+            };
+
             const getCondemnationResultsHTML = (data) => {
                 let html = '<h3 class="text-xl font-bold text-gray-800 mb-4">Resumo do Cálculo de Condenação</h3><div class="space-y-6">';
                 data.rows.forEach((row, index) => {
@@ -1466,6 +1687,7 @@
                     ${fineRowHtml}
                     <div class="flex justify-between items-center pt-4 border-t mt-2"><p class="text-lg font-bold text-gray-800">Valor Total do Débito:</p><p class="text-3xl font-bold text-indigo-700">${formatCurrency(data.summary.grandTotal)}</p></div>
                     <p class="text-right text-xs text-gray-500 italic">${jurosNote}</p>
+                    ${getTaxaLegalWarning(data) ? `<p class="text-right text-xs text-amber-700 italic">${getTaxaLegalWarning(data)}</p>` : ''}
                 </div>`;
                 return html;
             }
@@ -1636,7 +1858,7 @@
                         <p style="margin-top: 2cm;">Nestes termos, pede deferimento.</p>
                         <p style="margin-top: 2cm; text-align: right;">Marília, ${printDate}.</p>
                         <div style="margin-top: 4cm;">${signaturesHTML}</div>
-                        <p class="text-right text-xs text-gray-500 italic">${jurosNote}</p>
+                        <p class="text-right text-xs text-gray-500 italic">${data.type === 'agreement' ? jurosNoteAcordo : jurosNote}</p>
                     </div>
                 `;
             };
@@ -1805,7 +2027,8 @@
 
                 pdf.setFontSize(8);
                 pdf.setFont('helvetica', 'italic');
-                pdf.text(jurosNote, 15, summaryY + 8);
+                const nextY = addPdfFootnote(pdf, jurosNote, summaryY + 8);
+                if (getTaxaLegalWarning(data)) addPdfFootnote(pdf, getTaxaLegalWarning(data), nextY + 1);
 
             };
 
@@ -1903,7 +2126,7 @@
 
                 pdf.setFontSize(8);
                 pdf.setFont('helvetica', 'italic');
-                pdf.text(jurosNote, 15, finalY + 8);
+                pdf.text(jurosNoteAcordo, 15, finalY + 8);
 
             };
 
@@ -2138,7 +2361,7 @@
                     const interestDateInput = row.querySelector('.interest-date-input');
                     const correctionDateInput = row.querySelector('.correction-date-input');
                     const valueInput = row.querySelector('.value-input');
-                    const valueLabel = row.querySelectorAll('label')[1]; // Label do valor
+                    const valueLabel = row.querySelector('.value-label');
 
                     const isDeduction = e.target.value === 'Dedução/Pagamento Parcial';
                     const isMultaPercent = e.target.value === 'Multa (%)';
@@ -2183,6 +2406,14 @@
                             valueInput.placeholder = '1.000,00';
                         }
                     }
+                    updateRestitutionUI(row);
+                }
+            });
+
+            condemnationContainer.addEventListener('input', (e) => {
+                if (e.target.classList.contains('percent-input')) {
+                    e.target.value = e.target.value.replace(/[^\d,.]/g, '');
+                    updateRestitutionUI(e.target.closest('.calculation-row'));
                 }
             });
 
@@ -2226,6 +2457,15 @@
             const batchDescriptionSelect = document.getElementById('batch-description');
             const batchOtherDescription = document.getElementById('batch-other-description');
             const batchFixedInterestDate = document.getElementById('batch-fixed-interest-date');
+            const batchPercentWrapper = document.getElementById('batch-percent-wrapper');
+            const batchPercentInput = document.getElementById('batch-percent');
+            const batchPasteInput = document.getElementById('batch-paste');
+            const batchNominalInput = document.getElementById('batch-nominal');
+            const batchProrateWrapper = document.getElementById('batch-prorate-wrapper');
+            const batchProrateCheckbox = document.getElementById('batch-prorate');
+            const batchPreviewSums = document.getElementById('batch-preview-sums');
+            const batchPreviewErrors = document.getElementById('batch-preview-errors');
+            const BATCH_MAX_ROWS = 300;
 
             const openModal = (modal) => { modal.classList.remove('hidden'); };
             const closeModal = (modal) => { modal.classList.add('hidden'); };
@@ -2241,17 +2481,36 @@
             document.getElementById('close-batch-help-modal').addEventListener('click', () => closeModal(batchHelpModal));
             batchHelpModal.addEventListener('click', (e) => { if (e.target === batchHelpModal) closeModal(batchHelpModal); });
 
-            // Toggle "Outro" description
+            const getBatchMode = () => document.querySelector('input[name="batch-mode"]:checked')?.value || 'periods';
+
+            // Toggle "Outro" description e campo de percentual (só para Restituição)
             batchDescriptionSelect.addEventListener('change', () => {
                 batchOtherDescription.classList.toggle('hidden', batchDescriptionSelect.value !== 'Outro');
+                batchPercentWrapper.classList.toggle('hidden', batchDescriptionSelect.value !== 'Restituição');
+                updateBatchPreview();
             });
 
-            // Toggle fixed interest date
+            // Toggle fixed interest date e forma de entrada (períodos x lista colada)
             batchModal.addEventListener('change', (e) => {
                 if (e.target.name === 'batch-interest') {
                     batchFixedInterestDate.classList.toggle('hidden', e.target.value !== 'fixed');
                 }
+                if (e.target.name === 'batch-mode') {
+                    const mode = getBatchMode();
+                    document.getElementById('batch-periods-panel').classList.toggle('hidden', mode !== 'periods');
+                    document.getElementById('batch-paste-panel').classList.toggle('hidden', mode !== 'paste');
+                    document.getElementById('batch-due-day-wrapper').classList.toggle('hidden', mode !== 'periods');
+                    updateBatchPreview();
+                }
             });
+
+            batchPasteInput.addEventListener('input', () => updateBatchPreview());
+            batchPercentInput.addEventListener('input', () => {
+                batchPercentInput.value = batchPercentInput.value.replace(/[^\d,.]/g, '');
+                updateBatchPreview();
+            });
+            batchNominalInput.addEventListener('input', () => updateBatchPreview());
+            batchNominalInput.addEventListener('blur', () => updateBatchPreview());
 
             // Format MM/AAAA inputs
             const formatMonthYearOnInput = (e) => {
@@ -2324,38 +2583,54 @@
                 return { total, firstMonth, lastMonth };
             };
 
-            const updateBatchPreview = () => {
-                const { total, firstMonth, lastMonth } = countBatchMonths();
-                if (total > 0 && firstMonth && lastMonth) {
-                    const fmtDate = (d) => `${String(d.getMonth() + 1).padStart(2, '0')}/${d.getFullYear()}`;
-                    batchPreviewText.textContent = `Serão geradas ${total} linha${total > 1 ? 's' : ''} (de ${fmtDate(firstMonth)} a ${fmtDate(lastMonth)})`;
-                    batchPreview.classList.remove('hidden');
-                } else {
-                    batchPreview.classList.add('hidden');
-                }
+            // Lista colada: "DD/MM/AAAA;valor" ou "DD/MM/AAAA<TAB>valor", uma por linha
+            const parsePastedDate = (text) => {
+                const match = text.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+                if (!match) return null;
+                const [day, month, year] = match.slice(1).map(Number);
+                if (year < 1900 || year > 2100) return null; // mesma faixa do modo por períodos
+                const date = new Date(year, month - 1, day);
+                if (date.getFullYear() !== year || date.getMonth() !== month - 1 || date.getDate() !== day) return null;
+                return `${String(day).padStart(2, '0')}/${String(month).padStart(2, '0')}/${year}`;
             };
 
-            // Generate rows
-            document.getElementById('batch-generate').addEventListener('click', () => {
-                const { total } = countBatchMonths();
-                if (total === 0) {
-                    alert('Preencha pelo menos um período completo (início, fim e valor).');
-                    return;
-                }
-                if (total > 300) {
-                    alert('O limite é de 300 linhas por vez para evitar lentidão.');
-                    return;
-                }
+            const parsePastedValue = (text) => {
+                const clean = text.replace(/^R\$/i, '').replace(/\s/g, '');
+                // 1.234,56 | 1234,56 | 1234 — ponto só como separador de milhar
+                if (!/^(?:\d{1,3}(?:\.\d{3})+|\d+)(?:,\d{1,2})?$/.test(clean)) return NaN;
+                return parseFloat(clean.replace(/\./g, '').replace(',', '.'));
+            };
 
-                let description = batchDescriptionSelect.value;
-                if (description === 'Outro') {
-                    description = batchOtherDescription.value.trim() || 'Outro';
-                }
+            const parsePastedPayments = (text) => {
+                const items = [];
+                const errors = [];
+                String(text || '').split(/\r?\n/).forEach((line, index) => {
+                    if (!line.trim()) return;
+                    const lineNumber = index + 1;
+                    const fields = line.split(/[;\t]/).map(f => f.trim());
+                    while (fields.length > 2 && !fields[fields.length - 1]) fields.pop(); // separador sobrando no fim
+                    if (fields.length !== 2) {
+                        errors.push({ lineNumber, line, reason: 'use o formato DD/MM/AAAA;valor' });
+                        return;
+                    }
+                    const dateStr = parsePastedDate(fields[0]);
+                    if (!dateStr) {
+                        errors.push({ lineNumber, line, reason: 'data inválida' });
+                        return;
+                    }
+                    const value = parsePastedValue(fields[1]);
+                    if (isNaN(value) || value <= 0) {
+                        errors.push({ lineNumber, line, reason: 'valor inválido (use 1.234,56 ou 1234,56)' });
+                        return;
+                    }
+                    items.push({ dateStr, value });
+                });
+                return { items, errors };
+            };
+
+            // Itens dos períodos mensais (um por mês, no dia do vencimento)
+            const collectPeriodItems = () => {
                 const dueDay = Math.min(31, Math.max(1, parseInt(document.getElementById('batch-due-day').value) || 1));
-                const interestMode = document.querySelector('input[name="batch-interest"]:checked').value;
-                const fixedInterestDateStr = batchFixedInterestDate.value;
-
-                // Collect all months from all periods
                 const months = [];
                 batchPeriodsContainer.querySelectorAll('.batch-period-row').forEach(row => {
                     const start = parseMonthYear(row.querySelector('.batch-start').value);
@@ -2378,11 +2653,157 @@
                         current.setMonth(current.getMonth() + 1);
                     }
                 });
+                return months;
+            };
 
+            const getBatchPercentage = () => batchDescriptionSelect.value === 'Restituição' ? parsePercent(batchPercentInput.value) : 100;
+
+            // Reúne itens, somas (em centavos, para não acumular erro de ponto flutuante) e diferença para o valor nominal
+            const buildBatchPlan = () => {
+                const mode = getBatchMode();
+                const { items, errors } = mode === 'paste'
+                    ? parsePastedPayments(batchPasteInput.value)
+                    : { items: collectPeriodItems(), errors: [] };
+                const percentage = getBatchPercentage();
+                const paidCents = items.reduce((acc, item) => acc + Math.round(item.value * 100), 0);
+                const appliedCents = isNaN(percentage) ? [] : items.map(item => Math.round(roundCents(item.value * percentage / 100) * 100));
+                const appliedTotalCents = appliedCents.reduce((acc, c) => acc + c, 0);
+                const nominal = parseFloat(batchNominalInput.value.replace(/[^\d,]/g, '').replace(',', '.'));
+                const nominalCents = nominal > 0 ? Math.round(nominal * 100) : null;
+                const diffCents = nominalCents !== null && appliedTotalCents > 0 ? nominalCents - appliedTotalCents : 0;
+                return { mode, items, errors, percentage, paidCents, appliedCents, appliedTotalCents, nominalCents, diffCents };
+            };
+
+            // Rateio proporcional: cada linha × (nominal / soma), em centavos; a sobra de arredondamento vai para a última
+            const prorateCents = (appliedCents, totalCents, nominalCents) => {
+                let accumulated = 0;
+                return appliedCents.map((cents, index) => {
+                    if (index === appliedCents.length - 1) return nominalCents - accumulated;
+                    const share = Math.round(cents * nominalCents / totalCents);
+                    accumulated += share;
+                    return share;
+                });
+            };
+
+            const updateBatchPreview = () => {
+                const plan = buildBatchPlan();
+                const sumLines = [];
+                let hasContent = false;
+
+                if (plan.mode === 'periods') {
+                    const { total, firstMonth, lastMonth } = countBatchMonths();
+                    if (total > 0 && firstMonth && lastMonth) {
+                        const fmtDate = (d) => `${String(d.getMonth() + 1).padStart(2, '0')}/${d.getFullYear()}`;
+                        batchPreviewText.textContent = `Serão geradas ${total} linha${total > 1 ? 's' : ''} (de ${fmtDate(firstMonth)} a ${fmtDate(lastMonth)})`;
+                        hasContent = true;
+                    }
+                } else if (plan.items.length > 0 || plan.errors.length > 0) {
+                    const n = plan.items.length;
+                    batchPreviewText.textContent = n > 0
+                        ? `Serão geradas ${n} linha${n > 1 ? 's' : ''}${n > BATCH_MAX_ROWS ? ` — acima do limite de ${BATCH_MAX_ROWS}` : ''}`
+                        : 'Nenhuma linha válida.';
+                    hasContent = true;
+                }
+
+                if (plan.items.length > 0) {
+                    sumLines.push(`Soma dos valores pagos: <strong>${formatCurrency(plan.paidCents / 100)}</strong>`);
+                    if (isNaN(plan.percentage)) {
+                        sumLines.push('<span class="text-red-700">Percentual inválido — use, por exemplo, 15 ou 12,5.</span>');
+                    } else if (plan.percentage !== 100) {
+                        sumLines.push(`Soma após o percentual (${formatPercent(plan.percentage)}%): <strong>${formatCurrency(plan.appliedTotalCents / 100)}</strong>`);
+                    }
+                    if (plan.nominalCents !== null && plan.appliedTotalCents > 0) {
+                        if (plan.diffCents === 0) {
+                            sumLines.push(`<span class="text-emerald-700">✓ Confere com o valor da sentença (${formatCurrency(plan.nominalCents / 100)}).</span>`);
+                        } else {
+                            const sign = plan.diffCents > 0 ? 'a menor' : 'a maior';
+                            sumLines.push(`<span class="text-amber-700">Diferença para o valor da sentença (${formatCurrency(plan.nominalCents / 100)}): <strong>${formatCurrency(Math.abs(plan.diffCents) / 100)}</strong> ${sign} na soma.</span>`);
+                        }
+                    }
+                }
+                batchProrateWrapper.classList.toggle('hidden', !(plan.items.length > 0 && plan.diffCents !== 0));
+                batchPreviewSums.innerHTML = sumLines.map(l => `<div>${l}</div>`).join('');
+                batchPreviewSums.classList.toggle('hidden', sumLines.length === 0);
+
+                if (plan.errors.length > 0) {
+                    const escapeHtml = (s) => s.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+                    const shown = plan.errors.slice(0, 15).map(err =>
+                        `<li>Linha ${err.lineNumber}: <code>${escapeHtml(err.line.trim().slice(0, 40))}</code> — ${err.reason}</li>`).join('');
+                    const more = plan.errors.length > 15 ? `<li>… e mais ${plan.errors.length - 15}</li>` : '';
+                    batchPreviewErrors.innerHTML = `<p class="font-semibold">${plan.errors.length} linha${plan.errors.length > 1 ? 's' : ''} inválida${plan.errors.length > 1 ? 's' : ''} — corrija para poder gerar:</p><ul class="list-disc pl-5">${shown}${more}</ul>`;
+                    batchPreviewErrors.classList.remove('hidden');
+                } else {
+                    batchPreviewErrors.innerHTML = '';
+                    batchPreviewErrors.classList.add('hidden');
+                }
+
+                batchPreview.classList.toggle('hidden', !hasContent && sumLines.length === 0);
+            };
+
+            // Generate rows
+            document.getElementById('batch-generate').addEventListener('click', () => {
+                const plan = buildBatchPlan();
+                if (plan.mode === 'paste') {
+                    if (plan.errors.length > 0) {
+                        updateBatchPreview();
+                        alert(`Há ${plan.errors.length} linha(s) inválida(s) na lista (linha ${plan.errors.map(e => e.lineNumber).join(', ')}). Corrija antes de gerar.`);
+                        return;
+                    }
+                    if (plan.items.length === 0) {
+                        alert('Cole pelo menos um pagamento no formato DD/MM/AAAA;valor.');
+                        return;
+                    }
+                    if (plan.items.length > BATCH_MAX_ROWS) {
+                        alert(`O limite é de ${BATCH_MAX_ROWS} linhas por vez para evitar lentidão.`);
+                        return;
+                    }
+                } else {
+                    const { total } = countBatchMonths();
+                    if (total === 0) {
+                        alert('Preencha pelo menos um período completo (início, fim e valor).');
+                        return;
+                    }
+                    if (total > BATCH_MAX_ROWS) {
+                        alert(`O limite é de ${BATCH_MAX_ROWS} linhas por vez para evitar lentidão.`);
+                        return;
+                    }
+                }
+
+                if (isNaN(plan.percentage)) {
+                    alert('Percentual inválido. Use um número positivo, como 15 ou 12,5 (vazio = restituição integral).');
+                    batchPercentInput.focus();
+                    return;
+                }
+
+                let description = batchDescriptionSelect.value;
+                if (description === 'Outro') {
+                    description = batchOtherDescription.value.trim() || 'Outro';
+                }
+                const interestMode = document.querySelector('input[name="batch-interest"]:checked').value;
+                const fixedInterestDateStr = batchFixedInterestDate.value;
+                if (interestMode === 'fixed') {
+                    const fixedDate = parseDate(fixedInterestDateStr);
+                    if (!fixedDate || isNaN(fixedDate)) {
+                        alert('Informe a data fixa dos juros (DD/MM/AAAA).');
+                        batchFixedInterestDate.focus();
+                        return;
+                    }
+                }
+
+                const months = plan.items;
                 if (months.length === 0) {
                     alert('Nenhuma linha pôde ser gerada. Confira os valores preenchidos.');
                     return;
                 }
+
+                const applyProrate = batchProrateCheckbox.checked && plan.nominalCents !== null && plan.diffCents !== 0;
+                const proratedCents = applyProrate ? prorateCents(plan.appliedCents, plan.appliedTotalCents, plan.nominalCents) : null;
+                if (applyProrate && proratedCents.some(c => c <= 0)) {
+                    alert('O rateio resultaria em linha com valor zero ou negativo. Confira o valor nominal informado.');
+                    return;
+                }
+                const hasPercent = plan.percentage !== 100;
+                const fmtMoney = (v) => v.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
                 // Remove the first blank row if it's empty
                 const existingRows = rowsContainer.querySelectorAll('.calculation-row');
@@ -2401,25 +2822,36 @@
                         row = allRows[allRows.length - 1];
                     }
 
-                    // Set description
+                    // Set description (com rateio, a linha vira "Outro" e guarda a origem do valor na descrição)
                     const descSelect = row.querySelector('.description-select');
-                    if (description === 'Outro' || !Array.from(descSelect.options).some(o => o.value === description)) {
+                    let rowDescription = description;
+                    if (applyProrate) {
+                        rowDescription = hasPercent
+                            ? `${description} (${formatPercent(plan.percentage)}% de ${formatCurrency(item.value)}, rateado)`
+                            : `${description} (rateado)`;
+                    }
+                    if (applyProrate || description === 'Outro' || !Array.from(descSelect.options).some(o => o.value === description)) {
                         descSelect.value = 'Outro';
-                        const otherInput = row.querySelector('.other-description-input');
-                        otherInput.classList.remove('hidden');
-                        otherInput.value = description;
+                        descSelect.dispatchEvent(new Event('change', { bubbles: true }));
+                        row.querySelector('.other-description-input').value = rowDescription;
                     } else {
                         descSelect.value = description;
+                        descSelect.dispatchEvent(new Event('change', { bubbles: true }));
+                        if (description === 'Restituição') {
+                            // precisão total e sem separador de milhar, para a linha calcular igual à prévia
+                            row.querySelector('.percent-input').value = hasPercent ? String(plan.percentage).replace('.', ',') : '';
+                            updateRestitutionUI(row);
+                        }
                     }
 
-                    // Set value
-                    row.querySelector('.value-input').value = item.value.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+                    // Set value (valor pago; o percentual é aplicado no cálculo — ou o valor já rateado)
+                    row.querySelector('.value-input').value = applyProrate ? fmtMoney(proratedCents[index] / 100) : fmtMoney(item.value);
 
                     // Set correction date
                     row.querySelector('.correction-date-input').value = item.dateStr;
 
                     // Set interest date
-                    if (interestMode === 'fixed' && fixedInterestDateStr) {
+                    if (interestMode === 'fixed') {
                         row.querySelector('.interest-date-input').value = fixedInterestDateStr;
                     } else {
                         row.querySelector('.interest-date-input').value = item.dateStr;
@@ -2434,7 +2866,7 @@
                 // Brief confirmation
                 const countEl = document.createElement('div');
                 countEl.className = 'fixed bottom-6 right-6 bg-emerald-600 text-white py-3 px-5 rounded-xl shadow-lg z-50 text-sm font-semibold';
-                countEl.textContent = `✓ ${months.length} linha${months.length > 1 ? 's' : ''} gerada${months.length > 1 ? 's' : ''} com sucesso!`;
+                countEl.textContent = `✓ ${months.length} linha${months.length > 1 ? 's' : ''} gerada${months.length > 1 ? 's' : ''} com sucesso!${applyProrate ? ` Rateado para ${formatCurrency(plan.nominalCents / 100)}.` : ''}`;
                 document.body.appendChild(countEl);
                 setTimeout(() => countEl.remove(), 3500);
             });
@@ -2442,7 +2874,7 @@
             addBatchInputBehaviors(batchPeriodsContainer);
 
             // --- UPDATE MODAL (Novidades) ---
-            const UPDATE_VERSION = 'calc-update-2026-03-06';
+            const UPDATE_VERSION = 'calc-update-2026-10-22';
             const updateModalOverlay = document.getElementById('update-modal-overlay');
             const dismissUpdateBtn = document.getElementById('dismiss-update-btn');
             const updateStorageKey = 'calculadora_update_ack';
@@ -2483,6 +2915,7 @@
                         description: row.querySelector('.description-select').value,
                         otherDescription: row.querySelector('.other-description-input').value,
                         value: row.querySelector('.value-input').value,
+                        percentage: row.querySelector('.percent-input').value,
                         correctionDate: row.querySelector('.correction-date-input').value,
                         interestDate: row.querySelector('.interest-date-input').value
                     });
@@ -2581,6 +3014,8 @@
                         otherInput.value = saved.otherDescription || '';
                         otherInput.classList.toggle('hidden', saved.description !== 'Outro');
                         row.querySelector('.value-input').value = saved.value || '';
+                        // Salvamentos anteriores não têm o campo: vazio = 100% (integral)
+                        row.querySelector('.percent-input').value = saved.percentage || '';
                         row.querySelector('.correction-date-input').value = saved.correctionDate || '';
                         row.querySelector('.interest-date-input').value = saved.interestDate || '';
 

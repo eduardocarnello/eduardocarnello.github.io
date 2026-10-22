@@ -145,6 +145,36 @@
         return selicMensalMap[chave] || 0; // Taxa Legal = SELIC mensal pós-corte
     }
 
+    // Taxa Legal publicada pelo BCB (SGS 29543, % a.m.; data = 01/MM/AAAA do mês de referência).
+    // Res. CMN 5.171/2024: TL_m = max[(Fator SELIC_m / Fator IPCA-15_m) - 1; 0], fatores do mês m-1.
+    function computeTaxaLegalMap(sgsArray) {
+        return sgsArray.reduce((acc, item) => {
+            const [, month, year] = item.data.split('/');
+            const valor = parseFloat(item.valor);
+            if (!isNaN(valor)) acc[`${year}-${month.padStart(2, '0')}`] = valor;
+            return acc;
+        }, {});
+    }
+
+    // Taxa mensal de juros moratórios (% a.m.) pelo art. 406 do CC:
+    // - até 07/2024: 1% a.m.;
+    // - 08/2024: misto, 1% até 29/08 e taxa legal de agosto em 30 e 31/08 (Lei 14.905, art. 5º, II; Res. CMN 5.171, art. 8º, p.ú.);
+    //   fracaoAntesDoCorte = parte do período (0 a 1) anterior a 30/08/2024; padrão 29/31 (mês de calendário);
+    // - a partir de 09/2024: taxa legal do mês (SGS 29543).
+    // Mês ainda não publicado usa a última taxa disponível (o chamador deve avisar); sem nenhuma taxa, retorna null.
+    function getTaxaLegalMensalDeduzida(chave, taxaLegalMap, fracaoAntesDoCorte = 29 / 31) {
+        if (chave < '2024-08') return 1.0;
+        const taxaDoMes = (key) => {
+            if (taxaLegalMap[key] !== undefined) return taxaLegalMap[key];
+            const anteriores = Object.keys(taxaLegalMap).filter(k => k < key).sort();
+            return anteriores.length ? taxaLegalMap[anteriores[anteriores.length - 1]] : null;
+        };
+        const taxa = taxaDoMes(chave);
+        if (taxa === null) return null;
+        if (chave === '2024-08') return fracaoAntesDoCorte * 1.0 + (1 - fracaoAntesDoCorte) * taxa;
+        return taxa;
+    }
+
     function buildTabela(ipcaArray, seed = baseTabela) {
         const tabela = { ...seed };
         ipcaArray.forEach((item) => {
@@ -194,6 +224,8 @@
         deriveMonthlyRatesFromTabela,
         computeSelicMensal,
         getTaxaLegalMensal,
+        computeTaxaLegalMap,
+        getTaxaLegalMensalDeduzida,
         trunc6,
         DATA_CORTE_LEI
     };

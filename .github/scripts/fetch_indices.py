@@ -9,14 +9,16 @@ from typing import Dict, List, Optional
 SERIES: Dict[str, Dict[str, object]] = {
     "ipca15": {"code": 7478, "path": pathlib.Path("calculadora/data/ipca15.json")},
     "selic": {"code": 4390, "path": pathlib.Path("calculadora/data/selic.json")},
+    # Taxa Legal (Res. CMN 5.171/2024): a série começa em 08/2024 e a API recusa data inicial anterior
+    "taxalegal": {"code": 29543, "path": pathlib.Path("calculadora/data/taxalegal.json"), "inicio": "01/08/2024"},
 }
 
-PRIMARY = "https://api.bcb.gov.br/dados/serie/bcdata.sgs.{code}/dados?formato=json&dataInicial=01/01/2020&dataFinal=31/12/2030"
+PRIMARY = "https://api.bcb.gov.br/dados/serie/bcdata.sgs.{code}/dados?formato=json&dataInicial={inicio}&dataFinal=31/12/2030"
 FALLBACK = "https://olinda.bcb.gov.br/olinda/servico/SGS/versao/v2/odata/ValoresSerie(SERIE={code})?$top=5000&$format=json"
 OLINDA_PARAM = (
     "https://olinda.bcb.gov.br/olinda/servico/SGS/versao/v2/odata/"
     "ValoresSerie(SERIE=@codigoSerie,DATAINICIAL=@dataInicial,DATAFINAL=@dataFinal)?"
-    "@codigoSerie={code}&@dataInicial='01/01/2020'&@dataFinal='31/12/2030'&$top=6000&$format=json"
+    "@codigoSerie={code}&@dataInicial='{inicio}'&@dataFinal='31/12/2030'&$top=6000&$format=json"
 )
 HEADERS = {
     "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119 Safari/537.36",
@@ -73,10 +75,10 @@ def build_jina(url: str) -> str:
     return "https://r.jina.ai/" + url
 
 
-def fetch_and_save(name: str, code: int, path: pathlib.Path) -> bool:
+def fetch_and_save(name: str, code: int, path: pathlib.Path, inicio: str = "01/01/2020") -> bool:
     path.parent.mkdir(parents=True, exist_ok=True)
-    primary = PRIMARY.format(code=code)
-    olinda = OLINDA_PARAM.format(code=code)
+    primary = PRIMARY.format(code=code, inicio=inicio)
+    olinda = OLINDA_PARAM.format(code=code, inicio=inicio)
     olinda_alt = f"https://olinda.bcb.gov.br/olinda/servico/SGS/versao/v2/odata/ValoresSerie(SERIE={code})?$top=6000&$format=json"
     attempts = [
         ("primary", primary),
@@ -112,7 +114,7 @@ def fetch_and_save(name: str, code: int, path: pathlib.Path) -> bool:
 def main():
     ok = True
     for name, meta in SERIES.items():
-        ok = fetch_and_save(name, int(meta["code"]), pathlib.Path(meta["path"])) and ok
+        ok = fetch_and_save(name, int(meta["code"]), pathlib.Path(meta["path"]), str(meta.get("inicio", "01/01/2020"))) and ok
     if not ok:
         raise SystemExit(1)
 

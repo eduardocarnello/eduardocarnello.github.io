@@ -3,6 +3,7 @@ name: Atualizar índices BCB
 on:
   schedule:
     - cron: '0 3 1 * *'  # todo dia 1 às 03h UTC (~00h em Brasília)
+    - cron: '0 12 5 * *' # dia 5: a Taxa Legal do mês só sai a partir do 1º dia útil
   workflow_dispatch:     # permite rodar manualmente
 
 permissions:
@@ -15,7 +16,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Baixar IPCA-15 e SELIC
+      - name: Baixar IPCA-15, SELIC e Taxa Legal
         run: |
           python .github/scripts/fetch_indices.py
 
@@ -32,6 +33,6 @@ jobs:
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          git add calculadora/data/ipca15.json calculadora/data/selic.json
-          git commit -m "chore: atualizar índices IPCA-15 e SELIC"
+          git add calculadora/data/ipca15.json calculadora/data/selic.json calculadora/data/taxalegal.json
+          git commit -m "chore: atualizar índices IPCA-15, SELIC e Taxa Legal"
           git push
