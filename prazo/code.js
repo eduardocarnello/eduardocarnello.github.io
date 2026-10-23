@@ -36,6 +36,7 @@ $(document).ready(function () {
   setupNavigationEvents();
   setupInputEvents();
   setupCalcEvents();
+  initSistemaProcesso(); // Sistema do processo (eproc/e-SAJ), lembrado no navegador
   setupActionButtons(); // Copiar, Imprimir, Limpar
 
   // 3. Inicializa Tutorial (Evento de Clique)
@@ -253,6 +254,31 @@ function setupCalcEvents() {
 }
 
 /**
+ * Seletor "Sistema do processo": restaura a última escolha (localStorage 'prazo.sistemaProcesso'),
+ * salva a cada troca e recalcula na hora se já houver resultado na tela.
+ * Não é afetado pelo botão Limpar.
+ */
+const SISTEMA_PROCESSO_KEY = 'prazo.sistemaProcesso';
+function initSistemaProcesso() {
+  const select = document.getElementById('sistemaProcesso');
+  if (!select) return;
+
+  let salvo = null;
+  try {
+    salvo = localStorage.getItem(SISTEMA_PROCESSO_KEY) || localStorage.getItem('prazo_sistema');
+  } catch (e) { /* armazenamento indisponível: fica o padrão */ }
+  if (salvo === 'eproc' || salvo === 'saj') select.value = salvo;
+
+  $(select).on('change', function () {
+    const valor = this.value === 'saj' ? 'saj' : 'eproc';
+    try { localStorage.setItem(SISTEMA_PROCESSO_KEY, valor); } catch (e) { /* ignora */ }
+    if ($('#results').is(':visible') && $('#initialDate').val() && typeof calculateResults === 'function') {
+      calculateResults({ scroll: false });
+    }
+  });
+}
+
+/**
  * Atualiza o texto e tooltip do Label baseado na seleção do Tipo de Contagem
  */
 function updateCountTypeLabel(selectElement) {
@@ -431,6 +457,10 @@ function startIntroTutorial(dontShowAgain = false) {
       {
         element: '#divDays',
         intro: "Digite o prazo em dias ou use os botões +/- para atalhos."
+      },
+      {
+        element: '#divSistema',
+        intro: "<p>Escolha o <b>sistema do processo</b> (eproc ou e-SAJ).</p><p>Só prorrogam o prazo as indisponibilidades desse sistema (ou gerais) que atinjam o 1º grau do JEC de Marília. As demais aparecem no relatório apenas para ciência.</p>"
       },
       {
         element: '#calcBtn',

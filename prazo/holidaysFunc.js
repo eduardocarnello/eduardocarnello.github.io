@@ -158,12 +158,35 @@ var sistDown = [
     { downDate: '10/03/2025', description: "INDISPONIBILIDADE DOS SERVIÇOS DO PORTAL E-SAJ" },
     { downDate: '28/03/2025', description: "INDISPONIBILIDADE DA CONSULTA PROCESSUAL DE 1º GRAU DO PORTAL E-SAJ" },
     { downDate: '23/04/2025', description: "INDISPONIBILIDADE SEVERA NO SERVIÇO DE PASTA DIGITAL DO E-SAJ" },
+    // 24/04/2025 ficava na lista de feriados e suspendia também o eproc; é severa só do e-SAJ
+    { downDate: '24/04/2025', description: "INDISPONIBILIDADE SEVERA NO SERVIÇO DE PASTA DIGITAL DO E-SAJ" },
     { downDate: '12/09/2025', description: "INDISPONIBILIDADE NO SERVIÇO DE PETICIONAMENTO ELETRÔNICO DO PORTAL E-SAJ" },
     { downDate: '15/09/2025', description: "INDISPONIBILIDADE NO SERVIÇO DE LOGIN DO PORTAL E-SAJ" },
     { downDate: '16/10/2025', description: "INDISPONIBILIDADE NO SERVIÇO DE PETICIONAMENTO DO PG, SG E CR DO PORTAL E-SAJ" },
     { downDate: '20/10/2025', description: "INDISPONIBILIDADE DOS SERVIÇOS DO PORTAL E-SAJ" },
     { downDate: '17/11/2025', description: "INDISPONIBILIDADE DOS SERVIÇOS DE PETICIONAMENTO E CONSULTA PROCESSUAL NO PORTAL E-SAJ" },
 ];
+
+/*
+   Etiquetas das entradas fixas para o filtro "Sistema do processo" (calcDate.js):
+   - todas as entradas acima são do e-SAJ (sistema: 'saj'), exceto a manutenção do DATACENTER e os
+     encerramentos antecipados de expediente, que atingem qualquer sistema (sistema: 'geral');
+   - gravidade 'severa' quando a descrição diz SEVERA (suspende como feriado); senão 'normal' (só prorroga).
+   - restritas a bases/classes do SAJ (ex.: PG5EF, BASE JM, CLASSE 12154): aplicavel null + revisar.
+   Entradas novas devem preferir o robô (data/indisponibilidades.json) ou o Calendário (Firestore).
+*/
+sistDown.forEach(function (e) {
+    var d = String(e.description || '').toUpperCase();
+    if (!e.sistema) e.sistema = (d.indexOf('DATACENTER') !== -1 || d.indexOf('ENCERRAMENTO DE EXPEDIENTE') !== -1) ? 'geral' : 'saj';
+    if (!e.gravidade) e.gravidade = d.indexOf('SEVERA') !== -1 ? 'severa' : 'normal';
+    if (!e.origem) e.origem = 'fixo';
+    // Restritas a bases/classes do SAJ: abrangência incerta para o JEC de Marília (continua prorrogando, mas sinaliza)
+    if (e.aplicavel === undefined && /\bBASES?\b|PARA A CLASSE/.test(d)) {
+        e.aplicavel = null;
+        e.revisar = true;
+        e.motivoRevisar = 'restrita a base/classe do SAJ: conferir se atinge o JEC de Marília';
+    }
+});
 
 /* ==============================================================================================
    CÁLCULO AUTOMÁTICO DA PÁSCOA (ALGORITMO DE GAUSS SIMPLIFICADO)
@@ -315,7 +338,6 @@ function holidaysFunc(currentYear, expectedFinalYear) {
             { holidayDate: `20/03/2024`, description: "Suspensão de Prazo - Comunicado Conjunto nº 293/2024 (DJE de 03/04/2024, Caderno Administrativo, pág. 4)" },
             { holidayDate: `21/03/2024`, description: "Suspensão de Prazo - Comunicado Conjunto nº 293/2024 (DJE de 03/04/2024, Caderno Administrativo, pág. 4)" },
             { holidayDate: `22/03/2024`, description: "Suspensão de Prazo - Comunicado Conjunto nº 293/2024 (DJE de 03/04/2024, Caderno Administrativo, pág. 4)" },
-            { holidayDate: `24/04/2025`, description: "INDISPONIBILIDADE SEVERA NO SERVIÇO DE PASTA DIGITAL DO E-SAJ" },
             { holidayDate: `12/05/2025`, description: "Suspensão de Prazo - Comunicado Conjunto nº 325/2025 - Treinamento Eproc (DJE de 06/05/2025, Caderno Administrativo, pág. 57)" },
             { holidayDate: `13/05/2025`, description: "Suspensão de Prazo - Comunicado Conjunto nº 325/2025 - Treinamento Eproc (DJE de 06/05/2025, Caderno Administrativo, pág. 57)" },
             { holidayDate: `14/05/2025`, description: "Suspensão de Prazo - Comunicado Conjunto nº 325/2025 - Treinamento Eproc (DJE de 06/05/2025, Caderno Administrativo, pág. 57)" },

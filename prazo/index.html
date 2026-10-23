@@ -119,9 +119,9 @@
                             </div>
                         </div>
 
-                        <!-- Linha 2: Datas e Dias -->
+                        <!-- Linha 2: Datas, Dias e Sistema do processo -->
                         <div class="row g-2 mb-3">
-                            <div class="col-md-6">
+                            <div class="col-md-5">
                                 <div class="input-group has-validation" id="divInitialDate">
                                     <span class="input-group-text">
                                         <div class="ui calendar" id="button_calendar">
@@ -141,7 +141,7 @@
                                 </div>
                             </div>
 
-                            <div class="col-md-6">
+                            <div class="col-md-4">
                                 <div class="input-group" id="divDays">
                                     <button type="button" class="btn btn-outline-secondary btn-number" id="minus-btn"
                                         data-type="minus" data-field="quant[2]" disabled>
@@ -156,6 +156,25 @@
                                         id="plus-btn" data-type="plus" data-field="quant[2]">
                                         <i class="fa-solid fa-plus"></i>
                                     </button>
+                                </div>
+                            </div>
+
+                            <!-- Sistema do processo (define quais indisponibilidades prorrogam o prazo) -->
+                            <div class="col-md-3">
+                                <div class="input-group" id="divSistema">
+                                    <span class="input-group-text"><i
+                                            class="fa fa-solid fa-server prefix grey-text"></i></span>
+                                    <div class="form-floating flex-grow-1">
+                                        <select id="sistemaProcesso" class="form-select"
+                                            aria-label="Sistema do processo">
+                                            <option value="eproc" selected>eproc (padrão)</option>
+                                            <option value="saj">e-SAJ</option>
+                                        </select>
+                                        <label for="sistemaProcesso">Sistema do processo <i
+                                                class="fas fa-info-circle fa-sm tooltip-helper" data-bs-toggle="tooltip"
+                                                data-bs-html="true"
+                                                title="Só prorrogam o prazo as indisponibilidades do sistema em que o processo tramita (ou gerais, como queda do datacenter) que atinjam o 1º grau do JEC de Marília. Indisponibilidades de outro sistema, do Portal de Custas, de outras instâncias, competências ou comarcas aparecem no relatório apenas para ciência."></i></label>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -254,7 +273,7 @@
                         </span>
                         <div class="d-flex flex-column lh-sm">
                             <span class="fw-semibold">Novidades</span>
-                            <small>16 jan 2026</small>
+                            <small>23 out 2026</small>
                         </div>
                     </div>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
@@ -263,6 +282,19 @@
                     <div class="update-highlight mb-3">
                         <p class="fw-semibold mb-2">O que mudou</p>
                         <ul class="list-unstyled mb-0 small">
+                            <li class="d-flex align-items-start gap-2">
+                                <span class="fw-semibold text-muted">23 out 2026</span>
+                            </li>
+                            <li class="d-flex align-items-start gap-2">
+                                <i class="fa-solid fa-circle-check text-success mt-1"></i>
+                                <span>Novo campo <b>Sistema do processo</b> (eproc ou e-SAJ): só prorrogam o prazo as
+                                    indisponibilidades desse sistema (ou gerais) que atinjam o 1º grau de Marília.</span>
+                            </li>
+                            <li class="d-flex align-items-start gap-2 mb-2">
+                                <i class="fa-solid fa-circle-check text-success mt-1"></i>
+                                <span>Indisponibilidades agora vêm dos comunicados oficiais do TJSP, com link para o
+                                    comunicado; as que não afetam o prazo aparecem no relatório como "Ciência".</span>
+                            </li>
                             <li class="d-flex align-items-start gap-2">
                                 <span class="fw-semibold text-muted">16 jan 2026</span>
                             </li>
@@ -332,22 +364,23 @@
         const db = getFirestore(app);
 
         // Store initial state to avoid duplicates on re-render
+        // (as indisponibilidades são reconstruídas por window.PrazoIndisp, em calcDate.js)
         const initialAmendmentLength = amendment.length;
-        const initialSistDownLength = sistDown.length;
 
         // Save original function
         window.originalHolidaysFunc = window.holidaysFunc;
 
         onSnapshot(collection(db, 'events'), (snapshot) => {
-            const events = [];
-            snapshot.forEach(doc => events.push(doc.data()));
+            // Docs com o id (chave de mesclagem com data/indisponibilidades.json)
+            const allDocs = [];
+            snapshot.forEach(doc => allDocs.push(Object.assign({}, doc.data(), { id: doc.id })));
+            // Overrides com hidden: true (itens do robô ocultados no Calendário) não entram em lugar nenhum
+            const events = allDocs.filter(e => e.hidden !== true);
 
             // Reset arrays to initial state (removing previous dynamic events)
             amendment.length = initialAmendmentLength;
-            sistDown.length = initialSistDownLength;
 
             const suspensions = events.filter(e => ['suspensao', 'feriado', 'recesso', 'falta', 'substituicao', 'outro'].includes(e.type) && e.type !== 'moved_holiday');
-            const indisponibilities = events.filter(e => ['indisponibilidade', 'severa'].includes(e.type));
             const movedHolidays = events.filter(e => e.type === 'moved_holiday');
 
             // Inject Suspensions
@@ -365,19 +398,6 @@
                     while (current.isBefore(end)) {
                         current.add(1, 'days');
                         amendment.push({ holidayDate: current.format('DD/MM/YYYY'), description: e.description });
-                    }
-                }
-            });
-
-            // Inject Indisponibilities
-            indisponibilities.forEach(e => {
-                sistDown.push({ downDate: e.startDate, description: e.description });
-                if (e.endDate) {
-                    let current = moment(e.startDate, 'DD/MM/YYYY');
-                    const end = moment(e.endDate, 'DD/MM/YYYY');
-                    while (current.isBefore(end)) {
-                        current.add(1, 'days');
-                        sistDown.push({ downDate: current.format('DD/MM/YYYY'), description: e.description });
                     }
                 }
             });
@@ -405,6 +425,9 @@
                 return data;
             };
 
+            // Indisponibilidades: mescla Firestore + JSON do robô + listas fixas e recalcula se houver resultado
+            if (window.PrazoIndisp) window.PrazoIndisp.setFirestore(allDocs);
+
             console.log("Prazo: Events updated from Firebase.");
         });
     </script>
@@ -415,7 +438,7 @@
 
     <script>
         (function () {
-            const UPDATE_VERSION = "prazo-update-2026-01-07-2";
+            const UPDATE_VERSION = "prazo-update-2026-10-23";
             const storageKey = "prazo_update_ack";
             const updateSeen = localStorage.getItem(storageKey);
 
