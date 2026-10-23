@@ -1,0 +1,172 @@
+# Robô de indisponibilidades do TJSP
+#
+# Lê https://www.tjsp.jus.br/Indisponibilidade/Comunicados, atualiza data/indisponibilidades.json
+# (usado por /prazo e /calendario), faz commit no main e abre uma Issue quando há novidade.
+#
+# Segredos opcionais (GitHub > Settings > Secrets and variables > Actions > New repository secret):
+#   MAIL_USERNAME   conta Gmail que envia o aviso (ex.: fulano@gmail.com)
+#   MAIL_PASSWORD   "senha de app" dessa conta (Conta Google > Segurança > Senhas de app; exige verificação em 2 etapas)
+#   MAIL_TO         destinatário(s), separados por vírgula; se ausente, envia para MAIL_USERNAME
+#   FIREBASE_SERVICE_ACCOUNT  JSON completo de uma conta de serviço do projeto Firebase "calendariojec"
+#                   (Console Firebase > Configurações do projeto > Contas de serviço > Gerar nova chave privada).
+#                   Com ele, cada item novo (dos últimos 30 dias) também é criado em events/<id> no Firestore
+#                   (nunca sobrescreve; não roda na carga histórica).
+# Sem esses segredos o robô funciona normalmente: só não envia e-mail nem grava no Firestore.
+#
+# Carga histórica: Actions > Indisponibilidades TJSP > Run workflow > marcar "todas".
+# Ela é resumível: o HTML de cada comunicado fica no cache (.cache/tjsp) entre execuções.
+
+name: Indisponibilidades TJSP
+
+on:
+  schedule:
+    - cron: '0 10-23 * * 1-5' # de hora em hora, 7h às 20h de Brasília, dias úteis
+    - cron: '30 13 * * 6'     # sábado, 10h30 de Brasília
+  workflow_dispatch:
+    inputs:
+      paginas:
+        description: 'Quantas páginas da listagem varrer'
+        required: false
+        default: '1'
+        type: string
+      todas:
+        description: 'Carga histórica completa (todas as páginas)'
+        required: false
+        default: false
+        type: boolean
+
+permissions:
+  contents: write
+  issues: write
+
+concurrency:
+  group: indisponibilidades
+  cancel-in-progress: false
+
+jobs:
+  indisponibilidades:
+    runs-on: ubuntu-latest
+    timeout-minutes: ${{ inputs.todas && 340 || 50 }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configurar Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Restaurar cache dos comunicados
+        uses: actions/cache/restore@v4
+        with:
+          path: .cache/tjsp
+          key: tjsp-comunicados-${{ github.run_id }}
+          restore-keys: |
+            tjsp-comunicados-
+
+      - name: Testes do robô
+        run: |
+          python -m pip install --quiet pytest
+          python -m pytest -q .github/scripts/tests -p no:cacheprovider
+
+      - name: Verificar segredos opcionais
+        id: segredos
+        env:
+          MAIL_USERNAME: ${{ secrets.MAIL_USERNAME }}
+          MAIL_PASSWORD: ${{ secrets.MAIL_PASSWORD }}
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+        run: |
+          if [ -n "$MAIL_USERNAME" ] && [ -n "$MAIL_PASSWORD" ]; then echo "mail=true" >> "$GITHUB_OUTPUT"; else echo "mail=false" >> "$GITHUB_OUTPUT"; fi
+          if [ -n "$FIREBASE_SERVICE_ACCOUNT" ]; then echo "firestore=true" >> "$GITHUB_OUTPUT"; else echo "firestore=false" >> "$GITHUB_OUTPUT"; fi
+
+      - name: Buscar comunicados do TJSP
+        id: robo
+        env:
+          PAGINAS: ${{ inputs.paginas || '1' }}
+          TODAS: ${{ inputs.todas && 'true' || 'false' }}
+        run: |
+          case "$PAGINAS" in ''|*[!0-9]*) PAGINAS=1 ;; esac
+          if [ "$TODAS" = "true" ]; then
+            python .github/scripts/fetch_indisponibilidades.py --todas --limite-minutos 320 \
+              --cache-dir .cache/tjsp --novos-md novos.md --novos-json novos.json
+          else
+            python .github/scripts/fetch_indisponibilidades.py --paginas "$PAGINAS" --limite-minutos 40 \
+              --cache-dir .cache/tjsp --novos-md novos.md --novos-json novos.json
+          fi
+
+      - name: Salvar cache dos comunicados
+        if: ${{ always() }}
+        uses: actions/cache/save@v4
+        with:
+          path: .cache/tjsp
+          key: tjsp-comunicados-${{ github.run_id }}
+
+      - name: Commit e push se houver mudanças
+        id: commit
+        if: ${{ !cancelled() }}
+        env:
+          NOVOS: ${{ steps.robo.outputs.novos }}
+        run: |
+          if [ -z "$(git status --porcelain -- data/indisponibilidades.json)" ]; then
+            echo "Sem mudanças em data/indisponibilidades.json"
+            exit 0
+          fi
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git add data/indisponibilidades.json
+          git commit -m "chore: indisponibilidades TJSP (${NOVOS:-0} novas)"
+          for tentativa in 1 2 3; do
+            git pull --rebase origin "$GITHUB_REF_NAME" && git push origin "HEAD:$GITHUB_REF_NAME" && exit 0
+            echo "push falhou (tentativa $tentativa); tentando de novo"
+            sleep 10
+          done
+          exit 1
+
+      # Issue, e-mail e Firestore só depois que o JSON chegou ao main (push ok): se o push falhar, a próxima
+      # execução detecta os mesmos comunicados e avisa uma vez só.
+      - name: Abrir Issue com as novidades
+        id: issue
+        if: ${{ !cancelled() && steps.commit.outcome == 'success' && steps.robo.outputs.novos != '' && steps.robo.outputs.novos != '0' && !inputs.todas }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
+          TITULO: ${{ steps.robo.outputs.titulo }}
+          MARCA: ${{ steps.robo.outputs.marca }}
+        run: |
+          # não repete a Issue dos mesmos comunicados (re-run de execução antiga, push já feito por outra execução)
+          if [ -n "$MARCA" ] && gh issue list --state all --limit 50 --json body --jq '.[].body' 2>/dev/null \
+              | tr -d '\r' | grep -qxF "$MARCA"; then
+            echo "Já existe Issue para \"$MARCA\"; nada a fazer"
+            echo "repetida=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          echo "repetida=false" >> "$GITHUB_OUTPUT"
+          gh label create indisponibilidade --color D93F0B \
+            --description "Comunicados de indisponibilidade do TJSP" >/dev/null 2>&1 || true
+          gh issue create --title "$TITULO" --body-file novos.md --label indisponibilidade \
+            || gh issue create --title "$TITULO" --body-file novos.md
+
+      - name: Enviar e-mail
+        if: ${{ !cancelled() && steps.commit.outcome == 'success' && steps.issue.outputs.repetida != 'true' && steps.segredos.outputs.mail == 'true' && steps.robo.outputs.novos != '' && steps.robo.outputs.novos != '0' && !inputs.todas }}
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: smtp.gmail.com
+          server_port: 465
+          secure: true
+          username: ${{ secrets.MAIL_USERNAME }}
+          password: ${{ secrets.MAIL_PASSWORD }}
+          subject: ${{ steps.robo.outputs.titulo }}
+          to: ${{ secrets.MAIL_TO || secrets.MAIL_USERNAME }}
+          from: Robô de indisponibilidades <${{ secrets.MAIL_USERNAME }}>
+          body: file://novos.md
+          convert_markdown: true
+
+      # Nunca na carga histórica: a coleção events é lida inteira pelos apps a cada visita (cota do Firestore).
+      # O próprio script só envia itens dos últimos 30 dias.
+      - name: Sincronizar com o Firestore
+        if: ${{ !cancelled() && steps.commit.outcome == 'success' && steps.segredos.outputs.firestore == 'true' && steps.robo.outputs.novos != '' && steps.robo.outputs.novos != '0' && !inputs.todas }}
+        env:
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+        run: |
+          python -m pip install --quiet google-auth requests
+          python .github/scripts/fetch_indisponibilidades.py --sincronizar-firestore novos.json
