@@ -617,7 +617,15 @@ input#reset1 {
 }
 
 /* Ícone de ajuda do seletor "Sistema do processo": o label flutuante não recebe ponteiro no Bootstrap 5.1 */
-#divSistema .form-floating>label .tooltip-helper {
+#divSistema .tooltip-helper {
   pointer-events: auto;
   cursor: help;
+}
+
+/* Seletor compacto abaixo do cabeçalho */
+#divSistema .form-select {
+  height: 2.1rem !important;
+  padding: .25rem 2rem .25rem .6rem;
+  font-size: .95rem;
+  border-radius: var(--radius-md) !important;
 }
