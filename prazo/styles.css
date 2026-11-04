@@ -622,6 +622,15 @@ input#reset1 {
   cursor: help;
 }
 
+/* Tooltip do "Sistema do processo": texto longo, mais largo e alinhado à esquerda */
+.tooltip-sistema .tooltip-inner {
+  max-width: min(360px, 90vw);
+  text-align: left;
+  font-size: .85rem;
+  line-height: 1.35;
+  padding: .5rem .75rem;
+}
+
 /* Seletor compacto abaixo do cabeçalho */
 #divSistema .form-select {
   height: 2.1rem !important;

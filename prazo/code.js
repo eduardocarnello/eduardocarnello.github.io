@@ -111,8 +111,9 @@ function initCalendar() {
  */
 function initTooltips() {
   var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
-  tooltipTriggerList.map(function (tooltipTriggerEl) {
-    return new bootstrap.Tooltip(tooltipTriggerEl);
+  // getOrCreateInstance: evita tooltips duplicados quando a função é chamada de novo
+  tooltipTriggerList.forEach(function (tooltipTriggerEl) {
+    bootstrap.Tooltip.getOrCreateInstance(tooltipTriggerEl);
   });
 }
 
