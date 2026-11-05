@@ -44,12 +44,11 @@ document.addEventListener('DOMContentLoaded', () => {
         .replace(/(\d{7}-\d{2}\.\d{4}\.\d\.\d{2})(\d)/, '$1.$2');
     /** Máscara de data. Aceita só dígitos (05112026) ou com barras e dia/mês de 1 dígito (5/11/2026 → 05/11/2026). */
     const maskDate = (v) => {
-        if (v.includes('/')) {
-            const p = v.replace(/[^\d/]/g, '').split('/').slice(0, 3);
-            return p.map((s, i) => s.slice(0, i < 2 ? 2 : 4))
-                .map((s, i, a) => (i < 2 && i < a.length - 1 && s.length === 1 ? '0' + s : s)).join('/');
-        }
-        return v.replace(/\D/g, '').slice(0, 8).replace(/(\d{2})(\d)/, '$1/$2').replace(/(\d{2})\/(\d{2})(\d)/, '$1/$2/$3');
+        // dia/mês de 1 dígito seguidos de barra ganham zero à esquerda; o resto é tratado como sequência de dígitos
+        const parts = v.replace(/[^\d/]/g, '').split('/');
+        const digits = parts.map((s, i) => (i < 2 && i < parts.length - 1 && s.length === 1 ? '0' + s : s)).join('');
+        const out = digits.slice(0, 8).replace(/(\d{2})(\d)/, '$1/$2').replace(/(\d{2})\/(\d{2})(\d)/, '$1/$2/$3');
+        return /\/$/.test(v) && (out.length === 2 || out.length === 5) ? out + '/' : out;
     };
     const maskCpfCnpj = (v) => {
         v = v.replace(/\D/g, '').slice(0, 14);
