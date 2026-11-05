@@ -1278,27 +1278,40 @@
 
                     let totalInterest = 0;
                     if (descriptionSelect.value !== 'Dedução/Pagamento Parcial' && interestDate) {
+                        // Base = valor corrigido até a data dos juros; se os juros começam antes da correção
+                        // (ex.: dano moral corrigido do arbitramento, juros do evento), a base é o valor nominal
                         let baseForInterest = originalValue;
-                        const chaveJuros = monthKey(interestDate);
-                        const fatorAteJuros = getFatorEntre(chaveIni, chaveJuros);
-                        baseForInterest = originalValue * fatorAteJuros.fator;
+                        if (interestDate > correctionDate) {
+                            const chaveJuros = monthKey(interestDate);
+                            const fatorAteJuros = getFatorEntre(chaveIni, chaveJuros);
+                            baseForInterest = originalValue * fatorAteJuros.fator;
+                        }
 
-                        for (let d = new Date(interestDate); d < finalCalcDate; d.setMonth(d.getMonth() + 1)) {
+                        // Períodos mensais a partir da data dos juros (dia limitado ao fim do mês: 31/01 → 28/02);
+                        // o último período incompleto é proporcional aos dias corridos
+                        const jurosDay = interestDate.getDate();
+                        const periodStart = (i) => {
+                            const t = interestDate.getMonth() + i;
+                            const y = interestDate.getFullYear() + Math.floor(t / 12), m = ((t % 12) + 12) % 12;
+                            const dt = new Date(interestDate);
+                            dt.setFullYear(y, m, Math.min(jurosDay, new Date(y, m + 1, 0).getDate()));
+                            return dt;
+                        };
+                        for (let i = 0; i < 1200; i++) {
+                            const d = periodStart(i);
+                            if (!(d < finalCalcDate)) break;
+                            const next = periodStart(i + 1);
+                            const periodDays = Math.round((next - d) / 86400000);
                             const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
                             if (key >= '2024-08' && taxaLegalMap[key] === undefined) estimatedTaxaLegalMonths.add(key);
                             // Em 08/2024, a parte do período (que começa no dia d) anterior a 30/08/2024 fica a 1% a.m.
                             let fracaoAntesDoCorte;
                             if (key === '2024-08') {
-                                const next = new Date(d);
-                                next.setMonth(next.getMonth() + 1);
-                                const periodDays = Math.round((next - d) / 86400000);
                                 const daysBefore = Math.round((Date.UTC(2024, 7, 30, 12) - d) / 86400000);
                                 fracaoAntesDoCorte = Math.min(1, Math.max(0, daysBefore / periodDays));
                             }
                             let monthlyRate = (TJSPIndices.getTaxaLegalMensalDeduzida(key, taxaLegalMap, fracaoAntesDoCorte) ?? 0) / 100;
-                            if (d.getFullYear() === finalCalcDate.getFullYear() && d.getMonth() === finalCalcDate.getMonth()) {
-                                monthlyRate *= finalCalcDate.getDate() / new Date(d.getFullYear(), d.getMonth() + 1, 0).getDate();
-                            }
+                            if (next > finalCalcDate) monthlyRate *= Math.round((finalCalcDate - d) / 86400000) / periodDays;
                             totalInterest += baseForInterest * monthlyRate;
                         }
                     }
