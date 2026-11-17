@@ -404,15 +404,15 @@ function holidaysFunc(currentYear, expectedFinalYear) {
         // Update - Dia do Padroeiro Marília (2023/2024/Geral)
         cityHolidays.push(
             {
-                holidayDate: currentYear == 2023 ? "10/07/2023" : currentYear == 2024 ? "08/07/2024" : `11/07/${currentYear}`,
-                description: currentYear == 2023 ? 'São Bento, Padroeiro da Cidade (2023)- Decreto Municipal nº 14.066/2023 ' : currentYear == 2024 ? 'São Bento, Padroeiro da Cidade (2024)- Decreto Municipal nº 14.381/2024' : "São Bento, Padroeiro da Cidade",
+                holidayDate: i == 2023 ? "10/07/2023" : i == 2024 ? "08/07/2024" : `11/07/${i}`,
+                description: i == 2023 ? 'São Bento, Padroeiro da Cidade (2023)- Decreto Municipal nº 14.066/2023 ' : i == 2024 ? 'São Bento, Padroeiro da Cidade (2024)- Decreto Municipal nº 14.381/2024' : "São Bento, Padroeiro da Cidade",
                 city: 'Marília'
             }
         );
 
         // Feriados Estaduais
         stateHolidays.push(
-            { holidayDate: currentYear == 2020 ? "" : `09/07/${i}`, description: currentYear == 2020 ? '' : "Revolução Constitucionalista de São Paulo", state: 'SP' }
+            { holidayDate: i == 2020 ? "" : `09/07/${i}`, description: i == 2020 ? '' : "Revolução Constitucionalista de São Paulo", state: 'SP' }
         );
     }
 
