@@ -375,7 +375,8 @@
             // Reset arrays to initial state (removing previous dynamic events)
             amendment.length = initialAmendmentLength;
 
-            const suspensions = events.filter(e => ['suspensao', 'feriado', 'recesso', 'falta', 'substituicao', 'outro'].includes(e.type) && e.type !== 'moved_holiday');
+            // Só os tipos oficiais que suspendem expediente/prazo; falta, substituição, férias etc. são anotações internas da equipe
+            const suspensions = events.filter(e => ['suspensao', 'feriado', 'recesso'].includes(e.type) && e.type !== 'moved_holiday');
             const movedHolidays = events.filter(e => e.type === 'moved_holiday');
 
             // Inject Suspensions
