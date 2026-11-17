@@ -1236,6 +1236,10 @@
                 { holidayDate: "02/05/2025", description: "Suspensão de expediente (Prov. CSM 2765/2024)" },
                 { holidayDate: "20/06/2025", description: "Suspensão de expediente (Prov. CSM 2765/2024)" },
                 { holidayDate: "21/11/2025", description: "Suspensão de expediente (Prov. CSM 2765/2024)" },
+                { holidayDate: "28/05/2027", description: "Suspensão de expediente (Prov. CSM 2850/2026)" },
+                { holidayDate: "06/09/2027", description: "Suspensão de expediente (Prov. CSM 2850/2026)" },
+                { holidayDate: "11/10/2027", description: "Suspensão de expediente (Prov. CSM 2850/2026)" },
+                { holidayDate: "01/11/2027", description: "Suspensão de expediente (Prov. CSM 2850/2026)" },
             ];
 
             const sistDown = [ //Indisponibilidades
@@ -1423,7 +1427,7 @@
                 return allHolidays;
             };
 
-            const generatedHolidays = holidaysFunc(2022, 2026);
+            const generatedHolidays = holidaysFunc(2022, 2027);
             let allEvents = [...initialEvents, ...amendmentEvents, ...sistDownEvents, ...severeDownEvents, ...generatedHolidays];
 
             // Carrega os comunicados do TJSP (independe do Firebase; falha não impede o calendário)

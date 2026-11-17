@@ -28,6 +28,12 @@ var amendment = [
     { holidayDate: "10/07/2026", description: "Suspensão de expediente (Prov. CSM 2813/2025)" },
     { holidayDate: "10/07/2026", description: "Suspensão de expediente (Prov. CSM 2813/2025)" }, // Mantido conforme original (duplicado)
     { holidayDate: "07/12/2026", description: "Suspensão de expediente (Prov. CSM 2813/2025)" },
+
+    // 2027 (Prov. CSM 2850/2026; demais dias do art. 1º saem do gerador abaixo)
+    { holidayDate: "28/05/2027", description: "Suspensão de expediente (Prov. CSM 2850/2026)" },
+    { holidayDate: "06/09/2027", description: "Suspensão de expediente (Prov. CSM 2850/2026)" },
+    { holidayDate: "11/10/2027", description: "Suspensão de expediente (Prov. CSM 2850/2026)" },
+    { holidayDate: "01/11/2027", description: "Suspensão de expediente (Prov. CSM 2850/2026)" },
 ];
 
 /* ==============================================================================================
